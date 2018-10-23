@@ -805,8 +805,7 @@ public class SparkShellProxyController {
         DataSource catalogDataSource = fetchCatalogDataSource(dataSet.getDataSource().getId());
 
         dataSet.setDataSource(catalogDataSource);
-        DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
-        log.info("added datasource {} with template of {} to dataset {}",catalogDataSource,template,dataSet);
+        DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);
         dataSet.getDataSource().setTemplate(template);
     }
 

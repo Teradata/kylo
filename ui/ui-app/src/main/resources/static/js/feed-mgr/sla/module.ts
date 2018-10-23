@@ -19,7 +19,36 @@ class ModuleFactory  {
         this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);
     }
     configFn($stateProvider:any, $compileProvider: any) {
-        $stateProvider.state(AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state,{
+        $stateProvider.state({
+            name: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state,
+            url:'/service-level-agreements',
+            views: {
+                'content': {
+                    component: "thinkbigServiceLevelAgreements"
+                }
+            },
+            resolve: {
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "feedmgr.sla.service-level-agreements" */ "./service-level-agreements")
+                        .then(mod => {
+                            console.log('imported ./service-level-agreement mod', mod);
+                            return $ocLazyLoad.load(mod.default);
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ./service-level-agreements, " + err);
+                        });
+                }]
+            },
+            data:{
+                breadcrumbRoot:false,
+                displayName:'Service Level Agreements',
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions
+            }
+        });
+
+        $stateProvider.state({
+            name: 'service-level-agreement',
             url:'/service-level-agreements/:slaId',
             params: {
                 slaId:null
@@ -57,8 +86,9 @@ class ModuleFactory  {
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions
             }
-        })
-          $stateProvider.state('sla-email-templates',{
+        });
+
+        $stateProvider.state('sla-email-templates',{
             url:'/sla-email-templates',
             views: {
                 'content': {

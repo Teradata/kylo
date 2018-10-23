@@ -9,16 +9,6 @@ import LoginNotificationService from "./services/LoginNotificationService";
 import {KyloRouterService} from "./services/kylo-router.service";
 import {Lazy} from './kylo-utils/LazyLoadUtil';
 
-// require('./services/module');
-// require('./common/module');
-// require('./feed-mgr/module');
-// require('./feed-mgr/module-require');
-
-// import './services/module';
-// import './common/module';
-// import './feed-mgr/module';
-// import './feed-mgr/module-require';
-
 'use strict';
 
 class Route {
@@ -34,12 +24,6 @@ class Route {
 
 //var app = angular.module("", ["ngRoute"]);
     configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any) {
-        // require('./services/module');
-        // require('./common/module');
-        // require('./feed-mgr/module');
-        // require('./feed-mgr/module-require');
-
-
         function onOtherwise(AngularModuleExtensionService: any, $state: any, url: any) {
             var stateData = AngularModuleExtensionService.stateAndParamsForUrl(url);
             if (stateData.valid) {
@@ -137,19 +121,23 @@ class Route {
             url: '/categories',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
-                    .then(mod => {
-                        console.log('imported ./feed-mgr/categories/module.js', mod);
-                        return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('categories')
-                        }, function error(err: any) {
-                            console.log("Error loading categories ", err);
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "categories", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
+        $stateProvider.state({
+            name: 'category-details.**',
+            url: '/category-details/{categoryId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "category-details", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -196,14 +184,12 @@ class Route {
                 slaId: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-agreements', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-agreements ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "feed-mgr.sla.module" */ "./feed-mgr/sla/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-agreements", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -212,20 +198,23 @@ class Route {
             url: '/users',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('users')
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading users ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./auth/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "users", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
+        $stateProvider.state({
+            name: 'user-details.**',
+            url: '/user-details/{userId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "user-details", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -234,20 +223,23 @@ class Route {
             url: '/groups',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('groups');
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading groups ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./auth/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "groups", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
+        $stateProvider.state({
+            name: 'group-details.**',
+            url: '/group-details/{groupId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "group-details", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -350,20 +342,11 @@ class Route {
             },
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "ops-mgr.job-details.module" */ './ops-mgr/jobs/details/module')
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('job-details', transition.params())
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading job-details ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./ops-mgr/job/details/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "ops-mgr.job-details.module" */ './ops-mgr/jobs/details/module')
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, 'job-details', transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -392,6 +375,18 @@ class Route {
                 const onModuleLoad = () => {
                     import(/* webpackChunkName: "opsmgr.service-health.module" */ "./ops-mgr/service-health/module")
                         .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-health", transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
+        $stateProvider.state({
+            name: 'service-details.**',
+            url: '/service-details/{serviceName}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "opsmgr.service-health.module" */ "./ops-mgr/service-health/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-details", transition.params()));
                 };
                 import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
@@ -431,6 +426,18 @@ class Route {
                 import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
+        $stateProvider.state({
+            name: 'alert-details.**',
+            url: '/alert-details/{alertId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "ops-mgr.alerts.module" */ "./ops-mgr/alerts/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, 'alert-details', transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
 
         $stateProvider.state({
             name: 'charts.**',
@@ -459,6 +466,19 @@ class Route {
                 import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
+        $stateProvider.state({
+            name: "domain-type-details.**",
+            url: "/domain-type-details/{domainTypeId}",
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "admin.domain-types.module" */ "./feed-mgr/domain-types/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "domain-type-details", transition.params()));
+                };
+
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
 
         $stateProvider.state({
             name: 'service-level-assessment.**',
@@ -467,15 +487,12 @@ class Route {
                 assessmentId: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessment', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-assessment ", err);
-                    return err;
-                });
-
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "ops-mgr.slas.module" */ "./ops-mgr/sla/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-assessment", transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -486,15 +503,12 @@ class Route {
                 filter: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessments', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-assessments ", err);
-                    return err;
-                });
-
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "ops-mgr.slas.module" */ "./ops-mgr/sla/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-assessments", transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 

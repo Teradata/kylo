@@ -21,6 +21,9 @@ package com.thinkbiganalytics.kylo.catalog.table;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.db.DataSourceProperties;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
@@ -47,14 +50,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -85,6 +92,41 @@ public class DefaultCatalogTableManager implements CatalogTableManager {
      */
     @Nonnull
     private final JdbcSchemaParserProvider schemaParserProvider;
+
+    @Value("${kylo.catalog.table-autocomplete.cache-expire-time-min:20}")
+    private Long TABLE_CACHE_EXPIRE_TIME_MINUTES = 20L;
+
+    /**
+     * should the results of the table filter cache
+     */
+    @Value("${kylo.catalog.table-autocomplete.cache-enabled:false}")
+    private boolean cacheEnabled = false;
+
+    /**
+     * should the autocomplete table search filter on just table names, or table names and schema
+     * if TABLES_AND_SCHEMA is chosen and a search is done without a "." delinating between the schema and table name, then the system will load in all tables and filter for both.
+     * if you choose this option it is recommended you enable the cache mode above
+     */
+    @Value("${kylo.catalog.table-autocomplete.filter-mode:TABLES}")
+    private FilterMode filterMode;
+
+    /**
+     * How should the backend filter.
+     * TABLES = this will cache and query each result
+     * TABLES_AND_SCHEMA = this will first query for all tables, store that in cache, and then use java filtering on a match
+     */
+    public static enum FilterMode {
+        TABLES, TABLES_AND_SCHEMA
+    }
+
+    private LoadingCache<JdbcTableCacheKey, List<JdbcTable>>
+        datasourceTables = CacheBuilder.newBuilder().expireAfterWrite(TABLE_CACHE_EXPIRE_TIME_MINUTES, TimeUnit.MINUTES).build(new CacheLoader<JdbcTableCacheKey, List<JdbcTable>>() {
+        @Override
+        public List<JdbcTable> load(JdbcTableCacheKey key) throws Exception {
+            return fetchTables(key);
+        }
+    });
+
 
     /**
      * Constructs a {@code CatalogTableManager}.
@@ -126,13 +168,95 @@ public class DefaultCatalogTableManager implements CatalogTableManager {
         throws SQLException {
         final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);
         if (Objects.equals("hive", template.getFormat())) {
-            return listHiveCatalogsOrTables(schemaName);
+            return listHiveCatalogsOrTables(schemaName, false);
         } else if (Objects.equals("jdbc", template.getFormat())) {
             return isolatedFunction(template, catalogName, (connection, schemaParser) -> listJdbcCatalogsOrTables(connection, schemaParser, catalogName, schemaName));
         } else {
             throw new IllegalArgumentException("Unsupported format: " + template.getFormat());
         }
     }
+
+    /**
+     * Search a datasource for table names matching the supplied filter
+     */
+    @Nonnull
+    @Override
+    public List<DataSetTable> listTables(@Nonnull final DataSource dataSource, @Nullable String filter)
+        throws Exception {
+        final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);
+
+        if (Objects.equals("hive", template.getFormat())) {
+            return listHiveCatalogsOrTables(filter, true);
+        } else if (Objects.equals("jdbc", template.getFormat())) {
+            JdbcTableCacheKey cacheKey = new JdbcTableCacheKey(template, filter, this.filterMode);
+
+            final String schemaFilter = cacheKey.getSchemaJavaFilter();
+            final String tableFilter = cacheKey.getTableJavaFilter();
+            final String generalFilter = cacheKey.getJavaFilter();
+            long start = System.currentTimeMillis();
+
+            List<JdbcTable> tables = null;
+            if (cacheEnabled) {
+                tables = datasourceTables.get(cacheKey);
+            } else {
+                tables = fetchTables(cacheKey);
+            }
+            long stop = System.currentTimeMillis();
+            log.debug("Time to query for {} ms, {}", (stop - start), cacheKey);
+
+            List<DataSetTable> filteredTables = tables.stream()
+                .filter(jdbcTable -> {
+                    if (filterMode == FilterMode.TABLES) {
+                        //if we are just searching on tables then the backend already took care of the filtering, just return it
+                        return true;
+                    } else {
+                        boolean match = true;
+                        if (jdbcTable.getSchema() != null && StringUtils.isNotBlank(schemaFilter)) {
+                            match = jdbcTable.getSchema().toLowerCase().contains(schemaFilter);
+                        } else if (jdbcTable.getCatalog() != null && StringUtils.isNotBlank(schemaFilter)) {
+                            match = jdbcTable.getCatalog().toLowerCase().contains(schemaFilter);
+                        }
+
+                        if (jdbcTable.getName() != null && StringUtils.isNotBlank(tableFilter)) {
+                            match &= jdbcTable.getName().toLowerCase().contains(tableFilter);
+                        }
+
+                        if (StringUtils.isNotBlank(generalFilter)) {
+                            match =
+                                jdbcTable.getName().toLowerCase().contains(generalFilter) || (jdbcTable.getSchema() != null && jdbcTable.getSchema().toLowerCase().contains(generalFilter)) || (
+                                    jdbcTable.getCatalog() != null && jdbcTable.getCatalog().toLowerCase().contains(generalFilter));
+                        }
+                        return match;
+
+                    }
+                })
+                .map(this::createTable)
+                .collect(Collectors.toList());
+            log.debug("listTables returning {} out of {} .  Time to query for {} ms, {}", filteredTables, tables, (stop - start), cacheKey);
+            return filteredTables;
+
+        } else {
+            throw new IllegalArgumentException("Unsupported format: " + template.getFormat());
+        }
+    }
+
+    private List<JdbcTable> fetchTables(JdbcTableCacheKey key) throws SQLException {
+        return isolatedFunction(key.getTemplate(), key.getFilter(), (connection, schemaParser) -> schemaParser.listTables(connection, key.getSchemaPattern(), key.getTablePattern()));
+    }
+
+
+    public void invalidateCache(DataSetTemplate template) {
+        Set<JdbcTableCacheKey> keysToInvalidate = new HashSet<>();
+        for (JdbcTableCacheKey key : datasourceTables.asMap().keySet()) {
+            if (key.getTemplate().equals(template)) {
+                keysToInvalidate.add(key);
+            }
+        }
+        for (JdbcTableCacheKey key : keysToInvalidate) {
+            datasourceTables.invalidate(key);
+        }
+    }
+
 
     /**
      * Converts a JDBC catalog to a data set model.
@@ -176,13 +300,20 @@ public class DefaultCatalogTableManager implements CatalogTableManager {
      * Lists the Hive schemas or tables.
      */
     @Nonnull
-    private List<DataSetTable> listHiveCatalogsOrTables(@Nullable final String schemaName) {
+    private List<DataSetTable> listHiveCatalogsOrTables(@Nullable final String schemaName, boolean searchAll) {
         if (schemaName == null) {
             return hiveMetastoreService.listSchemas(null, null, null).stream()
                 .map(this::createSchema)
                 .collect(Collectors.toList());
         } else {
-            return hiveMetastoreService.listTables(null, schemaName, null, null).stream()
+            String schema = null;
+            String pattern = null;
+            if (searchAll) {
+                pattern = schemaName;
+            } else {
+                schema = schemaName;
+            }
+            return hiveMetastoreService.listTables(null, schema, pattern, null).stream()
                 .map(this::createTable)
                 .collect(Collectors.toList());
         }
@@ -231,6 +362,7 @@ public class DefaultCatalogTableManager implements CatalogTableManager {
             .map(this::createTable)
             .collect(Collectors.toList());
     }
+
 
     /**
      * Creates the properties for a data source from the specified template.

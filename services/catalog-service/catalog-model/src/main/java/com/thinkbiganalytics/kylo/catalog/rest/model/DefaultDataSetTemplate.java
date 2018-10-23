@@ -116,4 +116,44 @@ public class DefaultDataSetTemplate implements DataSetTemplate {
             .omitNullValues()
             .toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DefaultDataSetTemplate)) {
+            return false;
+        }
+
+        DefaultDataSetTemplate that = (DefaultDataSetTemplate) o;
+
+        if (files != null ? !files.equals(that.files) : that.files != null) {
+            return false;
+        }
+        if (format != null ? !format.equals(that.format) : that.format != null) {
+            return false;
+        }
+        if (jars != null ? !jars.equals(that.jars) : that.jars != null) {
+            return false;
+        }
+        if (options != null ? !options.equals(that.options) : that.options != null) {
+            return false;
+        }
+        if (paths != null ? !paths.equals(that.paths) : that.paths != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = files != null ? files.hashCode() : 0;
+        result = 31 * result + (format != null ? format.hashCode() : 0);
+        result = 31 * result + (jars != null ? jars.hashCode() : 0);
+        result = 31 * result + (options != null ? options.hashCode() : 0);
+        result = 31 * result + (paths != null ? paths.hashCode() : 0);
+        return result;
+    }
 }

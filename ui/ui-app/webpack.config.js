@@ -440,6 +440,16 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html',
         to: 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/feed-mgr/sla/service-level-agreement-body.html',
+        to: 'js/feed-mgr/sla/service-level-agreement-body.html'
+    },
+    {
+        context: './src/main/resources/static',
+        from: 'js/feed-mgr/sla/service-level-agreement-form.html',
+        to: 'js/feed-mgr/sla/service-level-agreement-form.html'
     }
 ];
 

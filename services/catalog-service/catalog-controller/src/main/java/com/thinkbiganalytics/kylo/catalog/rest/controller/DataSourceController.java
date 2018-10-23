@@ -20,10 +20,12 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
@@ -31,8 +33,10 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetWithTableSchema;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSourceCredentials;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -54,7 +58,9 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -133,6 +139,9 @@ public class DataSourceController extends AbstractCatalogController {
 
     @Inject
     private DataSetController dataSetController;
+
+    @Inject
+    private com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider dataSetService;
 
     @Inject
     private com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider dataSourceService;
@@ -328,6 +337,27 @@ public class DataSourceController extends AbstractCatalogController {
         });
     }
 
+
+    @GET
+    @ApiOperation("Lists all datasources matching the plugin id")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the data sources", response = DataSource.class),
+                      @ApiResponse(code = 400, message = "", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
+    @Path("/plugin-id")
+    public Response getDataSources(@QueryParam("pluginIds") final String pluginIds) {
+        log.entry(pluginIds);
+        List<String> pluginList = Arrays.asList(pluginIds.split(",")).stream().map(id -> id.trim()).collect(Collectors.toList());
+        final Set<DataSource> datasources = metadataService.read(() -> {
+            return dataSourceProvider.findAll().stream().filter(ds -> pluginList.contains(ds.getConnector().getPluginId()))
+                .map(modelTransform.dataSourceToRestModel())
+                .collect(Collectors.toSet());
+        });
+        return Response.ok(datasources).build();
+    }
+
+
     @GET
     @Path("{id}/files")
     @ApiOperation("List files of a data source")
@@ -413,6 +443,118 @@ public class DataSourceController extends AbstractCatalogController {
         }
         return tables;
     }
+
+
+    @GET
+    @Path("{id}/tables/filter")
+    @ApiOperation("List all tables in a data source")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "List of tables", response = DataSetTable.class, responseContainer = "List"),
+                      @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Failed to list tables", response = RestResponseStatus.class)
+                  })
+    public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("filter") String catalogOrSchemaName) {
+
+        List<DataSetTable> tableList = metadataService.read(() -> {
+            // List tables
+            final DataSource dataSource = findDataSource(dataSourceId);
+
+            final List<DataSetTable> tables;
+            try {
+                log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
+                tables = tableManager.listTables(dataSource, catalogOrSchemaName);
+            } catch (final Exception e) {
+                if (log.isErrorEnabled()) {
+                    log.error("Failed to list tables for [" + catalogOrSchemaName + "] : " + e, e);
+                }
+                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                    .message(getMessage("catalog.datasource.listTablesFilter.error", catalogOrSchemaName))
+                    .url(request.getRequestURI())
+                    .setDeveloperMessage(e)
+                    .buildError();
+                throw new InternalServerErrorException(Response.serverError().entity(status).build());
+            }
+            return tables;
+
+
+        });
+
+        return Response.ok(log.exit(tableList)).build();
+    }
+
+
+    /**
+     * Gets the schema of the specified table using the specified data source.
+     *
+     * @param idStr     the data source id
+     * @param tableName the table name
+     * @param schema    the schema name, or {@code null} to search all schemas
+     * @return the table and field details
+     * @TODO change PATH
+     */
+    @POST
+    @Path("{id}/tables/{tableName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the schema of the specified table.", notes = "Connects to the database specified by the data source.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the table schema.", response = DataSetWithTableSchema.class),
+                      @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId, @PathParam("tableName") final String tableName, @QueryParam("schema") final String schema) {
+        // TODO Verify user has access to data source
+
+        DataSetWithTableSchema dataSetWithTableSchema = metadataService.commit(() -> {
+            // List tables
+            final DataSource dataSource = findDataSource(dataSourceId);
+            TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
+            if (tableSchema != null) {
+                DataSet dataSet = new DataSet();
+                dataSet.setDataSource(dataSource);
+                String fullTableName = tableSchema.getSchemaName() + "." + tableSchema.getName();
+                dataSet.setTitle(fullTableName);
+
+                DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
+                List<String> paths = defaultDataSetTemplate.getPaths();
+                String format = defaultDataSetTemplate.getFormat();
+
+                Map<String, String> options = defaultDataSetTemplate.getOptions();
+                if (options == null) {
+                    options = new HashMap<>();
+                }
+                if (paths == null) {
+                    paths = new ArrayList<>();
+                }
+                if ("hive".equalsIgnoreCase(format.toLowerCase())) {
+                    paths.add(fullTableName);
+                } else {
+                    options.put("dbtable", fullTableName);
+                }
+
+                dataSet.setFormat(format);
+                dataSet.setPaths(paths);
+                dataSet.setOptions(options);
+
+                DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet);
+                return new DataSetWithTableSchema(dataSet1, tableSchema);
+            } else {
+                if (log.isErrorEnabled()) {
+                    log.error("Failed to describe tables for schema [" + schema + "], table [" + tableName + "], dataSource [" + dataSourceId + "] ");
+                }
+                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                    .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
+                    .url(request.getRequestURI())
+                    .buildError();
+                throw new InternalServerErrorException(Response.serverError().entity(status).build());
+            }
+
+
+        });
+
+        return Response.ok(dataSetWithTableSchema).build();
+    }
+
 
     @GET
     @Path("{id}/credentials")

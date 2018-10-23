@@ -6,7 +6,6 @@ import * as moment from "moment";
 import 'ops-mgr/charts/module-require';
 import 'pivottable-c3-renderers';
 import 'bower_components/c3/c3.css';
-import 'ops-mgr/charts/pivot.css';
 import OpsManagerRestUrlService from '../services/OpsManagerRestUrlService';
 
 export class controller implements ng.IComponentController{
