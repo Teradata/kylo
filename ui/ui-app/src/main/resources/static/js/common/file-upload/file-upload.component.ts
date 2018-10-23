@@ -20,7 +20,7 @@ export class FileUploadComponent implements OnChanges{
     validUpload:boolean = true;
 
     @Input()
-    placeholder?:string = "select or drop files"
+    placeholder?:string = "Select or drop files here"
 
     @ViewChild("submitButton")
     submitButton: HTMLInputElement;

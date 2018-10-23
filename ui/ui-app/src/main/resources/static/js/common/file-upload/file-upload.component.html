@@ -1,26 +1,35 @@
-<div fxLayout="row" fxFlex="100">
-  <mat-form-field tdFileDrop
-                  (fileDrop)="files = $event"
-                  (click)="fileInput.inputElement.click()"
-                  (keyup.enter)="fileInput.inputElement.click()"
-                  (keyup.delete)="fileInput.clear()"
-                  (keyup.backspace)="fileInput.clear()"
-                  fxFlex>
-    <input matInput
-           [placeholder]="placeholder"
-           [value]="files?.length ? (files?.length + ' files') : files?.name"
-           readonly>
-  </mat-form-field>
-  <button mat-icon-button *ngIf="files" (click)="fileInput.clear()" (keyup.enter)="fileInput.clear()">
-    <mat-icon>cancel</mat-icon>
-  </button>
+<div fxLayout="column">
+    <div fxLayout="row" fxFlex="100">
 
-  <td-file-input class="push-left-sm push-right-sm" #fileInput [(ngModel)]="files" multiple [disabled]="disabled" (select)="fileSelected($event)">
-    <mat-icon class="accent-color">folder</mat-icon>
-    <span class="text-upper accent-color">Browse...</span>
-  </td-file-input>
-
-    <span *ngIf="renderSubmitButton">
-    <button mat-raised-button color="accent" [disabled]="uploadButtonDisabled()" class="text-upper" #submitButton (click)="submitFiles()">Submit</button>
-  </span>
+        <td-file-input class="push-left-sm push-right-sm" #fileInput [(ngModel)]="files" multiple
+                       [disabled]="disabled" (select)="fileSelected($event)" [style.margin-top.px]="'5'">
+            <mat-icon class="accent-color">folder</mat-icon>
+            <span class="text-upper accent-color">Browse...</span>
+        </td-file-input>
+        <mat-form-field tdFileDrop
+                        (fileDrop)="files = $event"
+                        (click)="fileInput.inputElement.click()"
+                        (keyup.enter)="fileInput.inputElement.click()"
+                        (keyup.delete)="fileInput.clear()"
+                        (keyup.backspace)="fileInput.clear()"
+                        [style.margin-top.px]="'-4'"
+                        fxFlex="70">
+            <input matInput
+                   [placeholder]="placeholder"
+                   [value]="files?.length ? (files?.length + ' files') : files?.name"
+                   readonly>
+        </mat-form-field>
+        <span fxFlex="10">
+          <button mat-icon-button *ngIf="files" (click)="fileInput.clear()" (keyup.enter)="fileInput.clear()" color="primary">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </span>
+    </div>
+    <div *ngIf="renderSubmitButton" fxLayout="row">
+        <span fxFlex="80"></span>
+        <span fxFlex class="push-right">
+            <button mat-raised-button color="accent" [disabled]="uploadButtonDisabled()"
+                    class="text-upper" #submitButton (click)="submitFiles()">Submit</button>
+          </span>
+    </div>
 </div>
