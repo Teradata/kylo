@@ -422,6 +422,18 @@ class Route {
                 import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
+        $stateProvider.state({
+            name: 'alert-details.**',
+            url: '/alert-details/{alertId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "ops-mgr.alerts.module" */ "./ops-mgr/alerts/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, 'alert-details', transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
 
         $stateProvider.state({
             name: 'charts.**',
