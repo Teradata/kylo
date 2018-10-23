@@ -468,6 +468,19 @@ class Route {
                 import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
+        $stateProvider.state({
+            name: "domain-type-details.**",
+            url: "/domain-type-details/{domainTypeId}",
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "admin.domain-types.module" */ "./feed-mgr/domain-types/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "domain-type-details", transition.params()));
+                };
+
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
 
         $stateProvider.state({
             name: 'service-level-assessment.**',
