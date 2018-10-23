@@ -71,6 +71,18 @@ public interface JdbcSchemaParser {
     @Nonnull
     List<JdbcTable> listTables(@Nonnull Connection connection, @Nullable String catalog, @Nullable String schema, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException;
 
+
+    /**
+     *  List tables for the connection matching a supplied pattern.
+     *  If no pattern is supplied all tables are returned
+     * @param connection
+     * @param schema
+     * @param pattern
+     * @return
+     * @throws SQLException
+     */
+    List<JdbcTable> listTables(@Nonnull final Connection connection, @Nullable final String schema, @Nullable final String pattern) throws SQLException ;
+
     /**
      * Modifies the data source properties, if necessary, to connect to the specified catalog.
      *

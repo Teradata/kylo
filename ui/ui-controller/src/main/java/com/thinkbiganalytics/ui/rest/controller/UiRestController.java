@@ -29,6 +29,7 @@ import com.thinkbiganalytics.ui.service.TemplateTableOptionConfigurerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -72,7 +73,8 @@ public class UiRestController {
     @Autowired
     private TemplateTableOptionConfigurerAdapter templateTableOptionConfigurerAdapter;
 
-
+    @Value("${kylo.wrangler.table-autocomplete.enabled:true}")
+    private boolean wranglerTableAutocompleteEnabled = true;
 
     @PostConstruct
     private void init() {
@@ -131,6 +133,13 @@ public class UiRestController {
     @Path("extension-modules")
     public List<AngularModule> getAngularExtensionModules() {
         return angularExtensionModules;
+    }
+
+    @GET
+    @Path("/wrangler/table-auto-complete-enabled")
+    @Produces(MediaType.TEXT_PLAIN)
+    public boolean isWranglerAutocompleteEnabled() {
+        return wranglerTableAutocompleteEnabled;
     }
 
 

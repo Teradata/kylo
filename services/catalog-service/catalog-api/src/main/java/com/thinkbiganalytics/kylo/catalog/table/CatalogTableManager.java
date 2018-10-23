@@ -58,4 +58,11 @@ public interface CatalogTableManager {
      */
     @Nonnull
     List<DataSetTable> listCatalogsOrTables(@Nonnull final DataSource dataSource, @Nullable final String catalogName, @Nullable final String schemaName) throws SQLException;
+
+
+    /**
+     * List tables for the datasource matching the supplied filter
+     */
+    @Nonnull
+    List<DataSetTable> listTables(@Nonnull final DataSource dataSource, @Nullable final String filter) throws Exception;
 }

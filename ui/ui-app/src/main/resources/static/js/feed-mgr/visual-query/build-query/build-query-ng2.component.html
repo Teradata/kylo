@@ -20,7 +20,7 @@
 
           <mat-form-field *ngIf="showDatasources" style="font-size:14px;padding-top:16px">
             <mat-select formControlName="datasource" placeholder="Table Source">
-              <mat-option *ngFor="let datasource of availableDatasources" [value]="datasource.id">{{datasource.name}}</mat-option>
+              <mat-option *ngFor="let datasource of catalogSQLDataSources" [value]="datasource.id">{{datasource.title}}</mat-option>
             </mat-select>
           </mat-form-field>
 
@@ -28,16 +28,18 @@
 
             <!-- datasource autocomplete -->
             <div style="font-size:14px;padding-top:16px" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="100">
-              <mat-form-field style="width:320px">
-                <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" (blur)="checkValidSelection()">
+              <mat-form-field >
+                <input matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" >
                 <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
-                  <mat-option *ngFor="let table of filteredTables | async" [value]="table" class="autocomplete-option" (click)="checkValidSelection()">
+                  <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="50"></mat-spinner></mat-option>
+                  <ng-container *ngIf="!autocompleteLoading">
+                    <mat-option *ngFor="let table of filteredTables" [value]="table" class="autocomplete-option" >
                   <span class="title">
                     <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
                     <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
                   </span>
-                    <br/>
-                    <span>
+                      <br/>
+                      <span>
                     <span>
                       <span class="sub-title hint">Schema:</span>
                       <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
@@ -47,7 +49,18 @@
                       <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
                     </span>
                   </span>
+                    </mat-option>
+                  </ng-container>
+                  <mat-option *ngIf="!autocompleteLoading && model.$selectedDatasourceId != undefined && filteredTables != undefined && filteredTables.length == 0" class="autocomplete-option" >
+                    <span class="title">
+                       Search for a table to wrangle
+                     </span><br/>
+                    <span class="sub-title hint">Type the name of the table you want to use</span>
                   </mat-option>
+                  <mat-option *ngIf="model.$selectedDatasourceId == undefined">
+                    <span class="title">Select a datasource first</span>
+                  </mat-option>
+
                 </mat-autocomplete>
               </mat-form-field>
               <mat-error *ngIf="databaseConnectionError" style="position:absolute;top:42px">Unable to connect to selected data source.</mat-error>
@@ -80,7 +93,7 @@
         </mat-toolbar>
         <!-- Canvas -->
 
-        <div class="visual-query-canvas" style="margin-top:8px" mouse-capture [fxHide]="advancedMode == true">
+        <div class="visual-query-canvas" style="margin-top:8px" mouse-capture [fxHide]="advancedMode == true || chartViewModel.data.nodes.length == 0">
           <mat-divider></mat-divider>
           <div class="svg-container" browser-height browser-height-scroll-y="false" browser-height-scroll-x="auto" [browser-height-offset]="(heightOffset || 0) + 136">
             <flow-chart id="visual-query-canvas" #flowChart [chart]="chartViewModel"></flow-chart>
@@ -95,6 +108,15 @@
         <ng-template *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && !showDatasources">
           No tables have been selected. Please complete all previous sections before attempting to transform the data.
         </ng-template>
+
+
+
+        <div *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && advancedMode == false" fxLayout="column" fxFlex style="min-height:500px;" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad push-left-xxl">
+          <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+          <h2>No data selected</h2>
+          <p>Please select a table from above and add it to the canvas
+          </p>
+        </div>
 
       </div>
 
