@@ -11,7 +11,6 @@ import {Subject} from 'rxjs/Subject';
  * to notify call this:
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
-@Injectable()
 export default class BroadcastService {
 
     /**

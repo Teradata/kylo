@@ -46,7 +46,7 @@ export class RegisterTemplateController {
     constructor(private registerTemplateService: RegisterTemplateServiceFactory, 
                 private stateService: StateService, 
                 private accessControlService: AccessControlService, 
-                private broadcastService: BroadcastService) {
+                @Inject("BroadcastService") private broadcastService: BroadcastService) {
         
         this.registeredTemplateId = this.stateService.params.registeredTemplateId || null;
         this.nifiTemplateId = this.stateService.params.nifiTemplateId || null;

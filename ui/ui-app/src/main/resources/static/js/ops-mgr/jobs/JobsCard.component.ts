@@ -72,7 +72,7 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
         private IconService: IconService,
         private TabService: TabService,
         private accessControlService: AccessControlService,
-        private BroadcastService: BroadcastService,
+        @Inject("BroadcastService") private BroadcastService: BroadcastService,
         private OpsManagerRestUrlService: OpsManagerRestUrlService,
         public _dataTableService: TdDataTableService) {
             super(_dataTableService);

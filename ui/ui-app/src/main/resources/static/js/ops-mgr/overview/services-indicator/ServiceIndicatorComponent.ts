@@ -168,7 +168,7 @@ export class ServiceIndicatorComponent {
                 private element: ElementRef,
                 private ServicesStatusData: ServicesStatusData,
                 private OpsManagerDashboardService: OpsManagerDashboardService,
-                private BroadcastService: BroadcastService,
+                @Inject("BroadcastService") private BroadcastService: BroadcastService,
                 private translate: TranslateService) {
 
     }// end of constructor

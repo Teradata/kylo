@@ -8,7 +8,6 @@ import AngularModuleExtensionService from "./AngularModuleExtensionService";
 import AddButtonService from "./AddButtonService";
 import FileUpload from "./FileUploadService";
 import { NotificationService } from "./notification.service";
-import BroadcastService from "./broadcast-service";
 import { DefaultPaginationDataService } from "./PaginationDataService";
 import { DefaultTableOptionsService } from "./TableOptionsService";
 import StateService from "./StateService";
@@ -20,7 +19,9 @@ import ConfigurationService from "./ConfigurationService";
 import LoginNotificationService from "./LoginNotificationService";
 import SideNavService from "./SideNavService";
 import { WindowUnloadService } from "./WindowUnloadService";
-
+import * as angular from "angular";
+import BroadcastService from "./broadcast-service";
+import { broadcastServiceProvider } from "./module";
 @NgModule({
     imports: [
         CommonModule,
@@ -29,6 +30,7 @@ import { WindowUnloadService } from "./WindowUnloadService";
     providers: [
         NotificationService,
         PreviewDatasetCollectionService,
+        broadcastServiceProvider,
         BroadcastService,
         DefaultPaginationDataService,
         DefaultTableOptionsService,
@@ -45,8 +47,12 @@ import { WindowUnloadService } from "./WindowUnloadService";
         AddButtonService,
         FileUpload,
         WindowUnloadService,
-        LoginNotificationService
+        LoginNotificationService,
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
     ]
 })
 export class KyloServicesModule {
+    constructor(){
+        require("./module");
+    }
 }

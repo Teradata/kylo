@@ -3,14 +3,14 @@ import CommonRestUrlService from "./CommonRestUrlService";
 import BroadcastService from "./broadcast-service";
 import { HttpClient } from '@angular/common/http';
 import { ObjectUtils } from "../common/utils/object-utils";
-import { Injectable } from "@angular/core";
+import { Injectable, Inject } from "@angular/core";
 
 @Injectable()
 export default class AngularModuleExtensionService{
 
 constructor (private http: HttpClient,
              private commonRestUrlService: CommonRestUrlService,
-             private broadcastService: BroadcastService) {}
+             @Inject("BroadcastService") private broadcastService: BroadcastService) {}
 
     EXTENSION_MODULES_INITIALIZED_EVENT = 'extensionModulesInitialized'
     /**

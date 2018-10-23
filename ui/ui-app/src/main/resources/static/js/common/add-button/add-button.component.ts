@@ -1,4 +1,4 @@
-import {Component, ElementRef} from "@angular/core";
+import {Component, ElementRef, Inject} from "@angular/core";
 import {TransitionService} from "@uirouter/core";
 import * as $ from "jquery";
 
@@ -21,7 +21,7 @@ export class AddButtonComponent {
     constructor(private elRef: ElementRef,
                 private $transitions: TransitionService,
                 private addButtonService: AddButtonService,
-                private broadcastService: BroadcastService) {}
+                @Inject("BroadcastService") private broadcastService: BroadcastService) {}
 
     ngOnInit() {
 

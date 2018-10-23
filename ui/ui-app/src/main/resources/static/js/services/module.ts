@@ -16,21 +16,29 @@ import { DefaultTableOptionsService } from './TableOptionsService';
 import Utils from './Utils';
 import { WindowUnloadService } from './WindowUnloadService';
 
-let moduleName= "kylo.services";
+import {moduleName} from "./module-name"; 
 
-export let module= angular.module(moduleName, []);
-angular.module(moduleName).service("SearchService", downgradeInjectable(SearchService) as any);
-angular.module(moduleName).service("AccessControlService",downgradeInjectable(AccessControlService) as any);
-angular.module(moduleName).service("AddButtonService",downgradeInjectable(AddButtonService) as any);
-angular.module(moduleName).service("AngularModuleExtensionService",downgradeInjectable(AngularModuleExtensionService) as any);
-angular.module(moduleName).service("BroadcastService",downgradeInjectable(BroadcastService) as any);
-angular.module(moduleName).service("FileUpload",downgradeInjectable(FileUpload) as any);
-angular.module(moduleName).service("NotificationService",downgradeInjectable(NotificationService) as any);
-angular.module(moduleName).service("DefaultPaginationDataService",downgradeInjectable(DefaultPaginationDataService) as any);
-angular.module(moduleName).service("SideNavService",downgradeInjectable(SideNavService) as any);
-angular.module(moduleName).service("StateService",downgradeInjectable(StateService) as any);
-angular.module(moduleName).service("DefaultTableOptionsService",downgradeInjectable(DefaultTableOptionsService) as any);
-angular.module(moduleName).service("Utils",downgradeInjectable(Utils) as any);
-angular.module(moduleName).service("WindowUnloadService",downgradeInjectable(WindowUnloadService) as any);
-angular.module(moduleName).service("PreviewDatasetCollectionService", downgradeInjectable(PreviewDatasetCollectionService));
-angular.module(moduleName).service("LoginNotificationService",downgradeInjectable(LoginNotificationService) as any);
+export let module: ng.IModule= angular.module(moduleName, []);
+
+module.service("BroadcastService",BroadcastService);
+
+export const broadcastServiceProvider = {
+    provide: BroadcastService,
+    useFactory: (i: angular.auto.IInjectorService) => i.get("BroadcastService"),
+    deps: ['$injector']
+};
+
+module.service("SearchService", downgradeInjectable(SearchService) as any);
+module.service("AccessControlService",downgradeInjectable(AccessControlService) as any);
+module.service("AddButtonService",downgradeInjectable(AddButtonService) as any);
+module.service("AngularModuleExtensionService",downgradeInjectable(AngularModuleExtensionService) as any);
+module.service("FileUpload",downgradeInjectable(FileUpload) as any);
+module.service("NotificationService",downgradeInjectable(NotificationService) as any);
+module.service("DefaultPaginationDataService",downgradeInjectable(DefaultPaginationDataService) as any);
+module.service("SideNavService",downgradeInjectable(SideNavService) as any);
+module.service("StateService",downgradeInjectable(StateService) as any);
+module.service("DefaultTableOptionsService",downgradeInjectable(DefaultTableOptionsService) as any);
+module.service("Utils",downgradeInjectable(Utils) as any);
+module.service("WindowUnloadService",downgradeInjectable(WindowUnloadService) as any);
+module.service("PreviewDatasetCollectionService", downgradeInjectable(PreviewDatasetCollectionService));
+module.service("LoginNotificationService",downgradeInjectable(LoginNotificationService) as any);

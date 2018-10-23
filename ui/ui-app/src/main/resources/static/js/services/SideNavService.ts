@@ -21,13 +21,14 @@
  * Used to programmatically open/close the side nav bar
  */
 import BroadcastConstants from "./BroadcastConstants";
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import BroadcastService from "./broadcast-service";
+import "./module"; 
 
 @Injectable()
 export default class SideNavService {
     isLockOpen: any;
-    constructor(private broadcastService: BroadcastService) {
+    constructor(@Inject("BroadcastService") private broadcastService: BroadcastService) {
         this.isLockOpen = true;
     }
     hideSideNav() {

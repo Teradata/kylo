@@ -6,7 +6,7 @@ import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import { StateService } from '@uirouter/core';
 import BroadcastService from "../../services/broadcast-service";
 import { HttpClient } from "@angular/common/http";
-import { OnDestroy, OnInit, Component } from "@angular/core";
+import { OnDestroy, OnInit, Component, Inject } from "@angular/core";
 import { Subscription } from "rxjs";
 
 @Component({
@@ -56,7 +56,7 @@ export class FeedDetailsComponent implements OnDestroy, OnInit {
         private opsManagerRestUrlService: OpsManagerRestUrlService,
         private stateService: StateService,
         private opsManagerJobService: OpsManagerJobService,
-        private broadcastService: BroadcastService,
+        @Inject("BroadcastService") private broadcastService: BroadcastService,
         private http: HttpClient) {
 
     }// end of constructor

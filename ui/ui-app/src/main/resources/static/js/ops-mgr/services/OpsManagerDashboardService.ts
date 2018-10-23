@@ -8,7 +8,7 @@ import OpsManagerRestUrlService from './OpsManagerRestUrlService';
 import BroadcastService from '../../services/broadcast-service';
 import { Observable, Subscription } from 'rxjs';
 import 'rxjs/add/observable/of';
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { OpsManagerFeedService } from './OpsManagerFeedService';
 
 @Injectable()
@@ -31,7 +31,7 @@ export default class OpsManagerDashboardService {
 
     constructor(private http: HttpClient,
         private opsManagerRestUrlService: OpsManagerRestUrlService,
-        private broadcastService: BroadcastService,
+        @Inject("BroadcastService") private broadcastService: BroadcastService,
         private OpsManagerFeedService: OpsManagerFeedService) {}
 
     selectFeedHealthTab(tab: any) {

@@ -1,5 +1,5 @@
 import "pascalprecht.translate";
-import { Component, Input, OnInit } from "@angular/core";
+import { Component, Input, OnInit, Inject } from "@angular/core";
 import Utils from "../../services/Utils";
 import ChartJobStatusService from "../services/ChartJobStatusService";
 import BroadcastService from "../../services/broadcast-service";
@@ -88,7 +88,7 @@ export class FeedActivityComponent implements OnInit {
         private Utils: Utils,
         private opsManagerRestUrlService: OpsManagerRestUrlService,
         private chartJobStatusService: ChartJobStatusService,
-        private broadcastService: BroadcastService,
+        @Inject("BroadcastService") private broadcastService: BroadcastService,
         private translate: TranslateService,
         private http: HttpClient) {
 

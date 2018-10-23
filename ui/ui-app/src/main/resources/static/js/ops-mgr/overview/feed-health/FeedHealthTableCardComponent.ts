@@ -4,7 +4,7 @@ import TabService from "../../services/TabService";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
 import { DefaultTableOptionsService } from "../../../services/TableOptionsService";
 import {OpsManagerFeedService} from "../../services/OpsManagerFeedService";
-import { Component, Input } from "@angular/core";
+import { Component, Input, Inject } from "@angular/core";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import BroadcastService from "../../../services/broadcast-service";
 import { ObjectUtils } from "../../../common/utils/object-utils";
@@ -78,7 +78,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
                 private paginationDataService: DefaultPaginationDataService,
                 private tabService: TabService,
                 private stateService: StateService,
-                private BroadcastService: BroadcastService,
+                @Inject("BroadcastService") private BroadcastService: BroadcastService,
                 public _dataTableService: TdDataTableService) {
                     super(_dataTableService);
                 } // end of constructor

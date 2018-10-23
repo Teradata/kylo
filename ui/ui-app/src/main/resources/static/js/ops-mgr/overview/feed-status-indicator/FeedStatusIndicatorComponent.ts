@@ -1,5 +1,5 @@
 import "pascalprecht.translate";
-import { Component, Input } from "@angular/core";
+import { Component, Input, Inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import BroadcastService from "../../../services/broadcast-service";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
@@ -68,7 +68,7 @@ export default class FeedStatusIndicatorComponent {
                 private translate : TranslateService,
                 private OpsManagerFeedService: OpsManagerFeedService,
                 private OpsManagerDashboardService: OpsManagerDashboardService,
-                private BroadcastService: BroadcastService){
+                @Inject("BroadcastService") private BroadcastService: BroadcastService){
        
         }// end of constructor
 

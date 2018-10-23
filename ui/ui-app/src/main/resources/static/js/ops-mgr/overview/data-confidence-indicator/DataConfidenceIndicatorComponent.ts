@@ -72,7 +72,7 @@ export class DataConfidenceIndicatorComponent {
     constructor(private dialog: MatDialog,
                 private OpsManagerJobService: OpsManagerJobService,
                 private OpsManagerDashboardService: OpsManagerDashboardService,
-                private BroadcastService: BroadcastService,
+                @Inject("BroadcastService") private BroadcastService: BroadcastService,
                 private translate: TranslateService) {}// end of constructor
        
         openDetailsDialog(key: string) {

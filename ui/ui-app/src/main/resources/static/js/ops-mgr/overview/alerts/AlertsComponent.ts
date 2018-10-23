@@ -1,6 +1,6 @@
 import StateService from "../../../services/StateService";
 import AlertsServiceV2 from "../../services/AlertsServiceV2";
-import { Component, Input } from "@angular/core";
+import { Component, Input, Inject } from "@angular/core";
 import BroadcastService from "../../../services/broadcast-service";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import { ObjectUtils } from "../../../common/utils/object-utils";
@@ -43,7 +43,7 @@ export default class AlertsComponent {
     constructor(private alertsServiceV2: AlertsServiceV2,
                 private stateService: StateService,
                 private OpsManagerDashboardService: OpsManagerDashboardService,
-                private BroadcastService: BroadcastService) {}
+                @Inject("BroadcastService") private BroadcastService: BroadcastService) {}
 
         watchDashboard=()=> {
             this.BroadcastService.subscribe(null,this.OpsManagerDashboardService.DASHBOARD_UPDATED,(dashboard: any)=>{

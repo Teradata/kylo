@@ -5,7 +5,7 @@ import BroadcastService from "../../../services/broadcast-service";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import OpsManagerJobService from "../../services/OpsManagerJobService";
 import StateService from "../../../services/StateService";
-import { Component } from "@angular/core";
+import { Component, Inject } from "@angular/core";
 import { ObjectUtils } from "../../../common/utils/object-utils";
 declare const d3: any;
 
@@ -91,7 +91,7 @@ export default class JobStatusIndicatorComponent {
         private OpsManagerJobService: OpsManagerJobService,
         private OpsManagerDashboardService: OpsManagerDashboardService,
         private chartJobStatusService: ChartJobStatusService,
-        private BroadcastService: BroadcastService) {}// end of constructor
+        @Inject("BroadcastService") private BroadcastService: BroadcastService) {}// end of constructor
      
         updateChart = ()=>{
             if(this.chartApi.update) {

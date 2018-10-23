@@ -1,9 +1,10 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, EventEmitter, Input, OnInit, Output, ViewContainerRef} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewContainerRef, Inject} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from '@covalent/core/dialogs';
+import * as angular from 'angular';
 import * as _ from "underscore";
 
 import AccessControlService from '../../../../services/AccessControlService';
@@ -129,7 +130,7 @@ export class RegisterSelectTemplateController implements OnInit {
                 private EntityAccesControlService: EntityAccessControlService,
                 private uiComponentsService: UiComponentsService,
                 private AngularModuleExtensionService: AngularModuleExtensionService,
-                private broadcastService: BroadcastService,
+                @Inject("BroadcastService") private broadcastService: BroadcastService,
                 private dialog: MatDialog,
                 private snackBar: MatSnackBar,
                 private _dialogService: TdDialogService,

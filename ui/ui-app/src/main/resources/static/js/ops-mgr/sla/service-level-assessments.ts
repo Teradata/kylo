@@ -8,7 +8,7 @@ import BroadcastService from "../../services/broadcast-service";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import StateService from "../../services/StateService";
-import { Component, Input } from "@angular/core";
+import { Component, Input, Inject } from "@angular/core";
 import { ObjectUtils } from '../../common/utils/object-utils';
 import { Subscription } from 'rxjs/Subscription';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
@@ -77,7 +77,7 @@ export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView 
                 private iconService: IconService,
                 private tabService: TabService,
                 private accessControlService: AccessControlService,
-                private broadcastService: BroadcastService,
+                @Inject("BroadcastService") private broadcastService: BroadcastService,
                 public _dataTableService: TdDataTableService){
                     super(_dataTableService);
     } // end of constructor
