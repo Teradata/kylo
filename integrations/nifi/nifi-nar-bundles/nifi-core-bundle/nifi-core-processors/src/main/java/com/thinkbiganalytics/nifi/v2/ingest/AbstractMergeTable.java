@@ -314,8 +314,11 @@ public abstract class AbstractMergeTable extends AbstractNiFiProcessor {
             mergeStrategyValue = STRATEGY_DEDUPE_MERGE;
         }
 
-        logger.info(
-            "Merge strategy: " + mergeStrategyValue + " Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
+        logger.info( "Merge strategy: " + mergeStrategyValue
+            + " Using Source: " + sourceTable
+            + " Target: " + targetTable
+            + " feed partition:" + feedPartitionValue
+            + " partSpec: " + partitionSpecString);
 
         final StopWatch stopWatch = new StopWatch(true);
 
@@ -347,10 +350,15 @@ public abstract class AbstractMergeTable extends AbstractNiFiProcessor {
                 throw new UnsupportedOperationException("Failed to resolve the merge strategy");
             }
 
-            stopWatch.stop();
             session.getProvenanceReporter().modifyContent(flowFile, "Execution completed", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
             flowFile = session.putAttribute(flowFile, PROVENANCE_EXECUTION_STATUS_KEY, "Successful");
             release(blockingValue);
+            logger.info( "Execution completed: " + stopWatch.getElapsed(TimeUnit.MILLISECONDS)
+                         + " Merge strategy: " + mergeStrategyValue
+                         + " Using Source: " + sourceTable
+                         + " Target: " + targetTable
+                         + " feed partition:" + feedPartitionValue
+                         + " partSpec: " + partitionSpecString);
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (final Exception e) {
