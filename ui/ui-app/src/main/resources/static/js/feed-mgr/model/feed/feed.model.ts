@@ -730,7 +730,6 @@ export class Feed  implements KyloObject{
 
 
                     feedField.prepareForSave();
-                    feedFields.push(feedField);
                     // structured files must use the original names
                      if (copy.table.structured == true) {
                          feedField.name = columnDef.origName;
