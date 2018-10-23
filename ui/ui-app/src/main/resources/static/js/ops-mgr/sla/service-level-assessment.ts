@@ -93,5 +93,5 @@ export class controller implements ng.IComponentController {
 
 }
 
-angular.module(moduleName).controller("serviceLevelAssessmentController", controller);
-
+const module = angular.module(moduleName).controller("serviceLevelAssessmentController", controller);
+export default module;

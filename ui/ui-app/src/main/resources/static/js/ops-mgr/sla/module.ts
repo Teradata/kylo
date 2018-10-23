@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
-import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
+import lazyLoadUtil, {Lazy} from "../../kylo-utils/LazyLoadUtil";
 import AccessConstants from "../../constants/AccessConstants";
 import "kylo-common";
 import "kylo-services";
@@ -29,7 +29,13 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/sla/ServiceLevelAssessmentsInitController'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    const onModuleLoad = () => {
+                        return import(/* webpackChunkName: "ops-mgr.slas.ServiceLevelAssessmentsInitController" */ "./ServiceLevelAssessmentsInitController")
+                            .then(Lazy.onModuleImport($ocLazyLoad));
+                    };
+                    return import(/* webpackChunkName: "ops-mgr.slas.service-level-assessments" */ "./service-level-assessments").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+                }]
             },
             data:{
                 breadcrumbRoot:false,
@@ -53,7 +59,16 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['ops-mgr/sla/service-level-assessment'])
+                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
+                    return import(/* webpackChunkName: "opsmgr.sla.controller" */ './service-level-assessment')
+                        .then(mod => {
+                            console.log('imported ServiceLevelAssessmentsInitController mod', mod);
+                            return $ocLazyLoad.load(mod.default)
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load ServiceLevelAssessmentsInitController, " + err);
+                        });
+                }]
             },
             data:{
                 breadcrumbRoot:false,
@@ -64,12 +79,12 @@ class ModuleFactory  {
         });
     }  
 
-    lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,["ops-mgr/sla/module-require"]);
-    }    
-    lazyLoad(){
-        return lazyLoadUtil.lazyLoad(['ops-mgr/sla/module-require']);
-    }
+    // lazyLoadController(path:any){
+    //     return lazyLoadUtil.lazyLoadController(path,["ops-mgr/sla/module-require"]);
+    // }
+    // lazyLoad(){
+    //     return lazyLoadUtil.lazyLoad(['ops-mgr/sla/module-require']);
+    // }
 } 
 
 const module = new ModuleFactory();

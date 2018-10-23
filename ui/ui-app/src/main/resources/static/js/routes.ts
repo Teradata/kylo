@@ -458,15 +458,12 @@ class Route {
                 assessmentId: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessment', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-assessment ", err);
-                    return err;
-                });
-
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "ops-mgr.slas.module" */ "./ops-mgr/sla/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-assessment", transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
@@ -477,15 +474,12 @@ class Route {
                 filter: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-assessments', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-assessments ", err);
-                    return err;
-                });
-
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "ops-mgr.slas.module" */ "./ops-mgr/sla/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-assessments", transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 

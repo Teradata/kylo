@@ -269,7 +269,7 @@ constructor(private $scope: angular.IScope,
 
 }
 
-angular.module(moduleName).component("kyloServiceLevelAssessments", {
+const module = angular.module(moduleName).component("kyloServiceLevelAssessments", {
     controller: controller,
     bindings: {
         cardTitle: "@",
@@ -279,3 +279,4 @@ angular.module(moduleName).component("kyloServiceLevelAssessments", {
     controllerAs: "vm",
     templateUrl: "js/ops-mgr/sla/service-level-assessments-template.html"
 });
+export default module;
