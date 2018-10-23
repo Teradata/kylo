@@ -144,11 +144,18 @@ public class DefaultCatalogTableManager implements CatalogTableManager {
     @Override
     public TableSchema describeTable(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException {
         final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);
-        return isolatedFunction(template, schemaName, (connection, schemaParser) -> {
-            final javax.sql.DataSource ds = new SingleConnectionDataSource(connection, true);
-            final DBSchemaParser tableSchemaParser = new DBSchemaParser(ds, new KerberosTicketConfiguration());
-            return tableSchemaParser.describeTable(schemaName, tableName);
-        });
+        if (Objects.equals("hive", template.getFormat())) {
+            return hiveMetastoreService.getTable(schemaName,tableName);
+        } else if (Objects.equals("jdbc", template.getFormat())) {
+
+            return isolatedFunction(template, schemaName, (connection, schemaParser) -> {
+                final javax.sql.DataSource ds = new SingleConnectionDataSource(connection, true);
+                final DBSchemaParser tableSchemaParser = new DBSchemaParser(ds, new KerberosTicketConfiguration());
+                return tableSchemaParser.describeTable(schemaName, tableName);
+            });
+        }else {
+            throw new IllegalArgumentException("Unsupported format: " + template.getFormat());
+        }
     }
 
     @Nonnull

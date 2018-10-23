@@ -533,6 +533,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                     this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
 
                 });
+                this.loadingPage = false;
             })
 
         }
@@ -1078,7 +1079,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             txt = "";
         }
         if(typeof txt == 'string') {
-            if(txt == ""){
+            if(txt == "" || this.model.$selectedDatasourceId == undefined){
                 return  Observable.of([]);
             }
             else {
@@ -1122,6 +1123,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             .afterClosed()
             .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {
                 //add these to the canvas
+            this.loadingPage = true;
             let sparkDataSets =response.previews.map(ds => ds.toSparkDataSet())
             this.addSparkDataSets(sparkDataSets);
             });
