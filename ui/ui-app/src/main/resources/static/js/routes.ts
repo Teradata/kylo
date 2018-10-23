@@ -350,20 +350,11 @@ class Route {
             },
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "ops-mgr.job-details.module" */ './ops-mgr/jobs/details/module')
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('job-details', transition.params())
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading job-details ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./ops-mgr/job/details/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "ops-mgr.job-details.module" */ './ops-mgr/jobs/details/module')
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, 'job-details', transition.params()));
+                };
+                import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
