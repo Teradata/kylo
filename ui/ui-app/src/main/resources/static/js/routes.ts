@@ -225,20 +225,23 @@ class Route {
             url: '/groups',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('groups');
-                            return args;
-                        }, function error(err: any) {
-                            console.log("Error loading groups ", err);
-                            return err;
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./auth/module, " + err);
-                    });
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "groups", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
+        $stateProvider.state({
+            name: 'group-details.**',
+            url: '/group-details/{groupId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "admin.auth.module" */ "./auth/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "group-details", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
