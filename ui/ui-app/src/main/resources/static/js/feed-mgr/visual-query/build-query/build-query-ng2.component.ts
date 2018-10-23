@@ -776,7 +776,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     // Add a new node to the chart.
     //
     onTableClick(table: any) {
-
+        this.loadingPage = true;
         //get attributes for table
         const datasourceId = this.model.$selectedDatasourceId;
 
@@ -793,14 +793,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             let paths = [nodeName];
             let dataSet = new SparkDataSet({id:ds.dataSet.id,dataSource:ds.dataSet.dataSource,title:ds.dataSet.title,format:format,schema:columns,options:{"dbtable":nodeName}, paths:paths});
             this.addDataSetToCanvas(datasourceId, nodeName, ds.tableSchema, dataSet);
+            this.loadingPage = false;
+        }, error1 => {
+            this.loadingPage = false;
         });
 
-
-    /*    this.getTableSchema(table.schema, table.tableName).then((schemaData: TableSchema) => {
-            let nodeName = schemaData.schemaName + "." + schemaData.name;
-            this.addDataSetToCanvas(datasourceId, nodeName, schemaData)
-        });
-        */
 
     };
 
