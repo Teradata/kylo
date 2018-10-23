@@ -13,7 +13,7 @@ import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/take';
 import "rxjs/add/operator/switchMap";
 import 'rxjs/add/operator/toPromise';
-import {map, debounceTime,tap,finalize,switchMap} from 'rxjs/operators';
+import {map, debounceTime, tap, finalize, switchMap, catchError} from 'rxjs/operators';
 import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
@@ -231,6 +231,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     autocompleteLoading:boolean = false;
 
+    autocompleteNoDataFound:boolean = false;
+
     /**
      * Constructs a {@code BuildQueryComponent}.
      *    private hiveService: HiveService, private sideNavService: SideNavService,
@@ -265,16 +267,31 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
             let tableAutocomplete = new FormControl();
             this.form.addControl("tableAutocomplete", tableAutocomplete);
-
+            let searchTerm = "";
             tableAutocomplete.valueChanges
                 .pipe(
                     debounceTime(300),
-                    tap(() => this.autocompleteLoading = true),
-                    switchMap(text => this.onAutocompleteQuerySearch(text)
-                        .pipe(finalize(() => this.autocompleteLoading = false))
+                    tap(() => {
+                        this.databaseConnectionError = false
+                        this.autocompleteLoading = true;
+                        this.autocompleteNoDataFound = false;
+                    }),
+                    switchMap(text => {
+                        searchTerm = text;
+                        return this.onAutocompleteQuerySearch(text)
+                                .pipe(
+                                    catchError( () => this.databaseConnectionError = true),
+                                    finalize(() => this.autocompleteLoading = false))
+                        }
                     )).subscribe(results => {
-                        console.log("results",results)
-                        this.filteredTables = results });
+                        this.filteredTables = results
+                        if(searchTerm && searchTerm != "" && this.filteredTables.length == 0){
+                            this.autocompleteNoDataFound = true;
+                        }
+                        else {
+                            this.autocompleteNoDataFound = false;
+                        }
+                    });
         }
     }
 
