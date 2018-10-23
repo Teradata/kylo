@@ -80,9 +80,9 @@
               <mainClass>${mainClass.name}</mainClass>
             </manifest>
           </archive>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
+          <descriptors>
+            <descriptor>src/main/assembly/descriptor.xml</descriptor>
+          </descriptors>
 	  <tarLongFileMode>posix</tarLongFileMode>
         </configuration>
         <executions>
