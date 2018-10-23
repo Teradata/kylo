@@ -121,19 +121,23 @@ class Route {
             url: '/categories',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
-                    .then(mod => {
-                        console.log('imported ./feed-mgr/categories/module.js', mod);
-                        return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
-                            //upon success go back to the state
-                            $stateProvider.stateService.go('categories')
-                        }, function error(err: any) {
-                            console.log("Error loading categories ", err);
-                        });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load ./feed-mgr/categories/module.js, " + err);
-                    });
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "categories", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+            }
+        });
+        $stateProvider.state({
+            name: 'category-details.**',
+            url: '/category-details/{categoryId}',
+            lazyLoad: (transition: any) => {
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    import(/* webpackChunkName: "feedmgr.categories.module" */ "./feed-mgr/categories/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "category-details", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
