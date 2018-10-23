@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.upgrade.v091;
+package com.thinkbiganalytics.metadata.upgrade.v0914;
 
 /*-
  * #%L
@@ -25,11 +25,12 @@ import javax.inject.Inject;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
@@ -47,13 +48,15 @@ import java.util.Optional;
 
 /**
  * Adds the start permission to the feed editor and admin roles.
+ * <p>
+ * Corrects upgrade bug for 0.9.1 where the permission was not actually being addded to the feed.
  */
-@Component("startFeedPermUpgradeAction091")
+@Component("startFeedPermUpgradeAction0914")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class StartFeedPermUpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(StartFeedPermUpgradeAction.class);
-
+    
     @Inject
     private AccessController accessController;
     
@@ -64,14 +67,14 @@ public class StartFeedPermUpgradeAction implements UpgradeState {
     private SecurityRoleProvider roleProvider;
 
     @Inject
-    private AllowedEntityActionsProvider actionsProvider;
+    private JcrAllowedEntityActionsProvider actionsProvider;
 
     @Inject
     private FeedProvider feedProvider;
     
     @Override
     public boolean isTargetVersion(KyloVersion version) {
-        return version.matches("0.9", "1", "");
+        return version.matches("0.9", "1", "4");
     }
 
     @Override
@@ -79,23 +82,27 @@ public class StartFeedPermUpgradeAction implements UpgradeState {
         log.info("Add start feed permission to roles: {}", targetVersion);
 
         if (this.accessController.isEntityAccessControlled()) {
-            // Define the new "start" action for feeds.
+            // Add the new "start" action to the set of feed actions.
             actionsBuilder
                 .module(AllowedActions.FEED)
                     .action(FeedAccessControl.START)
-                    .add();
+                    .add()
+                .build();
             
             // Grant the start action permission to the editor and admin roles
             this.roleProvider.getRole(SecurityRole.FEED, "editor").ifPresent(role -> role.setPermissions(FeedAccessControl.START));
             this.roleProvider.getRole(SecurityRole.FEED, "admin").ifPresent(role -> role.setPermissions(FeedAccessControl.START));
             
-            // Re-apply entity access to all existing feeds to permit the start action to users/groups in the editor and admin roles.
-            List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.FEED);
-            Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
-            
+            // Ensure the new action is integrated into the all of the existing feed instances.
             this.feedProvider.getFeeds().forEach(feed -> {
+                JcrFeed jcrFeed = (JcrFeed) feed;
                 Principal owner = feed.getOwner();
-                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, owner, roles));
+                JcrAllowedActions feedAllowed = actionsProvider.updateEntityAllowedActions(AllowedActions.FEED, jcrFeed);
+                
+                // Enable the permission to the owner, admin, and any principals in the editor and admin roles.
+                jcrFeed.updateRolePermissions();
+                feedAllowed.enable(owner, FeedAccessControl.START);
+                feedAllowed.enable(JcrMetadataAccess.ADMIN, FeedAccessControl.START);
             });
         }
     }

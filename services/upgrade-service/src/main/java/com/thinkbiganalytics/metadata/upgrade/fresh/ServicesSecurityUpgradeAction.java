@@ -65,6 +65,6 @@ public class ServicesSecurityUpgradeAction implements UpgradeState {
         Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
         Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
 
-        actionsProvider.createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
+        actionsProvider.updateEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
     }
 }
