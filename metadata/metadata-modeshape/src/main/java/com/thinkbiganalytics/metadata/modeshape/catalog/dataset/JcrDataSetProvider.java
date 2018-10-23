@@ -242,7 +242,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         @Override
         public DataSet build() {
             long hash = generateDataSetHash();
-            return findByParamsHash(hash).orElseGet(() -> create(hash));
+            return findByParamsHash(hash).orElseGet(() -> create(hash, false));
         }
 
         @Override
@@ -267,28 +267,34 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             return generateHashCode(effectiveFormat, paths, totalOptions);
         }
 
-        private DataSet create(long hash) {
+        private DataSet create(long hash, boolean errorIfExisting) {
             String ensuredTitle = generateTitle(this.dataSource, this.title);
             String dsSystemName = generateSystemName(ensuredTitle);
             Path dataSetPath = MetadataPaths.dataSetPath(this.dataSource.getConnector().getSystemName(), this.dataSource.getSystemName(), dsSystemName);
 
+            Node dataSetNode = null;
             if (JcrUtil.hasNode(getSession(), dataSetPath)) {
-                throw DataSetAlreadyExistsException.fromSystemName(ensuredTitle);
+                if (!errorIfExisting) {
+                    dataSetNode = JcrUtil.getNode(getSession(), dataSetPath);
+                } else {
+                    throw DataSetAlreadyExistsException.fromSystemName(ensuredTitle);
+                }
             } else {
-                Node dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
-                JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
-                DataSetSparkParameters params = ds.getSparkParameters();
-
-                ds.setTitle(ensuredTitle);
-                ds.setDescription(this.description);
-                ds.setParamsHash(hash);
-                params.setFormat(this.format);
-                params.getOptions().putAll(this.options);
-                params.getPaths().addAll(this.paths);
-                params.getFiles().addAll(this.files);
-                params.getJars().addAll(this.jars);
-                return ds;
+                dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
             }
+
+            JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
+            DataSetSparkParameters params = ds.getSparkParameters();
+
+            ds.setTitle(ensuredTitle);
+            ds.setDescription(this.description);
+            ds.setParamsHash(hash);
+            params.setFormat(this.format);
+            params.getOptions().putAll(this.options);
+            params.getPaths().addAll(this.paths);
+            params.getFiles().addAll(this.files);
+            params.getJars().addAll(this.jars);
+            return ds;
         }
 
     }
