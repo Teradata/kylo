@@ -107,6 +107,9 @@ export class CategoriesComponent{
     }
 
     filter() {
+        if (!this.categories)
+            return;
+            
         let filteredCategoryTypes = this.dataTable.filterData(this.categories, this.searchQuery, true);
         filteredCategoryTypes = this.dataTable.sortData(filteredCategoryTypes, "name");
         this.filteredCategories = filteredCategoryTypes;

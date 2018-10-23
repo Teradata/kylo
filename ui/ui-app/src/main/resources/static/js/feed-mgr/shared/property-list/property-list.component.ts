@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import {UserProperty} from "../../model/user-property.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
-import {Component, EventEmitter, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {FormControlValidation} from "../../../common/utils/form-control-validation";
 import {FieldPolicyProperty} from "../../model/field-policy";
@@ -27,7 +27,7 @@ import {FieldPolicyProperty} from "../../model/field-policy";
 
  */
 @Component({
-    selector: "property-list",
+    selector: "thinkbig-property-list",
     styleUrls: ["js/feed-mgr/shared/property-list/property-list.component.css"],
     templateUrl: "js/feed-mgr/shared/property-list/property-list.component.html"
 })
@@ -50,8 +50,6 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
     parentFormGroup:FormGroup;
 
     userPropertyForm: FormGroup;
-
-
 
     constructor() {
          this.userPropertyForm = new FormGroup({});
@@ -112,9 +110,6 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         return FormControlValidation.getErrorMessage(this.userPropertyForm,controlKey);
     }
 
-
-
-
     /**
      * Adds a new user-defined property.
      */
@@ -122,7 +117,6 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         let property = new UserProperty({order:this.properties.length});
         this.properties.push(property);
         this.registerFormControls(property);
-
     };
 
     /**

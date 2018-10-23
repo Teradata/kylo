@@ -17,15 +17,15 @@
   limitations under the License.
   #L%
   -->
-<md-list layout-fill class="list-item-table list-condensed">
-    <md-list-item>
+<mat-list layout-fill class="list-item-table list-condensed">
+    <mat-list-item>
         <div layout="row" layout-fill>
             <div flex="50" class="md-list-item-text hint">{{"views.properties-admin.Name" | translate}}</div>
             <div flex="40" class="md-list-item-text hint">{{"views.properties-admin.SN" | translate}}</div>
             <div flex="10" class="md-list-item-text hint">{{"views.properties-admin.Required" | translate}}</div>
         </div>
-    </md-list-item>
-    <md-list-item ng-repeat="field in fieldList">
+    </mat-list-item>
+    <mat-list-item *ngFor="let field of fieldList">
         <div layout="row" layout-fill>
             <div layout="column" flex="50" class="md-list-item-text">
                 <span>{{field.displayName}}</span>
@@ -33,8 +33,8 @@
             </div>
             <div flex="40" class="md-list-item-text ">{{field.systemName}}</div>
             <div flex="10" class="md-list-item-text ">
-                <ng-md-icon ng-if="field.required" icon="check"></ng-md-icon>
+                <ng-md-icon *ngIf="field.required" icon="check"></ng-md-icon>
             </div>
         </div>
-    </md-list-item>
-</md-list>
+    </mat-list-item>
+</mat-list>

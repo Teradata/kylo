@@ -17,43 +17,34 @@
   limitations under the License.
   #L%
   -->
-<div class="feed-user-property" layout="row" ng-repeat="property in vm.propertyList"  style="margin-top:-10px">
+<div class="feed-user-property" layout="row" *ngFor="let property of propertyList" style="margin-top:-10px">
 
-<!--
-    <div ng-if="property.locked" layout="column" flex="50">
-        <span>{{property.displayName}}</span>
-        <span class="hint">{{property.description}}</span>
-    </div>
--->
-  <md-input-container class="md-block" flex-gt-sm ng-if="property.locked">
-    <label>{{property.displayName}}</label>
-    <input ng-model="property.value" ng-required="property.required"/>
-    <div class="hint" ng-if="property.description">{{property.description}}</div>
-    <div ng-messages="property.$error" md-auto-hide="false">
+  <mat-form-field class="md-block" flex-gt-sm *ngIf="property.locked">
+    <input matInput placeholder='{{property.displayName}}' [(ngModel)]="property.value" [required]="property.required"/>
+    <div class="hint" *ngIf="property.description">{{property.description}}</div>
+    <!-- <div ng-messages="property.$error" md-auto-hide="false">
       <div ng-message="missingValue"> {{"views.property-list-editor.AVIR" | translate}} </div>
-    </div>
-  </md-input-container>
+    </div> -->
+  </mat-form-field>
 
-    <md-input-container ng-if="!property.locked" flex="50">
-        <label> {{"views.property-list-editor.Property" | translate}} </label>
-        <input ng-model="property.systemName">
-        <div ng-messages="property.$error" md-auto-hide="false">
+    <mat-form-field *ngIf="!property.locked" flex="50" style="padding: 2px;">
+        <input matInput placeholder='{{"views.property-list-editor.Property" | translate}}' [(ngModel)]="property.systemName" (change)="onFieldUpdate(property)">
+        <!-- <div ng-messages="property.$error" md-auto-hide="false">
             <div ng-message="duplicate"> {{"views.property-list-editor.PMBU" | translate}} </div>
             <div ng-message="missingName"> {{"views.property-list-editor.ANIR" | translate}} </div>
-        </div>
-    </md-input-container>
+        </div> -->
+    </mat-form-field>
 
-    <md-input-container flex="45" ng-if="!property.locked">
-        <label> {{"views.property-list-editor.Value" | translate}} </label>
-        <input ng-model="property.value">
-        <div ng-messages="property.$error" md-auto-hide="false">
+    <mat-form-field flex="45" *ngIf="!property.locked" style="padding: 2px;">
+        <input matInput placeholder='{{"views.property-list-editor.Value" | translate}}' [(ngModel)]="property.value" (change)="onFieldUpdate(property)">
+        <!-- <div ng-messages="property.$error" md-auto-hide="false">
             <div ng-message="missingValue"> {{"views.property-list-editor.AVIR" | translate}} </div>
-        </div>
-    </md-input-container>
+        </div> -->
+    </mat-form-field>
 
-    <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.removeProperty($index)" ng-hide="property.locked">
-        <md-icon>delete</md-icon>
-    </md-button>
+    <button class="md-icon-button md-button md-kylo-theme md-ink-ripple" aria-label="Delete" (click)="removeProperty($index)" [hidden]="property.locked">
+        <mat-icon>delete</mat-icon>
+    </button>
 </div>
 
-<md-button class="md-raised" ng-click="vm.addProperty()"> {{"views.property-list-editor.AP" | translate}} </md-button>
+<button class="md-raised md-button md-kylo-theme md-ink-ripple" (click)="addProperty()"> {{"views.property-list-editor.AP" | translate}} </button>

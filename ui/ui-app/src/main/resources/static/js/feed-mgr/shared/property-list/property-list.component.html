@@ -17,12 +17,12 @@
   limitations under the License.
   #L%
   -->
-<section class="mat-typography">
+<!-- <section class="mat-typography">
   <h1>{{title}}</h1>
-</section>
+</section> -->
 <div *ngIf="editable" fxLayout="column" fxFlex>
 <ng-template ngFor let-property let-$index="index" [ngForOf]="properties" class="feed-user-property" >
-<div fxLayout="row" [formGroup]="userPropertyForm">
+<ng-container fxLayout="row" [formGroup]="userPropertyForm">
 
   <mat-form-field fxFlex *ngIf="property.locked">
     <input matInput [formControlName]="property.id+'_value'"  [placeholder]="property.displayName">
@@ -45,7 +45,7 @@
   </mat-form-field>
 
   <button mat-button class="primary" (click)="removeProperty($index)"><mat-icon>delete</mat-icon></button>
-</div>
+</ng-container>
 </ng-template>
 
 

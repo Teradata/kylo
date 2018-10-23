@@ -45,7 +45,7 @@ import {DomainTypeConflictDialogComponent} from "./shared/domain-type/domain-typ
 import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
 import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
-import {PropertyListModule} from "./shared/property-list/property-list.module";
+// import {PropertyListModule} from "./shared/property-list/property-list.module";
 
 @NgModule({
     declarations: [
@@ -78,7 +78,7 @@ import {PropertyListModule} from "./shared/property-list/property-list.module";
         MatButtonModule,
         MatSnackBarModule,
         DynamicFormModule,
-        PropertyListModule,
+        // PropertyListModule,
         FlexLayoutModule,
         CovalentDataTableModule
     ],

@@ -19,7 +19,7 @@
           <ng-md-icon icon="search"></ng-md-icon>
           <mat-input-container class="searchBar condensed-no-float md-block global-search" md-no-float 
                                style="text-align: center;" flex>
-            <input matInput #search id="search-input" [(ngModel)]="searchQuery" (keydown)="onSearchKeypress($event)" 
+            <input matInput #search id="search-input" [(ngModel)]="searchQuery" (keydown)="onSearchKeypress($event)" (focus)="focusSearchBar()"
                    class="global-search-input" placeholder='{{"views.main.search-input" | translate}}'
                    style="color:white; font-size: 14px; padding: 0px 0px 5px 2px;">
           </mat-input-container>

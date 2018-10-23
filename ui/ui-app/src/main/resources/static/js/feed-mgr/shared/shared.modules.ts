@@ -29,17 +29,7 @@ import {TranslateModule} from "@ngx-translate/core";
 import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
-import {CategoryDefinition} from "./details/category-definition.component";
-import {CategoryProperties} from "./details/category-properties.component";
-import { CategoryFeedProperties } from "./details/category-feed-properties.component";
-import { CategoryAccessControl } from "./details/category-access-control.component";
-import { CategoryFeeds } from "./details/category-feeds.component";
-
-import {CategoriesComponent} from "./Categories.component";
-import {CategoryDetails} from "./category-details.component";
-
 import { UIRouterModule } from "@uirouter/angular";
-import {categoriesStates} from "./categories.states";
 
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import {CommonModule} from "@angular/common";
@@ -47,26 +37,25 @@ import * as angular from "angular";
 import { CovalentSearchModule } from "@covalent/core/search";
 import {CovalentDataTableModule} from "@covalent/core/data-table";
 import { ReactiveFormsModule } from '@angular/forms';
-import { SharedModule } from "../shared/shared.modules";
+
+import { PropertiesAdminEditorController } from "../shared/properties-admin/properties-admin-editor.component";
+import { PropertiesAdminController } from "../shared/properties-admin/properties-admin.component";
+import { PropertyListComponent } from "../shared/property-list/property-list.component";
+import { PropertyListEditorComponent } from "../shared/property-list/property-list-editor.component";
 
 @NgModule({
     declarations: [
-        CategoriesComponent,
-        CategoryDefinition,
-        CategoryProperties,
-        CategoryFeedProperties,
-        CategoryAccessControl,
-        CategoryFeeds,
-        CategoryDetails
+        PropertiesAdminEditorController,
+        PropertiesAdminController,
+        PropertyListComponent,
+        PropertyListEditorComponent
+
     ],
     entryComponents: [
-        CategoriesComponent,
-        CategoryDefinition,
-        CategoryProperties,
-        CategoryFeedProperties,
-        CategoryAccessControl,
-        CategoryFeeds,
-        CategoryDetails
+        PropertiesAdminEditorController,
+        PropertiesAdminController,
+        PropertyListComponent,
+        PropertyListEditorComponent
     ],
     imports: [
         CovalentCommonModule,
@@ -76,7 +65,6 @@ import { SharedModule } from "../shared/shared.modules";
         KyloServicesModule,
         KyloCommonModule,
         KyloFeedManagerModule,
-        SharedModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,
@@ -94,14 +82,14 @@ import { SharedModule } from "../shared/shared.modules";
         MatFormFieldModule,
         MatCardModule,
         MatCheckboxModule,
-        ReactiveFormsModule,
-        UIRouterModule.forChild({states: categoriesStates})
+        ReactiveFormsModule
     ],
-    exports: [CategoriesComponent],
+    exports: [PropertiesAdminEditorController, PropertiesAdminController, 
+                PropertyListComponent, PropertyListEditorComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]
 })
-export class CategoriesModule {
+export class SharedModule {
 }

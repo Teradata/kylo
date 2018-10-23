@@ -52,7 +52,6 @@ import { SlaEmailTemplates } from "./sla-email-templates/SlaEmailTemplates.compo
 import SlaEmailTemplateService from "./sla-email-templates/SlaEmailTemplateService";
 import { SlaEmailTemplate, testDialogController } from "./sla-email-templates/SlaEmailTemplate.component";
 import { PolicyInputFormController } from "../shared/policy-input-form/policy-input-form.component";
-// import { CronExpressionPreview } from "../shared/cron-expression-preview/cron-expression-preview.component";
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import * as angular from "angular";
@@ -69,7 +68,6 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
         SlaEmailTemplate,
         testDialogController,
         PolicyInputFormController,
-        // CronExpressionPreview
     ],
     entryComponents: [
         ServiceLevelAgreementInit,
@@ -81,7 +79,6 @@ import { MatProgressBarModule } from "@angular/material/progress-bar";
         SlaEmailTemplate,
         testDialogController,
         PolicyInputFormController,
-        // CronExpressionPreview
     ],
     imports: [
         CodemirrorModule,

@@ -90,9 +90,12 @@ export class IndexComponent {
 
     initiateSearch() : void {
         this.searchQuery = '';
+    };
+
+    focusSearchBar() : void {
         if (this.searchElement)
             this.searchElement.nativeElement.focus();
-    };
+    }
 
     showSearchBar() : boolean {
         return this.searchQuery != null;

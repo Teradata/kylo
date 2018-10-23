@@ -66,6 +66,7 @@ export class CategoryFeedProperties {
             this.allowEdit = access;
         });
         
+        this.isNew = !ObjectUtils.isString(this.model.id);
         this.CategoriesService.modelSubject.subscribe((newValue: any) => {
             this.isNew = !ObjectUtils.isString(newValue.id)
         });
