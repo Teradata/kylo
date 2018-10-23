@@ -186,6 +186,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             //set this render flag to false initially
             this.model.renderTemporaryPreStep = false;
 
+            this.model.registeredTemplate = template;
             this.defineFeedService.initializeFeedSteps(this.model);
 
             // Load table option
