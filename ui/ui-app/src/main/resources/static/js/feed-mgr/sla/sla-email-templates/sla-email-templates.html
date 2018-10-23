@@ -41,18 +41,3 @@
       </div>
     </ng-template>
 </filtered-paginated-table-view>
-<mat-card flex style="max-width: 980px; width: 980px;" *ngIf="loading">
-  <mat-card-title class="filter-header" style="font-size:smaller;">
-      <mat-toolbar style="display:flex">
-        <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
-        <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
-        </td-search-box>
-      </mat-toolbar>
-  </mat-card-title>
-  <mat-card-content>
-    <div>
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      <span class="md-body-2 layout-padding-left">Loading templates</span>
-    </div>
-  </mat-card-content>
-</mat-card>

@@ -49,25 +49,25 @@
         (addConditionRuleTypeChange)="onAddConditionRuleTypeChange($event)" (deleteSlaMetric)="onDeleteSlaMetric()"
         (deleteSlaAction)="onDeleteSlaAction()">
       </service-level-agreement-form>
-</mat-card-content>
+    </mat-card-content>
 
-</mat-card>
-<mat-card flex="20" card-toolbar="false" *ngIf="editSla != null  && !loading && !creatingNewSla">
-  <mat-card-title class="sla-details-header card-toolbar2">
-    <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
-    <span flex="5"></span>
+  </mat-card>
+  <mat-card flex="20" card-toolbar="false" *ngIf="editSla != null  && !loading && !creatingNewSla">
+    <mat-card-title class="sla-details-header card-toolbar2">
+      <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
+      <span flex="5"></span>
 
-  </mat-card-title>
-  <mat-card-content flex md-scroll-y class="sla-details-right-body">
-    <mat-list flex layout-fill layout="column" class="list-item-table">
-      <mat-list-item>
-        <div layout="column" class="item-column md-list-item-text ">
-          <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple" (click)="viewSlaAssessments()">SLA
-            Assessments</button>
-        </div>
-      </mat-list-item>
+    </mat-card-title>
+    <mat-card-content flex md-scroll-y class="sla-details-right-body">
+      <mat-list flex layout-fill layout="column" class="list-item-table">
+        <mat-list-item>
+          <div layout="column" class="item-column md-list-item-text ">
+            <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple" (click)="viewSlaAssessments()">SLA
+              Assessments</button>
+          </div>
+        </mat-list-item>
 
-    </mat-list>
-  </mat-card-content>
-</mat-card>
+      </mat-list>
+    </mat-card-content>
+  </mat-card>
 </div>

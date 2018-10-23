@@ -198,19 +198,11 @@ class Route {
             loadChildren: 'search/search.module#SearchModule'
         });
 
+
         $stateProvider.state({
             name: 'business-metadata.**',
             url: '/business-metadata',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/business-metadata/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('business-metadata')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading business-metadata ", err);
-                    return err;
-                });
-            }
+            loadChildren: 'feed-mgr/business-metadata/business-metadata.module#BusinessMetadataModule'
         });
 
         $stateProvider.state({

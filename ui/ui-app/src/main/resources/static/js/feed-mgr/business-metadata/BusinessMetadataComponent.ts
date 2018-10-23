@@ -1,9 +1,15 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
-import { moduleName } from "./module-name";
 import AccessControlService from '../../services/AccessControlService';
-
-export class BusinessMetadataController implements ng.IComponentController {
+import { Component } from '@angular/core';
+import { CloneUtil } from "../../common/utils/clone-util";
+import { ObjectUtils } from "../../common/utils/object-utils";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { RestUrlService } from "../services/RestUrlService";
+@Component({
+    selector : 'business-metadata',
+    templateUrl: 'js/feed-mgr/business-metadata/business-metadata.html',
+})
+export class BusinessMetadataComponent {
     /**
           * Indicates if the category fields may be edited.
           * @type {boolean}
@@ -59,15 +65,13 @@ export class BusinessMetadataController implements ng.IComponentController {
      * @param {AccessControlService} AccessControlService the access control service
      * @param RestUrlService the Rest URL service
      */
-    static readonly $inject = ["$scope", "$http", "AccessControlService", "RestUrlService"];
-    constructor(private $scope: IScope,
-        private $http: angular.IHttpService,
+    constructor(private http: HttpClient,
         private accessControlService: AccessControlService,
-        private RestUrlService: any) {
+        private restUrlService: RestUrlService) {
 
         // Load the field models
-        this.$http.get(RestUrlService.ADMIN_USER_FIELDS).then((response: any) => {
-            this.model = response.data;
+        this.http.get(restUrlService.ADMIN_USER_FIELDS).toPromise().then((response: any) => {
+            this.model = response;
             this.loading = false;
         });
 
@@ -81,54 +85,37 @@ export class BusinessMetadataController implements ng.IComponentController {
     /**
         * Creates a copy of the category model for editing.
         */
-    onCategoryEdit = () => {
-        this.editModel.categoryFields = angular.copy(this.model.categoryFields);
+    onCategoryEdit () {
+        this.editModel.categoryFields = CloneUtil.deepCopy(this.model.categoryFields);
     };
     /**
      * Saves the category model.
      */
-    onCategorySave = () => {
-        var model = angular.copy(this.model);
+    onCategorySave () {
+        var model = CloneUtil.deepCopy(this.model);
         model.categoryFields = this.editModel.categoryFields;
 
-        this.$http({
-            data: angular.toJson(model),
-            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            method: "POST",
-            url: this.RestUrlService.ADMIN_USER_FIELDS
-        }).then(() => {
-            this.model = model;
-        });
+        this.http.post(this.restUrlService.ADMIN_USER_FIELDS,ObjectUtils.toJson(model),
+                    {headers : new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})})
+                    .toPromise().then(() => {this.model = model;});
     };
 
     /**
      * Creates a copy of the feed model for editing.
      */
-    onFeedEdit = () => {
-        this.editModel.feedFields = angular.copy(this.model.feedFields);
+    onFeedEdit () {
+        this.editModel.feedFields = CloneUtil.deepCopy(this.model.feedFields);
     };
 
     /**
      * Saves the feed model.
      */
-    onFeedSave = () => {
-        var model = angular.copy(this.model);
+    onFeedSave () {
+        var model = CloneUtil.deepCopy(this.model);
         model.feedFields = this.editModel.feedFields;
+        this.http.post(this.restUrlService.ADMIN_USER_FIELDS,ObjectUtils.toJson(model),
+                    {headers : new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})})
+                    .toPromise().then(() => {this.model = model;});
 
-        this.$http({
-            data: angular.toJson(model),
-            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            method: "POST",
-            url: this.RestUrlService.ADMIN_USER_FIELDS
-        }).then(() => {
-            this.model = model;
-        });
     };
-
 }
-// Register the controller
-angular.module(moduleName).component('businessMetadataController', {
-    templateUrl: 'js/feed-mgr/business-metadata/business-metadata.html',
-    controller: BusinessMetadataController,
-    controllerAs: 'vm'
-});

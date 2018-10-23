@@ -18,31 +18,31 @@
   #L%
   -->
 <div >
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
-        <header-section>
+    <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
+    <mat-card *ngIf="!loading">
+        <mat-card-title>
             <div class="card-title">Property Definition</div>
             <div class="card-label">Define standard properties available to feeds and categories</div>
-        </header-section>
-        <body-section>
-            <vertical-section-layout section-title="Category Fields" (on-save-edit)="vm.onCategorySave()" (on-edit)="vm.onCategoryEdit()" [editable]="vm.isCategoryEditable" [is-valid]="vm.isCategoryValid"
-                                     [allow-edit]="vm.allowCategoryEdit">
+        </mat-card-title>
+        <mat-card-body>
+            <vertical-section-layout section-title="Category Fields" (on-save-edit)="onCategorySave()" (on-edit)="onCategoryEdit()" [editable]="isCategoryEditable" [is-valid]="isCategoryValid"
+                                     [allow-edit]="allowCategoryEdit">
                 <readonly-section>
-                    <thinkbig-properties-admin fields="vm.model.categoryFields"></thinkbig-properties-admin>
+                    <thinkbig-properties-admin fields="model.categoryFields"></thinkbig-properties-admin>
                 </readonly-section>
                 <editable-section>
-                    <thinkbig-properties-admin-editor fields="vm.editModel.categoryFields" is-valid="vm.isCategoryValid"></thinkbig-properties-admin-editor>
+                    <thinkbig-properties-admin-editor fields="editModel.categoryFields" is-valid="isCategoryValid"></thinkbig-properties-admin-editor>
                 </editable-section>
             </vertical-section-layout>
-            <vertical-section-layout section-title="Feed Fields" (on-save-edit)="vm.onFeedSave" (on-edit)="vm.onFeedEdit" [editable]="vm.isFeedEditable" [is-valid]="vm.isFeedValid"
-                                     [allow-edit]="vm.allowFeedEdit">
+            <vertical-section-layout section-title="Feed Fields" (on-save-edit)="onFeedSave()" (on-edit)="onFeedEdit()" [editable]="isFeedEditable" [is-valid]="isFeedValid"
+                                     [allow-edit]="allowFeedEdit">
                 <readonly-section>
-                    <thinkbig-properties-admin fields="vm.model.feedFields"></thinkbig-properties-admin>
+                    <thinkbig-properties-admin fields="model.feedFields"></thinkbig-properties-admin>
                 </readonly-section>
                 <editable-section>
-                    <thinkbig-properties-admin-editor fields="vm.editModel.feedFields" is-valid="vm.isFeedValid"></thinkbig-properties-admin-editor>
+                    <thinkbig-properties-admin-editor fields="editModel.feedFields" is-valid="isFeedValid"></thinkbig-properties-admin-editor>
                 </editable-section>
             </vertical-section-layout>
-        </body-section>
-    </card-layout>
+        </mat-card-body>
+    </mat-card>
 </div>
