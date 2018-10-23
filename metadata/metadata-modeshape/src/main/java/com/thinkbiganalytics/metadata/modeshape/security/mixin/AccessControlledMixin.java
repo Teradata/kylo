@@ -78,6 +78,14 @@ public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixi
         return Optional.empty();
     }
     
+    /**
+     * Resets permission based on the current role memberships.  Useful when the actions granted
+     * to any of the roles have changed.
+     */
+    default void updateRolePermissions() {
+        JcrAbstractRoleMembership.enableOnlyForAll(getRoleMemberships().stream(), getJcrAllowedActions());
+    }
+
     @Override
     default AllowedActions getAllowedActions() {
         return getJcrAllowedActions();
@@ -111,6 +119,6 @@ public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixi
         
         roles.forEach(role -> JcrAbstractRoleMembership.create(getNode(), ((JcrSecurityRole) role).getNode(), JcrEntityRoleMembership.class, allowed));
     }
-
+    
     Class<? extends JcrAllowedActions> getJcrAllowedActionsType();
 }
