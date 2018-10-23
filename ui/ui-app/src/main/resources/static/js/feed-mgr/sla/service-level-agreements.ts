@@ -10,7 +10,7 @@ import AddButtonService from '../../services/AddButtonService';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 
 
-export default class ServiceLevelAgreements {
+export class ServiceLevelAgreements {
    
     newSla: any;
     slaId: any;
@@ -811,7 +811,7 @@ export default class ServiceLevelAgreements {
     filter = this.paginationDataService.filter(this.pageName);
 }
 
-angular.module(moduleName).component('thinkbigServiceLevelAgreements', {
+const module = angular.module(moduleName).component('thinkbigServiceLevelAgreements', {
     bindings: {
         feed: '=?',
         newSla: '=?',
@@ -821,4 +821,5 @@ angular.module(moduleName).component('thinkbigServiceLevelAgreements', {
     controller : ServiceLevelAgreements,
     templateUrl : 'js/feed-mgr/sla/service-level-agreements.html',
     controllerAs : 'vm'
-})
+});
+export default module;

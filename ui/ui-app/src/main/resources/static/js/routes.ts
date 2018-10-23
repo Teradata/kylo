@@ -184,14 +184,12 @@ class Route {
                 slaId: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('service-level-agreements', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading service-level-agreements ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "feed-mgr.sla.module" */ "./feed-mgr/sla/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-agreements", transition.params()));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 
