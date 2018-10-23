@@ -28,7 +28,7 @@
 
             <!-- datasource autocomplete -->
             <div style="font-size:14px;padding-top:16px" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="100">
-              <mat-form-field >
+              <mat-form-field  style="min-width:320px">
                 <input #datasourceInput matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" >
                 <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
                   <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="50"></mat-spinner></mat-option>
