@@ -78,4 +78,8 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
             return true;
         }
     }
+
+    isFeedSaveInProgress(): boolean {
+        return this.feedLoadingService.loadingFeed;
+    }
 }

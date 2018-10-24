@@ -7,7 +7,6 @@ import {QueryEngine} from "./wrangler/query-engine";
 import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
 import {MatIconRegistry} from "@angular/material/icon";
-import {FeedLoadingService} from "../feeds/define-feed-ng2/services/feed-loading-service";
 
 @Component({
     selector: 'visual-query-stepper',
@@ -43,6 +42,13 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     toggleSideNavOnDestroy: boolean = true;
 
     /**
+     * Is feed save in progress
+     * @type {boolean}
+     */
+    @Input()
+    isFeedSaving: boolean = false;
+
+    /**
      * Event emitted to cancel the model changes
      */
     @Output()
@@ -74,17 +80,14 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     visitedTransform = false;
 
-    feedLoadingService: FeedLoadingService;
 
     /**
      * Constructs a {@code VisualQueryComponent}.
      */
     constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
                 @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
-                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory,private matIconRegistry: MatIconRegistry,
-                feedLoadingService: FeedLoadingService) {
+                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory,private matIconRegistry: MatIconRegistry) {
         console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
-        this.feedLoadingService = feedLoadingService;
 
         matIconRegistry.registerFontClassAlias ('fa');
 
@@ -158,13 +161,5 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     doSave() {
         this.save.emit();
-    }
-
-    /**
-     * Is the feed being saved?
-     * @returns {boolean}
-     */
-    isFeedSaving(): boolean {
-        return this.feedLoadingService.loadingFeed;
     }
 }
