@@ -36,7 +36,7 @@ export class SystemFeedNameComponent implements OnInit {
 
         let feedNameCtrl = new FormControl(feedName, [Validators.required]);
         feedNameCtrl.valueChanges.debounceTime(200).subscribe(value => {
-            if (this.formGroup.get("systemFeedName").untouched) {
+            if (this.formGroup.get("systemFeedName").pristine) {
                 this.generateSystemName(value);
             }
             else {
