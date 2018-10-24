@@ -1,5 +1,8 @@
+import {HttpClient} from "@angular/common/http";
 import {Component, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
+import {MatDialogConfig} from "@angular/material/dialog";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
@@ -7,18 +10,25 @@ import "rxjs/add/observable/from";
 import 'rxjs/add/observable/fromPromise';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/do';
 import "rxjs/add/operator/filter";
 import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/take';
 import "rxjs/add/operator/switchMap";
+import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/toPromise';
-import {map, debounceTime, tap, finalize, switchMap, catchError} from 'rxjs/operators';
 import {Observable} from "rxjs/Observable";
+import {catchError, debounceTime, finalize, map, switchMap, tap} from 'rxjs/operators';
+import {Subject} from "rxjs/Subject";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
 
 import SideNavService from "../../../services/SideNavService";
+import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
+import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {DatasetTable} from "../../catalog/api/models/dataset-table";
+import {DataSource} from "../../catalog/api/models/datasource";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
+import {TableColumn} from "../../catalog/datasource/preview-schema/model/table-view-model";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {SparkDataSet} from "../../model/spark-data-set.model";
 import {UserDatasource} from "../../model/user-datasource";
@@ -30,17 +40,6 @@ import {QueryEngine} from "../wrangler/query-engine";
 import {ConnectionDialog, ConnectionDialogConfig, ConnectionDialogResponse, ConnectionDialogResponseStatus} from "./connection-dialog/connection-dialog.component";
 import {FlowChartComponent} from "./flow-chart/flow-chart.component";
 import {FlowChart} from "./flow-chart/model/flow-chart.model";
-import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
-import {MatDialogConfig} from "@angular/material/dialog";
-import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
-import {Subject} from "rxjs/Subject";
-import {CatalogService} from "../../catalog/api/services/catalog.service";
-import {DataSource} from "../../catalog/api/models/datasource";
-import {DatasetTable} from "../../catalog/api/models/dataset-table";
-import {TableColumn} from "../../catalog/datasource/preview-schema/model/table-view-model";
-import {Common} from "../../../common/CommonTypes";
-import {SchemaField} from "../../model/schema-field";
-import {HttpClient} from "@angular/common/http";
 
 /**
  * Code for the delete key.
@@ -246,7 +245,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
                 @Inject("DatasourcesService") private datasourcesService: DatasourcesService,
                 private catalogService:CatalogService,
-                private http:HttpClient) {
+                private http:HttpClient,
+                private snackBar: MatSnackBar) {
         // Setup environment
         this.sideNavService.hideSideNav();
     }
@@ -522,28 +522,34 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         if(datasets && datasets.length >0) {
 
             Observable.forkJoin(this.ensureDataSetIds(datasets)).subscribe((dataSets:SparkDataSet[]) => {
+                let error = false;
                 dataSets.forEach((dataset: SparkDataSet) => {
                     let tableSchema: any = {};
 
                     tableSchema.schemaName = dataset.getSchemaName();
                     tableSchema.tableName = dataset.getTableName();
                     tableSchema.name = dataset.getTableName();
-                    tableSchema.fields = dataset.schema.map(tableColumn => {
-                        let field: any = {};
-                        field.name = tableColumn.name;
-                        field.description = null;
-                        field.nativeDataType = tableColumn.dataType;
-                        field.derivedDataType = tableColumn.dataType;
-                        field.dataTypeWithPrecisionAndScale = this.shortenComplex(tableColumn.dataType);
-                        return field;
-                    });
-                    let nodeName = dataset.getDisplayIdentifier()
-                    this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
-
+                    if (dataset.schema) {
+                        tableSchema.fields = dataset.schema.map(tableColumn => {
+                            let field: any = {};
+                            field.name = tableColumn.name;
+                            field.description = null;
+                            field.nativeDataType = tableColumn.dataType;
+                            field.derivedDataType = tableColumn.dataType;
+                            field.dataTypeWithPrecisionAndScale = this.shortenComplex(tableColumn.dataType);
+                            return field;
+                        });
+                        let nodeName = dataset.getDisplayIdentifier();
+                        this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
+                    } else {
+                        error = true;
+                    }
                 });
                 this.loadingPage = false;
-            })
-
+                if (error) {
+                    this.snackBar.open("Failed to load schema. Please try again.", "OK", {duration: 5000});
+                }
+            });
         }
     }
 
