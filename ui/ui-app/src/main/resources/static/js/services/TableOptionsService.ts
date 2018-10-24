@@ -127,7 +127,7 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
             sortColumn = val.substring(1);
         }
         var sortOptions = this.sortOptions[key];
-        _.forEach(sortOptions, function (sortOption, i) {
+        _.forEach(sortOptions, function (sortOption : any, i) {
             if (sortOption.value == sortColumn) {
                 sortOption.direction = dir
                 sortOption.icon = icon;
@@ -146,7 +146,7 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
         var sortOptions = this.sortOptions[key];
         var returnedSortOption = null;
         if (sortOptions) {
-            _.forEach(sortOptions, (sortOption, i) => {
+            _.forEach(sortOptions, (sortOption : any, i) => {
                 if (sortOption.direction && sortOption.direction != '') {
                     returnedSortOption = sortOption;
                     return false;

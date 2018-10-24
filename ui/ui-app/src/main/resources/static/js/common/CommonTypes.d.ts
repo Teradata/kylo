@@ -1,3 +1,4 @@
+import * as angular from "angular";
 declare namespace Common {
 
     interface Collection<T> { }
