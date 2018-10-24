@@ -7,7 +7,7 @@ import {TableColumnDefinition} from "../../../../model/TableColumnDefinition";
 import {TableFieldPartition} from "../../../../model/TableFieldPartition";
 import {TableFieldPolicy} from "../../../../model/TableFieldPolicy";
 import {HttpClient} from "@angular/common/http";
-import {DefineFeedService} from "../../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {TableCreateMethod} from "../../../../model/feed/feed-table";
 import {FeedTableColumnDefinitionValidation} from "../../../../model/feed/feed-table-column-definition-validation";
@@ -292,6 +292,16 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         }
     }
 
+    feedStateChange(event: FeedEditStateChangeEvent) {
+        super.feedStateChange(event);
+        if (this.feed.readonly || this.tablePermissions.tableLocked) {
+            this.targetFormatOptionsForm.get("targetFormat").disable();
+            this.targetFormatOptionsForm.get("compressionFormat").disable();
+        } else {
+            this.targetFormatOptionsForm.get("targetFormat").enable();
+            this.targetFormatOptionsForm.get("compressionFormat").enable();
+        }
+    }
 
     protected feedEdit(feed:Feed){
         this.ensureTableFields();
