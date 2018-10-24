@@ -74,8 +74,8 @@
 
             </div>
 
-            <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
-              <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+            <div *ngIf="feed.table.tableSchema.fields.length == 0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+              <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
               <h2>Target schema incomplete</h2>
             </div>
 
@@ -174,12 +174,13 @@
               </form>
             </div>
 
-            <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
-              <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+            <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+              <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
               <h2>Target schema incomplete</h2>
-              <p  *ngIf="!tablePermissions.tableLocked">Upload a sample add a column to build your schema<br/>
-                <button mat-raised-button (click)="addColumn()">Add Column</button>
-              </p>
+              <ng-container *ngIf="!tablePermissions.tableLocked">
+                <h3>Upload a sample add a column to build your schema</h3>
+                <button mat-raised-button color="accent" (click)="addColumn()">Add Column</button>
+              </ng-container>
             </div>
 
           </ng-container>
@@ -340,8 +341,8 @@
               <span flex="20">{{partition.formula}}</span>
               <span flex="20">{{partition.field}}</span>
             </div>
-            <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
-              <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+            <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+              <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
               <h2>No partitions defined</h2>
             </div>
           </div>
@@ -390,12 +391,10 @@
                   </div>
                 </ng-template>
 
-                <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
-                  <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+                <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+                  <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
                   <h2>No partitions defined</h2>
-                  <p *ngIf="!tablePermissions.tableLocked">
-                    <button mat-raised-button (click)="addPartitionField()" >Add Partition</button>
-                  </p>
+                  <button *ngIf="!tablePermissions.tableLocked" mat-raised-button (click)="addPartitionField()"><span class="tc-primary">Add Partition</span></button>
 
                 </div>
 
