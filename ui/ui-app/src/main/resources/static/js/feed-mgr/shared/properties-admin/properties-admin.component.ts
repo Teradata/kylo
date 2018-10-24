@@ -1,8 +1,5 @@
 import * as _ from 'underscore';
-import { Component, Input, SimpleChanges, OnChanges, Output, EventEmitter, OnInit } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs/Subject';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { Component, Input, SimpleChanges, OnInit } from '@angular/core';
 import { CloneUtil } from '../../../common/utils/clone-util';
 /**
  * A user-defined property field (or business metadata) for categories or feeds.
