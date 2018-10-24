@@ -285,6 +285,39 @@ public class KyloVersionUtil {
             if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
             return getTag().compareTo(o.getTag());
         }
+        
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String)
+         */
+        @Override
+        public boolean isBefore(String major, String minor, String point) {
+            return compareTo(new Version(major, minor, point, null)) < 0;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+         */
+        @Override
+        public boolean isBefore(String major, String minor, String point, String tag) {
+            return compareTo(new Version(major, minor, point, tag)) < 0;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String)
+         */
+        @Override
+        public boolean isAfter(String major, String minor, String point) {
+            return compareTo(new Version(major, minor, point, null)) > 0;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+         */
+        @Override
+        public boolean isAfter(String major, String minor, String point, String tag) {
+            return compareTo(new Version(major, minor, point, tag)) > 0;
+        }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.KyloVersion#matches(java.lang.String, java.lang.String, java.lang.String)

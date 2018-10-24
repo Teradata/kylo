@@ -152,7 +152,7 @@ export class Step {
      * @return {(Step | undefined)[]}
      */
     findDependsUponSteps() {
-       return  this.dependsUponSteps.map(stepName => this.allSteps.find(step => step.systemName == stepName))
+       return this.dependsUponSteps.map(stepName => this.allSteps.find(step => step.systemName == stepName)).filter(step => typeof(step) !== "undefined");
     }
 
     /**

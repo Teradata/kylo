@@ -930,8 +930,8 @@
                  "Versions":{"Name":"Versions"}
         },
         "Actions": {
-            "DeleteFeed": "Delete Feed...",
-            "RemoveDraft": "Remove Draft..."
+            "DeleteFeed": "Delete Feed",
+            "RemoveDraft": "Remove Draft"
         },
         "Dialogs": {
           "RemoveDraft": {

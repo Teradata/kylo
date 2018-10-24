@@ -47,7 +47,7 @@ import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -72,7 +72,7 @@ import javax.jcr.ItemNotFoundException;
  */
 @Component("ensureTemplateFeedRelationshipsUpgradeAction081")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class EnsureTemplateFeedRelationshipsUpgradeAction implements UpgradeState {
+public class EnsureTemplateFeedRelationshipsUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(EnsureTemplateFeedRelationshipsUpgradeAction.class);
 

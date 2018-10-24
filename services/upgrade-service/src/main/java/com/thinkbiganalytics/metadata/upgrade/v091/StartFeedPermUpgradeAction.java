@@ -27,14 +27,14 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +50,10 @@ import java.util.Optional;
  */
 @Component("startFeedPermUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class StartFeedPermUpgradeAction implements UpgradeState {
+public class StartFeedPermUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(StartFeedPermUpgradeAction.class);
-
+    
     @Inject
     private AccessController accessController;
     
@@ -64,7 +64,7 @@ public class StartFeedPermUpgradeAction implements UpgradeState {
     private SecurityRoleProvider roleProvider;
 
     @Inject
-    private AllowedEntityActionsProvider actionsProvider;
+    private JcrAllowedEntityActionsProvider actionsProvider;
 
     @Inject
     private FeedProvider feedProvider;
@@ -83,7 +83,8 @@ public class StartFeedPermUpgradeAction implements UpgradeState {
             actionsBuilder
                 .module(AllowedActions.FEED)
                     .action(FeedAccessControl.START)
-                    .add();
+                    .add()
+                .build();
             
             // Grant the start action permission to the editor and admin roles
             this.roleProvider.getRole(SecurityRole.FEED, "editor").ifPresent(role -> role.setPermissions(FeedAccessControl.START));
@@ -94,8 +95,10 @@ public class StartFeedPermUpgradeAction implements UpgradeState {
             Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.FEED);
             
             this.feedProvider.getFeeds().forEach(feed -> {
+                JcrFeed jcrFeed = (JcrFeed) feed;
                 Principal owner = feed.getOwner();
-                allowedActions.ifPresent(actions -> ((JcrFeed) feed).enableAccessControl((JcrAllowedActions) actions, owner, roles));
+                actionsProvider.updateEntityAllowedActions(AllowedActions.FEED, jcrFeed);
+                allowedActions.ifPresent(actions -> (jcrFeed).enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
         }
     }

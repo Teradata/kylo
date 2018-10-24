@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -43,11 +43,11 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-@Component("upgradeAction080")
+@Component("feedSchemaUpgradeAction080")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class UpgradeAction implements UpgradeState {
+public class FeedSchemaUpgradeAction implements UpgradeAction {
 
-    private static final Logger log = LoggerFactory.getLogger(UpgradeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(FeedSchemaUpgradeAction.class);
 
     private static final String CATEGORY_TYPE = "tba:category";
     private static final String FEED_TYPE = "tba:feed";

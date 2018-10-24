@@ -24,7 +24,7 @@ import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.modeshape.jcr.api.Workspace;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ import javax.jcr.RepositoryException;
 @Component("reindexUpgradeAction084")
 @Order(0)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class ReindexUpgradeAction implements UpgradeState {
+public class ReindexUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(ReindexUpgradeAction.class);
 

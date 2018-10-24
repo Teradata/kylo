@@ -60,10 +60,12 @@ public class KyloUpgradeService {
     @Inject
     private KyloVersionProvider versionProvider;
     @Inject
-    private Optional<List<UpgradeState>> upgradeActions;
+    private Optional<List<UpgradeAction>> upgradeActions;
     
+    private KyloVersion startingVersion;
     private KyloVersion buildVersion;
     private boolean freshInstall = false;
+    private boolean preFreshInsalled = false;
     private List<KyloVersion> upgradeSequence;
     private boolean initialized = false;
     
@@ -136,6 +138,21 @@ public class KyloUpgradeService {
                 return getNextVersion();
             }, MetadataAccess.SERVICE);
             
+            // If this is a fresh install and the pre-fresh install targeted actions haven't been
+            // run yet then run them now.
+            if (this.freshInstall && ! this.preFreshInsalled) {
+                metadataAccess.commit(() -> {
+                    this.upgradeActions.get().stream()
+                        .filter(a -> a.isTargetPreFreshInstall(this.startingVersion))
+                        .forEach(a -> a.upgradeTo(this.startingVersion));
+                    
+                    log.info("=================================");
+                    log.info("Finished pre-fresh install updates");
+                }, MetadataAccess.SERVICE);
+                
+                this.preFreshInsalled = true;
+            }
+
             if (nextVersion != null) {
                 // Invoke any upgrade actions targeted for this next version in its own transaction.
                 this.upgradeActions.get().stream()
@@ -161,7 +178,7 @@ public class KyloUpgradeService {
                 if (isComplete && this.freshInstall) {
                     metadataAccess.commit(() -> {
                         this.upgradeActions.get().stream()
-                            .filter(a -> a.isTargetFreshInstall())
+                            .filter(a -> a.isTargetFreshInstall(this.buildVersion))
                             .forEach(a -> a.upgradeTo(this.buildVersion));
                         
                         log.info("=================================");
@@ -190,11 +207,15 @@ public class KyloUpgradeService {
     public void init() {
         if (! this.initialized) {
             ClassPathResource versionsResource = new ClassPathResource(UPGRADE_VERSIONS_FILE, KyloUpgradeService.class.getClassLoader());
-            KyloVersion current = versionProvider.getCurrentVersion();
-            this.freshInstall = current == null;
+            this.startingVersion = versionProvider.getCurrentVersion();
             this.buildVersion = KyloVersionUtil.getBuildVersion();
             this.upgradeSequence = readUpgradeVersions(versionsResource);
             this.initialized = true;
+            
+            if (this.startingVersion == null) {
+                this.startingVersion = this.buildVersion;
+                this.freshInstall = true;
+            }
         }
     }
 

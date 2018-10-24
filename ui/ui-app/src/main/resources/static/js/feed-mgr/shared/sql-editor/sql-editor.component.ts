@@ -1,4 +1,4 @@
-import {Component, Inject, OnDestroy, OnInit, ViewChild, ViewContainerRef, Input} from "@angular/core";
+import {Component, Inject, OnDestroy, OnInit, ViewChild, ViewContainerRef, Input, EventEmitter, OnChanges, SimpleChanges, Output} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {FattableComponent, FattableOptions} from "../fattable/fattable.component";
 import {HiveService} from "../../services/HiveService";
@@ -52,6 +52,9 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
      */
     @Input()
         height:number = 500;
+
+    @Output()
+    sqlChange = new EventEmitter<string>();
 
     /**
      * resolved datasource from the passed in datasourceId if available
@@ -130,6 +133,11 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
 
 
     }
+    onSqlChange(value:any){
+        if(typeof value == "string") {
+            this.sqlChange.emit(value);
+        }
+    }
 
 
     ngOnInit(){
@@ -153,6 +161,7 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
     ngOnDestroy() {
 
     }
+
 
     private codeMirrorLoaded(editor:any){
         //any code mirror init here

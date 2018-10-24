@@ -28,7 +28,7 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ import javax.inject.Inject;
 @Component("hiveColumnsUpgradeAction083")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 @Order(HiveColumnsUpgradeAction.UPGRADE_ORDER) 
-public class HiveColumnsUpgradeAction implements UpgradeState {
+public class HiveColumnsUpgradeAction implements UpgradeAction {
     
     private static final Logger log = LoggerFactory.getLogger(HiveColumnsUpgradeAction.class);
     

@@ -52,14 +52,14 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 /**
  * Adds the services-level permissions for the feed manager.
  */
 @Component("feedVersioningRemovalUpgradeAction050")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class FeedVersioningRemovalUpgradeAction implements UpgradeState {
+public class FeedVersioningRemovalUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(FeedVersioningRemovalUpgradeAction.class);
 

@@ -109,7 +109,7 @@ public class TestSecurityConfig {
             Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
             Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
 
-            allowedEntityActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
+            allowedEntityActionsProvider().updateEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
 
         }, MetadataAccess.SERVICE);
     }

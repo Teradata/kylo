@@ -36,10 +36,12 @@ export class FeedLoadingService {
     }
 
     public registerLoading(): void {
+        this.loadingFeed = true;
         this.loadingService.register('processingFeed');
     }
 
    public  resolveLoading(): void {
+        this.loadingFeed = false;
         this.loadingService.resolve('processingFeed');
     }
 

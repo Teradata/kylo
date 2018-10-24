@@ -28,7 +28,7 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -49,7 +49,7 @@ import javax.jcr.Node;
 @Component("categoryAndFeedReindexUpgradeAction90")
 @Order(Ordered.HIGHEST_PRECEDENCE - 10)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class CategoryAndFeedReindexingUpgradeAction implements UpgradeState {
+public class CategoryAndFeedReindexingUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(CategoryAndFeedReindexingUpgradeAction.class);
 

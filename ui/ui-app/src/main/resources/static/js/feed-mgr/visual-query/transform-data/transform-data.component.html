@@ -67,7 +67,7 @@
         <span fxFlex="1 1 auto"></span>
         <div fxLayout="row">
           <button mat-button (click)="back.emit()" type="button" class="text-upper">Back</button>
-          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid" class="text-upper">{{nextButton}}</button>
+          <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid || isFeedSaving()" class="text-upper">{{nextButton}}</button>
         </div>
       </div>
     </mat-toolbar>

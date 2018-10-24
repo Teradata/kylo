@@ -36,15 +36,15 @@ import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 /**
  * Adds the services-level permissions for the job repository.
  */
 @Component("jobRepositorySecurityUpgradeAction040")
-@Order(400)  // Order only relevant during fresh installs
+@Order(UpgradeAction.DEFAULT_ORDER + 400)  // Order only relevant during fresh installs
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class JobRepositorySecurityUpgradeAction implements UpgradeState {
+public class JobRepositorySecurityUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(JobRepositorySecurityUpgradeAction.class);
 
@@ -58,7 +58,7 @@ public class JobRepositorySecurityUpgradeAction implements UpgradeState {
     }
     
     @Override
-    public boolean isTargetFreshInstall() {
+    public boolean isTargetPreFreshInstall(KyloVersion finalVersion) {
         return true;
     }
 

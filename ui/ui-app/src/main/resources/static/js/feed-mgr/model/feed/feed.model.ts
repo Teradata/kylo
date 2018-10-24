@@ -688,7 +688,7 @@ export class Feed  implements KyloObject{
         copy.originalTableSchema = undefined;
 
         //only do this if the schema could have changed (i.e. never been deployed)
-        if (!copy.hasBeenDeployed() &&  copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
+        if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
             //if the sourceSchema is not defined then set it to match the target
             let addSourceSchemaFields: boolean = copy.table.sourceTableSchema.fields.length == 0;
             let addFeedSchemaFields =  copy.table.feedTableSchema.fields.length == 0;
@@ -730,7 +730,6 @@ export class Feed  implements KyloObject{
 
 
                     feedField.prepareForSave();
-                    feedFields.push(feedField);
                     // structured files must use the original names
                      if (copy.table.structured == true) {
                          feedField.name = columnDef.origName;

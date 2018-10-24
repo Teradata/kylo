@@ -22,7 +22,7 @@
 
   <div id="hqlEditorContainer">
     <span translate>views.hql-editor.EQ</span>
-    <codemirror #codeMirrorView class="sql-editor" [ngModelOptions]="{standalone: true}" [config]="codeMirrorOptions" [(ngModel)]="sql" style="height:{{height}}px"></codemirror>
+    <codemirror #codeMirrorView (change)="onSqlChange($event)" class="sql-editor" [ngModelOptions]="{standalone: true}" [config]="codeMirrorOptions" [(ngModel)]="sql" style="height:{{height}}px"></codemirror>
   </div>
 
   <div fxLayout="row" fxLayoutAlign="space-between center">

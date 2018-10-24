@@ -29,7 +29,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,7 @@ import javax.inject.Inject;
  */
 @Component("defaultDataSourcesUpgradeAction092")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class DefaultDataSourcesUpgradeAction implements UpgradeState {
+public class DefaultDataSourcesUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultDataSourcesUpgradeAction.class);
     

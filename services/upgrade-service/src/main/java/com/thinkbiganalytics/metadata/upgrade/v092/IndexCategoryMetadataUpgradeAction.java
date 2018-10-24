@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.upgrade.v092;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.search.api.Search;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  */
 @Component("indexCategoryMetadataUpgradeAction092")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class IndexCategoryMetadataUpgradeAction implements UpgradeState {
+public class IndexCategoryMetadataUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(IndexCategoryMetadataUpgradeAction.class);
 

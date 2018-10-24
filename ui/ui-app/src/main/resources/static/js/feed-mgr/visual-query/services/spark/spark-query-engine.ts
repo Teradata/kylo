@@ -276,6 +276,11 @@ export class SparkQueryEngine extends QueryEngine<string> {
             request.jdbc = null;
         }
 
+        //add in the datasets
+        if (this.datasets !== null) {
+            body["catalogDatasets"] = this.datasets;
+        }
+
         // Send the request
         let transformId: string;
 

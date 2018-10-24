@@ -36,7 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.upgrade.v083.HiveColumnsUpgradeAction;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,7 @@ import org.springframework.stereotype.Component;
 @Component("UserFieldsUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 @Order(HiveColumnsUpgradeAction.UPGRADE_ORDER - 1) // Run before HiveColumnsUpgradeAction when upgrading to v0.8.3
-public class UserFieldsUpgradeAction implements UpgradeState {
+public class UserFieldsUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(UserFieldsUpgradeAction.class);
     

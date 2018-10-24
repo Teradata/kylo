@@ -29,7 +29,7 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ import javax.inject.Inject;
 
 @Component("feedOpspgradeAction040")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class FeedOpsUpgradeAction implements UpgradeState {
+public class FeedOpsUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(FeedOpsUpgradeAction.class);
 

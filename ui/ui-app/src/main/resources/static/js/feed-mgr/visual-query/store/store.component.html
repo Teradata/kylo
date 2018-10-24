@@ -32,8 +32,8 @@
 
           <div fxLayout="column" style="margin-left:30px">
             <mat-form-field *ngIf="destination == 'TABLE'">
-              <mat-select name="datasource" [(ngModel)]="target.jdbc" placeholder="Data Source" required #datasourceField="ngModel" (change)="tableNameControl.reset('')" required>
-                <mat-option *ngFor="let datasource of kyloDataSources; trackBy: trackDataSource" [value]="datasource">{{datasource.name}}</mat-option>
+              <mat-select name="datasource" [(ngModel)]="target.catalogDatasource" placeholder="Data Source" required #datasourceField="ngModel" (change)="tableNameControl.reset('')" required>
+                <mat-option *ngFor="let datasource of catalogSQLDataSources; trackBy: trackDataSource" [value]="datasource">{{datasource.title}}</mat-option>
               </mat-select>
               <mat-error *ngIf="datasourceField.invalid && datasourceField.errors.required">Required</mat-error>
             </mat-form-field>
@@ -63,7 +63,7 @@
               <mat-error *ngIf="tableNameControl.invalid">Required</mat-error>
             </mat-form-field>
 
-            <mat-form-field *ngIf="destination == 'DOWNLOAD' || (destination == 'TABLE' && target.jdbc['@type'] != 'JdbcDatasource')" required>
+            <mat-form-field *ngIf="destination == 'DOWNLOAD' || (destination == 'TABLE' && ((target.jdbc && target.jdbc['@type'] != 'JdbcDatasource') || (target.catalogDatasource && target.catalogDatasource.template && target.catalogDatasource.template.format == 'hive')))" required>
               <mat-select name="format" [(ngModel)]="target.format" (change)="onFormatChange()" placeholder="File Format" required #formatField="ngModel">
                 <mat-option *ngFor="let format of (destination == 'DOWNLOAD' ? downloadFormats : tableFormats)" [value]="format">{{format}}</mat-option>
               </mat-select>

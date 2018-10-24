@@ -36,15 +36,15 @@ import com.thinkbiganalytics.feedmgr.security.EncryptionAccessControl;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 /**
  * Adds the encryption permission for services.
  */
 @Component("encryptionSecurityUpgradeAction081")
-@Order(810)  // Order only relevant during fresh installs
+@Order(UpgradeAction.DEFAULT_ORDER + 810)  // Order only relevant during fresh installs
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class EncryptionSecurityUpgradeAction implements UpgradeState {
+public class EncryptionSecurityUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(EncryptionSecurityUpgradeAction.class);
 
@@ -58,7 +58,7 @@ public class EncryptionSecurityUpgradeAction implements UpgradeState {
     }
     
     @Override
-    public boolean isTargetFreshInstall() {
+    public boolean isTargetPreFreshInstall(KyloVersion finalVersion) {
         return true;
     }
 

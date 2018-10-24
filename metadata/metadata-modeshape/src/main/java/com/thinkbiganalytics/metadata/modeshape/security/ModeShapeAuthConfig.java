@@ -78,17 +78,16 @@ public class ModeShapeAuthConfig {
     public ActionsModuleBuilder prototypesActionGroupsBuilder() {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
-
+    
     @Bean
-    @Order(PostMetadataConfigAction.EARLY_ORDER)
-    @Profile("!kyloUpgrade")
-    public PostMetadataConfigAction checkEntityAccessControl() {
-        return new CheckEntityAccessControlAction();
+    public AccessControlConfigurator entityAccessControlConfigurator() {
+        return new AccessControlConfigurator();
     }
 
     @Bean
-    @Order(PostMetadataConfigAction.LATE_ORDER)
-    public PostMetadataConfigAction ensureServicesAccessControlAction() {
-        return new EnsureServicesAccessControlAction();
+    @Profile("!kyloUpgrade")
+    @Order(PostMetadataConfigAction.EARLY_ORDER)
+    public PostMetadataConfigAction checkEntityAccessControl() {
+        return new CheckEntityAccessControlAction();
     }
 }

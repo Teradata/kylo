@@ -114,35 +114,51 @@ export class StateService {
 
     FeedStates = () => {
         var data: any = {};
-        data.navigateToFeedDetails = (feedId: any, tabIndex: any) => {
-            if (tabIndex == null || tabIndex == undefined) {
-                tabIndex = 0;
-            }
-            this.$state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
-        }
-
         data.navigateToFeedDefinition = (feedId:string) => {
             this.$state.go(FEED_DEFINITION_SUMMARY_STATE_NAME,{feedId:feedId, refresh:true});
         }
+
+
+        data.navigateToFeedDetails = (feedId: string, tabIndex: any) => {
+            if (tabIndex == null || tabIndex == undefined) {
+                tabIndex = 0;
+            }
+            data.navigateToFeedDefinition(feedId)
+        }
+
+
 
         data.navigateToFeedImport = () => {
             this.$state.go(FEED_DEFINITION_STATE_NAME+".import-feed");
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {
-            this.$state.go('edit-feed', {feedId: feedId});
+            data.navigateToFeedDefinition(feedId)
+          //  this.$state.go('edit-feed', {feedId: feedId});
         }
 
         data.navigateToDefineFeed = (templateId: any) => {
-            this.$state.go('define-feed', {templateId: templateId});
-        }
-
-        data.navigateToNewFeed = (templateId: any) => {
             this.$state.go(FEED_DEFINITION_STATE_NAME, {templateId: templateId});
+           // this.$state.go('define-feed', {templateId: templateId});
         }
 
+        data.navigateToNewFeed = (templateId: string) => {
+            if(templateId == undefined){
+                this.$state.go(FEED_DEFINITION_STATE_NAME+".select-template")
+            }
+            else {
+                this.$state.go(FEED_DEFINITION_STATE_NAME, {templateId: templateId});
+            }
+        }
+
+        /**
+         * Deprecated.. redirecting to new feed screen
+         * @param feedName
+         */
         data.navigateToCloneFeed = (feedName: any) => {
-            this.$state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
+            console.warn("You are using a deprecated state navigation.  'navigateToClonedFeed' is no longer available");
+            data.navigateToNewFeed()
+           // this.$state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
         }
 
         data.navigateToDefineFeedComplete = (feedModel: any, error: any) => {
@@ -154,7 +170,8 @@ export class StateService {
         }
 
         data.navigatetoImportFeed = () => {
-            this.$state.go('import-feed');
+            this.$state.go(FEED_DEFINITION_STATE_NAME+".import-feed");
+           // this.$state.go('import-feed');
         }
         return data;
     }

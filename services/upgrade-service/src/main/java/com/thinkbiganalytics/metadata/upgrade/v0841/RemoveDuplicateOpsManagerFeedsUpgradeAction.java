@@ -28,7 +28,7 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ import javax.inject.Inject;
 @Component("removeDuplicateOpsManagerFeedsUpgradeAction084")
 @Order(1)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class RemoveDuplicateOpsManagerFeedsUpgradeAction implements UpgradeState {
+public class RemoveDuplicateOpsManagerFeedsUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(RemoveDuplicateOpsManagerFeedsUpgradeAction.class);
 

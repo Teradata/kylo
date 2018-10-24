@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ import javax.inject.Inject;
 @Component("initialFeedVersionUpgradeAction084")
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class InitialFeedVersionUpgradeAction implements UpgradeState {
+public class InitialFeedVersionUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(InitialFeedVersionUpgradeAction.class);
 

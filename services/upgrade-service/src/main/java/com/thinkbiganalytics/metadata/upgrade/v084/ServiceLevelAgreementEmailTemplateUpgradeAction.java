@@ -23,21 +23,20 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
 @Component("slaEmailTemplateUpgradeAction084")
-@Order(Ordered.LOWEST_PRECEDENCE)
+@Order(UpgradeAction.DEFAULT_ORDER + 840)  // Order only relevant during fresh installs
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class ServiceLevelAgreementEmailTemplateUpgradeAction implements UpgradeState {
+public class ServiceLevelAgreementEmailTemplateUpgradeAction implements UpgradeAction {
 
     @Inject
     private ActionsModuleBuilder builder;
@@ -50,7 +49,7 @@ public class ServiceLevelAgreementEmailTemplateUpgradeAction implements UpgradeS
     }
 
     @Override
-    public boolean isTargetFreshInstall() {
+    public boolean isTargetPreFreshInstall(KyloVersion finalVersion) {
         return true;
     }
 

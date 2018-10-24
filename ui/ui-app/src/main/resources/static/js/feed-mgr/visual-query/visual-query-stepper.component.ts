@@ -7,6 +7,7 @@ import {QueryEngine} from "./wrangler/query-engine";
 import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
 import {MatIconRegistry} from "@angular/material/icon";
+import {FeedLoadingService} from "../feeds/define-feed-ng2/services/feed-loading-service";
 
 @Component({
     selector: 'visual-query-stepper',
@@ -73,13 +74,17 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     visitedTransform = false;
 
+    feedLoadingService: FeedLoadingService;
+
     /**
      * Constructs a {@code VisualQueryComponent}.
      */
     constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
                 @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
-                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory,private matIconRegistry: MatIconRegistry) {
+                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory,private matIconRegistry: MatIconRegistry,
+                feedLoadingService: FeedLoadingService) {
         console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
+        this.feedLoadingService = feedLoadingService;
 
         matIconRegistry.registerFontClassAlias ('fa');
 
@@ -101,7 +106,7 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
         this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
         let collection = this.previewDataSetCollectionService.getSparkDataSets();
         this.dataModel.model.datasets = collection;
-        console.log('collection', collection)
+        console.log('collection', collection);
     }
 
     getEngine() {
@@ -146,5 +151,20 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
                 this.dataModel.model = feed.dataTransformation;
             }
         }
+    }
+
+    /**
+     * Indicate save feed
+     */
+    doSave() {
+        this.save.emit();
+    }
+
+    /**
+     * Is the feed being saved?
+     * @returns {boolean}
+     */
+    isFeedSaving(): boolean {
+        return this.feedLoadingService.loadingFeed;
     }
 }

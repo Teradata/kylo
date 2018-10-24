@@ -48,10 +48,11 @@
                style="font-weight:bold;font-size:16px;"
                [attr.x]="node.width()/2"
                y="20"
+               text-length="20"
                text-anchor="middle"
                alignment-baseline="middle"
     >
-      {{node.name()}}
+      {{ node.name() }}
     </svg:text>
     <svg fill="#FFFFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" [attr.x]="node.width() - 24" y="0" (click)="chart.deleteSelected()">
       <path d="M0 0h24v24H0z" class="accent-color"/>

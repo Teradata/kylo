@@ -36,15 +36,15 @@ import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 /**
  * Adds the encryption permission for services.
  */
 @Component("metadataSecurityUpgradeAction081")
-@Order(810)  // Order only relevant during fresh installs
+@Order(UpgradeAction.DEFAULT_ORDER + 810)  // Order only relevant during fresh installs
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class MetadataSecurityUpgradeAction implements UpgradeState {
+public class MetadataSecurityUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(MetadataSecurityUpgradeAction.class);
 
@@ -58,7 +58,7 @@ public class MetadataSecurityUpgradeAction implements UpgradeState {
     }
     
     @Override
-    public boolean isTargetFreshInstall() {
+    public boolean isTargetPreFreshInstall(KyloVersion finalVersion) {
         return true;
     }
 

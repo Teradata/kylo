@@ -108,7 +108,16 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
             properties.setProperty("password", request.getJdbc().getPassword());
 
             writer.jdbc(request.getJdbc().getDatabaseConnectionUrl(), request.getTableName(), properties);
-        } else if (request.getTableName() != null) {
+        }
+        else if(request.getCatalogDatasource() != null && !request.getCatalogDatasource().getTemplate().getFormat().equalsIgnoreCase("hive")){
+            final Properties properties = new Properties();
+            properties.setProperty("driver", request.getCatalogDatasource().getTemplate().getOptions().get("driver"));
+            properties.setProperty("user", request.getCatalogDatasource().getTemplate().getOptions().get("user"));
+            properties.setProperty("password", request.getCatalogDatasource().getTemplate().getOptions().get("password"));
+
+            writer.jdbc(request.getCatalogDatasource().getTemplate().getOptions().get("url"), request.getTableName(), properties);
+        }
+        else if (request.getTableName() != null) {
             if( request.getFormat().equalsIgnoreCase("csv")) {
                 log.info("Save Format = CSV");
                 transform.getDataSet().javaRDD().filter(new org.apache.spark.api.java.function.Function<Row, Boolean>() {

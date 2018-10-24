@@ -35,6 +35,8 @@ import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./main-dia
 import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean-dialog";
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
+import {FeedLoadingService} from "../../feeds/define-feed-ng2/services/feed-loading-service";
+
 
 declare const CodeMirror: any;
 
@@ -263,6 +265,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @ViewChild(VisualQueryTable)
     visualQueryTable: VisualQueryTable;
 
+    feedLoadingService: FeedLoadingService;
+
     /**
      * Constructs a {@code TransformDataComponent}.
      */
@@ -270,9 +274,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
                 @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
                 @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
-                private wranglerDataService: WranglerDataService) {
+                private wranglerDataService: WranglerDataService,
+                feedLoadingService: FeedLoadingService) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
+
+        this.feedLoadingService = feedLoadingService;
     }
 
     ngAfterViewInit(): void {
@@ -1264,7 +1271,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         let feedModel = (this.feedModel != null) ? this.feedModel : new Feed();//this.feedService.createFeedModel;
         let newScript = this.engine.getFeedScript();
         if (newScript === feedModel.dataTransformation.dataTransformScript) {
-            return new Promise((resolve, reject) => reject(true));
+            return new Promise((resolve) => {
+                resolve(true);
+            });
         }
 
 
@@ -1374,5 +1383,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
     goForward() {
         this.saveToFeedModel().then(() => this.next.emit());
+    }
+
+    /**
+     * Is the feed being saved?
+     * @returns {boolean}
+     */
+    isFeedSaving(): boolean {
+        return this.feedLoadingService.loadingFeed;
     }
 }

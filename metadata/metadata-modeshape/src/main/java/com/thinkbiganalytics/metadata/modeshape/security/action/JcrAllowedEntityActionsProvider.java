@@ -28,6 +28,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -84,7 +85,26 @@ public class JcrAllowedEntityActionsProvider implements AllowedEntityActionsProv
             .orElseThrow(() -> new AccessControlException("No actions are defined for a madule named: " + moduleName));
     }
     
-    public JcrAllowedActions createEntityAllowedActions(String entityName, Node destActionsNode) {
+    /**
+     * Updates an entity's allowed actions with the current state of the actions prototype
+     * tree identified by the provided entity name.
+     * @param entityName the name of the entity
+     * @param accessControlled an JCR access controlled entity (mixin implementer)
+     * @return the updated allowed actions of the entity
+     */
+    public JcrAllowedActions updateEntityAllowedActions(String entityName, AccessControlledMixin accessControlled) {
+        Node destActionsNode = accessControlled.getJcrAllowedActions().getNode();
+        return updateEntityAllowedActions(entityName, destActionsNode);
+    }
+    
+    /**
+     * Updates an entity's allowed actions node with the current state of the actions prototype
+     * tree identified by the provided entity name.
+     * @param entityName the name of the entity
+     * @param destActionsNode the allowed actions node of the entity to updte
+     * @return the updated allowed actions of the entity
+     */
+    public JcrAllowedActions updateEntityAllowedActions(String entityName, Node destActionsNode) {
          return getAvailableActions(entityName)
              .map(protoAllowed -> { 
                      Principal mgmtPrincipal = new ModeShapeAdminPrincipal();

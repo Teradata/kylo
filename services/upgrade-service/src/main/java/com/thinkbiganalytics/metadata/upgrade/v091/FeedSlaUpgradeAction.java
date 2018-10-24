@@ -35,7 +35,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ import java.util.stream.Collectors;
 @Component("FeedSlaUpgradeAction091")
 @Order(998)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class FeedSlaUpgradeAction implements UpgradeState {
+public class FeedSlaUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(FeedSlaUpgradeAction.class);
     
