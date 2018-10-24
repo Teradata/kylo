@@ -107,8 +107,8 @@
         </div>
 
         <!-- SQL Editor -->
-        <sql-editor [(sql)]="this.model.sql" [datasourceId]="model.$selectedDatasourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
-                    [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true"></sql-editor>
+        <sql-editor [sql]="this.model.sql" [datasourceId]="model.$selectedDatasourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
+                    [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true" (sqlChange)="advancedModeSql($event)"></sql-editor>
 
         <!-- nothing set and user cant change datasources mesage-->
         <ng-template *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && !showDatasources">
