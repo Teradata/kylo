@@ -97,7 +97,11 @@ export class BusinessMetadataComponent {
 
         this.http.post(this.restUrlService.ADMIN_USER_FIELDS,ObjectUtils.toJson(model),
                     {headers : new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})})
-                    .toPromise().then(() => {this.model = model;});
+                    .toPromise().then((response : any) => {
+                                                            this.model = model;
+                                                          }).catch((error : any) =>{
+                                                                console.log(error);
+                                                            });
     };
 
     /**
@@ -115,7 +119,11 @@ export class BusinessMetadataComponent {
         model.feedFields = this.editModel.feedFields;
         this.http.post(this.restUrlService.ADMIN_USER_FIELDS,ObjectUtils.toJson(model),
                     {headers : new HttpHeaders({'Content-Type':'application/json; charset=utf-8'})})
-                    .toPromise().then(() => {this.model = model;});
+                    .toPromise().then((response : any) => {
+                                                            this.model = model;
+                                                          }).catch((error : any) =>{
+                                                                console.log(error);
+                                                             });
 
     };
 }
