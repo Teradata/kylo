@@ -449,7 +449,7 @@ public class SparkShellProxyController {
     public Response saveQuery(@Nonnull @PathParam("query") final String queryId,
                               @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
         // Validate request
-        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
+        if (request == null || (request.getJdbc() == null && request.getCatalogDatasource() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
         }
 
@@ -457,7 +457,7 @@ public class SparkShellProxyController {
         addDatasourceDetails(request);
 
         //Add Catalog details
-      //  addCatalogDataSets(request);
+        addCatalogDataSource(request);
 
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
@@ -481,12 +481,14 @@ public class SparkShellProxyController {
                                   @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable
                                   final SaveRequest request) {
         // Validate request
-        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
+        if (request == null || (request.getJdbc() == null && request.getCatalogDatasource() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
         }
 
         // Add data source details
         addDatasourceDetails(request);
+
+        addCatalogDataSource(request);
 
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
@@ -779,6 +781,30 @@ public class SparkShellProxyController {
         final List<Datasource> datasources = resolveDatasources(request.getDatasources());
         request.setDatasources(datasources);
     }
+
+    private void addCatalogDataSource(@Nonnull final SaveRequest request) {
+        // Skip empty data source
+        if (request.getCatalogDatasource() == null) {
+            return;
+        }
+
+       DataSource catalogDataSource = metadata.read(() -> {
+                         DataSource ds = kyloCatalogDataSourceProvider.find(kyloCatalogDataSourceProvider.resolveId(request.getCatalogDatasource().getId())).map(dataSource -> {
+                             //merge in connection info??
+                             return catalogModelTransform.dataSourceToRestModel().apply(dataSource);
+                         }).orElse(null);
+                         return ds;
+                      });
+        if(catalogDataSource != null){
+            request.setCatalogDatasource(catalogDataSource);
+        }
+        else {
+            throw new BadRequestException("Unable to find catalog datasource for "+request.getCatalogDatasource().getTitle());
+        }
+    }
+
+
+
 
     private void addCatalogDataSets(@Nonnull final TransformRequest request) {
         if (request.getCatalogDatasets() == null || request.getCatalogDatasets().isEmpty()) {

@@ -15,6 +15,9 @@ import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
 import {SaveOptionsComponent} from "./save-options.component";
 import {DatasourcesService, JdbcDatasource, TableReference} from '../../services/DatasourcesServiceIntrefaces';
+import {DataSource} from "../../catalog/api/models/datasource";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
+import * as _ from "underscore";
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
@@ -116,13 +119,16 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 
     tableNameList: Observable<TableReference[]>;
 
+    catalogSQLDataSources: DataSource[] = [];
+
     /**
      * Output configuration
      */
     target: SaveRequest = {};
 
     constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService, @Inject("RestUrlService") private RestUrlService: any,
-                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, @Inject("StateService") private stateService: StateService) {
+                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, @Inject("StateService") private stateService: StateService,
+                private catalogService:CatalogService) {
         // Listen for notification removals
         this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {
             if (event.id === this.downloadId) {
@@ -156,13 +162,35 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     ngOnInit(): void {
         // Get list of Kylo data sources
+        this.target.jdbc;
+        this.target.catalogDatasource = {};
         const kyloSourcesPromise = Promise.all([this.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
             .then(resultList => {
                 this.kyloDataSources = resultList[0].concat(resultList[1]);
                 if (this.model.$selectedDatasourceId) {
-                    this.target.jdbc = this.kyloDataSources.find(datasource => datasource.id === this.model.$selectedDatasourceId) as JdbcDatasource;
+                   let jdbcSource = this.kyloDataSources.find(datasource => datasource.id === this.model.$selectedDatasourceId)
+                    if(jdbcSource != undefined) {
+                        this.target.jdbc = (jdbcSource as JdbcDatasource);
+                    }
                 }
             });
+
+
+       const catalogDataSourceObservable = this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"]);
+       const catalogDataSourcePromise = catalogDataSourceObservable.toPromise();
+        catalogDataSourceObservable.subscribe(datasources => {
+            if(datasources && datasources.length >0){
+                this.catalogSQLDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
+                    return ds.title;
+                }).sortBy((ds:DataSource) =>{
+                    return ds.connector.pluginId;
+                }).value()
+            }
+            else {
+                this.catalogSQLDataSources = [];
+            }
+        });
+
 
         // Get list of Spark data sources
         const sparkSourcesPromise = this.$http.get<string[]>(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources").toPromise()
@@ -172,7 +200,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
             });
 
         // Wait for completion
-        Promise.all([kyloSourcesPromise, sparkSourcesPromise])
+        Promise.all([kyloSourcesPromise, sparkSourcesPromise,catalogDataSourcePromise])
             .then(() => this.loading = false, () => this.error = "Invalid response from server.");
 
         this.destination = "DOWNLOAD";
@@ -209,6 +237,14 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                 this.connectionError = false;
                 return Observable.of(tables);
             }
+        }
+        else if(this.target.catalogDatasource){
+
+         return   this.catalogService.listTables(this.target.catalogDatasource.id,name)
+
+        }
+        else {
+            return Observable.of([])
         }
     }
 
@@ -356,8 +392,14 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Gets the target output options by parsing the properties object.
      */
     private getOptions(): { [k: string]: string } {
-        let options = CloneUtil.deepCopy(this.target.options);
-        this.properties.forEach(property => options[property.systemName] = property.value);
-        return options;
+        if(this.target.options) {
+            let options = CloneUtil.deepCopy(this.target.options);
+            this.properties.forEach(property => options[property.systemName] = property.value);
+            return options;
+        }
+        else {
+            return {};
+        }
+
     }
 }

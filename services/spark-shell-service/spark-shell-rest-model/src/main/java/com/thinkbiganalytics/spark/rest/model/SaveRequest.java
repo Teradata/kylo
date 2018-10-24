@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
 import java.util.Map;
 
@@ -32,6 +33,7 @@ public class SaveRequest {
 
     private String format;
     private JdbcDatasource jdbc;
+    private DataSource catalogDatasource;
     private String mode;
     private Map<String, String> options;
     private String tableName;
@@ -74,5 +76,13 @@ public class SaveRequest {
 
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public DataSource getCatalogDatasource() {
+        return catalogDatasource;
+    }
+
+    public void setCatalogDatasource(DataSource catalogDatasource) {
+        this.catalogDatasource = catalogDatasource;
     }
 }
