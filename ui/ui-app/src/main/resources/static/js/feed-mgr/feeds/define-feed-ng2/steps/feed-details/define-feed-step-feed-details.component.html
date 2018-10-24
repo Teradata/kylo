@@ -7,6 +7,7 @@
     <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
       <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
       <h2>No settings are required</h2>
+      <button mat-raised-button color="accent" uiSref="^.setup-guide" [uiParams]="{feedId: feed.id}">Continue</button>
     </div>
 
   </feed-step-readonly-content>
@@ -17,6 +18,7 @@
     <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
       <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
       <h2>No settings are required</h2>
+      <button mat-raised-button color="accent" uiSref="^.setup-guide" [uiParams]="{feedId: feed.id}">Continue</button>
     </div>
   </feed-step-edit-content>
 </define-feed-step-card>
