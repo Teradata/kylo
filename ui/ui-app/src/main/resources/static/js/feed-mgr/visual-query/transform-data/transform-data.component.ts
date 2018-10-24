@@ -706,7 +706,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.showError(this.cleanError(message));
 
             // Reset state
-            this.onUndo();
+            if (this.engine.canUndo()) {
+                this.onUndo();
+            }
             this.removeExecution(promise);
             deferred.error(message);
         };
