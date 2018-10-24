@@ -11,7 +11,6 @@ import "./services/ServicesStatusService";
 //import "./services/TabService";
 import "./services/OpsManagerDashboardService";
 import {downgradeInjectable} from "@angular/upgrade/static";
-import module from "./module";
 import {OpsManagerChartJobService} from "./services/ops-manager-chart-job.service";
 import {OpsManagerFeedService} from "./services/ops-manager-feed.service";
 import {OpsManagerJobService} from "./services/ops-manager-jobs.service";

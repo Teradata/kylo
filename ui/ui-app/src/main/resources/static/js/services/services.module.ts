@@ -14,7 +14,7 @@ import {
 import {TemplateService} from "../repository/services/template.service";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {DefaultPaginationDataService} from "./PaginationDataService";
-import TabService from "./tab.service";
+import {TabService} from "./tab.service";
 import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
 import {KyloRouterService} from "./kylo-router.service";
 import {FormGroupUtil} from "./form-group-util";

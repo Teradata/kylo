@@ -133,10 +133,10 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
                     .then((type: any) => this.checkNotEmpty(type, module, exportName))
                     .then((type: any) => this._compiler.compileModuleAsync(type));
             }),
-            map(moduleFactory => {
+            map((moduleFactory: any) => {
                 // Find processor control
                 const module = moduleFactory.create(this.injector);
-                const processorControl = module.injector.get<ProcessorControl[]>(ProcessorControl as any).find(control => control.supportsProcessorType(this.processor.type));
+                const processorControl = module.injector.get(ProcessorControl as any).find((control:any) => control.supportsProcessorType(this.processor.type));
                 if (typeof processorControl === "undefined" || processorControl == null) {
                     throw new Error("Missing ProcessorControl provider for processor type: " + this.processor.type);
                 }
@@ -163,76 +163,76 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
             defaultJSExtensions: true,
         });
 
-        SystemJS.registerDynamic('@angular/core', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/core', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/core');
         });
-        SystemJS.registerDynamic('@angular/material/dialog', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/dialog', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/dialog');
         });
-        SystemJS.registerDynamic('@angular/common/http', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/common/http', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/common/http');
         });
-        SystemJS.registerDynamic('@angular/forms', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/forms', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/forms');
         });
-        SystemJS.registerDynamic('@angular/material/autocomplete', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/autocomplete', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/autocomplete');
         });
-        SystemJS.registerDynamic('rxjs/observable/of', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/observable/of', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/observable/of');
         });
-        SystemJS.registerDynamic('rxjs/operators/catchError', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/catchError', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/catchError')
         });
-        SystemJS.registerDynamic('rxjs/operators/debounceTime', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/debounceTime', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/debounceTime')
         });
-        SystemJS.registerDynamic('rxjs/operators/distinctUntilChanged', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/distinctUntilChanged', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/distinctUntilChanged')
         });
-        SystemJS.registerDynamic('rxjs/operators/filter', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/filter', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/filter')
         });
-        SystemJS.registerDynamic('rxjs/operators/map', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/map', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/map')
         });
-        SystemJS.registerDynamic('rxjs/operators/skip', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/skip', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/skip')
         });
-        SystemJS.registerDynamic('rxjs/operators/switchMap', [], true, function (_require, _exports, _module) {
+        SystemJS.registerDynamic('rxjs/operators/switchMap', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/switchMap')
         });
-        SystemJS.registerDynamic('@angular/common', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/common', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/common');
         });
-        SystemJS.registerDynamic('@angular/flex-layout', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/flex-layout', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/flex-layout');
         });
-        SystemJS.registerDynamic('@angular/material/button', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/button', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/button');
         });
-        SystemJS.registerDynamic('@angular/material/icon', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/icon', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/icon');
         });
-        SystemJS.registerDynamic('@angular/material/input', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/input', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/input');
         });
-        SystemJS.registerDynamic('@angular/material/progress-spinner', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/progress-spinner', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/progress-spinner');
         });
-        SystemJS.registerDynamic('@angular/material/radio', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/radio', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/radio');
         });
-        SystemJS.registerDynamic('@angular/material/select', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@angular/material/select', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/select');
         });
-        SystemJS.registerDynamic('@covalent/core/common', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@covalent/core/common', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@covalent/core/common');
         });
-        SystemJS.registerDynamic('@ngx-translate/core', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@ngx-translate/core', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@ngx-translate/core');
         });
-        SystemJS.registerDynamic('@kylo/feed', [], true, function(_require, _exports, _module) {
+        SystemJS.registerDynamic('@kylo/feed', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../lib/feed/index');
         });
     }

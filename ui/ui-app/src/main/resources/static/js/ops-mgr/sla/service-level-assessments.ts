@@ -3,7 +3,7 @@ import {moduleName} from "./module-name";
 import * as _ from 'underscore';
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import IconService from "../services/IconStatusService";
-import TabService from "../../services/tab.service";
+import {TabService} from "../../services/tab.service";
 import AccessControlService from "../../services/AccessControlService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import BroadcastService from "../../services/broadcast-service";

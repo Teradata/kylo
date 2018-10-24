@@ -3,7 +3,7 @@ import {moduleName} from './module-name';
 import {TemplateService} from "../repository/services/template.service";
 import {downgradeInjectable} from "@angular/upgrade/static";
 import {DefaultPaginationDataService} from "./PaginationDataService";
-import TabService from "./tab.service";
+import {TabService} from "./tab.service";
 import {Nvd3ChartService} from "./chart-services/nvd3-chart.service";
 import {KyloRouterService} from "./kylo-router.service";
 

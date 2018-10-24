@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import {setAngularJSGlobal} from '@angular/upgrade/static';
 setAngularJSGlobal(angular);
+import { enableProdMode } from '@angular/core';
 
 import {Injector} from "@angular/core";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
@@ -9,6 +10,7 @@ import {servicesPlugin, UrlService, UIRouter} from "@uirouter/core";
 
 import {KyloModule} from "./app.module";
 
+enableProdMode();
 
 // Fix @uirouter/core unable to load
 servicesPlugin(null);

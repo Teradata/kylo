@@ -1,6 +1,6 @@
 import * as _ from 'underscore';
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
-import TabService from "../../../services/tab.service";
+import {TabService} from "../../../services/tab.service";
 import AccessControlService from "../../../services/AccessControlService";
 import { Component, Output, Input, OnChanges, SimpleChanges, Inject, EventEmitter } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";

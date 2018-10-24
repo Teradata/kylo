@@ -1,5 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {ImportComponentType, ImportComponentOption, ImportService} from "../../../services/ImportComponentOptionTypes";
+import {ImportComponentType, ImportComponentOption, ImportService, ImportProperty} from "../../../services/ImportComponentOptionTypes";
 import FileUpload from "../../../../services/FileUploadService";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {HttpClient} from "@angular/common/http";

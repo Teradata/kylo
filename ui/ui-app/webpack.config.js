@@ -130,7 +130,7 @@ const webpackConfig = (env) => {
         },
         output: {
             filename: '[name].bundle.js',
-            chunkFilename: '[name].chunk.js',
+            chunkFilename: '[id].chunk.js',
             path: outputDir
         },
         module: {
@@ -231,13 +231,13 @@ const webpackConfig = (env) => {
                                 cacheDirectory: path.resolve('target/cache/cache-loader')
                             }
                         },
-                        {
-                            loader: 'thread-loader',
-                            options: {
-                                workers: require('os').cpus().length
-                            }
-                        },
-                        // '@ngtools/webpack',
+                        // {
+                        //     loader: 'thread-loader',
+                        //     options: {
+                        //         workers: require('os').cpus().length
+                        //     }
+                        // },
+                        // "@ngtools/webpack",
                         {
                             loader: 'ts-loader',
                             options: {
@@ -318,9 +318,24 @@ const webpackConfig = (env) => {
             }),
 
             new FriendlyErrorsWebpackPlugin(),
-            new ProgressPlugin(),
+            // new ProgressPlugin(),
 
             // new BundleAnalyzerPlugin(),
+
+            // new AngularCompilerPlugin({
+            //     mainPath: path.join(__dirname, 'src/main/resources/static/js/main.ts'),
+            //     tsConfigPath: tsConfigFile,
+            //     sourceMap: true
+            // }),
+
+            // new AngularCompilerPlugin({
+            //     "mainPath": "main.ts",
+            //     "platform": 0,
+            //     "sourceMap": true,
+            //     "tsConfigPath": tsConfigFile,
+            //     "skipCodeGeneration": true,
+            //     "compilerOptions": {}
+            // })
 
             // new AngularCompilerPlugin({
             //     tsConfigPath: tsConfigFile,
@@ -373,9 +388,6 @@ const webpackConfig = (env) => {
 
     return config;
 };
-
-module.exports = webpackConfig;
-
 
 const wranlgerDependencies = [
     {
@@ -608,3 +620,6 @@ const loginPageDependencies = [
         to: 'assets/login.css'
     }
 ];
+
+
+module.exports = webpackConfig;

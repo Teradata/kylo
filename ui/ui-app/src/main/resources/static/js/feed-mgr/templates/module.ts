@@ -87,7 +87,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/template-stepper/RegisterTemplateController','@uirouter/angularjs'])
+                // loadMyCtrl: this.lazyLoadController(['./template-stepper/RegisterTemplateController','@uirouter/angularjs'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feeds.register-template.controller" */ './template-stepper/RegisterTemplateController')
                         .then(mod => {

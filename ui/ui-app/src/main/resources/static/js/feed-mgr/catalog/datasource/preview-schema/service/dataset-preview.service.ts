@@ -64,8 +64,8 @@ export class PreviewDataSetResultEvent {
         return this.status == PreviewDataSetResultStatus.ERROR;
     }
 
-    public isEmpty() {
-
+    public isEmpty(): boolean {
+        return this.dataSets == undefined || this.dataSets == null || this.dataSets.length == 0;
     }
 }
 

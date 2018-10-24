@@ -12,22 +12,86 @@ import FileUpload from "./FileUploadService";
 import AccessControlService from "./AccessControlService";
 import Utils from "./Utils";
 
-export const addButtonServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AddButtonService);
+export const addButtonServiceProvider: FactoryProvider = {
+    provide: AddButtonService,
+    useFactory: AddButtonServiceFactoryProvider,
+    deps: ["$injector"]
+};
 
-export const broadcastServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(BroadcastService);
+export const broadcastServiceProvider: FactoryProvider = {
+    provide: BroadcastService,
+    useFactory: BroadcastServiceFactoryProvider,
+    deps: ["$injector"]
+};
 
-export const notificationServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(NotificationService);
+export const notificationServiceProvider: FactoryProvider = {
+    provide: NotificationService,
+    useFactory: NotificationServiceFactoryProvider,
+    deps: ["$injector"]
+};
+
+export const templateServiceProvider: FactoryProvider = {
+    provide: TemplateService,
+    useFactory: TemplateServiceFactoryProvider,
+    deps: ["$injector"]
+};
+
+export const stateServiceProvider: FactoryProvider = {
+    provide: StateService,
+    useFactory: StateServiceFactoryProvider,
+    deps: ["$injector"]
+};
+
+export const sideNavServiceProvider: FactoryProvider = {
+    provide: SideNavService,
+    useFactory: SideNavServiceFactoryProvider,
+    deps: ["$injector"]
+};
 
 
-export const templateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(TemplateService);
+export const fileUploadServiceProvider: FactoryProvider = {
+    provide: FileUpload,
+    useFactory: FileUploadFactoryProvider,
+    deps: ["$injector"]
+};
 
-export const stateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(StateService);
+export const accessControlServiceProvider: FactoryProvider = {
+    provide: AccessControlService,
+    useFactory: AccessControlServiceFactoryProvider,
+    deps: ["$injector"]
+};
 
-export const sideNavServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(SideNavService);
+export const utilsProvider: FactoryProvider = {
+    provide: Utils,
+    useFactory: UtilsFactoryProvider,
+    deps: ["$injector"]
+};
 
+export function AddButtonServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('AddButtonService');
+}
+export function BroadcastServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('BroadcastService');
+}
+export function NotificationServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('NotificationService');
+}
+export function TemplateServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('TemplateService');
+}
+export function StateServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('StateService');
+}
+export function SideNavServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('SideNavService');
+}
+export function FileUploadFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('FileUpload');
+}
+export function AccessControlServiceFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('AccessControlService');
+}
+export function UtilsFactoryProvider(i: angular.auto.IInjectorService) {
+    return i.get('Utils');
+}
 
-export const fileUploadServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FileUpload);
-
-export const accessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AccessControlService);
-
-export const utilsProvider: FactoryProvider = AngularServiceUpgrader.upgrade(Utils);

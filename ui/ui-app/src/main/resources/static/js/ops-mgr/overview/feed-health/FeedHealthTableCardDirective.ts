@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import {StateService} from "../../../services/StateService";
-import TabService from "../../../services/tab.service";
+import {TabService} from "../../../services/tab.service";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
 import { DefaultTableOptionsService } from "../../../services/TableOptionsService";
 import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";

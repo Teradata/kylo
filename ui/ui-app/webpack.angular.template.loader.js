@@ -17,6 +17,7 @@ function replaceStringsWithRequires(baseUrl, string) {
             if (relativePath.charAt(0) !== ".") {
                 relativePath = "./" + relativePath;
             }
+            console.log(baseUrl + ": "  + url + " -> " + relativePath);
             return "require('" + relativePath + "')";
         }
     });
@@ -63,7 +64,7 @@ module.exports = function(source, sourcemap) {
         }
 
         let prop = templateProperty + ":" + replaceStringsWithRequires(resourcePathRelativeToBaseUrl, url);
-        // console.log(url + " -> " + prop);
+        // console.log(resourcePathRelativeToBaseUrl + ": "  + url + " -> " + prop);
         return prop;
     })
         .replace(stylesRegex, function (match, urls) {
