@@ -1,4 +1,3 @@
-import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "../services/DomainTypesService";
 import {KyloObject} from "../../common/common.model";

@@ -42,7 +42,6 @@ import { UIRouterModule } from "@uirouter/angular";
 import {categoriesStates} from "./categories.states";
 
 import {KyloFeedManagerModule} from "../feed-mgr.module";
-import {CommonModule} from "@angular/common";
 import * as angular from "angular";
 import { CovalentSearchModule } from "@covalent/core/search";
 import {CovalentDataTableModule} from "@covalent/core/data-table";

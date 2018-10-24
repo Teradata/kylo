@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import { Component } from '@angular/core';
 import { StateService } from '@uirouter/core';
 

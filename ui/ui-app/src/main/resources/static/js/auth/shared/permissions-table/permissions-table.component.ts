@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
 import AccessControlService from "../../../services/AccessControlService";
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';

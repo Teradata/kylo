@@ -1,6 +1,5 @@
 import {Injector} from "@angular/core";
 import {Observable} from "rxjs/Observable";
-import * as angular from "angular";
 import * as _ from "underscore";
 
 import {DIALOG_SERVICE} from "./api/index";
@@ -14,6 +13,8 @@ import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
 import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 import {SparkDataSet} from "../../model/spark-data-set.model";
+import { ObjectUtils } from "../../../common/utils/object-utils";
+import { CloneUtil } from "../../../common/utils/clone-util";
 
 export class PageSpec {
     firstRow : number;
@@ -160,7 +161,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         this.sampleFile = file;
     }
     hasSampleFile(): boolean {
-        return angular.isDefined(this.sampleFile) && this.sampleFile != null;
+        return ObjectUtils.isDefined(this.sampleFile) && this.sampleFile != null;
     }
 
     setDatasets(datasets:SparkDataSet[]){
@@ -353,7 +354,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     getHistory(): any[] {
         return this.states_.slice(1).map(function (state) {
-            let historyItem = angular.copy(state.context);
+            let historyItem = CloneUtil.deepCopy(state.context);
             historyItem.inactive = state.inactive;
             return historyItem;
         });
@@ -506,7 +507,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         state.context = context;
         state.fieldPolicies = this.getState().fieldPolicies;
         state.script = this.parseAcornTree(tree);
-        state.sort = angular.isDefined(context.sort) ? context.sort : this.getState().sort;
+        state.sort = ObjectUtils.isDefined(context.sort) ? context.sort : this.getState().sort;
         this.states_.push(state);
         this.stateChanged = true;
 
@@ -549,7 +550,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     resetHistoryCache(index: number) : void {
         let states = this.states_;
-        angular.copy(states, this.backup_);
+        this.backup_ = CloneUtil.deepCopy(states);
         let len = states.length;
         if (len > index - 1) {
             let state = states[index];

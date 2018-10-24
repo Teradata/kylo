@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
 import {PreviewFileDataSet} from "../model/preview-file-data-set";
 import {FileMetadataTransformResponse} from "../model/file-metadata-transform-response"

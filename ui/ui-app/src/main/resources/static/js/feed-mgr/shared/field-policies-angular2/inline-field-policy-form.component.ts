@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Input, Component, OnInit,OnChanges} from '@angular/core';
 import {FieldPolicyOptionsService} from "./field-policy-options.service";

@@ -1,7 +1,6 @@
 import {Injector, Component, ElementRef, Inject, ViewChild} from "@angular/core";
 import {LoadingMode, LoadingType, TdLoadingService} from "@covalent/core/loading";
 import {RejectType, Transition, TransitionService} from "@uirouter/core";
-import * as angular from 'angular';
 
 import "app";
 import StateService from  "../services/StateService";

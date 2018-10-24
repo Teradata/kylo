@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessConstants from '../../../constants/AccessConstants';
 import AccessControlService from '../../../services/AccessControlService';

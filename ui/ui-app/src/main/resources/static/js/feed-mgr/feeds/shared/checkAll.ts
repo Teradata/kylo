@@ -1,5 +1,5 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
+import { ObjectUtils } from '../../../common/utils/object-utils';
 
 export class CheckAll {
     isIndeterminate: boolean = false;
@@ -32,7 +32,7 @@ export class CheckAll {
     }
 
     markChecked() {
-        if (angular.isDefined(this.model) && this.totalChecked == this.model.fieldPolicies.length) {
+        if (ObjectUtils.isDefined(this.model) && this.totalChecked == this.model.fieldPolicies.length) {
             this.isChecked = true;
             this.isIndeterminate = false;
         }
@@ -48,7 +48,7 @@ export class CheckAll {
 
     toggleAll() {
         var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
-        if(angular.isDefined(this.model) ) {
+        if(ObjectUtils.isDefined(this.model) ) {
             _.each(this.model.fieldPolicies, (field) => {
                 field[this.fieldName] = checked;
             });

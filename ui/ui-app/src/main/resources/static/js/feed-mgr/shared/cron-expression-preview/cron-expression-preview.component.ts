@@ -1,5 +1,4 @@
 
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { RestUrlService } from '../../services/RestUrlService';
 import { Inject, Input, Component, SimpleChanges } from '@angular/core';

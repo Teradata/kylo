@@ -1,7 +1,5 @@
-import * as angular from "angular";
 import { Directive, Input, ElementRef, SimpleChanges, Inject } from '@angular/core';
 import "pascalprecht.translate";
-import { TranslateService } from "@ngx-translate/core";
 import { ObjectUtils } from "../utils/object-utils";
 
 @Directive({

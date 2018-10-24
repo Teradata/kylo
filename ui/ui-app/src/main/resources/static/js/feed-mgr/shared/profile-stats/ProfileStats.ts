@@ -1,8 +1,6 @@
 import * as angular from 'angular';
 const d3 = require('d3');
 import * as _ from "underscore";
-import * as moment from "moment";
-
 
 import {moduleName} from "../../module-name";
 

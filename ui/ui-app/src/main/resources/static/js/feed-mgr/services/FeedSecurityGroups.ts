@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { RestUrlService } from './RestUrlService';
 import { Inject, Injectable } from '@angular/core';
@@ -45,7 +44,7 @@ export class FeedSecurityGroups {
      * Create filter function for a query string
      */
     createFilterFor(query:any) {
-        var lowercaseQuery = angular.lowercase(query);
+        var lowercaseQuery = query.toLowerCase();
         return function filterFn(tag:any) {
             return (tag._lowername.indexOf(lowercaseQuery) === 0);
         };

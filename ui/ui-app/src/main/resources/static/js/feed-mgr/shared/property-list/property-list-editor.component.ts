@@ -1,11 +1,7 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Component, Input, SimpleChanges, Output, EventEmitter } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
-const moduleName = require('feed-mgr/module-name');
-
 /**
  * A user-defined property (or business metadata) on a category or feed.
  *

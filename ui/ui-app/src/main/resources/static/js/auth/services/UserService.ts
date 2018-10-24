@@ -1,5 +1,3 @@
-import * as angular from 'angular';
-/*import 'rxjs/add/operator/toPromise';*/
 import { RequestOptions, Response} from '@angular/http';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';

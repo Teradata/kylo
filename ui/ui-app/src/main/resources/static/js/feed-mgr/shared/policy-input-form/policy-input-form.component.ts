@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { PolicyInputFormService } from '../policy-input-form/PolicyInputFormService';
