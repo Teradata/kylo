@@ -19,7 +19,7 @@
           <div fxFlex *ngIf="advancedMode"></div>
 
           <mat-form-field *ngIf="showDatasources" style="font-size:14px;padding-top:16px">
-            <mat-select formControlName="datasource" placeholder="Table Source">
+            <mat-select formControlName="datasource" placeholder="Select source">
               <mat-option *ngFor="let datasource of catalogSQLDataSources" [value]="datasource.id">{{datasource.title}}</mat-option>
             </mat-select>
           </mat-form-field>
@@ -31,7 +31,7 @@
               <mat-form-field  style="min-width:320px">
                 <input #datasourceInput matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" >
                 <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
-                  <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="50"></mat-spinner></mat-option>
+                  <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="40"></mat-spinner></mat-option>
                   <ng-container *ngIf="!autocompleteLoading">
                     <mat-option *ngFor="let table of filteredTables" [value]="table" class="autocomplete-option" >
                   <span class="title">
@@ -53,15 +53,15 @@
                   </ng-container>
                   <mat-option *ngIf="!autocompleteLoading && model.$selectedDatasourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && !autocompleteNoDataFound" class="autocomplete-option" >
                     <span class="title">
-                       Search for a table to wrangle
+                       Search tables
                      </span><br/>
-                    <span class="sub-title hint">Type the name of the table you want to use</span>
+                    <span class="sub-title hint">Type name of a table</span>
                   </mat-option>
                   <mat-option *ngIf="!autocompleteLoading && model.$selectedDatasourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && autocompleteNoDataFound" class="autocomplete-option" >
                     <span class="title">
                        No tables found for {{datasourceInput.value}}
                      </span><br/>
-                    <span class="sub-title hint">No tables were found.  Try a different search</span>
+                    <span class="sub-title hint">No tables found.  Try a different search.</span>
                   </mat-option>
                   <mat-option *ngIf="model.$selectedDatasourceId == undefined">
                     <span class="title">Select a datasource first</span>
@@ -112,15 +112,15 @@
 
         <!-- nothing set and user cant change datasources mesage-->
         <ng-template *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && !showDatasources">
-          No tables have been selected. Please complete all previous sections before attempting to transform the data.
+          No tables selected.
         </ng-template>
 
 
 
         <div *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && advancedMode == false" fxLayout="column" fxFlex style="min-height:500px;" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad push-left-xxl">
           <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-          <h2>No data selected</h2>
-          <p>Please select a table from above and add it to the canvas
+          <h2>No datasets</h2>
+          <p>Choose one or more datasets from the toolbar
           </p>
         </div>
 
