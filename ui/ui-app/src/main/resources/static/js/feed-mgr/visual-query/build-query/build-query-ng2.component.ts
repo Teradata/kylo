@@ -510,6 +510,14 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     }
 
+    /**
+     * Strip array and struct detail
+     */
+    shortenComplex(dataType:String) {
+        let idx = dataType.indexOf("<");
+        return (idx > -1 ? dataType.substr(0, idx) : dataType);
+    }
+
     addSparkDataSets(datasets:SparkDataSet[]) {
         if(datasets && datasets.length >0) {
 
@@ -526,7 +534,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                         field.description = null;
                         field.nativeDataType = tableColumn.dataType;
                         field.derivedDataType = tableColumn.dataType;
-                        field.dataTypeWithPrecisionAndScale = tableColumn.dataType;
+                        field.dataTypeWithPrecisionAndScale = this.shortenComplex(tableColumn.dataType);
                         return field;
                     });
                     let nodeName = dataset.getDisplayIdentifier()
