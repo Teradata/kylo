@@ -47,9 +47,9 @@
                                 <div layout="row" class="column-title column-title-bottom">
                                   <span>Template Name</span>
                                   <span ng-if="template.updateAvailable" title="Update available from Repository">
-                                      <ng-md-icon icon="update" size="20" style="fill:#F08C38"> </ng-md-icon>Update Available
+                                      <ng-md-icon icon="update" size="20" style="fill:rgb(0,191,165)"> </ng-md-icon>Update Available
                                   </span>
-                                  <span ng-if="template.state == 'DISABLED'">DISABLED</span>
+                                  <span ng-if="template.state == 'DISABLED'" class="push-left-md">DISABLED</span>
                                 </div>
                                 </div>
                               <div flex="25" layout="column" class="item-column md-list-item-text ">
@@ -69,8 +69,8 @@
                                 </div>
                                 <div flex="20" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
                                     <md-button href="{{template.exportUrl}}"  download layout-align="center" ng-disabled="!template.allowExport">
-                                        <ng-md-icon icon="launch" size="20" style="fill:#F08C38"> </ng-md-icon>
-                                        <span style="padding-left:10px;">Export</span>
+                                        <ng-md-icon icon="launch" size="20" style="fill:rgb(0,191,165)"> </ng-md-icon>
+                                        <span class="push-left-sm">Export</span>
                                     </md-button>
                                 </div>
 
@@ -120,8 +120,8 @@
                             <td md-cell ng-click="vm.templateDetails($event,feed)">{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa' }}</td>
                             <td md-cell>
                                 <md-button href="{{template.exportUrl}}"  layout-align="center">
-                                    <ng-md-icon icon="launch" size="20" style="fill:#F08C38"> </ng-md-icon>
-                                    <span style="padding-left:10px;">Export</span>
+                                    <ng-md-icon icon="launch" size="20" style="rgb(0,191,165)"> </ng-md-icon>
+                                    <span class="push-left-sm">Export</span>
                                 </md-button>
                             </td>
                         </tr>
