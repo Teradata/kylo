@@ -82,5 +82,5 @@ angular.module(moduleName)
             model: "<"
         },
         controller: DomainTypeMatchersDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/matchers/matchers.component.html"
+        templateUrl: "./matchers.component.html"
     });

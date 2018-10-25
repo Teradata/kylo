@@ -262,5 +262,5 @@ constructor(private $scope: IScope,
         refreshIntervalTime:"=?"
     },
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html"
+    templateUrl: "./job-status-indicator-template.html"
 });

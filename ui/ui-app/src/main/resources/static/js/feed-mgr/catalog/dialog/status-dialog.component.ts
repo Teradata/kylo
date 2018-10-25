@@ -3,8 +3,8 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 
 @Component({
     selector: 'status-dialog',
-    styleUrls: ['js/feed-mgr/catalog/dialog/status-dialog.component.scss'],
-    templateUrl: 'js/feed-mgr/catalog/dialog/status-dialog.component.html',
+    styleUrls: ['./status-dialog.component.scss'],
+    templateUrl: './status-dialog.component.html',
 })
 export class SatusDialogComponent implements OnInit {
 

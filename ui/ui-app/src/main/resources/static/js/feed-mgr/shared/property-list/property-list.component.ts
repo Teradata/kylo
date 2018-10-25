@@ -28,8 +28,8 @@ import {FieldPolicyProperty} from "../../model/field-policy";
  */
 @Component({
     selector: "property-list",
-    styleUrls: ["js/feed-mgr/shared/property-list/property-list.component.css"],
-    templateUrl: "js/feed-mgr/shared/property-list/property-list.component.html"
+    styleUrls: ["./property-list.component.css"],
+    templateUrl: "./property-list.component.html"
 })
 export class PropertyListComponent  implements OnInit, OnDestroy{
 

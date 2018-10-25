@@ -29,7 +29,7 @@ export interface RuleGroupWithFieldConfig {
 
 @Component({
     selector: "policy-input-form",
-    templateUrl: "js/feed-mgr/shared/field-policies-angular2/policy-input-form.component.html"
+    templateUrl: "./policy-input-form.component.html"
 })
 export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
 

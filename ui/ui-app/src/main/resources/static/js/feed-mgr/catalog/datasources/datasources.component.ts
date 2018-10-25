@@ -26,8 +26,8 @@ export class DataSourceSelectedEvent {
  */
 @Component({
     selector: "catalog-datasources",
-    styleUrls: ["js/feed-mgr/catalog/datasources/datasources.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasources/datasources.component.html"
+    styleUrls: ["./datasources.component.scss"],
+    templateUrl: "./datasources.component.html"
 })
 export class DataSourcesComponent implements OnInit {
 

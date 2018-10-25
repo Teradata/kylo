@@ -11,8 +11,8 @@ export class QuickColumnsDialogData {
 
 
 @Component({
-    templateUrl: 'js/feed-mgr/visual-query/transform-data/main-dialogs/quick-columns-dialog.html',
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/main-dialogs/column-analysis.scss"]
+    templateUrl: './quick-columns-dialog.html',
+    styleUrls: ["./column-analysis.scss"]
 })
 export class QuickColumnsDialog {
 

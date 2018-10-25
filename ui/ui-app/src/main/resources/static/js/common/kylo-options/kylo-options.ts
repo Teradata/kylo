@@ -59,5 +59,5 @@ export default class KyloOptions implements ng.IComponentController {
 
 angular.module(moduleName).component("kyloOptions", {
     controller: KyloOptions,
-    templateUrl: 'js/common/kylo-options/kylo-options.html',
+    templateUrl: './kylo-options.html',
 });

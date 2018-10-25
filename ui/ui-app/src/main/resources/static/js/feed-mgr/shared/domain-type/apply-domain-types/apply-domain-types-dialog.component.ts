@@ -56,7 +56,7 @@ export interface ApplyDomainTypesRow {
  */
 @Component({
     selector:"apply-domain-types-dialog",
-    templateUrl: "js/feed-mgr/shared/domain-type/apply-domain-types/apply-domain-types-dialog.component.html"
+    templateUrl: "./apply-domain-types-dialog.component.html"
 })
 export class ApplyDomainTypesDialogComponent {
 

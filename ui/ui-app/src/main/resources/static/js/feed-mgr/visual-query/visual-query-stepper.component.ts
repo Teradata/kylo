@@ -11,7 +11,7 @@ import {FeedLoadingService} from "../feeds/define-feed-ng2/services/feed-loading
 
 @Component({
     selector: 'visual-query-stepper',
-    templateUrl: 'js/feed-mgr/visual-query/visual-query-stepper.component.html'
+    templateUrl: './visual-query-stepper.component.html'
 })
 export class VisualQueryStepperComponent implements OnInit, OnDestroy {
 

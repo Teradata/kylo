@@ -20,8 +20,8 @@ import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 @Component({
     selector: "remote-files",
-    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
+    styleUrls: ["./browser.component.scss"],
+    templateUrl: "./browser.component.html"
 })
 export class BrowserComponent implements OnInit, OnDestroy {
 

@@ -229,7 +229,7 @@ export class RegisterSelectTemplateController {
             fullscreen: true,
             parent: angular.element(document.body),
             scope: $dialogScope,
-            templateUrl: "js/feed-mgr/templates/template-stepper/select-template/template-delete-dialog.html"
+            templateUrl: "./template-delete-dialog.html"
         });
     };
 
@@ -385,7 +385,7 @@ angular.module(moduleName).component('thinkbigRegisterSelectTemplate', {
         registeredTemplateId: "=?"
     },
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/select-template/select-template.html',
+    templateUrl: './select-template.html',
     controller: RegisterSelectTemplateController,
     require: {
         stepperController: "^thinkbigStepper"

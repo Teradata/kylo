@@ -23,7 +23,7 @@ import {KyloRouterService} from "../../../../services/kylo-router.service";
 import {StringUtils} from "../../../../common/utils/StringUtils";
 @Component({
     selector: "import-feed",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/import/import-feed.component.html"
+    templateUrl: "./import-feed.component.html"
 })
 export class ImportFeedComponent  implements OnInit, OnDestroy{
 

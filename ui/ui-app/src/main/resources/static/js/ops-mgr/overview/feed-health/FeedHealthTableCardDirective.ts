@@ -372,5 +372,5 @@ constructor(private $scope: IScope,
         cardTitle: "@"
      },
      controllerAs: "vm",
-     templateUrl: "js/ops-mgr/overview/feed-health/feed-health-table-card-template.html"
+     templateUrl: "./feed-health-table-card-template.html"
  });

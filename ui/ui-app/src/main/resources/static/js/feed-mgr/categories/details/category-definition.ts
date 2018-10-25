@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import {EntityAccessControlService} from '../../shared/entity-access-control/EntityAccessControlService';
-const moduleName = require('feed-mgr/categories/module-name');
+const moduleName = require('../module-name');
 
 export class CategoryDefinitionController {
     /**
@@ -387,7 +387,7 @@ export class CategoryDefinitionController {
             var self = this;
             this.$mdDialog.show({
                 controller: 'IconPickerDialog',
-                templateUrl: 'js/common/icon-picker-dialog/icon-picker-dialog.html',
+                templateUrl: '../../../common/icon-picker-dialog/icon-picker-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
@@ -421,6 +421,6 @@ export class CategoryDefinitionController {
     angular.module(moduleName).component("thinkbigCategoryDefinition",{
         controller: CategoryDefinitionController,
         controllerAs: "vm",
-        templateUrl: "js/feed-mgr/categories/details/category-definition.html"
+        templateUrl: "./category-definition.html"
 });
 

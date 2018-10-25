@@ -10,7 +10,7 @@ import * as moment from "moment"
 
 @Component({
     selector: 'feed-alerts',
-    templateUrl: 'js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-alerts/feed-alerts.component.html'
+    templateUrl: './feed-alerts.component.html'
 })
 export class FeedAlertsComponent implements OnInit, OnDestroy{
 

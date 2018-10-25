@@ -89,5 +89,5 @@ constructor(private $scope: IScope,
         refreshIntervalTime:'=?'
      },
      controllerAs: "vm",
-     templateUrl: "js/ops-mgr/overview/alerts/alerts-template.html"
+     templateUrl: "./alerts-template.html"
  });

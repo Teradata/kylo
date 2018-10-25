@@ -29,7 +29,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/RegisteredTemplatesController'])
+                // loadMyCtrl: this.lazyLoadController(['./RegisteredTemplatesController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     const onModuleLoad = () => {
                         return import(/* webpackChunkName: "feeds.registered-templates.controller" */ './RegisteredTemplatesController')
@@ -57,7 +57,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['feed-mgr/templates/new-template/RegisterNewTemplateController'])
+                // loadMyCtrl: this.lazyLoadController(['./new-template/RegisterNewTemplateController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     const onModuleLoad = () => {
                         return import(/* webpackChunkName: "feeds.register-new-template.controller" */ './new-template/RegisterNewTemplateController')

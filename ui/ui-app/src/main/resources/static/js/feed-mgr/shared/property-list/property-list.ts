@@ -157,7 +157,7 @@ angular.module(moduleName).component("thinkbigPropertyList", {
         model: "=properties",
         isValid: "=?"
     },
-    templateUrl: "js/feed-mgr/shared/property-list/property-list.html"
+    templateUrl: "./property-list.html"
 });
 angular.module(moduleName).component("thinkbigPropertyListEditor", {
     controller: PropertyListController,
@@ -169,6 +169,6 @@ angular.module(moduleName).component("thinkbigPropertyListEditor", {
         model: "=properties",
         isValid: "=?"
     },
-    templateUrl: "js/feed-mgr/shared/property-list/property-list-editor.html"
+    templateUrl: "./property-list-editor.html"
 });
 

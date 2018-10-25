@@ -2,7 +2,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Component, Inject} from "@angular/core";
 
 @Component({
-    templateUrl: 'js/ops-mgr/jobs/jobs-list/jobs-filter-help-panel-dialog.component.html',
+    templateUrl: './jobs-filter-help-panel-dialog.component.html',
     styles: [`
         .filter-help-backdrop {
             background: transparent;

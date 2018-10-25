@@ -4,7 +4,7 @@ import {IPageChangeEvent} from "@covalent/core/paging";
 
 @Component({
     selector: 'filtered-paginated-table-view',
-    templateUrl: 'js/common/filtered-paginated-table-view/filtered-paginated-table-view.component.html'
+    templateUrl: './filtered-paginated-table-view.component.html'
 })
 export class FilteredPaginatedTableViewComponent implements AfterViewInit {
 

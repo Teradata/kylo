@@ -18,7 +18,7 @@ class ModuleFactory  {
             url:'/alerts',
             views: {
                 'content': {
-                   // templateUrl: 'js/ops-mgr/alerts/alerts-table.html',
+                   // templateUrl: './alerts-table.html',
                     component:'alertsController',
                     //controllerAs:'vm'
                 }
@@ -47,7 +47,7 @@ class ModuleFactory  {
             url:"/alert-details/{alertId}",
             views: {
                 'content': {
-                    //templateUrl: 'js/ops-mgr/alerts/alert-details.html',
+                    //templateUrl: './alert-details.html',
                     component:'alertDetailsController',
                     //controllerAs:'vm'
                 }

@@ -3,9 +3,9 @@ import {moduleName} from "./module-name";
 import PivotTableUtil from "./PivotTableUtil";
 import * as _ from "underscore";
 import * as moment from "moment";
-import 'ops-mgr/charts/module-require';
+import './module-require';
 import 'pivottable-c3-renderers';
-import 'bower_components/c3/c3.css';
+import '../../../bower_components/c3/c3.css';
 import OpsManagerRestUrlService from '../services/OpsManagerRestUrlService';
 
 export class controller implements ng.IComponentController{

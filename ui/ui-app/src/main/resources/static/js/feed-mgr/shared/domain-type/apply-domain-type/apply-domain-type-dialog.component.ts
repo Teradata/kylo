@@ -30,7 +30,7 @@ export interface ApplyDomainTypeDialogData {
  */
 @Component({
     selector:"apply-domain-type-dialog",
-    templateUrl: "js/feed-mgr/shared/domain-type/apply-domain-type/apply-domain-type-dialog.component.html"
+    templateUrl: "./apply-domain-type-dialog.component.html"
 })
 export class ApplyDomainTypeDialogComponent implements OnInit, OnDestroy {
 

@@ -26,13 +26,13 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/feeds/define-feed/define-feed.html',
+                    templateUrl: './define-feed.html',
                     controller: 'DefineFeedController',
                     controllerAs: 'vm'
                 }
             },
             resolve: {
-                // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/DefineFeedController'])
+                // loadMyCtrl: lazyLoadController(['./DefineFeedController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feeds.define-feed.controller" */ './DefineFeedController')
                         .then(mod => {
@@ -63,7 +63,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController'])
+                // loadMyCtrl: lazyLoadController(['./feed-details/DefineFeedCompleteController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad:any) => {
                     return import(/* webpackChunkName: "feeds.define-feed-complete.controller" */ './feed-details/DefineFeedCompleteController')
                         .then(mod => {
@@ -90,13 +90,13 @@ class ModuleFactory  {
             params: {},
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/feeds/define-feed/import-feed.html',
+                    templateUrl: './import-feed.html',
                     controller: 'ImportFeedController',
                     controllerAs: 'vm'
                 }
             },
             resolve: {
-                // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/ImportFeedController'])
+                // loadMyCtrl: lazyLoadController(['./ImportFeedController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feeds.import-feed.controller" */ './ImportFeedController')
                         .then(mod => {

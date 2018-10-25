@@ -7,7 +7,7 @@ import {FeedItemInfoService} from "../feed-item-info.service";
 
 @Component({
     selector: "feed-info-category",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-category/feed-info-category.component.html"
+    templateUrl: "./feed-info-category.component.html"
 })
 export class FeedInfoCategoryComponent extends AbstractFeedInfoItemComponent {
 

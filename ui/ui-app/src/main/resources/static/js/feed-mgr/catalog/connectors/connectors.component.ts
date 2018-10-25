@@ -12,8 +12,8 @@ import {Connector} from '../api/models/connector';
  */
 @Component({
     selector: "catalog-connectors",
-    styleUrls: ["js/feed-mgr/catalog/connectors/connectors.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/connectors/connectors.component.html"
+    styleUrls: ["./connectors.component.scss"],
+    templateUrl: "./connectors.component.html"
 })
 export class ConnectorsComponent {
 

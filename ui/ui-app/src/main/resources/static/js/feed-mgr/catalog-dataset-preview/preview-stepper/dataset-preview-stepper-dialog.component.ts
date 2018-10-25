@@ -10,8 +10,8 @@ constructor(public allowMultiSelection:boolean=false,public saveLabel:string = "
 }
 @Component({
     selector: "dataset-preview-stepper-dialog",
-    styleUrls:["js/feed-mgr/catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component.scss"],
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component.html",
+    styleUrls:["./dataset-preview-stepper-dialog.component.scss"],
+    templateUrl: "./dataset-preview-stepper-dialog.component.html",
     changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class DatasetPreviewStepperDialogComponent  implements OnInit, OnDestroy{

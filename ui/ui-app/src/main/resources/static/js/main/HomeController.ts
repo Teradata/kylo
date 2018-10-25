@@ -70,6 +70,6 @@ export class HomeController implements ng.IComponentController{
   angular.module('kylo').component("homeController", { 
         controller: HomeController,
         controllerAs: "vm",
-        templateUrl: "js/main/home.html"
+        templateUrl: "./home.html"
     });
 //  .controller('HomeController', [HomeController]);

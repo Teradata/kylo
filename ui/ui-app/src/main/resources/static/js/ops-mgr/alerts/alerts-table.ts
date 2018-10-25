@@ -414,7 +414,7 @@ angular.module(moduleName).component("alertsController", {
         },
         controller: AlertsController,
         controllerAs: "vm",
-        templateUrl: "js/ops-mgr/alerts/alerts-table.html"
+        templateUrl: "./alerts-table.html"
     });
 angular.module(moduleName).component("alertsTableController", {
         controller: AlertsTableController,
@@ -431,7 +431,7 @@ angular.module(moduleName).directive("tbaAlertsTable", [
             },
             controllerAs: 'vm',
             scope: {},
-            templateUrl: 'js/ops-mgr/alerts/alerts-table-template.html',
+            templateUrl: './alerts-table-template.html',
             controller: AlertsTableController,
             link: function ($scope: any, element: any, attrs: any, controller: any) {
 

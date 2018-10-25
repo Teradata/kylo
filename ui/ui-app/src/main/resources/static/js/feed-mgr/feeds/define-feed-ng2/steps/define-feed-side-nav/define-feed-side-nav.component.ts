@@ -20,8 +20,8 @@ import {SETUP_GUIDE_LINK, SETUP_REVIEW_LINK} from "../../model/feed-link-constan
 
 @Component({
     selector: "feed-definition-side-nav",
-    styleUrls:["js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-side-nav/define-feed-side-nav.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-side-nav/define-feed-side-nav.component.html"
+    styleUrls:["./define-feed-side-nav.component.scss"],
+    templateUrl: "./define-feed-side-nav.component.html"
 })
 export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
     @Input()

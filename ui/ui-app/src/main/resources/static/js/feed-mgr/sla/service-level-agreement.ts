@@ -43,6 +43,6 @@ const module = angular.module(moduleName)
                 },
                 controller: ServiceLevelAgreementController,
                 controllerAs: 'vm',
-                templateUrl: 'js/feed-mgr/sla/service-level-agreement.html',
+                templateUrl: './service-level-agreement.html',
             });
 export default module;

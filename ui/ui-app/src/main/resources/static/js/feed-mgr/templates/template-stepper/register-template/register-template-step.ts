@@ -282,7 +282,7 @@ export class RegisterCompleteRegistrationController {
 
         this.$mdDialog.show({
             controller: 'IconPickerDialog',
-            templateUrl: 'js/common/icon-picker-dialog/icon-picker-dialog.html',
+            templateUrl: '../../../../common/icon-picker-dialog/icon-picker-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,
@@ -383,7 +383,7 @@ export class RegisterCompleteRegistrationController {
             controller: ["$scope", "templateName", ($scope, templateName) => {
                 $scope.templateName = templateName;
             }],
-            templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-inprogress-dialog.html',
+            templateUrl: './register-template-inprogress-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,
@@ -411,7 +411,7 @@ export class RegisterCompleteRegistrationController {
                         $mdDialog.cancel();
                     };
                 }],
-            templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html',
+            templateUrl: './register-template-error-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: true,
             fullscreen: true,
@@ -431,7 +431,7 @@ angular.module(moduleName).component("thinkbigRegisterCompleteRegistration", {
         stepIndex: '@'
     },
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-step.html',
+    templateUrl: './register-template-step.html',
     controller: RegisterCompleteRegistrationController,
 
 });
@@ -448,7 +448,7 @@ export class RegisterTemplateCompleteController {
 }
 
 const module = angular.module(moduleName).component("registerTemplateCompleteController", {
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
+    templateUrl: './register-template-complete.html',
     controller: RegisterTemplateCompleteController,
     controllerAs: 'vm'
 });

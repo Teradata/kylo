@@ -5,8 +5,8 @@ import {Feed} from "../../../../../model/feed/feed.model";
 
 @Component({
     selector: "feed-setup-guide",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-setup-guide/feed-setup-guide.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-setup-guide/feed-setup-guide.component.html"
+    styleUrls: ["./feed-setup-guide.component.scss"],
+    templateUrl: "./feed-setup-guide.component.html"
 })
 export class FeedSetupGuideComponent implements OnInit, OnDestroy{
 

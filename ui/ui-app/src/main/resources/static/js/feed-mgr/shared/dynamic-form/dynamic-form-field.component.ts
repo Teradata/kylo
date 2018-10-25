@@ -10,8 +10,8 @@ import {Icon} from './model/Icon';
 
 @Component({
     selector: 'dynamic-form-field',
-    styleUrls:['js/feed-mgr/shared/dynamic-form/dynamic-form-field.component.css'],
-    templateUrl: 'js/feed-mgr/shared/dynamic-form/dynamic-form-field.component.html'
+    styleUrls:['./dynamic-form-field.component.css'],
+    templateUrl: './dynamic-form-field.component.html'
 })
 export class DynamicFormFieldComponent {
     @Input() field: FieldConfig<any>;

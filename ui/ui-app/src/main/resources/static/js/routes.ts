@@ -145,7 +145,7 @@ class Route {
             url: '/registered-templates',
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "admin.registered-templates.module" */ "./feed-mgr/templates/module")
+                return import(/* webpackChunkName: "admin.registered-templates.module" */ "././feed-mgr/templates/module")
                     .then(mod => {
                         console.log('imported templates mod', mod);
                         return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
@@ -158,7 +158,7 @@ class Route {
                         });
                     })
                     .catch(err => {
-                        throw new Error("Failed to load ./feed-mgr/templates/module, " + err);
+                        throw new Error("Failed to load ././feed-mgr/templates/module, " + err);
                     });
             }
         });
@@ -166,7 +166,7 @@ class Route {
         $stateProvider.state('register-template.**', {
             url: '/register-template',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/templates/module').then(function success(args: any) {
+                transition.injector().get('$ocLazyLoad').load('./feed-mgr/templates/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('register-template')
                     return args;
@@ -305,7 +305,7 @@ class Route {
                 feedName: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/module').then(function success(args: any) {
+                transition.injector().get('$ocLazyLoad').load('./ops-mgr/feeds/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('ops-feed-details', transition.params())
                     return args;
@@ -323,7 +323,7 @@ class Route {
                 feedName: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('ops-mgr/feeds/feed-stats/module').then(function success(args: any) {
+                transition.injector().get('$ocLazyLoad').load('./ops-mgr/feeds/feed-stats/module').then(function success(args: any) {
                     //upon success go back to the state
                     $stateProvider.stateService.go('feed-stats', transition.params())
                     return args;
@@ -598,7 +598,7 @@ class Route {
             params: {attemptedState: null},
             views: {
                 "content": {
-                    // templateUrl: "js/main/access-denied.html",
+                    // templateUrl: "./main/access-denied.html",
                     component: 'acessDeniedController',
                     //controllerAs:'vm'
                 }

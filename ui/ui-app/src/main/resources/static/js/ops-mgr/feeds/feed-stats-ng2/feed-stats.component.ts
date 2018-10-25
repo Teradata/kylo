@@ -3,7 +3,7 @@ import { StateService } from "@uirouter/core";
 
 @Component({
     selector: 'feed-stats',
-    templateUrl: 'js/ops-mgr/feeds/feed-stats-ng2/feed-stats.component.html'
+    templateUrl: './feed-stats.component.html'
 })
 export class FeedStatsComponent {
     @Input()

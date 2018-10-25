@@ -109,7 +109,7 @@ const module = angular.module(moduleName).component('registerTemplateController'
     bindings: {
         $transition$: '<'
     },
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template.html',
+    templateUrl: './register-template.html',
     controller: RegisterTemplateController,
     controllerAs: 'vm'
 });

@@ -17,7 +17,7 @@ import {ISubscription} from "rxjs/Subscription";
  */
 @Component({
     selector: "catalog-dataset",
-    templateUrl: "js/feed-mgr/catalog/datasource/datasource.component.html"
+    templateUrl: "./datasource.component.html"
 })
 export class DatasourceComponent implements OnInit, OnDestroy {
 

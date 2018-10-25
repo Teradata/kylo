@@ -115,7 +115,7 @@ constructor(private $scope: IScope,
                                 $mdDialog.cancel();
                             };
                         }],
-                        templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-details-dialog.html',
+                        templateUrl: './data-confidence-details-dialog.html',
                         parent: angular.element(document.body),
                         clickOutsideToClose: true,
                         fullscreen: true,
@@ -187,5 +187,5 @@ angular.module(moduleName).component('tbaDataConfidenceIndicator',{
         panelTitle: "@"
     },
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/data-confidence-indicator/data-confidence-indicator-template.html"
+    templateUrl: "./data-confidence-indicator-template.html"
 });

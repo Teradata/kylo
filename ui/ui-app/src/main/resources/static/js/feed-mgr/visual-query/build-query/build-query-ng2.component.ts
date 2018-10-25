@@ -74,8 +74,8 @@ const ESC_KEY_CODE = 27;
  */
 @Component({
     selector: 'build-query-ng2',
-    styleUrls: ["js/feed-mgr/visual-query/build-query/build-query-ng2.component.css"],
-    templateUrl: "js/feed-mgr/visual-query/build-query/build-query-ng2.component.html",
+    styleUrls: ["./build-query-ng2.component.css"],
+    templateUrl: "./build-query-ng2.component.html",
     host: {
         '(document:keyup)': '_keyup($event)',
         '(document:keydown)': '_keydown($event)',

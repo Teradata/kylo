@@ -8,8 +8,8 @@ import {ISubscription} from "rxjs/Subscription";
 
 @Component({
     selector: "datasets-preview-container",
-    styleUrls: ["js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview-container.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview-container.component.html"
+    styleUrls: ["./dataset-preview-container.component.scss"],
+    templateUrl: "./dataset-preview-container.component.html"
 })
 export class DatasetPreviewContainerComponent implements OnInit{
 

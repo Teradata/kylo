@@ -1,8 +1,8 @@
 define(['angular','@uirouter/angularjs','kylo-feedmgr',
-        'feed-mgr/categories/details/category-definition',
-        'feed-mgr/categories/details/category-feed-properties',
-        'feed-mgr/categories/details/category-properties',
-        'feed-mgr/categories/details/category-access-control',
-        'feed-mgr/categories/details/category-feeds'], function (angular) {
+        './details/category-definition',
+        './details/category-feed-properties',
+        './details/category-properties',
+        './details/category-access-control',
+        './details/category-feeds'], function (angular) {
 
 });

@@ -14,7 +14,7 @@ import {RestUrlService} from "../../../../../services/RestUrlService";
 
 @Component({
     selector: "feed-operations-health-info",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component.html"
+    templateUrl: "./feed-operations-health-info.component.html"
 })
 export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 

@@ -1,9 +1,9 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Transition} from "@uirouter/core";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
-import 'feed-mgr/feeds/module-require';
-import 'feed-mgr/feeds/define-feed/module-require';
+const moduleName = require('../module-name');
+import '../../module-require';
+import '../module-require';
 
 
 export class DefineFeedCompleteController {
@@ -72,7 +72,7 @@ const module = angular.module(moduleName)
         bindings: {
             $transition$: '<'
         },
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
+        templateUrl: './define-feed-complete.html',
         controllerAs: 'vm',
         controller: DefineFeedCompleteController,
     });

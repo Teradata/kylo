@@ -21,8 +21,8 @@ import {FeedFieldPolicyRuleService} from "../../../../shared/feed-field-policy-r
 
 @Component({
     selector: "feed-versions",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/versions/feed-versions.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/versions/feed-versions.component.html"
+    styleUrls: ["./feed-versions.component.scss"],
+    templateUrl: "./feed-versions.component.html"
 })
 
 export class FeedVersionsComponent extends AbstractLoadFeedComponent implements OnInit {

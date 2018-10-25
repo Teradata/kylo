@@ -8,7 +8,7 @@ import {FormGroup} from "@angular/forms";
 
 @Component({
     selector: "inline-field-policy-form",
-    templateUrl: "js/feed-mgr/shared/field-policies-angular2/inline-field-policy-form.component.html"
+    templateUrl: "./inline-field-policy-form.component.html"
 })
 export class InlinePolicyInputFormComponent implements OnInit {
 

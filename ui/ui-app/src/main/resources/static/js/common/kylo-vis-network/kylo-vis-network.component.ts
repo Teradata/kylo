@@ -5,7 +5,7 @@ import {Network, DataSet, Node, Edge, IdType} from 'vis';
 
 @Component({
     selector: "kylo-vis-network",
-    templateUrl: "js/common/kylo-vis-network/kylo-vis-network.component.html"
+    templateUrl: "./kylo-vis-network.component.html"
 })
 export class KyloVisNetworkComponent implements OnInit, OnChanges {
 

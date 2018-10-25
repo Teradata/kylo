@@ -88,8 +88,8 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
  */
 @Component({
     selector: "catalog-connector",
-    styleUrls: ["js/feed-mgr/catalog/connector/connector.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/connector/connector.component.html"
+    styleUrls: ["./connector.component.scss"],
+    templateUrl: "./connector.component.html"
 })
 export class ConnectorComponent {
 

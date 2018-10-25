@@ -34,5 +34,5 @@ angular.module(moduleName).component('cardLayout', {
         'body1': '?bodySection'
     },
     controllerAs: "vm",
-    templateUrl: 'js/common/card-layout/card-layout.html'
+    templateUrl: './card-layout.html'
 });

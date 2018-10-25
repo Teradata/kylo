@@ -30,8 +30,8 @@ export interface ConnectionDialogResponse {
  * Controls the connection dialog for creating a join between two nodes in the Build Query flow chart.
  */
 @Component({
-    styleUrls: ["js/feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component.css"],
-    templateUrl: "js/feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component.html"
+    styleUrls: ["./connection-dialog.component.css"],
+    templateUrl: "./connection-dialog.component.html"
 })
 export class ConnectionDialog {
 

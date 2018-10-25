@@ -40,7 +40,7 @@ export class DomainTypeMetadataDetailsComponent extends AbstractSectionComponent
     showIconPicker() {
         this.$mdDialog.show({
             controller: "IconPickerDialog",
-            templateUrl: "js/common/icon-picker-dialog/icon-picker-dialog.html",
+            templateUrl: "../../../../common/icon-picker-dialog/icon-picker-dialog.html",
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,
@@ -63,5 +63,5 @@ angular.module(moduleName)
             model: "<"
         },
         controller: DomainTypeMetadataDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/metadata/metadata.component.html"
+        templateUrl: "./metadata.component.html"
     });

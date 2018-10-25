@@ -12,7 +12,7 @@ import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 @Component({
     selector:"feed-info-tags",
-    templateUrl:"js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-tags/feed-info-tags.component.html"
+    templateUrl:"./feed-info-tags.component.html"
 })
 export class FeedInfoTagsComponent  extends AbstractFeedInfoItemComponent implements OnInit{
 

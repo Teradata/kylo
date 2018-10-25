@@ -23,7 +23,7 @@ export class DeployFeedDialogComponentData{
 
 @Component({
     selector:"deploy-feed-dialog",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/deploy-feed-dialog/deploy-feed-dialog.component.html"
+    templateUrl: "./deploy-feed-dialog.component.html"
 })
 export class DeployFeedDialogComponent implements OnInit, OnDestroy{
 

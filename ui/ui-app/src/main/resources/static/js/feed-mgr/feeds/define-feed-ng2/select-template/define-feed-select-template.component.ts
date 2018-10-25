@@ -28,8 +28,8 @@ import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 @Component({
     selector: "define-feed-select-template",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/select-template/define-feed-select-template.component.html"
+    styleUrls: ["./define-feed-select-template.component.scss"],
+    templateUrl: "./define-feed-select-template.component.html"
 })
 export class DefineFeedSelectTemplateComponent implements OnInit {
 

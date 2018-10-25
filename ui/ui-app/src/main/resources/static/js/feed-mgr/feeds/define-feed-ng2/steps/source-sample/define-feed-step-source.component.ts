@@ -26,8 +26,8 @@ import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service
 
 @Component({
     selector: "define-feed-step-source",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/source-sample/define-feed-step-source.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/source-sample/define-feed-step-source.component.html"
+    styleUrls: ["./define-feed-step-source.component.css"],
+    templateUrl: "./define-feed-step-source.component.html"
 })
 export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 

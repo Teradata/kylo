@@ -23,8 +23,8 @@ export enum SaveMode { INITIAL, SAVING, SAVED}
 
 @Component({
     selector: "thinkbig-visual-query-store",
-    styleUrls: ["js/feed-mgr/visual-query/store/store.component.scss"],
-    templateUrl: "js/feed-mgr/visual-query/store/store.component.html"
+    styleUrls: ["./store.component.scss"],
+    templateUrl: "./store.component.html"
 })
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 

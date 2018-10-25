@@ -191,6 +191,6 @@ const module = angular.module(moduleName)
 .component("usersTableController", {
         controller: UsersTableController,
         controllerAs: "vm",
-        templateUrl: "js/auth/users/users-table.html"
+        templateUrl: "./users-table.html"
     });
 export default module;

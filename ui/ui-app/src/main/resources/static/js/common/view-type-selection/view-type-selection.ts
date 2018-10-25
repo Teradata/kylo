@@ -15,5 +15,5 @@ angular.module(moduleName).component("tbaViewTypeSelection",{
     bindings: {
         viewType: '='
     },
-    templateUrl: 'js/common/view-type-selection/view-type-selection-template.html'
+    templateUrl: './view-type-selection-template.html'
 });

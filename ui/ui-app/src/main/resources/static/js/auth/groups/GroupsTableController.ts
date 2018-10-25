@@ -164,7 +164,7 @@ const module = angular.module(moduleName)
 .component("groupsTableController", {
         controller: GroupsTableController,
         controllerAs: "vm",
-        templateUrl: "js/auth/groups/groups-table.html"
+        templateUrl: "./groups-table.html"
     });
 //.controller("GroupsTableController", GroupsTableController]);
 export default module;

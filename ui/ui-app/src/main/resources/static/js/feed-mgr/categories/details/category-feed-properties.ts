@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
-const moduleName = require('feed-mgr/categories/module-name');
+const moduleName = require('../module-name');
 
 export class CategoryFeedPropertiesController {
 
@@ -108,5 +108,5 @@ export class CategoryFeedPropertiesController {
 angular.module(moduleName).component('thinkbigCategoryFeedProperties',{
         controller: CategoryFeedPropertiesController,
         controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/categories/details/category-feed-properties.html'
+        templateUrl: './category-feed-properties.html'
 });

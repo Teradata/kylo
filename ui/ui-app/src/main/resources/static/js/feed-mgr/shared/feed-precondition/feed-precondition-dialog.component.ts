@@ -10,7 +10,7 @@ enum EditMode { NEW=1, EDIT=2 }
 
 @Component({
     selector:"feed-precondition-dialog",
-    templateUrl: "js/feed-mgr/shared/feed-precondition/feed-precondition-dialog.component.html"
+    templateUrl: "./feed-precondition-dialog.component.html"
 })
 export class FeedPreconditionDialogComponent{
 

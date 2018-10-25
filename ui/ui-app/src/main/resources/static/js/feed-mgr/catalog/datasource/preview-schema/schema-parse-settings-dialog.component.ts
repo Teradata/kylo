@@ -4,7 +4,7 @@ import {SchemaParser} from "../../../model/field-policy";
 
 @Component({
     selector: 'schema-parse-settings-dialog',
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/schema-parse-settings-dialog.component.html",
+    templateUrl: "./schema-parse-settings-dialog.component.html",
 })
 export class SchemaParseSettingsDialog {
     private selectedParser : SchemaParser;

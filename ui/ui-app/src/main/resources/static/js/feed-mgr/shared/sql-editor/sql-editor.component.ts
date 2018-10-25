@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 
 @Component( {
     selector:"sql-editor",
-    templateUrl:"js/feed-mgr/shared/sql-editor/sql-editor.component.html"
+    templateUrl:"./sql-editor.component.html"
 })
 export class SqlEditorComponent implements OnInit, OnDestroy{
 

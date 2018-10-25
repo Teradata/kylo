@@ -23,7 +23,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/sla/assessments.html',
+                    templateUrl: './assessments.html',
                     controller:"serviceLevelAssessmentsInitController",
                     controllerAs:"vm"
                 }
@@ -53,7 +53,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/sla/assessment.html',
+                    templateUrl: './assessment.html',
                     controller:"serviceLevelAssessmentController",
                     controllerAs:"vm"
                 }
@@ -80,10 +80,10 @@ class ModuleFactory  {
     }  
 
     // lazyLoadController(path:any){
-    //     return lazyLoadUtil.lazyLoadController(path,["ops-mgr/sla/module-require"]);
+    //     return lazyLoadUtil.lazyLoadController(path,["./module-require"]);
     // }
     // lazyLoad(){
-    //     return lazyLoadUtil.lazyLoad(['ops-mgr/sla/module-require']);
+    //     return lazyLoadUtil.lazyLoad(['./module-require']);
     // }
 } 
 

@@ -819,7 +819,7 @@ const module = angular.module(moduleName).component('thinkbigServiceLevelAgreeme
         view: '@'
     },
     controller : ServiceLevelAgreements,
-    templateUrl : 'js/feed-mgr/sla/service-level-agreements.html',
+    templateUrl : './service-level-agreements.html',
     controllerAs : 'vm'
 });
 export default module;

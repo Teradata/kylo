@@ -26,7 +26,7 @@ class ModuleFactory  {
             url:'/charts',
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/charts/charts.html',
+                    templateUrl: './charts.html',
                     controller:"ChartsController",
                     controllerAs:"vm"
                 }

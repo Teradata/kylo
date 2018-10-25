@@ -13,7 +13,7 @@ import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 
 @Component({
     selector: "define-feed-step-wrangler",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/wrangler/define-feed-step-wrangler.component.html"
+    templateUrl: "./define-feed-step-wrangler.component.html"
 })
 export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 

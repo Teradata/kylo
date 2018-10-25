@@ -24,7 +24,7 @@ import { FeedService } from '../../../services/FeedService';
 import BroadcastService from '../../../../services/broadcast-service';
 import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
 import {FeedInputProcessorPropertiesTemplateService} from "../../../services/FeedInputProcessorPropertiesTemplateService";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 export class DefineFeedDetailsController {
 
@@ -295,5 +295,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedDetailsController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-details.html',
+        templateUrl: './define-feed-details.html',
     });

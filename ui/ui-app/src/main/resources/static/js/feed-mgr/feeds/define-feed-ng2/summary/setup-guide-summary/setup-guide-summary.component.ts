@@ -22,8 +22,8 @@ import {DefineFeedPermissionsDialogComponent, DefineFeedPermissionsDialogCompone
 
 @Component({
     selector: "setup-guide-summary",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/setup-guide-summary.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/setup-guide-summary.component.html"
+    styleUrls: ["./setup-guide-summary.component.scss"],
+    templateUrl: "./setup-guide-summary.component.html"
 })
 export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
 

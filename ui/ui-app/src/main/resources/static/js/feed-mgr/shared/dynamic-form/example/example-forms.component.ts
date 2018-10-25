@@ -4,7 +4,7 @@ import {InputType} from "../model/InputText";
 
 @Component({
     selector:"example-forms",
-    templateUrl: "js/feed-mgr/shared/dynamic-form/example/example-forms.component.html"
+    templateUrl: "./example-forms.component.html"
 })
 export class ExampleFormsComponent {
 

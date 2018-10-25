@@ -4,8 +4,8 @@ import {ColumnProfile} from "../../wrangler/api/column-profile";
 
 @Component({
     selector: "column-analysis",
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/main-dialogs/column-analysis.scss"],
-    templateUrl: "js/feed-mgr/visual-query/transform-data/main-dialogs/column-analysis.html"
+    styleUrls: ["./column-analysis.scss"],
+    templateUrl: "./column-analysis.html"
 })
 export class ColumnAnalysisController implements OnInit {
 

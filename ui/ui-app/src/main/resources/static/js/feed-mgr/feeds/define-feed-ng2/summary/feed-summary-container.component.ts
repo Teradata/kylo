@@ -16,8 +16,8 @@ import {Feed} from "../../../model/feed/feed.model";
 
 
 @Component({
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/feed-summary-container.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-summary-container.component.html"
+    styleUrls: ["./feed-summary-container.component.scss"],
+    templateUrl: "./feed-summary-container.component.html"
 })
 export class FeedSummaryContainerComponent extends AbstractLoadFeedComponent  {
 

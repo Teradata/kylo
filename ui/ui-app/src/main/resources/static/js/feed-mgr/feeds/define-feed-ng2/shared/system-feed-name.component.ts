@@ -6,7 +6,7 @@ import {FeedService} from "../../../services/FeedService";
 
 @Component({
     selector: "system-feed-name",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/shared/system-feed-name.component.html"
+    templateUrl: "./system-feed-name.component.html"
 })
 export class SystemFeedNameComponent implements OnInit {
 

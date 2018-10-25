@@ -19,7 +19,7 @@ class ModuleFactory  {
             params: {},
             views: {
                 'content': {
-                   // templateUrl: 'js/auth/users/users-table.html',
+                   // templateUrl: './users/users-table.html',
                     component: "usersTableController",
                    // controllerAs: "vm"
                 }
@@ -51,7 +51,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                   // templateUrl: 'js/auth/users/user-details/user-details.html',
+                   // templateUrl: './users/user-details/user-details.html',
                     component: "userDetailsController",
                    // controllerAs: "vm"
                 }
@@ -81,7 +81,7 @@ class ModuleFactory  {
             params: {},
             views: {
                 'content': {
-                  //  templateUrl: 'js/auth/groups/groups-table.html',
+                  //  templateUrl: './groups/groups-table.html',
                     component: "groupsTableController",
                    // controllerAs: "vm"
                 }
@@ -113,7 +113,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                  //  templateUrl: 'js/auth/groups/group-details/group-details.html',
+                  //  templateUrl: './groups/group-details/group-details.html',
                     component: "groupDetailsController",
                    // controllerAs: "vm"
                 }

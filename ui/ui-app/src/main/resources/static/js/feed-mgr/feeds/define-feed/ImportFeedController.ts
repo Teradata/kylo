@@ -2,11 +2,11 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../common/CommonTypes";
 import Map = Common.Map;
-import 'feed-mgr/feeds/module-require';
-import 'feed-mgr/feeds/define-feed/module-require';
+import '../module-require';
+import './module-require';
 import {ImportComponentOption, ImportComponentType, ImportService} from '../../services/ImportComponentOptionTypes';
 
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('./module-name');
 
 export class ImportFeedController {
 

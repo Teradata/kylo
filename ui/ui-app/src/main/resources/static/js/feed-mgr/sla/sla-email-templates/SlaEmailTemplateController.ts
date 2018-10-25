@@ -318,7 +318,7 @@ angular.module(moduleName)
     .component('velocityTemplateTestController',
     {
         controller : testDialogController,
-        templateUrl : 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html'
+        templateUrl : './test-velocity-dialog.html'
     }
 );
 

@@ -129,7 +129,7 @@ export class BusinessMetadataController implements ng.IComponentController {
 }
 // Register the controller
 const module = angular.module(moduleName).component('businessMetadataController', {
-    templateUrl: 'js/feed-mgr/business-metadata/business-metadata.html',
+    templateUrl: './business-metadata.html',
     controller: BusinessMetadataController,
     controllerAs: 'vm'
 });

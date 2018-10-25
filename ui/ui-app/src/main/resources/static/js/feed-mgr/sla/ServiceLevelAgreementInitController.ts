@@ -25,6 +25,6 @@ const module = angular.module(moduleName).component('serviceLevelAgreementInitCo
     },
     controller: ServiceLevelAgreementInitController,
     controllerAs: "vm",
-    templateUrl: "js/feed-mgr/sla/service-level-agreements-view.html"
+    templateUrl: "./service-level-agreements-view.html"
 });
 export default module;

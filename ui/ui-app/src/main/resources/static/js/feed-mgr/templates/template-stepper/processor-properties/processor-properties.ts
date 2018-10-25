@@ -253,6 +253,6 @@ angular.module(moduleName)
             processorPropertiesFieldName: '@'
         },
         controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/templates/template-stepper/processor-properties/processor-properties.html',
+        templateUrl: './processor-properties.html',
         controller: RegisterProcessorPropertiesController,
     });

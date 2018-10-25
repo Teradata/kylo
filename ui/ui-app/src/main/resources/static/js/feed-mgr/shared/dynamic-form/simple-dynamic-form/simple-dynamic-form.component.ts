@@ -5,7 +5,7 @@ import {ISubscription} from "rxjs/Subscription";
 
 @Component({
     selector:"simple-dynamic-form",
-    templateUrl: "js/feed-mgr/shared/dynamic-form/simple-dynamic-form/simple-dynamic-form.component.html"
+    templateUrl: "./simple-dynamic-form.component.html"
 })
 export class SimpleDynamicFormComponent implements OnInit, OnDestroy{
 

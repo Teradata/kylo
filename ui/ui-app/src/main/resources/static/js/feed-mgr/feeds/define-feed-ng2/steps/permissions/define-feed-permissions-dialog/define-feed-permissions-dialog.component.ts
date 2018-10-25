@@ -13,8 +13,8 @@ export class DefineFeedPermissionsDialogComponentData {
 
 @Component({
     selector: "define-feed-permissions-dialog",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/permissions/define-feed-permissions-dialog/define-feed-permissions-dialog.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/permissions/define-feed-permissions-dialog/define-feed-permissions-dialog.component.html"
+    styleUrls: ["./define-feed-permissions-dialog.component.scss"],
+    templateUrl: "./define-feed-permissions-dialog.component.html"
 })
 
 export class DefineFeedPermissionsDialogComponent implements OnInit {

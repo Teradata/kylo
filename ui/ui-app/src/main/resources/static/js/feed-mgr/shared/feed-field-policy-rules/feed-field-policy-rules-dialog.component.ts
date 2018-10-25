@@ -26,7 +26,7 @@ enum EditMode {
 
 @Component({
     selector:"feed-field-policy-rules-dialog",
-    templateUrl: "js/feed-mgr/shared/feed-field-policy-rules/feed-field-policy-rules-dialog.component.html"
+    templateUrl: "./feed-field-policy-rules-dialog.component.html"
 })
 export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 

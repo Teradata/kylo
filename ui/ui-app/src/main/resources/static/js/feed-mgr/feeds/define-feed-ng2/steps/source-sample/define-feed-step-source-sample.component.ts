@@ -21,8 +21,8 @@ export class ShowCatalogCanceledEvent{
 
 @Component({
     selector: "define-feed-step-source-sample",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/source-sample/define-feed-step-source-sample.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/source-sample/define-feed-step-source-sample.component.html"
+    styleUrls: ["./define-feed-step-source-sample.component.css"],
+    templateUrl: "./define-feed-step-source-sample.component.html"
 })
 export class DefineFeedStepSourceSampleComponent implements OnInit, OnDestroy{
 

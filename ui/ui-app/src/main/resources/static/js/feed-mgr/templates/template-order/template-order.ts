@@ -90,6 +90,6 @@ angular.module(moduleName).component("templateOrderController", {
         addSaveBtn: '=?'
     },
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/templates/template-order/template-order.html',
+    templateUrl: './template-order.html',
     controller: TemplateOrderController,
 })

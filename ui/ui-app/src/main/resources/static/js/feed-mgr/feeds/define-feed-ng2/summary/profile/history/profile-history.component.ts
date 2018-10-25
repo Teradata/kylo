@@ -8,8 +8,8 @@ import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: 'profile-history',
-    styleUrls: ['js/feed-mgr/feeds/define-feed-ng2/summary/profile/history/profile-history.component.scss'],
-    templateUrl: 'js/feed-mgr/feeds/define-feed-ng2/summary/profile/history/profile-history.component.html',
+    styleUrls: ['./profile-history.component.scss'],
+    templateUrl: './profile-history.component.html',
 })
 export class ProfileHistoryComponent implements OnInit {
 

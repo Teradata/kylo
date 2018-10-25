@@ -8,8 +8,8 @@ import * as _ from "underscore"
 
 @Component({
     selector: "catalog-table-browser",
-    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
+    styleUrls: ["../api/browser.component.scss"],
+    templateUrl: "../api/browser.component.html"
 })
 export class TablesComponent extends BrowserComponent {
 

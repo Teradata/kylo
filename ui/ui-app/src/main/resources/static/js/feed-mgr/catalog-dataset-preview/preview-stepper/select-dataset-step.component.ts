@@ -31,8 +31,8 @@ export enum DataSetMode {
 
 @Component({
     selector: "select-dataset-step",
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/select-dataset-step.component.html",
-    styleUrls:["js/feed-mgr/catalog-dataset-preview/preview-stepper/select-dataset-step.component.scss"],
+    templateUrl: "./select-dataset-step.component.html",
+    styleUrls:["./select-dataset-step.component.scss"],
     changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class SelectDatasetStepComponent  extends DatasourceComponent implements OnInit, OnDestroy {

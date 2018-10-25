@@ -29,7 +29,7 @@ export interface DomainTypeConflictDialogData {
  */
 @Component({
     selector:"domain-type-conflict-dialog",
-    templateUrl: "js/feed-mgr/shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component.html"
+    templateUrl: "./domain-type-conflict-dialog.component.html"
 })
 export class DomainTypeConflictDialogComponent implements OnInit, OnDestroy{
 

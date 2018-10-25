@@ -135,5 +135,5 @@ angular.module(moduleName).component('tbaOptionsMenu', {
         additionalOptions: '=?',
         selectedAdditionalOption: "&?"
     },
-    templateUrl: 'js/common/options-menu/options-menu-template.html'
+    templateUrl: './options-menu-template.html'
 });

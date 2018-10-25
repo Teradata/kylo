@@ -249,7 +249,7 @@ angular.module(moduleName).component('entityAccessControl', {
         queryForEntityAccess: '=?'
     }, 
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/shared/entity-access-control/entity-access-control.html',
+    templateUrl: './entity-access-control.html',
     controller: EntityAccessControlController
 });
 

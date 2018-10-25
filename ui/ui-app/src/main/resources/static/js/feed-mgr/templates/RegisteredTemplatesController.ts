@@ -220,7 +220,7 @@ export class RegisteredTemplatesController {
 
 const module = angular.module(moduleName).component('registeredTemplatesController', {
 
-    templateUrl: 'js/feed-mgr/templates/registered-templates.html',
+    templateUrl: './registered-templates.html',
     controller: RegisteredTemplatesController,
     controllerAs: 'vm'
 

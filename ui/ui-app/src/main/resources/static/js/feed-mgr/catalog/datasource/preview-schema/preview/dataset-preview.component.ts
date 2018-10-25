@@ -16,8 +16,8 @@ import {DatasetPreviewService} from "../service/dataset-preview.service";
 
 @Component({
     selector: "dataset-preview",
-    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview.component.html"
+    styleUrls:["./dataset-preview.component.scss"],
+    templateUrl: "./dataset-preview.component.html"
 })
 export class DatasetPreviewComponent implements OnInit{
 

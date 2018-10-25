@@ -164,7 +164,7 @@ angular.module(moduleName).component("permissionsTableController",
 {
         controller: PermissionsTableController,
         controllerAs: "vm",
-        //templateUrl: "js/auth/shared/permissions-table/permissions-table.html"
+        //templateUrl: "./permissions-table.html"
 });
 //angular.module(moduleName).controller("PermissionsTableController",[PermissionsTableController]);
 /* Creates a directive for displaying and editing permissions.
@@ -179,6 +179,6 @@ angular.module(moduleName).directive("thinkbigPermissionsTable",
                 model: "=allowed",
                 readOnly: "=?"
             },
-            templateUrl: "js/auth/shared/permissions-table/permissions-table.html"
+            templateUrl: "./permissions-table.html"
         };
   }]);

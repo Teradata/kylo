@@ -59,7 +59,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['feed-mgr/sla/service-level-agreement','feed-mgr/sla/ServiceLevelAgreementInitController'])
+                // loadMyCtrl: this.lazyLoadController(['./service-level-agreement','./ServiceLevelAgreementInitController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     import(/* webpackChunkName: "feedmgr.sla.controller" */ "./service-level-agreement")
                         .then(mod => {
@@ -92,13 +92,13 @@ class ModuleFactory  {
             url:'/sla-email-templates',
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html',
+                    templateUrl: './sla-email-templates/sla-email-templates.html',
                     controller:"SlaEmailTemplatesController",
                     controllerAs:"vm"
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['feed-mgr/sla/sla-email-templates/SlaEmailTemplatesController'])
+                // loadMyCtrl: this.lazyLoadController(['./sla-email-templates/SlaEmailTemplatesController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feedmgr.sla.email-templates.controller" */ './sla-email-templates/SlaEmailTemplatesController')
                         .then(mod => {
@@ -127,13 +127,13 @@ class ModuleFactory  {
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-template.html',
+                        templateUrl: './sla-email-templates/sla-email-template.html',
                         controllerAs: "vm",
                         controller:"slaEmailTemplateController"
                     }
                 },
                 resolve: {
-                    // loadMyCtrl: this.lazyLoadController(['feed-mgr/sla/sla-email-templates/SlaEmailTemplateController'])
+                    // loadMyCtrl: this.lazyLoadController(['./sla-email-templates/SlaEmailTemplateController'])
                     loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                         return import(/* webpackChunkName: "feedmgr.sla.email-template.controller" */ './sla-email-templates/SlaEmailTemplateController')
                             .then(mod => {

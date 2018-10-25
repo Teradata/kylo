@@ -37,7 +37,7 @@ angular.module(moduleName).component("thinkbigTemplateAccessControl", {
         stepIndex: '@'
     },
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/access-control/template-access-control.html',
+    templateUrl: './template-access-control.html',
     controller: TemplateAccessControlController,
 
 });

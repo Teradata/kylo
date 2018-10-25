@@ -17,8 +17,8 @@ export class StrategyItem {
 }
 
 @Component({
-    templateUrl: 'js/feed-mgr/visual-query/transform-data/main-dialogs/sample-dialog.html',
-    styleUrls: ["js/feed-mgr/visual-query/transform-data/main-dialogs/sample-dialog.scss"]
+    templateUrl: './sample-dialog.html',
+    styleUrls: ["./sample-dialog.scss"]
 })
 export class SampleDialog {
 

@@ -128,5 +128,5 @@ angular.module(moduleName).component('tbaFeedStatusIndicator',
         panelTitle: "@"
     },
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/feed-status-indicator/feed-status-indicator-template.html"
+    templateUrl: "./feed-status-indicator-template.html"
 });

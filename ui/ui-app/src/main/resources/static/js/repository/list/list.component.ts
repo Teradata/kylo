@@ -15,7 +15,7 @@ import {TemplateUpdatesDialog} from "../dialog/template-updates-dialog";
  */
 @Component({
     selector: "list-templates",
-    templateUrl: "js/repository/list/list.component.html"
+    templateUrl: "./list.component.html"
 })
 export class ListTemplatesComponent implements OnInit {
 

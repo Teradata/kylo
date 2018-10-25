@@ -20,7 +20,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/feeds/feeds-table.html',
+                    templateUrl: './feeds-table.html',
                     controller:'FeedsTableController',
                     controllerAs:'vm'
                 }

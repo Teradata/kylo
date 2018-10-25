@@ -243,7 +243,7 @@ export class JobsCardController implements ng.IComponentController{
                 this.$mdMenu.hide();
                 this.$mdDialog.show({
                     controller:"AbandonAllJobsDialogController",
-                    templateUrl: 'js/ops-mgr/jobs/abandon-all-jobs-dialog.html',
+                    templateUrl: './abandon-all-jobs-dialog.html',
                     parent: angular.element(document.body),
                     clickOutsideToClose: false,
                     fullscreen: true,
@@ -608,7 +608,7 @@ export class JobsCardController implements ng.IComponentController{
                 attachTo: angular.element(document.body),
                 controller: 'JobFilterHelpPanelMenuCtrl',
                 controllerAs: 'ctrl',
-                templateUrl: 'js/ops-mgr/jobs/jobs-filter-help-template.html',
+                templateUrl: './jobs-filter-help-template.html',
                 panelClass: 'filter-help',
                 position: position,
                 locals: {
@@ -716,7 +716,7 @@ angular.module(moduleName).directive('tbaJobs', [
             },
             controllerAs: 'vm',
             scope: true,
-            templateUrl: 'js/ops-mgr/jobs/jobs-template.html',
+            templateUrl: './jobs-template.html',
             controller: "JobsCardController",
             link: function($scope: any, element: any, attrs: any, controller: any) {
 

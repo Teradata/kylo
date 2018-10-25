@@ -10,7 +10,7 @@ import {DynamicFormBuilder, FormConfig} from "../services/dynamic-form-builder";
 
 @Component({
     selector:"dynamic-form-example",
-    templateUrl: "js/feed-mgr/shared/dynamic-form/example/dynamic-form-example.component.html"
+    templateUrl: "./dynamic-form-example.component.html"
 })
 export class DynamicFormExampleComponent implements OnInit,OnDestroy{
 

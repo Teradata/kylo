@@ -3,7 +3,7 @@ import * as _ from "underscore";
 import * as moment from 'moment';
 import {RestUrlConstants} from "./RestUrlConstants";
 
-//const moduleName = require('feed-mgr/module-name');
+//const moduleName = require('../module-name');
 
 
 export class HiveService {

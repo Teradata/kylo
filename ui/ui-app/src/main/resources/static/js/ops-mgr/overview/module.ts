@@ -31,13 +31,13 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    // templateUrl: 'js/ops-mgr/overview/overview.html',
+                    // templateUrl: './overview.html',
                     component:"overviewController",
                     // controllerAs:"vm"
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['ops-mgr/overview/OverviewController'])
+                // loadMyCtrl: this.lazyLoadController(['./OverviewController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.overview.controller" */ './OverviewController')
                         .then(mod => {

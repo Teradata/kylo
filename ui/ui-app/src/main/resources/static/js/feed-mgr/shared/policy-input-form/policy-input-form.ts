@@ -62,5 +62,5 @@ angular.module(moduleName)
             onPropertyChange:"&?"
         },
         controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/shared/policy-input-form/policy-input-form.html',
+        templateUrl: './policy-input-form.html',
     });

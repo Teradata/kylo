@@ -173,7 +173,7 @@ angular.module(moduleName).component("thinkbigPropertiesAdmin", {
         model: "=fields",
         isValid: "=?"
     },
-    templateUrl: "js/feed-mgr/shared/properties-admin/properties-admin.html"
+    templateUrl: "./properties-admin.html"
 });
 
 angular.module(moduleName).component("thinkbigPropertiesAdminEditor", {
@@ -183,6 +183,6 @@ angular.module(moduleName).component("thinkbigPropertiesAdminEditor", {
         model: "=fields",
         isValid: "=?"
     },
-    templateUrl: "js/feed-mgr/shared/properties-admin/properties-admin-editor.html"
+    templateUrl: "./properties-admin-editor.html"
 });
 

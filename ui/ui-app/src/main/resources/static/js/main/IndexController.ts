@@ -212,7 +212,7 @@ export class IndexController implements angular.IComponentController {
             this.loading = true;
 
             this.$mdDialog.show({
-                templateUrl: 'js/main/loading-dialog.html',
+                templateUrl: './loading-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true
@@ -287,5 +287,5 @@ export class IndexController implements angular.IComponentController {
   angular.module('kylo').component("indexController", {
         controller: IndexController,
         controllerAs: "mc",
-        templateUrl: "js/main/index.component.html"
+        templateUrl: "./index.component.html"
     });

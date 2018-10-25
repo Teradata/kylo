@@ -28,7 +28,7 @@ enum State {
 
 @Component({
     selector: "feed-details-processor-field",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/feed-details/feed-details-processor-field.component.html"
+    templateUrl: "./feed-details-processor-field.component.html"
 })
 export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy {
 

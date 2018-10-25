@@ -14,7 +14,7 @@ export class EntityAccessControlDialogService {
         var callbackEvents = { onSave: onSave, onCancel: onCancel };
         return this.$mdDialog.show({
             controller: 'EntityAccessControlDialogController',
-            templateUrl: 'js/feed-mgr/shared/entity-access-control/entity-access-control-dialog.html',
+            templateUrl: './entity-access-control-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,

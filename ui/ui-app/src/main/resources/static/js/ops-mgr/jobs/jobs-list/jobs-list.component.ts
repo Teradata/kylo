@@ -30,8 +30,8 @@ import {JobsFilterHelpPanelDialogComponent} from "./jobs-filter-help-panel-dialo
 
 @Component({
     selector: 'jobs-list',
-    styleUrls:['js/ops-mgr/jobs/jobs-list/jobs-list.component.scss'],
-    templateUrl: 'js/ops-mgr/jobs/jobs-list/jobs-list.component.html'
+    styleUrls:['./jobs-list.component.scss'],
+    templateUrl: './jobs-list.component.html'
 })
 export class JobsListComponent extends BaseFilteredPaginatedTableView {
 

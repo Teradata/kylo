@@ -192,26 +192,27 @@ const webpackConfig = (env) => {
                     test: /\.js$/,
                     use: [
                         'babel-loader',
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static/js",
-                                modules: ["feed-mgr", "ops-mgr"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static",
-                                modules: ["bower_components"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.template.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static"
-                            }
-                        }],
+                        // {
+                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
+                        //     options: {
+                        //         baseUrl: "src/main/resources/static/js",
+                        //         modules: ["feed-mgr", "ops-mgr"]
+                        //     }
+                        // },
+                        // {
+                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
+                        //     options: {
+                        //         baseUrl: "src/main/resources/static",
+                        //         modules: ["bower_components"]
+                        //     }
+                        // },
+                        // {
+                        //     loader: path.resolve('./webpack.angular.template.loader.js'),
+                        //     options: {
+                        //         baseUrl: "src/main/resources/static"
+                        //     }
+                        // }
+                        ],
                     include: [
                         staticDir
                     ],
@@ -225,48 +226,48 @@ const webpackConfig = (env) => {
                 {
                     test: /\.ts$/,
                     use: [
-                        {
-                            loader: 'cache-loader',
-                            options: {
-                                cacheDirectory: path.resolve('target/cache/cache-loader')
-                            }
-                        },
+                        // {
+                        //     loader: 'cache-loader',
+                        //     options: {
+                        //         cacheDirectory: path.resolve('target/cache/cache-loader')
+                        //     }
+                        // },
                         // {
                         //     loader: 'thread-loader',
                         //     options: {
                         //         workers: require('os').cpus().length
                         //     }
                         // },
-                        // "@ngtools/webpack",
-                        {
-                            loader: 'ts-loader',
-                            options: {
-                                configFile: tsConfigFile,
-                                transpileOnly: true,
-                                happyPackMode: true
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static/js",
-                                modules: ["feed-mgr", "ops-mgr"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.module.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static",
-                                modules: ["bower_components"]
-                            }
-                        },
-                        {
-                            loader: path.resolve('./webpack.angular.template.loader.js'),
-                            options: {
-                                baseUrl: "src/main/resources/static"
-                            }
-                        },
-                        'angular-router-loader'
+                        "@ngtools/webpack",
+                        // {
+                        //     loader: 'ts-loader',
+                        //     options: {
+                        //         configFile: tsConfigFile,
+                        //         transpileOnly: true,
+                        //         happyPackMode: true
+                        //     }
+                        // },
+                        // {
+                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
+                        //     options: {
+                        //         baseUrl: "src/main/resources/static/js",
+                        //         modules: ["feed-mgr", "ops-mgr"]
+                        //     }
+                        // },
+                        // {
+                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
+                        //     options: {
+                        //         baseUrl: "src/main/resources/static",
+                        //         modules: ["bower_components"]
+                        //     }
+                        // },
+                        // {
+                        //     loader: path.resolve('./webpack.angular.template.loader.js'),
+                        //     options: {
+                        //         baseUrl: "src/main/resources/static"
+                        //     }
+                        // },
+                        // 'angular-router-loader'
                     ],
                     exclude: [
                         nodeModulesDir,
@@ -322,11 +323,11 @@ const webpackConfig = (env) => {
 
             // new BundleAnalyzerPlugin(),
 
-            // new AngularCompilerPlugin({
-            //     mainPath: path.join(__dirname, 'src/main/resources/static/js/main.ts'),
-            //     tsConfigPath: tsConfigFile,
-            //     sourceMap: true
-            // }),
+            new AngularCompilerPlugin({
+                mainPath: path.join(__dirname, 'src/main/resources/static/js/main.ts'),
+                tsConfigPath: tsConfigFile,
+                sourceMap: true
+            }),
 
             // new AngularCompilerPlugin({
             //     "mainPath": "main.ts",

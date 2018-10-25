@@ -5,7 +5,7 @@ import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
 import AccessConstants from '../../constants/AccessConstants';
 import {Transition} from "@uirouter/core";
-import "ops-mgr/alerts/module-require";
+import "./module-require";
 import {FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../feed-mgr/model/feed/feed-constants";
 
    /** Manages the Alert Details page.
@@ -184,7 +184,7 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
                 },
                 parent: angular.element(document.body),
                 targetEvent: $event,
-                templateUrl: "js/ops-mgr/alerts/event-dialog.html"
+                templateUrl: "./event-dialog.html"
             }).then((result: any)=> {
                 if (result) {
                     this.loadAlert(this.alertData.id);
@@ -261,7 +261,7 @@ const module = angular.module(moduleName).component("alertDetailsController", {
         },
         controller: AlertDetailsController,
         controllerAs: "vm",
-        templateUrl: "js/ops-mgr/alerts/alert-details.html"
+        templateUrl: "./alert-details.html"
     });
 export default module;
 
@@ -279,7 +279,7 @@ angular.module(moduleName).directive("tbaAlertDetails",
                     },
                     controllerAs: "vm",
                     scope: true,
-                    templateUrl: "js/ops-mgr/alerts/alert-details-template.html",
+                    templateUrl: "./alert-details-template.html",
                     controller: AlertDetailsDirectiveController
                 };
             }

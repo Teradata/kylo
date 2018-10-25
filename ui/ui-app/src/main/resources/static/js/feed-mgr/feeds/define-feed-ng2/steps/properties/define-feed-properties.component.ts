@@ -14,8 +14,8 @@ import {FormGroupUtil} from "../../../../../services/form-group-util";
 
 @Component({
     selector: "define-feed-properties",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/properties/define-feed-properties.component.html"
+    styleUrls: ["./define-feed-properties.component.scss"],
+    templateUrl: "./define-feed-properties.component.html"
 })
 export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
 

@@ -6,8 +6,8 @@ import {MatDialog} from "@angular/material/dialog";
 
 @Component({
     selector: "template-info",
-    styleUrls: ["js/repository/template-info/template-info.component.css"],
-    templateUrl: "js/repository/template-info/template-info.component.html"
+    styleUrls: ["./template-info.component.css"],
+    templateUrl: "./template-info.component.html"
 })
 export class TemplateInfoComponent implements OnInit {
     template: any;

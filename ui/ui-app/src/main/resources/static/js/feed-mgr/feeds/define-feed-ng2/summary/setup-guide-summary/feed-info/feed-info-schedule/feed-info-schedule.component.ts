@@ -12,7 +12,7 @@ import {FeedLoadingService} from "../../../../services/feed-loading-service";
 
 @Component({
     selector:"feed-info-schedule",
-    templateUrl:"js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/feed-info/feed-info-schedule/feed-info-schedule.component.html"
+    templateUrl:"./feed-info-schedule.component.html"
 })
 export class FeedInfoScheduleComponent extends AbstractFeedInfoItemComponent implements OnInit{
 

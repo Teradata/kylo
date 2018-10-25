@@ -4,7 +4,7 @@ import {ColumnProfile} from "../../wrangler/api/column-profile";
 
 
 @Component({
-    templateUrl: 'js/feed-mgr/visual-query/transform-data/main-dialogs/analyze-column-dialog.html'
+    templateUrl: './analyze-column-dialog.html'
 })
 export class AnalyzeColumnDialog {
     /**

@@ -5,7 +5,7 @@ import {Component, Inject} from "@angular/core";
  * The Controller used for the abandon all
  */
 @Component({
-    templateUrl: 'js/ops-mgr/jobs/jobs-list/abandon-all-jobs-dialog.component.html'
+    templateUrl: './abandon-all-jobs-dialog.component.html'
 })
 export class AbandonAllJobsDialogComponent implements ng.IComponentController {
     counter: number;

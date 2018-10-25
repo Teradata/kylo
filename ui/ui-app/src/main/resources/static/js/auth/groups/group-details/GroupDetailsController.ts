@@ -249,6 +249,6 @@ const module = angular.module(moduleName)
         },
         controller: GroupDetailsController,
         controllerAs: "vm",
-        templateUrl: "js/auth/groups/group-details/group-details.html"
+        templateUrl: "./group-details.html"
     });
 export default module;

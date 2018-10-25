@@ -143,6 +143,6 @@ const module = angular.module(moduleName)
             model: "<"
         },
         controller: DomainTypeDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/details.component.html"
+        templateUrl: "./details.component.html"
     });
 export default module;

@@ -36,6 +36,6 @@ angular.module(moduleName)
             cronExpression: '='
         },
         controller : CronExpressionPreview,
-        templateUrl: 'js/feed-mgr/shared/cron-expression-preview/cron-expression-preview.html',
+        templateUrl: './cron-expression-preview.html',
     });
 

@@ -398,5 +398,5 @@ export default class SideNav implements ng.IComponentController {
 
 angular.module(moduleName).component("kyloSideNav", {
     controller: SideNav,
-    templateUrl: 'js/side-nav/side-nav.html'
+    templateUrl: './side-nav.html'
 });

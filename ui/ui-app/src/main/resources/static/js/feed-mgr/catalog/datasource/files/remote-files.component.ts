@@ -6,8 +6,8 @@ import {Component} from "@angular/core";
 
 @Component({
     selector: "catalog-file-browser",
-    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
+    styleUrls: ["../api/browser.component.scss"],
+    templateUrl: "../api/browser.component.html"
 })
 export class RemoteFilesComponent extends BrowserComponent {
 

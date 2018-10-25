@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { FeedService } from '../../../services/FeedService';
 import CategoriesService from '../../../services/CategoriesService';
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 export class DefineFeedGeneralInfoController {
         stepIndex: any;
@@ -239,5 +239,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedGeneralInfoController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-general-info.html',
+        templateUrl: './define-feed-general-info.html',
     });

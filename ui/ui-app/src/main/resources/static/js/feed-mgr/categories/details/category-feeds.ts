@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/categories/module-name');
+const moduleName = require('../module-name');
 
 export class CategoryFeedsController {
 
@@ -33,5 +33,5 @@ export class CategoryFeedsController {
 angular.module(moduleName).component('thinkbigCategoryFeeds',{
     controller: CategoryFeedsController,
     controllerAs: "vm",
-    templateUrl: "js/feed-mgr/categories/details/category-feeds.html"
+    templateUrl: "./category-feeds.html"
 });

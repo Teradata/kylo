@@ -8,7 +8,7 @@ import {FieldGroup} from "./model/FieldGroup";
 
 @Component({
     selector: 'dynamic-form',
-    templateUrl: 'js/feed-mgr/shared/dynamic-form/dynamic-form.component.html'
+    templateUrl: './dynamic-form.component.html'
 })
 export class DynamicFormComponent implements OnInit, OnChanges {
 

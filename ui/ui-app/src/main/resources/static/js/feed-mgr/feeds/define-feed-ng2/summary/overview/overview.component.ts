@@ -13,8 +13,8 @@ import {FeedLink} from "../../model/feed-link.model";
 
 @Component({
     selector: "define-feed-overview",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/overview/overview.component.html"
+    styleUrls: ["./overview.component.scss"],
+    templateUrl: "./overview.component.html"
 })
 export class OverviewComponent extends AbstractLoadFeedComponent  {
 

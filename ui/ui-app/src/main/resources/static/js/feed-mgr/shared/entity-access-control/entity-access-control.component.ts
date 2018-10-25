@@ -15,7 +15,7 @@ import {FormGroup} from "@angular/forms";
 
 @Component ( {
     selector: "entity-access-control-ng2",
-    templateUrl:"js/feed-mgr/shared/entity-access-control/entity-access-control.component.html"
+    templateUrl:"./entity-access-control.component.html"
     }
 )
 

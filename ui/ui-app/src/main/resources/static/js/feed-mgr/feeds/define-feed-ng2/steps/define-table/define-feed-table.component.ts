@@ -49,7 +49,7 @@ import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/
 import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {DefineFeedSourceSampleService} from "../source-sample/define-feed-source-sample.service";
 import {CatalogService} from "../../../../catalog/api/services/catalog.service";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../../../define-feed/module-name');
 
 
 class TablePermissions {
@@ -65,8 +65,8 @@ class TablePermissions {
 
 @Component({
     selector: "define-feed-step-table",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/define-table/define-feed-table.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/define-table/define-feed-table.component.html"
+    styleUrls: ["./define-feed-table.component.css"],
+    templateUrl: "./define-feed-table.component.html"
 })
 export class DefineFeedTableComponent extends AbstractFeedStepComponent implements OnInit,OnDestroy{
 

@@ -4,8 +4,8 @@ import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
 import HttpService from "../../services/HttpService";
-import 'ops-mgr/alerts/module-require';
-import 'ops-mgr/overview/module-require';
+import '../alerts/module-require';
+import './module-require';
 
 export class OverviewController implements ng.IComponentController{
 allowed: boolean;
@@ -183,6 +183,6 @@ constructor(private $scope: IScope,
 const module = angular.module(moduleName).component("overviewController",{
     controller: OverviewController,
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/overview.html"
+    templateUrl: "./overview.html"
 });
 export default module;

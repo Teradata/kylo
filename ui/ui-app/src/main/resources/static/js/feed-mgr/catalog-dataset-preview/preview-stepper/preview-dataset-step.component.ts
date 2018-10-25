@@ -28,8 +28,8 @@ import {KyloRouterService} from "../../../services/kylo-router.service";
 
 @Component({
     selector: "preview-dataset-step",
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dataset-step.component.html",
-    styleUrls:["js/feed-mgr/catalog-dataset-preview/preview-stepper/preview-dataset-step.component.scss"],
+    templateUrl: "./preview-dataset-step.component.html",
+    styleUrls:["./preview-dataset-step.component.scss"],
     changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class PreviewDatasetStepComponent extends CatalogPreviewDatasetComponent {

@@ -99,6 +99,6 @@ angular.module(moduleName).component("tbaCardFilterHeader",{
         customFilterTemplate:'@?'
     },
     controllerAs: '$cardFilterHeader',
-    templateUrl: 'js/common/card-filter-header/card-filter-header-template.html'
+    templateUrl: './card-filter-header-template.html'
     
 });

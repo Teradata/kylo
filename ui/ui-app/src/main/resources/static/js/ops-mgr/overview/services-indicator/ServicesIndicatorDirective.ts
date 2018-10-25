@@ -230,7 +230,7 @@ export default class controller implements ng.IComponentController {
                     $mdDialog.cancel();
                 };
             }],
-            templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html',
+            templateUrl: './services-details-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: true,
             fullscreen: true,
@@ -331,5 +331,5 @@ angular.module(moduleName).component('tbaServicesIndicator', {
         panelTitle: "@"
     },
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/overview/services-indicator/services-indicator-template.html"
+    templateUrl: "./services-indicator-template.html"
 });

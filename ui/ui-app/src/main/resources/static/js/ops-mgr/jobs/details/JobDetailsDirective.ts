@@ -683,7 +683,7 @@ angular.module(moduleName).directive("tbaJobDetails", [
             },
             controllerAs: 'vm',
             scope: {},
-            templateUrl: 'js/ops-mgr/jobs/details/job-details-template.html',
+            templateUrl: './job-details-template.html',
             controller: "JobDetailsDirectiveController",
             link: function ($scope, element, attrs, controller) {
 

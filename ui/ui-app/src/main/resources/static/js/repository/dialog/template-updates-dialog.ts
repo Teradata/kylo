@@ -8,7 +8,7 @@ import {TemplateRepository} from "../services/model";
 
 @Component({
     selector: 'template-publish-dialog',
-    templateUrl: 'js/repository/dialog/template-updates-dialog.html',
+    templateUrl: './template-updates-dialog.html',
 })
 export class TemplateUpdatesDialog {
 

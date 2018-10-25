@@ -25,13 +25,13 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/jobs/details/job-details.html',
+                    templateUrl: './job-details.html',
                     controller:"JobDetailsController",
                     controllerAs:"vm"
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['ops-mgr/jobs/details/JobDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['./JobDetailsController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.job-details.controller" */ './JobDetailsController')
                         .then(mod => {

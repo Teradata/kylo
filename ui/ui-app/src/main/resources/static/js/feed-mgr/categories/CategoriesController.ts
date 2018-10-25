@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
-const moduleName = require('feed-mgr/categories/module-name');
+const moduleName = require('./module-name');
 
 export class CategoriesController {
 
@@ -74,7 +74,7 @@ export class CategoriesController {
 const module = angular.module(moduleName).component('categoriesController',  {
     controller: CategoriesController,
     controllerAs: "vm",
-    templateUrl: 'js/feed-mgr/categories/categories.html'   
+    templateUrl: './categories.html'   
 });
 
 export default module;

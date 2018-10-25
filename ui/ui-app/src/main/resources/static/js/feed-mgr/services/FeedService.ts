@@ -572,7 +572,7 @@ export class FeedService {
             showFeedSavingDialog= (ev: any, message: any, feedName: any) => {
                 this.$mdDialog.show({
                     controller: 'FeedSavingDialogController',
-                    templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html',
+                    templateUrl: '../feeds/edit-feed/details/feed-saving-dialog.html',
                     parent: angular.element(document.body),
                     targetEvent: ev,
                     clickOutsideToClose: false,

@@ -55,7 +55,7 @@ export class KyloDefineFeedStepTransclude implements IPostLink {
     }
 }
 
-angular.module(require('feed-mgr/feeds/define-feed/module-name'))
+angular.module(require('./module-name'))
     .component("kyloDefineFeedStep", {
         bindings: {
             step: "<",
@@ -65,7 +65,7 @@ angular.module(require('feed-mgr/feeds/define-feed/module-name'))
         require: {
             stepperController: "^thinkbigStepper"
         },
-        templateUrl: "js/feed-mgr/feeds/define-feed/define-feed-step.html",
+        templateUrl: "./define-feed-step.html",
         transclude: true
     })
     .component("kyloDefineFeedStepTransclude", {

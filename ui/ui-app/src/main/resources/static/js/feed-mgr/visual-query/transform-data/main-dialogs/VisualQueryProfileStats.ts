@@ -10,7 +10,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
  * @constructor
  */
 @Component({
-    templateUrl: "js/feed-mgr/visual-query/transform-data/main-dialogs/profile-stats-dialog.html"
+    templateUrl: "./profile-stats-dialog.html"
 })
 export default class VisualQueryProfileStatsController implements ng.IComponentController {
 

@@ -27,8 +27,8 @@ import {KyloRouterService} from "../../../../services/kylo-router.service";
 
 @Component({
     selector: "catalog-preview-dataset",
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/catalog-preview-dataset.component.html",
-    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/catalog-preview-dataset.component.scss"],
+    templateUrl: "./catalog-preview-dataset.component.html",
+    styleUrls:["./catalog-preview-dataset.component.scss"],
     //changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {

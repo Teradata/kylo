@@ -8,7 +8,7 @@ import {SparkDataSet} from "../model/spark-data-set.model";
 import {Injectable} from "@angular/core";
 import {StringUtils} from "../../common/utils/StringUtils";
 
-//const moduleName: string = require("feed-mgr/module-name");
+//const moduleName: string = require("../module-name");
 
 /**
  * Prefix for table aliases.

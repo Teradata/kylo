@@ -28,7 +28,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['feed-mgr/business-metadata/BusinessMetadataController'])
+                // loadMyCtrl: this.lazyLoadController(['./BusinessMetadataController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feedmgr.business-metadata.controller" */ './BusinessMetadataController')
                         .then(mod => {

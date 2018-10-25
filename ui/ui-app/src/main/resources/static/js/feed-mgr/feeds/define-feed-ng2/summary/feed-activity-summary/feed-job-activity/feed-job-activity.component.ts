@@ -16,7 +16,7 @@ declare const d3: any;
 
 @Component({
     selector: "feed-job-activity",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-job-activity/feed-job-activity.component.html"
+    templateUrl: "./feed-job-activity.component.html"
 })
 export class FeedJobActivityComponent implements OnInit {
 

@@ -5,7 +5,7 @@ import {TableColumn} from "./model/table-view-model";
 
 @Component({
     selector: 'dataset-simple-table',
-    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/dataset-simple-table.component.scss"],
+    styleUrls:["./dataset-simple-table.component.scss"],
     template:`
       <td-data-table
           [data]="filteredData"

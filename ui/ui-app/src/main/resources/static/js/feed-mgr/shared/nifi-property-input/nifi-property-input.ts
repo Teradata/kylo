@@ -12,7 +12,7 @@ var directive = function () {
             propertyDisabled:'=?',
             onPropertyChange:'&?'
         },
-        templateUrl: 'js/feed-mgr/shared/nifi-property-input/nifi-property-input.html',
+        templateUrl: './nifi-property-input.html',
         link: function ($scope:any, element:any, attrs:any) {
             element.addClass('nifi-property-input layout-padding-top-bottom')
             if($scope.property.formKey == null) {

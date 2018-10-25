@@ -13,8 +13,8 @@ import {KyloVisNetworkComponent} from "../../../../../common/kylo-vis-network/ky
 
 @Component({
     selector: "feed-lineage",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/feed-lineage/feed-lineage.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-lineage/feed-lineage.component.html"
+    styleUrls: ["./feed-lineage.component.css"],
+    templateUrl: "./feed-lineage.component.html"
 })
 export class FeedLineageComponment extends AbstractLoadFeedComponent implements OnInit {
 

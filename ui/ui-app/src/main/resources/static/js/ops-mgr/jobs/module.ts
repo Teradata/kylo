@@ -25,7 +25,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/jobs/jobs.html',
+                    templateUrl: './jobs.html',
                     controller:"JobsPageController",
                     controllerAs:"vm"
                 }

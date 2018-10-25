@@ -12,7 +12,7 @@ import {QueryEngine, SampleFile} from "../wrangler/query-engine";
 
 @Component({
     selector: 'upload-sample-file',
-    templateUrl: 'js/feed-mgr/visual-query/build-query/upload-sample-file.component.html'
+    templateUrl: './upload-sample-file.component.html'
 })
 export class UploadSampleFileComponent implements OnInit {
 

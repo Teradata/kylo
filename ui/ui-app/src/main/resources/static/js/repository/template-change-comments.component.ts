@@ -2,8 +2,8 @@ import {Component, Inject, Input} from "@angular/core";
 
 @Component({
     selector: 'template-change-comments',
-    styleUrls:["js/repository/template-change-comments.component.css"],
-    templateUrl: 'js/repository/template-change-comments.component.html',
+    styleUrls:["./template-change-comments.component.css"],
+    templateUrl: './template-change-comments.component.html',
 })
 export class TemplateChangeCommentsComponent {
 

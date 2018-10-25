@@ -26,7 +26,7 @@ export class AccessDeniedController implements ng.IComponentController{
   angular.module('kylo').component("accessDeniedController", { 
         controller: AccessDeniedController,
         controllerAs: "vm",
-        templateUrl: "js/main/access-denied.html"
+        templateUrl: "./access-denied.html"
     });
   //.controller('AccessDeniedController',[AccessDeniedController]);
 

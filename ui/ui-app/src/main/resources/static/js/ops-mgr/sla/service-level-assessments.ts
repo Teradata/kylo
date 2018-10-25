@@ -277,6 +277,6 @@ const module = angular.module(moduleName).component("kyloServiceLevelAssessments
         filter:'@'
     },
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/sla/service-level-assessments-template.html"
+    templateUrl: "./service-level-assessments-template.html"
 });
 export default module;

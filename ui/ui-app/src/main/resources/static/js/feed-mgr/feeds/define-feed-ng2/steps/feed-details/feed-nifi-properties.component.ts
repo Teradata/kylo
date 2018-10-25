@@ -31,8 +31,8 @@ export class NiFiPropertiesProcessorsChangeEvent {
 
 @Component({
     selector: "feed-nifi-properties",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/feed-details/feed-nifi-properties.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/feed-details/feed-nifi-properties.component.html"
+    styleUrls: ["./feed-nifi-properties.component.css"],
+    templateUrl: "./feed-nifi-properties.component.html"
 })
 export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
 

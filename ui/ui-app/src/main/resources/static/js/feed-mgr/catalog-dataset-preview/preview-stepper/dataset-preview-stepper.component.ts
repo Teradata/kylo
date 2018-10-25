@@ -22,7 +22,7 @@ export class DatasetPreviewStepperCanceledEvent{
 
 @Component({
     selector: "dataset-preview-stepper",
-    templateUrl: "js/feed-mgr/catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component.html",
+    templateUrl: "./dataset-preview-stepper.component.html",
     changeDetection:ChangeDetectionStrategy.OnPush
 })
 export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{

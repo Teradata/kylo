@@ -156,7 +156,7 @@ export class HqlEditorController {
         this.$mdDialog.show({
             controller: 'HqlFullScreenEditorController',
             controllerAs: 'vm',
-            templateUrl: 'js/feed-mgr/shared/hql-editor/hql-editor-fullscreen.html',
+            templateUrl: './hql-editor-fullscreen.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,
@@ -222,7 +222,7 @@ angular.module(moduleName).component('thinkbigHqlEditor', {
         tableId: '@',
     },
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/shared/hql-editor/hql-editor.html',
+    templateUrl: './hql-editor.html',
     controller: HqlEditorController,
     require: {
         ngModel: "?ngModel"

@@ -1,7 +1,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 export class FeedErrorCardHeader{
     static readonly $inject = ["$scope","FeedCreationErrorService"];
@@ -23,5 +23,5 @@ export class FeedErrorCardHeader{
 }
 angular.module(moduleName).
     component("thinkbigDefineFeedGeneralInfao", {
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/feed-errors-card-header.html',
+        templateUrl: './feed-errors-card-header.html',
     });

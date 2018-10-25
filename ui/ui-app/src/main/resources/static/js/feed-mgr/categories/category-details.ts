@@ -2,9 +2,9 @@ import {Transition} from "@uirouter/core";
 import * as angular from 'angular';
 import AccessControlService from '../../services/AccessControlService';
 
-const moduleName = require('feed-mgr/categories/module-name');
+const moduleName = require('./module-name');
 
-import 'feed-mgr/categories/module-require';
+import './module-require';
 
 export class CategoryDetailsController {
 
@@ -106,6 +106,6 @@ const module = angular.module(moduleName).component('categoryDetailsController',
     },
     controller: CategoryDetailsController,
     controllerAs: "vm",
-    templateUrl: 'js/feed-mgr/categories/category-details.html'
+    templateUrl: './category-details.html'
 });
 export default module;

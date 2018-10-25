@@ -33,7 +33,7 @@ import {StringUtils} from "../../../../common/utils/StringUtils";
 
 
 
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 
 export class ExpansionPanelHelper {
@@ -470,7 +470,7 @@ export class DefineFeedTableController {
                     escapeToClose: false,
                     fullscreen: true,
                     parent: angular.element(document.body),
-                    templateUrl: "js/feed-mgr/shared/apply-domain-type/domain-type-conflict.component.html",
+                    templateUrl: "../../../shared/apply-domain-type/domain-type-conflict.component.html",
                     locals: {
                         data: {
                             columnDef: columnDef,
@@ -699,7 +699,7 @@ export class DefineFeedTableController {
                 escapeToClose: false,
                 fullscreen: true,
                 parent: angular.element(document.body),
-                templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.html",
+                templateUrl: "../../../shared/apply-domain-type/apply-table-domain-types.component.html",
                 locals: {
                     data: data
                 }
@@ -819,5 +819,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedTableController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table.html',
+        templateUrl: './define-feed-table.html',
     });

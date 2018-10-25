@@ -106,8 +106,8 @@ export class FeedProcessorErrorTable {
 
 @Component({
     selector: 'feed-stats-charts',
-    templateUrl: 'js/ops-mgr/feeds/feed-stats-ng2/feed-stats-charts.component.html',
-    styleUrls : ['js/ops-mgr/feeds/feed-stats-ng2/feed-stats-charts.component.scss']
+    templateUrl: './feed-stats-charts.component.html',
+    styleUrls : ['./feed-stats-charts.component.scss']
 
 })
 export class FeedStatsChartsComponent implements OnInit, OnDestroy {

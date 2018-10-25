@@ -181,5 +181,5 @@ angular.module(moduleName).component("tbaServiceHealth", {
         refreshIntervalTime:"@"
     },
     controllerAs: "vm",
-    templateUrl: "js/ops-mgr/service-health/service-health-template.html"
+    templateUrl: "./service-health-template.html"
 });

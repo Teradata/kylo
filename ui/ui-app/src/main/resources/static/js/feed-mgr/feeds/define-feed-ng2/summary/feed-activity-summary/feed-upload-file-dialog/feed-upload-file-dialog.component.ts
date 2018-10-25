@@ -13,7 +13,7 @@ export class FeedUploadFileDialogComponentData{
 
 @Component({
     selector:"feed-upload-file-dialog",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/feed-activity-summary/feed-upload-file-dialog/feed-upload-file-dialog.component.html"
+    templateUrl: "./feed-upload-file-dialog.component.html"
 })
 export class FeedUploadFileDialogComponent implements OnInit, OnDestroy{
 

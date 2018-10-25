@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
-import 'ops-mgr/jobs/module-require';
-import 'ops-mgr/jobs/details/module-require';
+import '../module-require';
+import './module-require';
 
 export class controller implements ng.IComponentController{
     executionId: any;

@@ -97,5 +97,5 @@ angular.module(moduleName).component("verticalSectionLayout",{
         'readonly': '?readonlySection',
         'editable': '?editableSection'
     },
-    templateUrl: 'js/common/vertical-section-layout/vertical-section-layout-template.html'
+    templateUrl: './vertical-section-layout-template.html'
 });

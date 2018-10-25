@@ -4,8 +4,8 @@ import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 
 @Component({
     selector: 'profile-container',
-    styleUrls: ['js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/profile-container.component.scss'],
-    templateUrl: 'js/feed-mgr/feeds/define-feed-ng2/summary/profile/container/profile-container.component.html',
+    styleUrls: ['./profile-container.component.scss'],
+    templateUrl: './profile-container.component.html',
 })
 export class ProfileContainerComponent implements OnInit {
 

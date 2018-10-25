@@ -6,7 +6,7 @@ import {DynamicFormDialogData} from "./dynamic-form-dialog-data";
 
 @Component({
     selector:"simple-dynamic-form-dialog",
-    templateUrl: "js/feed-mgr/shared/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component.html"
+    templateUrl: "./simple-dynamic-form-dialog.component.html"
 })
 export class SimpleDynamicFormDialogComponent implements OnInit, OnDestroy{
 

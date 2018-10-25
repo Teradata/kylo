@@ -3,7 +3,7 @@ import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewCh
 
 @Component({
     selector:'file-upload',
-    templateUrl:'js/common/file-upload/file-upload.component.html'
+    templateUrl:'./file-upload.component.html'
 })
 export class FileUploadComponent implements OnChanges{
 

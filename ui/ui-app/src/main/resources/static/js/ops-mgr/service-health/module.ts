@@ -22,7 +22,7 @@ class ModuleFactory  {
             views: {
                 'content': {
                     component:"tbaServiceHealth",
-                    // templateUrl: 'js/ops-mgr/service-health/service-health.html'
+                    // templateUrl: './service-health.html'
                 }
             },
             resolve: {
@@ -50,13 +50,13 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    // templateUrl: 'js/ops-mgr/service-health/service-detail.html',
+                    // templateUrl: './service-detail.html',
                     component:"serviceHealthDetailsController",
                     // controllerAs:"vm"
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['ops-mgr/service-health/ServiceHealthDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['./ServiceHealthDetailsController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.service-health-details.controller" */ './ServiceHealthDetailsController')
                         .then(mod => {
@@ -80,13 +80,13 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    // templateUrl: 'js/ops-mgr/service-health/service-component-detail.html',
+                    // templateUrl: './service-component-detail.html',
                     component:"serviceComponentHealthDetailsController",
                     // controllerAs:"vm"
                 }
             },
             resolve: {
-                // loadMyCtrl: this.lazyLoadController(['ops-mgr/service-health/ServiceComponentHealthDetailsController'])
+                // loadMyCtrl: this.lazyLoadController(['./ServiceComponentHealthDetailsController'])
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.service-component-health-details.controller" */ './ServiceComponentHealthDetailsController')
                         .then(mod => {

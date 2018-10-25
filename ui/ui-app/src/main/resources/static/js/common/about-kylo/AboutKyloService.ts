@@ -28,7 +28,7 @@ export class AboutKyloService{
        showAboutDialog = ()=> {
             this.$mdDialog.show({
                 controller: 'AboutKyloDialogController',
-                templateUrl: 'js/common/about-kylo/about.html',
+                templateUrl: './about.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 escapeToClose: true,

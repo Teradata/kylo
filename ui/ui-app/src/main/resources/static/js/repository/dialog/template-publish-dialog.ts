@@ -8,7 +8,7 @@ import {TemplateRepository} from "../services/model";
 
 @Component({
     selector: 'template-publish-dialog',
-    templateUrl: 'js/repository/dialog/template-publish-dialog.html',
+    templateUrl: './template-publish-dialog.html',
 })
 export class TemplatePublishDialog implements OnInit {
 

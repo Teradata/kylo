@@ -28,7 +28,7 @@ export interface NewFeedDialogResponse{
 
 @Component({
     selector:"new-feed-dialog",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/new-feed-dialog/new-feed-dialog.component.html"
+    templateUrl: "./new-feed-dialog.component.html"
 })
 export class NewFeedDialogComponent implements OnInit, OnDestroy{
 
