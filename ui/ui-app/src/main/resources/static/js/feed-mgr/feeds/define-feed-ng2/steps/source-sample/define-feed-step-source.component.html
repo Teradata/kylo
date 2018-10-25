@@ -20,7 +20,7 @@
       </mat-card-content>
       <mat-card-actions *ngIf="!feed.readonly">
         <button mat-button (click)="onCancelEdit()">Cancel</button>
-        <button mat-raised-button color="accent" (click)="onSave()">Save</button>
+        <button mat-raised-button color="accent" (click)="onSave()" [disabled]="!isFormValid()">Save</button>
       </mat-card-actions>
     </mat-card>
     <!--

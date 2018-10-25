@@ -92,15 +92,21 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
     destroy() {
 
     }
+    public isFormValid(){
+        let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
+        const inputFormValid= (this.feedPropertyNiFiComponent.inputProcessor && this.feedPropertyNiFiComponent.inputProcessor.form.valid);
+        return inputControl.valid && inputFormValid
+    }
 
     public applyUpdatesToFeed(): (Observable<any> | boolean | null) {
-        let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
-        if(inputControl.invalid || this.sourcePropertiesForm.invalid){
+        //ensure the selected input and respective form is valid before saving
+
+        if(!this.isFormValid()){
             this.step.validator.hasFormErrors = true;
             //show the errors
             inputControl.markAsTouched();
-            if(this.sourcePropertiesForm.invalid){
-                FormGroupUtil.touchFormControls(this.sourcePropertiesForm);
+            if(inputFormInvalid){
+                FormGroupUtil.touchFormArrayControls(this.feedPropertyNiFiComponent.inputProcessor.form);
             }
             return false;
         }

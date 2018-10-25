@@ -4,11 +4,13 @@
 
       <ng-container *ngIf="!feed.readonly">
         <mat-form-field fxFlex="50">
-          <mat-select placeholder="Choose a source" [formControl]="inputProcessorControl">
+          <mat-select placeholder="Choose a source" [formControl]="inputProcessorControl" required>
+            <mat-option>--</mat-option>
             <mat-option *ngFor="let inputProcessor of inputProcessors" [value]="inputProcessor">
               {{inputProcessor.name}}
             </mat-option>
           </mat-select>
+          <mat-error *ngIf="inputProcessorControl.hasError('required')">Please select a source</mat-error>
         </mat-form-field>
       </ng-container>
 
@@ -16,7 +18,14 @@
         <h3 mat-subheader class="property-heading"> {{inputProcessor.name}}</h3>
       </ng-container>
 
-      <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly"></feed-details-processor-field>
+      <ng-container *ngIf="feed.readonly && inputProcessor == undefined">
+        <div fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+          <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+          <h2>Source has not been defined</h2>
+        </div>
+      </ng-container>
+
+      <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly" *ngIf="inputProcessor != undefined"></feed-details-processor-field>
 
     </div>
 

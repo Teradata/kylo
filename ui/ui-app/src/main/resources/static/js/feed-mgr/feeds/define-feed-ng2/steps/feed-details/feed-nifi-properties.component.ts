@@ -1,6 +1,6 @@
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
-import {FormArray, FormControl, FormGroup} from "@angular/forms";
+import {FormArray, FormControl, FormGroup,Validators} from "@angular/forms";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {StateService} from "@uirouter/angular";
 import {Subscription} from "rxjs/Subscription";
@@ -63,7 +63,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
 
     inputProcessor: ProcessorRef;
 
-    inputProcessorControl = new FormControl();
+    inputProcessorControl = new FormControl('',[Validators.required]);
 
     inputProcessorSubscription: Subscription;
 
@@ -85,7 +85,6 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
         this.inputProcessorSubscription = this.inputProcessorControl.valueChanges.subscribe((value: ProcessorRef) => {
             this.inputProcessor = value;
             this.form.setControl(0, (value != null) ? value.form : new FormControl());
-            // this.setProcessors(this.feed.inputProcessors, this.feed.nonInputProcessors, value.processor, this.feed);
             this.updateProcessors();
         });
     }
@@ -103,6 +102,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
          if(this.formGroup) {
              this.formGroup.addControl("processors", this.form);
          }
+
+         //touch the input control to show validation error
+        this.inputProcessorControl.markAsTouched()
 
         if (this.mode == undefined) {
             this.mode = FeedDetailsMode.ALL;
@@ -206,7 +208,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                         feed.properties = updatedFeedResponse.properties;
 
                         feed.registeredTemplate = updatedFeedResponse.registeredTemplate;
-                        this.feedNifiPropertiesService.setupFeedProperties(feed, feed.registeredTemplate, 'edit');
+                        this.feedNifiPropertiesService.setupFeedProperties(feed, feed.registeredTemplate, 'edit',);
                         feed.propertiesInitialized = true;
                         this.buildInputProcessorRelationships(feed.registeredTemplate)
                         this.setProcessors(feed.inputProcessors, feed.nonInputProcessors, feed.inputProcessor, feed);
@@ -266,24 +268,26 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
     }
 
     private updateProcessors() {
-        this.nonInputProcessors = this.getInputRenderProcessors(this.inputProcessor.processor as any)
-            .map(processor => {
-                const ref = new ProcessorRef(processor as any, this.feed);
-                this.form.push(ref.form);
-                return ref;
-            });
+        if(this.inputProcessor) {
+            this.nonInputProcessors = this.getInputRenderProcessors(this.inputProcessor.processor as any)
+                .map(processor => {
+                    const ref = new ProcessorRef(processor as any, this.feed);
+                    this.form.push(ref.form);
+                    return ref;
+                });
 
-        let hasVisibleProcessors = _.chain([...this.inputProcessors, ...this.nonInputProcessors])
-            .map(ref => ref.processor.properties)
-            .flatten(true)
-            .find((property: Templates.Property) => property.userEditable)
-            .value() != null;
+            let hasVisibleProcessors = _.chain([...this.inputProcessors, ...this.nonInputProcessors])
+                .map(ref => ref.processor.properties)
+                .flatten(true)
+                .find((property: Templates.Property) => property.userEditable)
+                .value() != null;
 
-        if (!hasVisibleProcessors) {
-            this.noPropertiesExist = true;
+            if (!hasVisibleProcessors) {
+                this.noPropertiesExist = true;
+            }
+            this.updatedFormControls.emit();
+            this.processorsChange.emit(new NiFiPropertiesProcessorsChangeEvent(this.mode, this.feed, this.inputProcessors, this.nonInputProcessors, this.noPropertiesExist));
         }
-        this.updatedFormControls.emit();
-        this.processorsChange.emit(new NiFiPropertiesProcessorsChangeEvent(this.mode, this.feed, this.inputProcessors, this.nonInputProcessors, this.noPropertiesExist));
     }
 
     private setProcessors(inputProcessors: Templates.Processor[], nonInputProcessors: Templates.Processor[], selected?: Templates.Processor, feed?: Feed) {
@@ -294,7 +298,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             //set the value after inputProcessors is defined so the valuechanges callback is called after this.inputProcessors is initialized
             this.inputProcessors = inputProcessors.map(processor => {
                 const ref = new ProcessorRef(processor as any, feed);
-                if (ref.id === selected.id) {
+                if (selected && ref.id === selected.id) {
                     selectedProcessorRef = ref;
                 }
                 return ref;

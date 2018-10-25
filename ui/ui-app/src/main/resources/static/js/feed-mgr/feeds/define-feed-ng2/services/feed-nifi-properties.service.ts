@@ -48,7 +48,7 @@ export class FeedNifiPropertiesService {
     }
 
 
-    sortAndSetupFeedProperties(feed:Feed){
+    sortAndSetupFeedProperties(feed:Feed, setFeedInputProcessor:boolean = false){
         if((feed.inputProcessors == undefined || feed.inputProcessors.length == 0) && feed.registeredTemplate){
             feed.inputProcessors = feed.registeredTemplate.inputProcessors;
         }
@@ -72,12 +72,12 @@ export class FeedNifiPropertiesService {
                 return    feed.inputProcessorType == processor.type;
             }
         });
-        if(feed.inputProcessor == undefined && feed.inputProcessors && feed.inputProcessors.length >0){
+        if(setFeedInputProcessor && feed.inputProcessor == undefined && feed.inputProcessors && feed.inputProcessors.length >0){
             feed.inputProcessor = feed.inputProcessors[0];
         }
     }
 
-    setupFeedProperties(feed:Feed,template:any, mode:string) {
+    setupFeedProperties(feed:Feed,template:any, mode:string, setFeedInputProcessor:boolean = false) {
         if(feed.isNew()){
             this.registerTemplatePropertyService.initializeProperties(template, 'create', feed.properties);
         }
@@ -88,7 +88,7 @@ export class FeedNifiPropertiesService {
         //merge the non input processors
         feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
 
-        this.sortAndSetupFeedProperties(feed);
+        this.sortAndSetupFeedProperties(feed, setFeedInputProcessor);
 
 
         // this.inputProcessors = template.inputProcessors;
