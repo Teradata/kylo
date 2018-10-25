@@ -177,6 +177,7 @@ public class LdapAuthConfig {
         private LdapContextSource contextSource;
         private String groupsBase;
         private String groupNameAttr;
+        private String groupMemberFilter = "(member={0})";
         private boolean enableGroups = false;
 
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
@@ -195,6 +196,10 @@ public class LdapAuthConfig {
         public void setEnableGroups(boolean enabled) {
             this.enableGroups = enabled;
         }
+        
+        public void setGroupMemberFilter(String groupMemberFilter) {
+            this.groupMemberFilter = groupMemberFilter;
+        }
 
         @Override
         public Class<?> getObjectType() {
@@ -208,6 +213,7 @@ public class LdapAuthConfig {
                 authPopulator.setGroupRoleAttribute(this.groupNameAttr);
                 authPopulator.setRolePrefix("");
                 authPopulator.setConvertToUpperCase(false);
+                authPopulator.setGroupSearchFilter(this.groupMemberFilter);
                 return authPopulator;
             } else {
                 return new NullLdapAuthoritiesPopulator();
