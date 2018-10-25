@@ -79,21 +79,23 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                     roundness: 0,
                     "forceDirection": "horizontal"
                 },
-                font: {align: 'horizontal'}
+                font: {align: 'horizontal',size:12,face:'arial'}
             },
             layout: {
                 hierarchical: {
                     direction: "LR",
-                    nodeSpacing: 200,
+                    nodeSpacing: 350,
                     sortMethod: 'directed'
                 }
             },
-            autoResize: true,
+            autoResize: false,
             physics:false,
             nodes: {
                 shape: 'box',
                 font: {
-                    align: 'center'
+                    align: 'center',
+                    size: 12, // px
+                    face: 'arial'
                 }
             },
             groups: {
@@ -106,12 +108,16 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                 datasource: {
                     shape: 'box',
                     font: {
-                        align: 'center'
+                        align: 'center',
+                        size: 12,
+                        face: 'arial'
                     }
                 }
             },
             interaction: {
-                hover: true, navigationButtons: true,
+                hover: true,
+                navigationButtons: true,
+                dragNodes:true,
                 keyboard: true
             }
         };
@@ -193,7 +199,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     getFeedLineage() {
         this.http.get(this.restUrlService.FEED_LINEAGE_URL(this.feedId)).subscribe((response: any) => {
             this.feedLineage = response;
-            this.redraw();
+            this._draw();
             this.loading = false;
         });
     }
@@ -204,7 +210,9 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     networkView(value: string) {
         this.graphMode = value;
-        this.redraw();
+        if (!this.loading) {
+            this.redraw();
+        }
         //this.options = {physics: {enabled: false, stabilization: true}};
     }
 

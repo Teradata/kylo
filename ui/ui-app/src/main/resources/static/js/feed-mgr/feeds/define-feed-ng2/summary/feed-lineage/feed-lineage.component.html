@@ -25,7 +25,7 @@
        </div>
       <mat-card-content>
 
-        <div kyloDraggable style="position: absolute; z-index: 1">
+        <div kyloDraggable style="position: absolute; z-index: 1" *ngIf="!loading">
           <div fxLayout="row">
               <select-network-node [selectedNode]="selectedNode"></select-network-node>
           </div>
