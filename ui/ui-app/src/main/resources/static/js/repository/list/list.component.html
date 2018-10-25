@@ -25,7 +25,7 @@
     <mat-table *ngIf="!loading && templates.length !== 0" [dataSource]="dataSource" matSort class="mat-elevation-z8">
 
       <ng-container matColumnDef="templateName">
-        <mat-header-cell *matHeaderCellDef mat-sort-header><span style="padding-left: 50px;"> Template </span></mat-header-cell>
+        <mat-header-cell *matHeaderCellDef mat-sort-header="templateName"> <span style="padding-left: 50px;"> Template </span></mat-header-cell>
         <mat-cell *matCellDef="let element">
           <div flex="60" fxLayout="column" class="item-column md-list-item-text">
             <div fxLayout="row">
