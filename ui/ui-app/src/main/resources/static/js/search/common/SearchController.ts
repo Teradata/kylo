@@ -12,7 +12,7 @@ import {DatasourcesService} from "../../feed-mgr/services/DatasourcesService";
 import "../module";
 import "../module-require";
 
-export class controller implements ng.IComponentController{
+export class SearchController implements ng.IComponentController{
 $transition$: Transition;
 /**
  * The result object of what is returned from the search query
@@ -162,15 +162,16 @@ constructor(private $scope: angular.IScope,
 
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
   .component("searchController", { 
         bindings: {
             $transition$: '<'
         },
-        controller: controller,
+        controller: SearchController,
         controllerAs: "vm",
         templateUrl: "js/search/common/search.html"
-    });  
+    });
+export default module;
 /*angular.module(moduleName).controller('SearchController',
                         ["$scope", 
                         "$sce", 
