@@ -14,6 +14,7 @@ import {CovalentSearchModule} from "@covalent/core/search";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../common/common.module";
+import {KyloFeedManagerModule} from "../feed-mgr/feed-mgr.module";
 import {RepositoryComponent} from "./repository.component";
 import {repositoryStates} from "./repository.states";
 import {ListTemplatesComponent} from "./list/list.component";
@@ -58,39 +59,40 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         ImportTemplateDirective
     ],
     imports: [
-        FormsModule,
+        CdkTableModule,
         CommonModule,
         CovalentCommonModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
+        CovalentExpansionPanelModule,
         CovalentLayoutModule,
         CovalentLoadingModule,
-        CovalentSearchModule,
-        CovalentPagingModule,
         CovalentNotificationsModule,
-        CovalentExpansionPanelModule,
+        CovalentPagingModule,
+        CovalentSearchModule,
         CovalentVirtualScrollModule,
         FlexLayoutModule,
+        FormsModule,
         KyloCommonModule,
+        KyloFeedManagerModule,
+        MatButtonModule,
         MatCardModule,
+        MatCheckboxModule,
+        MatChipsModule,
         MatDividerModule,
+        MatExpansionModule,
+        MatInputModule,
         MatListModule,
+        MatMenuModule,
+        MatPaginatorModule,
+        MatProgressBarModule,
+        MatProgressSpinnerModule,
+        MatRadioModule,
+        MatSelectModule,
+        MatSortModule,
+        MatTableModule,
         MatTabsModule,
         MatToolbarModule,
-        MatCheckboxModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatInputModule,
-        MatProgressSpinnerModule,
-        MatExpansionModule,
-        CdkTableModule,
-        MatMenuModule,
-        MatProgressBarModule,
-        MatRadioModule,
-        MatChipsModule,
         UIRouterModule.forChild({states: repositoryStates})
     ],
     providers:[
