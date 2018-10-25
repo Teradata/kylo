@@ -87,7 +87,7 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
             //only mark input port as running if we have connections to it
            //NIFI bug
            if(StringUtils.isNotBlank(inputPort.getId())  && NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(inputPort.getState())) {
-               Set<ConnectionDTO> connectionDTOS = client.connections.findConnectionsToEntity(processGroupId, inputPort.getId());
+               Set<ConnectionDTO> connectionDTOS = client.connections().findConnectionsToEntity(processGroupId, inputPort.getId());
                if(connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getDestination().getId().equals(inputPort.getId()))){
                    log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are on upstream connections to it ",inputPort.getId(), inputPort.getName(), processGroupId);
                    update = false;
