@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -402,7 +403,7 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
      * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#deployFeedVersion(java.lang.String, java.lang.String, boolean)
      */
     @Override
-    public EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) {
+    public DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) {
         // TODO Auto-generated method stub
         return null;
     }

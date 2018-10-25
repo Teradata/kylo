@@ -181,6 +181,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     showSourceSample:boolean = true;
 
+    catalogBrowserOpen:boolean = false;
+
 
 
     @ViewChild('virtualScroll')
@@ -805,6 +807,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         return field._id;
     }
 
+    onShowCatalogChange($event:boolean){
+        this.catalogBrowserOpen = $event;
+    }
 
 
 
@@ -920,10 +925,12 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
 
-
-
-
-
+    protected applyUpdatesToFeed(): Observable<any> | boolean | null {
+       if(this.catalogBrowserOpen){
+           return this.dialogService.openConfirm({title:"Pending source sample changes", message:"There are pending changes in the source sample that have not been applied to the target.  Are you sure you want to save without applying these changes?  "})
+       }
+       return true;
+    }
 }
 @Pipe({name: 'filterPartitionFormula'})
 export class FilterPartitionFormulaPipe implements PipeTransform{

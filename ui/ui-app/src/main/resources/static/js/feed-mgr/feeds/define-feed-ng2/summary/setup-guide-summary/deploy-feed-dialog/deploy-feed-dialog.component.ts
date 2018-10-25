@@ -14,6 +14,9 @@ import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {FeedLoadingService} from "../../../services/feed-loading-service";
 import {Templates} from "../../../../../services/TemplateTypes";
 import {FeedStepConstants} from "../../../../../model/feed/feed-step-constants";
+import {DeployEntityVersionResponse} from "../../../../../model/deploy-entity-response.model";
+import {NifiErrorMessage} from "../../../../../model/nifi-error-message.model";
+import {HttpErrorResponse} from "@angular/common/http";
 
 export class DeployFeedDialogComponentData{
     constructor(public feed:Feed){
@@ -23,6 +26,7 @@ export class DeployFeedDialogComponentData{
 
 @Component({
     selector:"deploy-feed-dialog",
+    styleUrls:["js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/deploy-feed-dialog/deploy-feed-dialog.component.scss"],
     templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/setup-guide-summary/deploy-feed-dialog/deploy-feed-dialog.component.html"
 })
 export class DeployFeedDialogComponent implements OnInit, OnDestroy{
@@ -41,6 +45,8 @@ export class DeployFeedDialogComponent implements OnInit, OnDestroy{
 
     deployErrorMessage:string;
 
+    deployEntityErrors:NifiErrorMessage[];
+
     constructor(private dialog: MatDialogRef<DeployFeedDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: DeployFeedDialogComponentData, private defineFeedService:DefineFeedService, private  stateService: StateService) {
         this.feed = this.data.feed;
         this.formGroup = new FormGroup({});
@@ -56,8 +62,10 @@ export class DeployFeedDialogComponent implements OnInit, OnDestroy{
     }
 
     deployFeed(){
-this.deployError = false;
-this.deployErrorMessage = '';
+        this.deployError = false;
+        this.deployErrorMessage = '';
+        this.deployEntityErrors = []
+
         let deploy = () => {
             this.deployingFeed = true;
             this.defineFeedService.deployFeed(this.data.feed).subscribe((response:any) =>{
@@ -71,6 +79,25 @@ this.deployErrorMessage = '';
                     this.deployingFeed = false;
                     this.deployError = true;
                     this.deployErrorMessage= "There was an error deploying your feed";
+                }
+            }, (error1:any) => {
+                this.deployingFeed = false;
+                this.deployError = true;
+                this.deployErrorMessage= "There was an error deploying your feed";
+                if(error1 && error1 instanceof HttpErrorResponse){
+                    let errorResponse = (<HttpErrorResponse>error1);
+                    if(errorResponse.error && errorResponse.error.errors){
+                        let content = errorResponse.error as DeployEntityVersionResponse;
+                        Object.keys(content.errors.errorMap).forEach(key => {
+                            let errorArray = content.errors.errorMap[key];
+                            console.log('errors ',errorArray,'for key ',key)
+                            if(errorArray){
+                                errorArray.forEach(err => this.deployEntityErrors.push(err));
+                            }
+                        });
+                        this.deployErrorMessage = content.errors.message
+                    }
+                    console.log("deployEntityErrors ", this.deployEntityErrors,'msg ', this.deployErrorMessage)
                 }
             })
         }

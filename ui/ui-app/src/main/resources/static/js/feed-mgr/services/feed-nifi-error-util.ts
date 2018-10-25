@@ -1,4 +1,7 @@
 import * as _ from "underscore"
+import {DeployEntityVersionResponse} from "../model/deploy-entity-response.model";
+import {FormGroup} from "@angular/forms";
+import {NifiErrorMessage} from "../model/nifi-error-message.model";
 
 export class FeedNifiErrorUtil {
 
@@ -8,7 +11,7 @@ export class FeedNifiErrorUtil {
      * @param errorMap
      * @return {number} the number of errors
      */
-   public static  parseNifiFeedForErrors(nifiFeed:any, errorMap:any) {
+   public static  parseNifiFeedForErrors(nifiFeed:any, errorMap:{[key:string]: NifiErrorMessage[]}) {
         var count = 0;
 
         if (nifiFeed != null) {
@@ -42,6 +45,33 @@ export class FeedNifiErrorUtil {
             }
         }
         return count;
+
+    }
+
+
+    static parseDeployNiFiFeedErrors(deployResponse:DeployEntityVersionResponse) {
+        var count = 0;
+        var errorMap:any = {"FATAL": [], "WARN": []};
+        deployResponse.errors = {message:"", errorMap:errorMap,errorCount:0}
+        if (deployResponse.feed != null ) {
+
+            count = FeedNifiErrorUtil.parseNifiFeedForErrors(deployResponse.feed, errorMap);
+            deployResponse.errors.errorCount = count;
+            deployResponse.errors.message = count +" NiFi errors exist";
+        }
+        if(count ==0) {
+            if (deployResponse.httpStatus === 502) {
+                deployResponse.errors.message = 'Error creating feed, bad gateway'
+            } else if (deployResponse.httpStatus === 503) {
+                deployResponse.errors.message = 'Error creating feed, service unavailable'
+            } else if (deployResponse.httpStatus === 504) {
+                deployResponse.errors.message = 'Error creating feed, gateway timeout'
+            } else if (deployResponse.httpStatus === 504) {
+                deployResponse.errors.message = 'Error creating feed, HTTP version not supported'
+            } else {
+                deployResponse.errors.message = 'Error creating feed.'
+            }
+        }
 
     }
 

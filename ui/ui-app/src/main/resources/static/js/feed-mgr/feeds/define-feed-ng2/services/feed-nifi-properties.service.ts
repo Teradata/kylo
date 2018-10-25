@@ -7,6 +7,7 @@ import {Observable} from "rxjs/Observable";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import * as _ from "underscore";
 import {FeedService} from "../../../services/FeedService";
+import {NifiFeedPropertyUtil} from "../../../services/nifi-feed-property-util";
 
 @Injectable()
 export class FeedNifiPropertiesService {
@@ -58,6 +59,11 @@ export class FeedNifiPropertiesService {
         _.chain(feed.inputProcessors.concat(feed.nonInputProcessors))
             .pluck("properties")
             .flatten(true)
+            .map(prop => {
+                NifiFeedPropertyUtil.initSensitivePropertyForEditing(prop);
+                NifiFeedPropertyUtil.updateDisplayValue(prop);
+                return prop;
+            })
             .filter((property) => {
                 return property != undefined && property.propertyDescriptor && property.propertyDescriptor.identifiesControllerService && (typeof property.propertyDescriptor.identifiesControllerService == 'string' );
             })
@@ -75,6 +81,15 @@ export class FeedNifiPropertiesService {
         if(setFeedInputProcessor && feed.inputProcessor == undefined && feed.inputProcessors && feed.inputProcessors.length >0){
             feed.inputProcessor = feed.inputProcessors[0];
         }
+
+        feed.properties.forEach(property => {
+            //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
+            NifiFeedPropertyUtil.initSensitivePropertyForEditing(property);
+            NifiFeedPropertyUtil.updateDisplayValue(property);
+        })
+        console.log('feed.inputProcessors',feed.inputProcessors,'feed',feed)
+
+
     }
 
     setupFeedProperties(feed:Feed,template:any, mode:string, setFeedInputProcessor:boolean = false) {

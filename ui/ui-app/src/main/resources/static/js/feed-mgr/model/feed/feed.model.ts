@@ -30,6 +30,7 @@ import {PreviewFileDataSet} from "../../catalog/datasource/preview-schema/model/
 import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/preview-hive-data-set";
 import {PreviewJdbcDataSet} from "../../catalog/datasource/preview-schema/model/preview-jdbc-data-set";
 import {FeedStepConstants} from "./feed-step-constants";
+import {NifiFeedPropertyUtil} from "../../services/nifi-feed-property-util";
 
 
 export interface TableOptions {
@@ -800,6 +801,23 @@ export class Feed  implements KyloObject{
             }
 
         }
+
+
+        if (copy.inputProcessor != null) {
+            _.each(copy.inputProcessor.properties, (property: any) => {
+                NifiFeedPropertyUtil.initSensitivePropertyForSaving(property)
+             //   properties.push(property);
+            });
+        }
+
+        _.each(copy.nonInputProcessors, (processor: any) => {
+            _.each(processor.properties, (property: any) => {
+                NifiFeedPropertyUtil.initSensitivePropertyForSaving(property)
+              //  properties.push(property);
+            });
+        });
+
+
         return copy;
     }
 
