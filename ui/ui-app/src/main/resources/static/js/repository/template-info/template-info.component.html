@@ -26,15 +26,15 @@
         <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling"></mat-progress-bar>
         <div *ngIf="!loading">
           <div class="card-title" flex>{{template.templateName}}
-            <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" icon="{{template.icon}}" class="push-left-sm" size="20" style="fill:{{template.iconColor}}"></ng-md-icon>
+            <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" [icon]="template.icon" class="push-left-sm" size="20" [style.fill]="template.iconColor"></ng-md-icon>
           </div>
           <h2 class="card-sub-header">{{template.description}}</h2>
           <div layout="column" class="layout-padding-top">
             <div layout="column" class="layout-padding-top-bottom">
               <div class="hint">State</div>
               <div ng-class="{'enabled':template.state == 'ENABLED','disabled':template.state != 'ENABLED'}">
-                <ng-md-icon icon="check_circle" size="20" style="fill:green" *ngIf="template.state == 'ENABLED'"></ng-md-icon>
-                <ng-md-icon icon="block" size="20" *ngIf="template.state != 'ENABLED'"></ng-md-icon>
+                <ng-md-icon [icon]="template.state == 'ENABLED' ? 'check_circle' : 'block'" size="20" [class]="template.state == 'ENABLED' ? 'tc-positive' : 'disabled'">
+                </ng-md-icon>
                 {{template.state}}
               </div>
             </div>
