@@ -20,14 +20,20 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.PortEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,6 +52,7 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
 
+    private static final Logger log = LoggerFactory.getLogger(NiFiPortsRestClientV1.class);
     /**
      * REST client for communicating with NiFi
      */
@@ -60,6 +67,10 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
         this.client = client;
     }
 
+    private boolean isModified(PortDTO current, PortDTO port){
+        return current == null || port.getId() == null || (!current.getId().equals(port.getId()) ||
+            !current.getName().equals(port.getName())|| !current.getState().equals(port.getState()));
+    }
     @Nonnull
     @Override
     public PortDTO updateInputPort(@Nonnull final String processGroupId, @Nonnull final PortDTO inputPort) {
@@ -70,20 +81,43 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
         }
+       if(current == null || (current != null && isModified(current.getComponent(),inputPort))) {
 
-        // Update input port
-        final PortEntity entity = new PortEntity();
-        entity.setComponent(inputPort);
+            boolean update  = true;
+            //only mark input port as running if we have connections to it
+           //NIFI bug
+           if(StringUtils.isNotBlank(inputPort.getId())  && NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(inputPort.getState())) {
+               Set<ConnectionDTO> connectionDTOS = client.connections.findConnectionsToEntity(processGroupId, inputPort.getId());
+               if(connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getDestination().getId().equals(inputPort.getId()))){
+                   log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are on upstream connections to it ",inputPort.getId(), inputPort.getName(), processGroupId);
+                   update = false;
+               }
 
-        final RevisionDTO revision = new RevisionDTO();
-        revision.setVersion(current.getRevision().getVersion());
-        entity.setRevision(revision);
+           }
+           if(update) {
+               // Update input port
+               final PortEntity entity = new PortEntity();
+               entity.setComponent(inputPort);
 
-        try {
-            return client.put("/input-ports/" + inputPort.getId(), entity, PortEntity.class).getComponent();
-        } catch (final NotFoundException e) {
-            throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
-        }
+               final RevisionDTO revision = new RevisionDTO();
+               revision.setVersion(current.getRevision().getVersion());
+               entity.setRevision(revision);
+
+               try {
+                   return client.put("/input-ports/" + inputPort.getId(), entity, PortEntity.class).getComponent();
+               } catch (final NotFoundException e) {
+                   throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
+               }
+           }
+           else {
+               return inputPort;
+           }
+
+
+       }
+       return inputPort;
+
+
     }
 
     @Nonnull
