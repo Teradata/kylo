@@ -1,4 +1,4 @@
-<mat-progress-bar  mode="indeterminate" *ngIf="isFeedSaving"></mat-progress-bar>
+<mat-progress-bar  mode="indeterminate" *ngIf="isFeedSaving" class="md-accent" ></mat-progress-bar>
 <mat-horizontal-stepper #stepper *ngIf="engine != null" [linear]="true" class="mat-stepper-no-header" (selectionChange)="onStepChange($event)">
   <mat-step>
     <ng-template matStepLabel>Build Query</ng-template>

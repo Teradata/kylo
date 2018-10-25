@@ -2,9 +2,9 @@ export class KyloIcons {
 
     static Links ={
         setupGuide:"playlist_play",
-        feedActivity:"pages",
-        profile:"track_changes",
-        lineage:"graphic_eq",
+        feedActivity:"dashboard",
+        profile:"insert_chart_outlined",
+        lineage:"device_hub",
         sla:"beenhere",
         versions:"history"
     }

@@ -68,8 +68,6 @@ $theme: mat-light-theme($primary, $accent, $warn);
 @include teradata-brand($theme);
 
 
-
-
 // Active icon color in list nav
 mat-nav-list {
   [mat-list-item].active {
@@ -166,8 +164,13 @@ $background: map-get($theme, background);
   background-color: map-get($td-emphasis2, background-light) !important;
 }
 
+md-progress-circular {
+  stroke: mat-color($accent);
+}
 
-
+md-progress-linear {
+  background-color: mat-color($accent);
+}
 
 
 /*
