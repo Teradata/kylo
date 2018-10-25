@@ -140,6 +140,17 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             this.feed.inputProcessorType = this.inputProcessor.type;
         }
         else {
+            if(this.feed.inputProcessor == undefined && this.feed.registeredTemplate) {
+                //attempt to get the first one
+                //get the first input processor and select it
+                let inputProcessors = this.feed.inputProcessors && this.feed.inputProcessors.length >0 ? this.feed.inputProcessors : this.feed.registeredTemplate && this.feed.registeredTemplate.inputProcessors && this.feed.registeredTemplate.inputProcessors.length >0 ? this.feed.registeredTemplate.inputProcessors : []
+                if(inputProcessors.length >0) {
+                    let input: Templates.Processor = inputProcessors[0];
+                    this.feed.inputProcessor = input;
+                    this.feed.inputProcessorName = input.name;
+                    this.feed.inputProcessorType = input.type;
+                }
+            }
             inputProperties = this.feed.inputProcessor.properties
         }
 
