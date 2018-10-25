@@ -1,13 +1,13 @@
 <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
 <td-layout-nav color="none">
   <div td-toolbar-content>
-    <div *ngIf="feed != undefined && feed != null">Feed Versions - {{feed.feedName}}</div>
+    <div *ngIf="feed != undefined && feed != null">{{feed.feedName}}</div>
     <span fxFlex="100"></span>
   </div>
   <mat-card class="feed-card">
     <mat-card-header>
       <mat-card-title>
-        <mat-icon>{{kyloIcons.Links.versions}}</mat-icon>
+        <mat-icon class="kylo-title-icon">{{kyloIcons.Links.versions}}</mat-icon>
         <span translate>Versions.Name</span>
       </mat-card-title>
       <mat-card-subtitle translate>
@@ -15,20 +15,23 @@
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div fxLayout="row">
-        <span fxFlex="25" class="property-name">{{"Versions.CompareVersions" | translate}}</span>
-        <span *ngIf="historyVersionsAvailable()" fxFlex>
+
+      <div fxLayout="row" fxLayoutAlign="start center">
+        <div fxFlex="25" class="property-name">{{"Versions.CompareVersions" | translate}}</div>
+        <div fxFlex="75" fxLayout="row" fxLayoutAlign="start center">
+          <span *ngIf="historyVersionsAvailable()" fxFlex="50">
           {{"Versions.Current" | translate}}: {{leftVersion.name}}
-          ({{"Versions.CreatedBy" | translate}} {{leftVersion.createdBy}}
-          {{"Versions.On" | translate}} {{leftVersion.createdDate | date:'medium'}})</span>
-        <mat-form-field fxFlex>
-          <mat-select placeholder="Select version to compare" (selectionChange)="changeRightVersion($event.value)">
-            <mat-option *ngFor="let historyVersion of historyVersions" [value]="historyVersion">
-              {{historyVersion.name}} ({{"Versions.CreatedBy" | translate}} {{historyVersion.createdBy}}
-              {{"Versions.On" | translate}} {{historyVersion.createdDate | date:'medium'}})
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+          ({{leftVersion.createdDate | date:'medium'}})</span>
+          <span fxFlex="50">
+            <mat-form-field style="min-width:420px">
+              <mat-select placeholder="Select version to compare" (selectionChange)="changeRightVersion($event.value)">
+                <mat-option *ngFor="let historyVersion of historyVersions" [value]="historyVersion">
+                  {{historyVersion.name}} ({{historyVersion.createdDate | date:'medium'}})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </span>
+        </div>
       </div>
 
       <div *ngIf="rightVersion != undefined && rightVersion != null && !loading">
@@ -37,6 +40,17 @@
           <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
           {{"Versions.Sections.FeedDefinition" | translate}}
         </section>
+
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/feedName')" [matTooltip]="interpretDiff(diff('/feedName'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"Versions.CreatedBy" | translate}}  </span>
+          <div fxFlex>
+            {{leftVersion.createdBy}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.createdBy}}
+          </div>
+        </div>
 
         <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/feedName')" [matTooltip]="interpretDiff(diff('/feedName'))" [matTooltipPosition]=toolTipPosition>
           <span fxFlex="25" class="property-name"> {{"views.feed-definition.FN" | translate}} </span>
@@ -538,7 +552,7 @@
         <mat-divider></mat-divider>
         <section class="pad-top pad-bottom md-subhead">
           <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
-          {{"Versions.Sections.Properties" | translate}}
+          {{"Versions.Sections.Schedule" | translate}}
         </section>
 
         <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/schedule/schedulingStrategy')" [matTooltip]="interpretDiff(diff('/schedule/schedulingStrategy'))"
