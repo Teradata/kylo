@@ -5,11 +5,11 @@
       <form class="source-sample-container" [formGroup]="sourceSampleForm" >
         <mat-card class="feed-card source-sample-card" fxFlex>
           <mat-card-header>
-            <mat-card-title>Sample File</mat-card-title>
-            <mat-card-subtitle>Choose a source to help build the target schema</mat-card-subtitle>
+            <mat-card-title>Sample Dataset</mat-card-title>
+            <mat-card-subtitle>Choose a sample dataset to help build the target schema</mat-card-subtitle>
             <span fxFlex></span>
           </mat-card-header>
-          <mat-card-content class="pad-top-none ">
+          <mat-card-content class="pull-top-md">
             <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly"  [showSkipSourceButton]="false" [showCatalog]="showSourceSampleCatalog" (sampleSaved)="onSampleSourceSaved($event)"  (showCatalogCanceled)="onCatalogCanceled($event)" [feed]="feed" [step]="step"></define-feed-step-source-sample>
           </mat-card-content>
         </mat-card>
@@ -31,10 +31,9 @@
               <div fxLayout="column" fxFlex="100">
                 <div fxLayout="row" class="push-bottom-md">
                   <div fxFlex="30">Name</div>
-                  <div fxFlex="25">Data Type</div>
+                  <div fxFlex="40" style="margin-right:20px">Data Type</div>
                   <div fxFlex="10">Index</div>
                   <div fxFlex="10">Profile</div>
-                  <div fxFlex="10"></div>
                   <div class="scrollbar-width"></div>
                 </div>
                 <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
@@ -48,7 +47,7 @@
                     <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
                       <span fxFlex="30" [class.strike]="row.deleted">{{row.name}}</span>
 
-                      <div fxLayout="row" fxFlex="25" [class.strike]="row.deleted">
+                      <div fxLayout="row" fxFlex="40"[class.strike]="row.deleted" style="margin-right:20px;overflow:hidden;text-overflow: ellipsis;">
 
                         <span>{{row.derivedDataType}}</span>
 
@@ -64,7 +63,7 @@
                         <mat-icon class="grey" *ngIf="row.fieldPolicy.profile">check</mat-icon>
                         <mat-icon class="grey" *ngIf="!row.fieldPolicy.profile">check_box_outline_blank</mat-icon>
                       </div>
-                      <div fxFlex="10"  class="push-top-sm"></div>
+                      <!--<div fxFlex="10"  class="push-top-sm"></div>-->
                     </div>
 
                   </ng-template>
@@ -85,8 +84,8 @@
             <div *ngIf="feed.table.tableSchema.fields.length >0">
               <form [formGroup]="defineTableForm">
                 <div fxLayout="row" fxFlex="100" class="push-bottom-xs">
-                  <div fxFlex="30">Name</div>
-                  <span fxFlex="5"></span>
+                  <div fxFlex="25">Name</div>
+                  <div fxFlex="5"></div>
                   <div fxFlex="25">Data Type</div>
                   <div fxFlex="10">
                     <a href="" (click)="onIndexCheckAllChange()" >Index</a>
@@ -108,7 +107,7 @@
                                tdVirtualScrollRow>
                     <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
 
-                      <mat-form-field fxFlex="30">
+                      <mat-form-field fxFlex="25">
                         <input matInput [class.strike]="row.deleted" [formControlName]="'name_'+row._id" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
                         <mat-error *ngIf="hasTableFormError('name',row,'required')">
                           Feed name is required
@@ -123,7 +122,7 @@
                           Name reserved. Please choose a different name.
                         </mat-error>
                       </mat-form-field>
-                      <span fxFlex="5"></span>
+                      <div fxFlex="5"></div>
                       <div fxLayout="row" fxFlex="25">
 
                         <mat-form-field>
