@@ -282,8 +282,9 @@ export class DefineFeedService {
     }
 
     draftVersionExists(feedId:string):Observable<string> {
+        const headers = new HttpHeaders({'Content-Type':'text/plain; charset=utf-8'});
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft/exists";
-        return <Observable<string>>this.http.get(url,{responseType:'text'});
+        return <Observable<string>>this.http.get(url,{headers:headers,responseType:'text'});
     }
 
     /**
@@ -815,9 +816,11 @@ export class DefineFeedService {
             let mergedSteps:Step[] = defaultSteps.map(step => {
                 if(savedStepMap[step.systemName]){
                     step.update(savedStepMap[step.systemName]);
-                    if(hasBeenDeployed){
-                        step.visited = true;
-                    }
+                }
+                if(hasBeenDeployed){
+                    step.visited = true;
+                    step.saved = true;
+                    step.complete = true;
                 }
                 return step;
             });
