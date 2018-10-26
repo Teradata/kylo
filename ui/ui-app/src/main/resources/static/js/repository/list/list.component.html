@@ -22,7 +22,7 @@
       <br>
       <span *ngIf="errorMsg !== ''" class="tc-red-700">{{errorMsg}}<br></span>
     </div>
-    <mat-table *ngIf="!loading && templates.length !== 0" [dataSource]="dataSource" matSort class="mat-elevation-z8">
+    <mat-table *ngIf="!loading && templates.length !== 0" [dataSource]="dataSource" matSort (matSortChange)="sortData($event)" class="mat-elevation-z8">
 
       <ng-container matColumnDef="templateName">
         <mat-header-cell *matHeaderCellDef mat-sort-header="templateName"> <span style="padding-left: 50px;"> Template </span></mat-header-cell>

@@ -4,7 +4,7 @@ import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {StateService} from "@uirouter/angular";
 import {MatPaginator} from "@angular/material/paginator";
-import {MatSort} from "@angular/material/sort";
+import {MatSort, Sort} from "@angular/material/sort";
 import {MatTableDataSource} from "@angular/material/table";
 import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
 import {MatDialog} from "@angular/material/dialog";
@@ -75,6 +75,21 @@ export class ListTemplatesComponent implements OnInit {
                 this.loading = false;
             }
         );
+    }
+
+    sortData(sort: Sort) {
+
+        this.dataSource.data= this.dataSource.data.sort((a, b) => {
+            const isAsc = sort.direction === 'asc';
+            switch (sort.active) {
+                case 'templateName': return this.compare(a.templateName, b.templateName, isAsc);
+                default: return 0;
+            }
+        });
+    }
+
+    private compare(a: number | string, b: number | string, isAsc: boolean) {
+        return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
     }
 
     /*
