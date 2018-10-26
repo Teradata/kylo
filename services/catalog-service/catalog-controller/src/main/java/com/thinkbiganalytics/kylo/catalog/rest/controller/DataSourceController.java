@@ -21,6 +21,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
@@ -44,6 +45,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.context.SecurityContextUtil;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -106,6 +108,9 @@ public class DataSourceController extends AbstractCatalogController {
     public static final String BASE = "/v1/catalog/datasource";
 
     public enum CredentialMode {NONE, EMBED, ATTACH}
+    
+    @Inject
+    private AccessController accessController;
 
     @Inject
     private DataSourceProvider dataSourceProvider;
@@ -329,6 +334,9 @@ public class DataSourceController extends AbstractCatalogController {
         final PageRequest pageRequest = new PageRequest((start != null) ? start : 0, (limit != null) ? limit : Integer.MAX_VALUE);
 
         return metadataService.read(() -> {
+            // Require admin permission if the results should include unencrypted credentials.
+            accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+            
             Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
             final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel(true, encryptCredentials));
 
@@ -354,6 +362,9 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(pluginIds);
         List<String> pluginList = Arrays.asList(pluginIds.split(",")).stream().map(id -> id.trim()).collect(Collectors.toList());
         final Set<DataSource> datasources = metadataService.read(() -> {
+            // Require admin permission if the results should include unencrypted credentials.
+            accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+            
             return dataSourceProvider.findAll().stream().filter(ds -> pluginList.contains(ds.getConnector().getPluginId()))
                 .map(modelTransform.dataSourceToRestModel(true, encryptCredentials))
                 .collect(Collectors.toSet());
@@ -418,13 +429,12 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     public Response listTables(@PathParam("id") final String dataSourceId, 
                                @QueryParam("catalog") final String catalogName, 
-                               @QueryParam("schema") final String schemaName,
-                               @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+                               @QueryParam("schema") final String schemaName) {
         log.entry(dataSourceId, catalogName, schemaName);
 
         return metadataService.read(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, encryptCredentials);
+            final DataSource dataSource = findDataSource(dataSourceId, true);
             final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
 
             return Response.ok(log.exit(tables)).build();
@@ -509,7 +519,10 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
                   })
-    public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId, @PathParam("tableName") final String tableName, @QueryParam("schema") final String schema) {
+    public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId, 
+                                           @PathParam("tableName") final String tableName, 
+                                           @QueryParam("schema") final String schema,
+                                           @QueryParam("encrypt") @DefaultValue("true") final boolean encryptedCredentials) {
         // TODO Verify user has access to data source
 
         DataSetWithTableSchema dataSetWithTableSchema = metadataService.commit(() -> {
@@ -543,7 +556,7 @@ public class DataSourceController extends AbstractCatalogController {
                 dataSet.setPaths(paths);
                 dataSet.setOptions(options);
 
-                DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet);
+                DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptedCredentials);
                 return new DataSetWithTableSchema(dataSet1, tableSchema);
             } else {
                 if (log.isErrorEnabled()) {
@@ -615,13 +628,14 @@ public class DataSourceController extends AbstractCatalogController {
     @POST
     @Path("{id}/dataset")
     @ApiOperation("creates a new dataset for a datasource")
-    public Response createDataSet(@PathParam("id") final String datasourceId) {
+    public Response createDataSet(@PathParam("id") final String datasourceId,
+                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(datasourceId);
         final DataSource dataSource = findDataSource(datasourceId, true);
         final DataSet dataSet = new DataSet();
         dataSet.setDataSource(dataSource);
 
-        return dataSetController.createDataSet(dataSet);
+        return dataSetController.createDataSet(dataSet, encryptCredentials);
     }
 
     /**
@@ -632,6 +646,9 @@ public class DataSourceController extends AbstractCatalogController {
     @Nonnull
     private DataSource findDataSource(@Nonnull final String id, boolean encryptCredentials) {
         return metadataService.read(() -> {
+            // Require admin permission if the results should include unencrypted credentials.
+            accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+            
             com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(id);
             return dataSourceProvider.find(dsId)
                 .map(modelTransform.dataSourceToRestModel(true, encryptCredentials))

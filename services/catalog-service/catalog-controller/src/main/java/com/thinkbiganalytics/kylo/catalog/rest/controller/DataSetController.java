@@ -42,6 +42,7 @@ import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
@@ -50,6 +51,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -83,12 +85,13 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createDataSet(@Nonnull final DataSet source) {
+    public Response createDataSet(@Nonnull final DataSet source,
+                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(source);
 
         final DataSet dataSet;
         try {
-            dataSet = dataSetService.findOrCreateDataSet(source);
+            dataSet = dataSetService.findOrCreateDataSet(source, encryptCredentials);
         } catch (final CatalogException e) {
             log.debug("Cannot create data set from request: {}", source, e);
             throw new BadRequestException(getMessage(e));
@@ -106,12 +109,13 @@ public class DataSetController extends AbstractCatalogController {
                   })
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDataSet(@Nonnull final DataSet source) {
+    public Response updateDataSet(@Nonnull final DataSet source,
+                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(source);
 
         final DataSet dataSet;
         try {
-            dataSet = dataSetService.updateDataSet(source);
+            dataSet = dataSetService.updateDataSet(source, encryptCredentials);
         } catch (final CatalogException e) {
             throw new BadRequestException(getMessage(e));
         }
@@ -127,10 +131,11 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data set not found", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response getDataSet(@PathParam("id") @UUID final String dataSetId) {
+    public Response getDataSet(@PathParam("id") @UUID final String dataSetId,
+                               @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(dataSetId);
 
-        DataSet dataSet = findDataSet(dataSetId);
+        DataSet dataSet = findDataSet(dataSetId, encryptCredentials);
         return Response.ok(log.exit(dataSet)).build();
     }
 
@@ -143,10 +148,11 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list uploaded files", response = RestResponseStatus.class)
                   })
-    public Response getUploads(@PathParam("id") @UUID final String dataSetId) {
+    public Response getUploads(@PathParam("id") @UUID final String dataSetId,
+                               @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(dataSetId);
 
-        final DataSet dataSet = findDataSet(dataSetId);
+        final DataSet dataSet = findDataSet(dataSetId, encryptCredentials);
         final List<DataSetFile> files;
         try {
             log.debug("Listing uploaded files for dataset {}", dataSetId);
@@ -180,7 +186,7 @@ public class DataSetController extends AbstractCatalogController {
             throw new BadRequestException(getMessage("catalog.dataset.postUpload.missingBodyPart"));
         }
 
-        final DataSet dataSet = findDataSet(dataSetId);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         final DataSetFile file;
         try {
             final BodyPart part = bodyParts.get(0);
@@ -212,7 +218,7 @@ public class DataSetController extends AbstractCatalogController {
     public Response deleteUpload(@PathParam("id") @UUID final String dataSetId, @PathParam("name") final String fileName) {
         log.entry(dataSetId, fileName);
 
-        final DataSet dataSet = findDataSet(dataSetId);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         try {
             log.debug("Deleting uploaded file [{}] from dataset {}", fileName, dataSetId);
             fileManager.deleteUpload(dataSet, fileName);
@@ -233,8 +239,8 @@ public class DataSetController extends AbstractCatalogController {
      * @throws NotFoundException if the dataset does not exist
      */
     @Nonnull
-    private DataSet findDataSet(@Nonnull final String id) {
-        return dataSetService.findDataSet(id)
+    private DataSet findDataSet(@Nonnull final String id, final boolean encryptedCredentials) {
+        return dataSetService.findDataSet(id, encryptedCredentials)
             .orElseThrow(() -> {
                 log.debug("Data set not found: {}", id);
                 return new NotFoundException(getMessage("catalog.dataset.notFound"));
