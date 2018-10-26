@@ -289,7 +289,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
         this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
 
-        if(this.feed.isDataTransformation()){
+        if(this.feed.isDataTransformation() || (this.feed.hasBeenDeployed() && this.feed.sampleDataSet == undefined)){
             this.showSourceSample = false;
         }
     }
