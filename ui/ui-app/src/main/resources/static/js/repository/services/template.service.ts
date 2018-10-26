@@ -2,7 +2,7 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {TemplateMetadata, TemplateRepository} from "./model";
-import {catchError, mergeMap} from "rxjs/operators";
+import {catchError, filter, mergeMap, take} from "rxjs/operators";
 import 'rxjs/add/observable/throw';
 import {from} from "rxjs/observable/from";
 
@@ -18,11 +18,15 @@ export class TemplateService {
     constructor(private http: HttpClient) {
     }
 
-    getTemplates(): Observable<TemplateMetadata[]> {
+    getTemplates(): Observable<TemplateMetadata> {
 
         return this.getRepositories().pipe(
             mergeMap(repos => from(repos)),
-            mergeMap(r => this.getTemplatesInRepository(r)));
+            mergeMap(r => this.getTemplatesInRepository(r)),
+            mergeMap(templates => from(templates)),
+            filter(template => template.updateAvailable),
+            take(1))
+            .catch(err => Observable.throw(err));
     }
 
     getTemplatesInRepository(repository: TemplateRepository): Observable<any> {
