@@ -20,15 +20,16 @@ import {moduleName} from "./module-name";
 
 export let module: ng.IModule= angular.module(moduleName, []);
 
-module.service("BroadcastService",BroadcastService);
+// module.service("BroadcastService",BroadcastService);
 
-export const broadcastServiceProvider = {
-    provide: BroadcastService,
-    useFactory: (i: angular.auto.IInjectorService) => i.get("BroadcastService"),
-    deps: ['$injector']
-};
+// export const broadcastServiceProvider = {
+//     provide: BroadcastService,
+//     useFactory: (i: angular.auto.IInjectorService) => i.get("BroadcastService"),
+//     deps: ['$injector']
+// };
 
 module.service("SearchService", downgradeInjectable(SearchService) as any);
+module.service("BroadcastService", downgradeInjectable(BroadcastService) as any);
 module.service("AccessControlService",downgradeInjectable(AccessControlService) as any);
 module.service("AddButtonService",downgradeInjectable(AddButtonService) as any);
 module.service("AngularModuleExtensionService",downgradeInjectable(AngularModuleExtensionService) as any);

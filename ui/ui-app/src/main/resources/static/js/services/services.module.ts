@@ -21,7 +21,7 @@ import SideNavService from "./SideNavService";
 import { WindowUnloadService } from "./WindowUnloadService";
 import * as angular from "angular";
 import BroadcastService from "./broadcast-service";
-import { broadcastServiceProvider } from "./module";
+// import { broadcastServiceProvider } from "./module";
 @NgModule({
     imports: [
         CommonModule,
@@ -30,7 +30,7 @@ import { broadcastServiceProvider } from "./module";
     providers: [
         NotificationService,
         PreviewDatasetCollectionService,
-        broadcastServiceProvider,
+        // broadcastServiceProvider,
         BroadcastService,
         DefaultPaginationDataService,
         DefaultTableOptionsService,
