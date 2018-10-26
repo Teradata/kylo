@@ -59,6 +59,11 @@ export interface FeedDataTransformation {
     $selectedDatasourceId: any;
 
     /**
+     * id of the selected catalog source
+     */
+    catalogDataSourceId?:string;
+
+    /**
      * Model for the flowchart
      */
     chartViewModel: FlowChart.ChartDataModel;

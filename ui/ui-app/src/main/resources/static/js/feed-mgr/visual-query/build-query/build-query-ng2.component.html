@@ -27,7 +27,7 @@
           <div fxLayout="row" fxFlex="1 1 50%" fxLayoutAlign="start start" *ngIf="!advancedMode" fxFlex>
 
             <!-- datasource autocomplete -->
-            <div style="font-size:14px;padding-top:16px" *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="100">
+            <div style="font-size:14px;padding-top:16px" *ngIf="showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="100">
               <mat-form-field  style="min-width:320px">
                 <input #datasourceInput matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" >
                 <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
@@ -51,19 +51,19 @@
                   </span>
                     </mat-option>
                   </ng-container>
-                  <mat-option *ngIf="!autocompleteLoading && model.$selectedDatasourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && !autocompleteNoDataFound" class="autocomplete-option" >
+                  <mat-option *ngIf="!autocompleteLoading && model.catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && !autocompleteNoDataFound" class="autocomplete-option" >
                     <span class="title">
                        Search tables
                      </span><br/>
                     <span class="sub-title hint">Type name of a table</span>
                   </mat-option>
-                  <mat-option *ngIf="!autocompleteLoading && model.$selectedDatasourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && autocompleteNoDataFound" class="autocomplete-option" >
+                  <mat-option *ngIf="!autocompleteLoading && model.catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && autocompleteNoDataFound" class="autocomplete-option" >
                     <span class="title">
                        No tables found for {{datasourceInput.value}}
                      </span><br/>
                     <span class="sub-title hint">No tables found.  Try a different search.</span>
                   </mat-option>
-                  <mat-option *ngIf="model.$selectedDatasourceId == undefined">
+                  <mat-option *ngIf="model.catalogDataSourceId == undefined">
                     <span class="title">Select a datasource first</span>
                   </mat-option>
 
@@ -74,7 +74,7 @@
           </div>
           <button matTooltip="Add dataset" mat-raised-button mat-icon-button class="mat-primary" aria-label="Add dataset" (click)="onAddTable()" [disabled]="selectedTable == null"
                   style="margin-left:-5px"
-                  *ngIf="model.$selectedDatasourceId != 'FILE' && showDatasources">
+                  *ngIf=" showDatasources">
             <ng-md-icon icon="add"></ng-md-icon>
           </button>
 
@@ -107,7 +107,7 @@
         </div>
 
         <!-- SQL Editor -->
-        <sql-editor [sql]="this.model.sql" [datasourceId]="model.$selectedDatasourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
+        <sql-editor [sql]="this.model.sql" [datasourceId]="model.catalogDataSourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
                     [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true" (sqlChange)="advancedModeSql($event)"></sql-editor>
 
         <!-- nothing set and user cant change datasources mesage-->

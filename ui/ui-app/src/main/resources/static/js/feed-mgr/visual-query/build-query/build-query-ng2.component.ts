@@ -148,6 +148,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     catalogSQLDataSources: DataSource[] = [];
 
+    catalogSqlDataSourceIds:string[];
+
     /**
      * Model for the chart.
      */
@@ -260,7 +262,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             let datasource = new FormControl();
             this.form.addControl("datasource", datasource);
             datasource.valueChanges.subscribe((datasourceId: string) => {
-                this.model.$selectedDatasourceId = datasourceId;
+                this.model.catalogDataSourceId = datasourceId;
                 this.onDatasourceChange();
             });
 
@@ -369,6 +371,31 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         }
     }
 
+    private fetchCatalogDataSources() :Observable<DataSource[]>{
+       return this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"])
+            .pipe(map(datasources => {
+            this.catalogSqlDataSourceIds = []
+            if(datasources && datasources.length >0){
+                this.catalogSQLDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
+                    return ds.title;
+                }).sortBy((ds:DataSource) =>{
+                    return ds.connector.pluginId;
+                }).value()
+
+                this.catalogSQLDataSources.forEach(ds => {
+                    if(this.catalogSqlDataSourceIds.indexOf(ds.id) <0){
+                        this.catalogSqlDataSourceIds.push(ds.id);
+                    }
+                })
+            }
+            else {
+                this.catalogSQLDataSources = [];
+            }
+            return  this.catalogSQLDataSources;
+        }));
+
+    }
+
 
 
 
@@ -379,7 +406,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         let datasources$ = new Subject<UserDatasource[]>();
 
         // Get the list of data sources
-        Promise.all([this.engine.getNativeDataSources(), this.datasourcesService.findAll()])
+        Promise.all([this.engine.getNativeDataSources(), this.datasourcesService.findAll(), this.fetchCatalogDataSources().toPromise()])
             .then(resultList => {
                 this.nativeDataSourceIds = resultList[0].map((dataSource: UserDatasource): string => dataSource.id);
 
@@ -540,7 +567,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                             return field;
                         });
                         let nodeName = dataset.getDisplayIdentifier();
-                        this.addDataSetToCanvas(dataset.dataSource.id, nodeName, tableSchema, dataset);
+                        this.addDataSetToCanvas(null, nodeName, tableSchema, dataset); //dataset.dataSource.id
                     } else {
                         error = true;
                     }
@@ -585,35 +612,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     onDatasourceChange() {
         //clear the autocomplete
         this.form.get('tableAutocomplete').reset('');
-
-        if (this.model.$selectedDatasourceId == 'FILE') {
-            //warn if the user has other items
-            if (this.chartViewModel.nodes != null && (this.chartViewModel.nodes.length > 0)) {
-                //WARN if you upload a file you will lose your other data
-
-                this._dialogService.openConfirm({
-                    message: 'If you switch and upload a local file you will lose your other data sources. Are you sure you want to continue?',
-                    disableClose: true,
-                    viewContainerRef: this.viewContainerRef, //OPTIONAL
-                    title: 'Upload a local file', //OPTIONAL, hides if not provided
-                    cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
-                    acceptButton: 'Continue', //OPTIONAL, defaults to 'ACCEPT'
-                    width: '500px', //OPTIONAL, defaults to 400px
-                }).afterClosed().subscribe((accept: boolean) => {
-                    if (accept) {
-                        this.chartViewModel.nodes = [];
-                        this.model.chartViewModel = null;
-                    } else {
-                        this.model.$selectedDatasourceId = this.availableDatasources[0].id;
-                    }
-                });
-
-            }
-        }
-        else {
-            this.model.sampleFile = null;
-            this.engine.setSampleFile(null);
-        }
+        this.model.sampleFile = null;
+        this.engine.setSampleFile(null);
     }
 
     /**
@@ -641,8 +641,17 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
             this.model.$selectedColumnsAndTables = null;
             this.model.chartViewModel = null;
-            this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId.toUpperCase()) < 0 ? [this.model.$selectedDatasourceId] : [];
+            this.model.datasourceIds = this.model.$selectedDatasourceId != undefined && this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId.toUpperCase()) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
+            //save the catalog datasource ids????
+            if(this.model.catalogDataSourceId == undefined && this.catalogSQLDataSources && this.catalogSQLDataSources.length){
+                if(this.model.datasets)
+                this.model.catalogDataSourceId = this.catalogSQLDataSources.find(ds => ds.id == this.model.datasets[0].dataSource.id);
+                if(this.model.catalogDataSourceId == undefined) {
+                    this.model.catalogDataSourceId = this.catalogSQLDataSources[0].id;
+                }
+            }
+
         } else if (this.model.$selectedDatasourceId == 'FILE') {
             this.isValid = this.model.sampleFile != undefined;
         } else if (this.chartViewModel.nodes != null && this.chartViewModel.nodes.length > 0) {
@@ -651,7 +660,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.chartViewModel = this.chartViewModel.data;
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0);
+            //mark the datasourceId if its not a catalog datasource
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && this.catalogSqlDataSourceIds.indexOf(id) <0);
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -810,7 +820,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     onTableClick(table: any) {
         this.loadingPage = true;
         //get attributes for table
-        const datasourceId = this.model.$selectedDatasourceId;
+        const datasourceId = this.model.catalogDataSourceId;
 
         this.catalogService.createJdbcTableDataSet(datasourceId,table.schema,table.tableName).subscribe( (ds:DatasetTable) => {
             let nodeName = ds.dataSet.title;
@@ -1031,19 +1041,6 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         //init the form objects
         this.initFormComponents();
 
-        this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"]).subscribe(datasources => {
-            if(datasources && datasources.length >0){
-                this.catalogSQLDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
-                    return ds.title;
-                }).sortBy((ds:DataSource) =>{
-                    return ds.connector.pluginId;
-                }).value()
-            }
-            else {
-                this.catalogSQLDataSources = [];
-            }
-        });
-
         if (this.model.$selectedDatasourceId == null && this.model.datasourceIds && this.model.datasourceIds.length > 0) {
             this.model.$selectedDatasourceId = this.model.datasourceIds[0];
         }
@@ -1093,11 +1090,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             txt = "";
         }
         if(typeof txt == 'string') {
-            if(txt == "" || this.model.$selectedDatasourceId == undefined){
+            if(txt == "" || this.model.catalogDataSourceId == undefined){
                 return  Observable.of([]);
             }
             else {
-                return this.catalogService.listTables(this.model.$selectedDatasourceId, txt);
+                return this.catalogService.listTables(this.model.catalogDataSourceId, txt);
             }
         }
         else {
