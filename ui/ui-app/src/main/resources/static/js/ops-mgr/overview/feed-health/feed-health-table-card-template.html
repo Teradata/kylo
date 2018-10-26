@@ -35,7 +35,7 @@
         <md-tab-body>
           <md-divider></md-divider>
           <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-              <md-progress-linear md-mode="indeterminate" ng-show="vm.showProgress"></md-progress-linear>
+              <md-progress-linear class="md-accent" md-mode="indeterminate" ng-show="vm.showProgress"></md-progress-linear>
             <md-list flex layout-fill class="list-item-table">
               <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
                             pagination-id="tab.title" ng-click="vm.feedDetails($event,feed)">
@@ -165,7 +165,7 @@
 
 
           <div ng-show="vm.loading == true">
-            <md-progress-circular md-mode="indeterminate" md-diameter="25px"></md-progress-circular>
+            <md-progress-circular md-mode="indeterminate" md-diameter="25px" class="md-accent"></md-progress-circular>
           </div>
         </md-tab-body>
       </md-tab>

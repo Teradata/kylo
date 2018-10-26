@@ -61,7 +61,7 @@
 
 
   <div>
-    <mat-progress-bar  mode="indeterminate" *ngIf="executingQuery"></mat-progress-bar>
+    <mat-progress-bar  mode="indeterminate" *ngIf="executingQuery" class="accent"></mat-progress-bar>
     <div class="browse-results" *ngIf="previewTableOptions != null">
       <fattable #queryPreview [options]="previewTableOptions"></fattable>
     </div>

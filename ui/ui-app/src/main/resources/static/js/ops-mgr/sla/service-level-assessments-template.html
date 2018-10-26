@@ -35,7 +35,7 @@
                         <md-divider></md-divider>
                     <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
                         <div ng-if="vm.showProgress" class="md-list-table-progress">
-                        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                        <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
                             <br/><br/>
                         </div>
                     <md-list layout-fill ng-show="vm.loading == false" class="list-item-table">

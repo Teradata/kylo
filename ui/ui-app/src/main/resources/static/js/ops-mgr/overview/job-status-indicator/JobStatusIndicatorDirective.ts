@@ -235,6 +235,9 @@ constructor(private $scope: IScope,
             }
             this.chartOptions.chart.yDomain = [0, max];
             this.chartOptions.chart.yAxis.ticks =max;
+            this.chartOptions.chart.color = (d: any)=>{
+                return "#00B2B1";
+            };
           //  this.chartApi.update();
         }
 

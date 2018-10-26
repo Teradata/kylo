@@ -9,7 +9,7 @@ export default class controller implements ng.IComponentController {
     dataLoaded: boolean = false;
     feedSummaryData: any = null;
     chartData: any[] = [];
-    dataMap: any = {'Healthy':{count:0, color:'#009933'},'Unhealthy':{count:0,color:'#FF0000'}};
+    dataMap: any = {'Healthy':{count:0, color:'#b71c1c'},'Unhealthy':{count:0,color:'#388e3c'}};
     chartOptions: any;
 
     static readonly $inject = ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService","OpsManagerDashboardService","BroadcastService","$filter"];
@@ -33,7 +33,7 @@ export default class controller implements ng.IComponentController {
                 labelSunbeamLayout: false,
                 "margin":{"top":10,"right":10,"bottom":10,"left":10},
                 donut:true,
-                donutRatio:0.65,
+                donutRatio:0.62,
                 showLegend:false,
                 refreshDataOnly: false,
                 color:(d: any)=>{

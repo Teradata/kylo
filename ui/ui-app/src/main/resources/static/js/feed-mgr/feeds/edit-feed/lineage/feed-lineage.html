@@ -28,7 +28,7 @@
 
 <div style="min-height:700px;height:700px" layout-fill id="feed-lineage-container">
   <div ng-if="vm.loading" layout="column" layout-fill layout-align="start center">
-    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+    <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
     <div class="layout-padding-top-bottom">{{"views.feed-lineage.Lfl" | translate}}</div>
   </div>
   <vis-network data="vm.data" options="vm.options" events="vm.events"></vis-network>

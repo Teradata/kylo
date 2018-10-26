@@ -139,9 +139,9 @@ tba-jobs md-list-item:hover {
 md-tabs md-ink-bar {
   height: 5px !important;
 }
-
+/*
 md-tabs.md-default-theme md-ink-bar, md-tabs md-ink-bar {
   background-color: #3483bb !important;
 }
-
+*/
 

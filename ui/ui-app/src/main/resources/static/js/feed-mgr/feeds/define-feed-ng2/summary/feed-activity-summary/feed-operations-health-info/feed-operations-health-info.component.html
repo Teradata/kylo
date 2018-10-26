@@ -47,7 +47,7 @@
         <mat-icon mat-list-icon [ngClass]="kyloIcons.getFeedStateColor(feed.state)">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
         <h4 mat-line *ngIf="!feedStateChanging" [ngClass]="kyloIcons.getFeedStateColor(feed.state)"> {{feed.state}}</h4>
         <h4 mat-line *ngIf="feedStateChanging">
-          <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>
+          <mat-spinner mode="indeterminate" diameter="20" color="accent"></mat-spinner>
         </h4>
         <p mat-line >State</p>
       </mat-list-item>

@@ -1,8 +1,8 @@
 <div fxLayout="row" class="centered">
   <mat-card fxFlex="65%">
     <div fxLayout="column" fxLayoutAlign="space-evenly start">
-      <div style="white-space: nowrap; margin: 20px 0 20px 20px;" class="card-title" fxFlex="80">Search Feeds and Templates</div>
-      <div fxLayout="row" style="width: 100%;" fxLayoutAlign="space-around center">
+      <div class="card-title push-md" fxFlex="80">Repository</div>
+      <div fxLayout="row" class="pull-left-sm" style="width: 100%;" fxLayoutAlign="space-around center">
         <mat-form-field fxFlex="20">
           <mat-select placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates($event)">
             <mat-option *ngFor="let repository of repositories" [value]="repository">
@@ -15,10 +15,10 @@
         </mat-form-field>
       </div>
     </div>
-    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-    <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="center center">
+    <mat-progress-bar mode="indeterminate" *ngIf="loading" color="accent"></mat-progress-bar>
+    <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="start start">
       <br>
-      <span>No Templates or Feeds available in repository.</span>
+      <span class="push-left-md tc-grey-600">No items found</span>
       <br>
       <span *ngIf="errorMsg !== ''" class="tc-red-700">{{errorMsg}}<br></span>
     </div>

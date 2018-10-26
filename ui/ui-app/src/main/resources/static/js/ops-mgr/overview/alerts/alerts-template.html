@@ -28,8 +28,8 @@
         <md-divider></md-divider>
         <md-list layout="column" flex class="md-2-line">
             <md-list-item layout-row layout-align="start end" ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)" ng-init="vDN = 'views.alerts-template.' + alert.typeDisplayName">
-                <md-icon class="md-avatar-icon alert-avatar push">warning</md-icon>
-                <div class="md-list-item-text  pad" flex >
+                <md-icon class="push-left-md error">warning</md-icon>
+                <div class="md-list-item-text pad pull-left-md" flex >
                     <div layout="row" flex="100" layout-align="start space-between">
                     <div layout="column" flex="50" layout-align="start">
                         <span class="text-truncate alert-heading">{{alert.groupDisplayNameTruncated}}</span>

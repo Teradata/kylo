@@ -24,7 +24,7 @@
     <div>This template will be permanently deleted.</div>
   </md-dialog-content>
   <md-dialog-actions>
-    <md-progress-circular md-diameter="36px" ng-if="vm.model.state == 'DELETED'"></md-progress-circular>
+    <md-progress-circular md-diameter="36px" ng-if="vm.model.state == 'DELETED'" class="md-accent"></md-progress-circular>
     <md-button class="md-warn" ng-click="vm.deleteTemplate()" aria-label="Delete" ng-if="vm.model.state == 'DISABLED'">Delete</md-button>
     <md-button class="md-primary" aria-label="Cancel" ng-click="dialog.hide()" ng-disabled="vm.model.state == 'DELETED'">Cancel</md-button>
   </md-dialog-actions>

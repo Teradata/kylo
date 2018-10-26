@@ -24,7 +24,7 @@
         <md-button class="md-primary md-raised" ng-disabled="vm.loading" ng-click="vm.executeQuery()">
           Execute Query
         </md-button>
-        <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+        <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
         <div class="browse-results" ng-if="vm.loading == false ">
           <span ng-if="vm.queryTime != null" class="md-subhead">The query returned {{vm.resultSize}} rows and took: {{vm.queryTime | timeWithMillis }} </span>
           <div ui-grid-auto-resize  style="width:100%;height:500px;" ui-grid="vm.gridOptions"></div>

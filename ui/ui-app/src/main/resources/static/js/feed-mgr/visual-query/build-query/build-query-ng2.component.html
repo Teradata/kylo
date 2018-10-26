@@ -31,7 +31,7 @@
               <mat-form-field  style="min-width:320px">
                 <input #datasourceInput matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" >
                 <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
-                  <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="40"></mat-spinner></mat-option>
+                  <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="40" color="accent"></mat-spinner></mat-option>
                   <ng-container *ngIf="!autocompleteLoading">
                     <mat-option *ngFor="let table of filteredTables" [value]="table" class="autocomplete-option" >
                   <span class="title">

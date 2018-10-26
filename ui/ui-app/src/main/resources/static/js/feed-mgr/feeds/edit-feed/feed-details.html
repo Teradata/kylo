@@ -15,7 +15,7 @@
                         <div> {{"views.feed-details.Details" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
-                        <md-progress-linear md-mode="indeterminate" ng-if="vm.loadingFeedData"></md-progress-linear>
+                        <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.loadingFeedData"></md-progress-linear>
                         <thinkbig-feed-info ng-if="!vm.loadingFeedData && vm.model.loaded" selected-tab-index="vm.selectedTabIndex"></thinkbig-feed-info>
                         <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;"> {{"views.feed-details.LF" | translate}} </div>
                         <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding">{{vm.loadMessage}}</div>
@@ -138,7 +138,7 @@
 
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
 
-                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling || vm.startingFeed"></md-progress-linear>
+                <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.enabling || vm.disabling || vm.startingFeed"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}">
                         <span ng-if="vm.model.state == 'ENABLED'">{{"views.feed-details.Enabled" | translate}}</span>

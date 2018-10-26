@@ -25,7 +25,7 @@
   </header-section>
   <body-section>
     <div ng-if="vm.loading">
-      <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+      <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
       <span class="md-body-2 layout-padding-left">Loading templates</span>
     </div>
     <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">

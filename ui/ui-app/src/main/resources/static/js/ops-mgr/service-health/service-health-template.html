@@ -26,7 +26,7 @@
                         <md-divider></md-divider>
                     <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
                         <div ng-if="vm.showProgress" class="md-list-table-progress">
-                        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                        <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
                         </div>
                     <md-list flex layout-fill ng-show="vm.loading == false" ng-hide class="list-item-table">
                             <md-list-item  dir-paginate="service in vm.services|orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId()"  ng-click="vm.serviceDetails($event,service)"   current-page="vm.currentPage">

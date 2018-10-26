@@ -128,7 +128,7 @@ md-sidenav md-list {
 }
 
 md-sidenav md-list .alerts-count {
-  background-color: red;
+  background-color: #b71c1c;
   color: white;
   padding: 3px;
   font-weight: 900;
@@ -407,7 +407,7 @@ md-list.padding-left md-list-item {
 }
 
 .md-button.border-btn-warn {
-  background-color: rgb(255, 87, 34);
+  background-color: #b71c1c !important;
   text-align: center !important;
   height: 36px;
   font-size: 12px;
@@ -418,7 +418,7 @@ md-list.padding-left md-list-item {
 }
 
 .md-button.border-btn-warn:hover {
-  background-color: rgb(244, 81, 30);
+  background-color: #b71c1c !important;
 }
 
 .md-button.border-btn-white {
@@ -610,7 +610,7 @@ md-tab-content.md-no-scroll {
 }
 
 .md-warn-text {
-  color: rgb(255, 87, 34);
+  color: #b71c1c !important;
 }
 
 md-radio-button.padding-right {
@@ -854,8 +854,8 @@ Status styles
  */
 
 .error, .unhealthy {
-  color: #FF0000; /*#FF1C1C, a94442*/
-  fill: #FF0000;
+  color: #b71c1c!important;
+  fill: #b71c1c!important;
 }
 
 .running-job-activity {
@@ -863,8 +863,8 @@ Status styles
 }
 
 .healthy, .success, .enabled {
-  color: #009933;
-  fill: #009933;
+  color: #388e3c!important;
+  fill: #388e3c!important;
 }
 
 .abandoned, .unknown, .disabled {

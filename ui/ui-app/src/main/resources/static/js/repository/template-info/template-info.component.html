@@ -23,7 +23,7 @@
     <!--<mat-spinner *ngIf="loading" aria-label="Loading template"></mat-spinner>-->
     <mat-card-content>
       <div>
-        <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling"></mat-progress-bar>
+        <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling" class="accent"></mat-progress-bar>
         <div *ngIf="!loading">
           <div class="card-title" flex>{{template.templateName}}
             <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" [icon]="template.icon" class="push-left-sm" size="20" [style.fill]="template.iconColor"></ng-md-icon>

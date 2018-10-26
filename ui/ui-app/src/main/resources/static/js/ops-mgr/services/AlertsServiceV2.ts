@@ -28,8 +28,8 @@ export default class AlertsServiceV2{
             _.each(alertSummaries,(summary: any)=>{
             summary.since =  moment(summary.lastAlertTimestamp).fromNow();
             summary.groupDisplayNameTruncated = summary.groupDisplayName;
-            if(summary.groupDisplayName && summary.groupDisplayName.length > 20){
-                summary.groupDisplayNameTruncated = summary.groupDisplayName.substr(0,20);
+            if(summary.groupDisplayName && summary.groupDisplayName.length > 25){
+                summary.groupDisplayNameTruncated = summary.groupDisplayName.substr(0,25);
             }
 
             });

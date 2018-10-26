@@ -287,20 +287,20 @@ export default class controller implements ng.IComponentController {
                 labelSunbeamLayout: false,
                 "margin": {"top": 10, "right": 10, "bottom": 10, "left": 10},
                 donut: true,
-                donutRatio: 0.65,
+                donutRatio: 0.62,
                 showLegend: false,
                 valueFormat: (d: any) => {
                     return parseInt(d);
                 },
                 color: (d: any) => {
                     if (d.key == 'HEALTHY') {
-                        return '#009933';
+                        return '#388e3c';
                     }
                     else if (d.key == 'UNHEALTHY') {
-                        return '#FF0000';
+                        return '#b71c1c';
                     }
                     else if (d.key == 'WARNING') {
-                        return '#FF9901';
+                        return '#d84315';
                     }
                 },
                 pie: {

@@ -19,7 +19,7 @@
   -->
 <div flex style="width: 100%" >
     <div layout="row" layout-sm="column" layout-align="space-around" ng-if="vm.model.loaded == false">
-        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+        <md-progress-circular md-mode="indeterminate" class="md-accent"></md-progress-circular>
     </div>
 
     <thinkbig-stepper total-steps="{{vm.model.totalSteps}}" stepper-name="EditFeedStepper" on-initialized="vm.onStepperInitialized" core-data-model="vm.model" on-cancel-stepper="vm.cancelStepper()"

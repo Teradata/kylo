@@ -18,7 +18,7 @@
   #L%
   -->
 <div class="edit-form" style="padding-top:0px;" fxLayout="column">
-  <mat-progress-bar mode="indeterminate" *ngIf="loadingPolicies"></mat-progress-bar>
+  <mat-progress-bar mode="indeterminate" *ngIf="loadingPolicies" class="accent"></mat-progress-bar>
 
   <mat-form-field>
     <mat-select [(value)]="ruleType"  (change)="onRuleTypeChange()" [placeholder]="selectLabel">

@@ -137,7 +137,7 @@
                       [disabled]="(uploadInProgress || formGroup.invalid || feedFile == undefined)">
                 {{"views.import_feed.Import_Feed_btn" | translate}}
               </button>
-              <mat-progress-bar fxFlex mode="determinate" [value]="uploadProgress" *ngIf="uploadInProgress"></mat-progress-bar>
+              <mat-progress-bar fxFlex mode="determinate" [value]="uploadProgress" *ngIf="uploadInProgress" class="accent"></mat-progress-bar>
             </div>
           </div>
         </form>

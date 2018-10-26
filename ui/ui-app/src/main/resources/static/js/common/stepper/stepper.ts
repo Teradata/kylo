@@ -202,7 +202,7 @@ export class StepperController implements ng.IComponentController {
 
     assignStepName = (step: any, name: any) => {
         step.stepName = name;
-        this.StepperService.assignedStepName(this.stepperName, step)
+        this.StepperService.assignedStepName(this.stepperName, step)vis
     }
 
     getStepByName = (stepName: any) => {
