@@ -232,7 +232,7 @@ public class DataSourceController extends AbstractCatalogController {
         }
 
         final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
-        DataSource dataSource = findDataSource(dataSourceId);
+        DataSource dataSource = findDataSource(dataSourceId, encryptCredentials);  // TODO remove encrypt flag when real credential manager is in place
 
         switch (mode) {
             case NONE:
@@ -310,8 +310,11 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 400, message = "", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response getDataSources(@QueryParam("connector") final String connectorId, @QueryParam("filter") final String filter, @QueryParam("limit") final Integer limit,
-                                   @QueryParam("start") final Integer start) {
+    public Response getDataSources(@QueryParam("connector") final String connectorId, 
+                                   @QueryParam("filter") final String filter, 
+                                   @QueryParam("limit") final Integer limit,
+                                   @QueryParam("start") final Integer start,
+                                   @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(connectorId, filter, limit, start);
 
         // Validate parameters
@@ -327,7 +330,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         return metadataService.read(() -> {
             Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
-            final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel(true));
+            final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel(true, encryptCredentials));
 
             // Return results
             final SearchResult<DataSource> searchResult = new SearchResultImpl<>();
@@ -346,12 +349,13 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Path("/plugin-id")
-    public Response getDataSources(@QueryParam("pluginIds") final String pluginIds) {
+    public Response getDataSources(@QueryParam("pluginIds") final String pluginIds,
+                                   @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(pluginIds);
         List<String> pluginList = Arrays.asList(pluginIds.split(",")).stream().map(id -> id.trim()).collect(Collectors.toList());
         final Set<DataSource> datasources = metadataService.read(() -> {
             return dataSourceProvider.findAll().stream().filter(ds -> pluginList.contains(ds.getConnector().getPluginId()))
-                .map(modelTransform.dataSourceToRestModel())
+                .map(modelTransform.dataSourceToRestModel(true, encryptCredentials))
                 .collect(Collectors.toSet());
         });
         return Response.ok(datasources).build();
@@ -373,7 +377,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         return metadataService.read(() -> {
             // List files at path
-            final DataSource dataSource = findDataSource(dataSourceId);
+            final DataSource dataSource = findDataSource(dataSourceId, true);
             return Response.ok(log.exit(doListFiles(path, dataSource))).build();
         });
     }
@@ -412,12 +416,15 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list tables", response = RestResponseStatus.class)
                   })
-    public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("catalog") final String catalogName, @QueryParam("schema") final String schemaName) {
+    public Response listTables(@PathParam("id") final String dataSourceId, 
+                               @QueryParam("catalog") final String catalogName, 
+                               @QueryParam("schema") final String schemaName,
+                               @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(dataSourceId, catalogName, schemaName);
 
         return metadataService.read(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId);
+            final DataSource dataSource = findDataSource(dataSourceId, encryptCredentials);
             final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
 
             return Response.ok(log.exit(tables)).build();
@@ -457,7 +464,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         List<DataSetTable> tableList = metadataService.read(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId);
+            final DataSource dataSource = findDataSource(dataSourceId, true);
 
             final List<DataSetTable> tables;
             try {
@@ -507,7 +514,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         DataSetWithTableSchema dataSetWithTableSchema = metadataService.commit(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId);
+            final DataSource dataSource = findDataSource(dataSourceId, true);
             TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
             if (tableSchema != null) {
                 DataSet dataSet = new DataSet();
@@ -570,7 +577,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.debug("List tables for catalog:{} encrypted:{}", encrypted);
 
         try {
-            final DataSource dataSource = findDataSource(dataSourceId);
+            final DataSource dataSource = findDataSource(dataSourceId, true);
             final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
             final Map<String, String> credProps = this.credentialManager.getCredentials(dataSource, encrypted, principals);
             DataSourceCredentials credentials = new DataSourceCredentials(credProps, encrypted);
@@ -599,7 +606,7 @@ public class DataSourceController extends AbstractCatalogController {
     public Response getConnectorPlugin(@PathParam("id") final String dataSourceId) {
         log.entry(dataSourceId);
 
-        final DataSource dataSource = findDataSource(dataSourceId);
+        final DataSource dataSource = findDataSource(dataSourceId, true);
 
         return log.exit(this.pluginController.getPlugin(dataSource.getConnector().getPluginId()));
     }
@@ -610,7 +617,7 @@ public class DataSourceController extends AbstractCatalogController {
     @ApiOperation("creates a new dataset for a datasource")
     public Response createDataSet(@PathParam("id") final String datasourceId) {
         log.entry(datasourceId);
-        final DataSource dataSource = findDataSource(datasourceId);
+        final DataSource dataSource = findDataSource(datasourceId, true);
         final DataSet dataSet = new DataSet();
         dataSet.setDataSource(dataSource);
 
@@ -623,11 +630,11 @@ public class DataSourceController extends AbstractCatalogController {
      * @throws NotFoundException if the data source does not exist
      */
     @Nonnull
-    private DataSource findDataSource(@Nonnull final String id) {
+    private DataSource findDataSource(@Nonnull final String id, boolean encryptCredentials) {
         return metadataService.read(() -> {
             com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(id);
             return dataSourceProvider.find(dsId)
-                .map(modelTransform.dataSourceToRestModel())
+                .map(modelTransform.dataSourceToRestModel(true, encryptCredentials))
                 .orElseThrow(() -> {
                     log.debug("Data source not found: {}", id);
                     return new NotFoundException(getMessage("catalog.datasource.notFound.id", id));
