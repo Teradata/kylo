@@ -224,7 +224,7 @@ public class RemoteProvenanceEventService {
         //TODO can this be replaced with a simple get flowFileIdToRemoteFlowFileId.containsKey(event.getFlowFileUuid());
         boolean isWaiting = isWaitingRemoteFlowFile(event.getFlowFileUuid());
         if(isWaiting) {
-            lock.lock();
+          //  lock.lock();
             try {
                 String sourceSystemFlowFileIdentifier = flowFileIdToRemoteFlowFileId.get(event.getFlowFileUuid());
                 addRemoteFlowFile(event.getFlowFileUuid(), sourceSystemFlowFileIdentifier);
@@ -232,7 +232,7 @@ public class RemoteProvenanceEventService {
                 addWaitingOnRemoteFlowFile(event, eventId);
             }
             finally {
-                lock.unlock();
+            //    lock.unlock();
             }
         }
         return isWaiting;
@@ -324,7 +324,7 @@ public class RemoteProvenanceEventService {
      * @param remoteEventeMessages remote event information
      */
     public void loadRemoteEventFlowData(RemoteEventeMessageResponseHolder remoteEventeMessages){
-        lock.lock();
+     //   lock.lock();
         try {
             Set<String> sourceFlowFiles = remoteEventeMessages.getMessages().stream()
                 .filter(message -> sourceFlowFileToFlowFileIds.getIfPresent(message.getSourceFlowFileId()) != null)
@@ -357,7 +357,7 @@ public class RemoteProvenanceEventService {
 
         }
         finally {
-            lock.unlock();
+        //    lock.unlock();
         }
     }
 
