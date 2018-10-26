@@ -143,7 +143,6 @@ export class CatalogService {
                     return {catalog:catalog,schema: schema, tableName:tableName, fullName: fullName, fullNameLower: fullName.toLowerCase()};
                 });
                 if(filter &&  filter != undefined && (typeof filter == 'string' ) && filter != ""){
-                    console.log("FILTER ",filter)
                     let lowercaseQuery = filter.toLowerCase();
                     return list.filter((table:any) => {
                         return table.fullNameLower.indexOf(lowercaseQuery) !== -1;

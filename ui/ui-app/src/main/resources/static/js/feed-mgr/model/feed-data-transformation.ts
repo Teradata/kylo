@@ -61,7 +61,7 @@ export interface FeedDataTransformation {
     /**
      * id of the selected catalog source
      */
-    catalogDataSourceId?:string;
+    $catalogDataSourceId?:string;
 
     /**
      * Model for the flowchart
@@ -72,6 +72,11 @@ export interface FeedDataTransformation {
      * List of required datasource ids
      */
     datasourceIds: string[];
+
+    /**
+     * list of datasourceIds with datasets used by this feed
+     */
+    catalogDataSourceIds:string[];
 
     /**
      * Script with data transformations

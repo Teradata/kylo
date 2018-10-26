@@ -20,7 +20,7 @@
 
           <mat-form-field *ngIf="showDatasources" style="font-size:14px;padding-top:16px">
             <mat-select formControlName="datasource" placeholder="Select source">
-              <mat-option *ngFor="let datasource of catalogSQLDataSources" [value]="datasource.id">{{datasource.title}}</mat-option>
+              <mat-option *ngFor="let datasource of availableCatalogSQLDataSources" [value]="datasource.id">{{datasource.title}}</mat-option>
             </mat-select>
           </mat-form-field>
 
@@ -51,19 +51,19 @@
                   </span>
                     </mat-option>
                   </ng-container>
-                  <mat-option *ngIf="!autocompleteLoading && model.catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && !autocompleteNoDataFound" class="autocomplete-option" >
+                  <mat-option *ngIf="!autocompleteLoading && model.$catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && !autocompleteNoDataFound" class="autocomplete-option" >
                     <span class="title">
                        Search tables
                      </span><br/>
                     <span class="sub-title hint">Type name of a table</span>
                   </mat-option>
-                  <mat-option *ngIf="!autocompleteLoading && model.catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && autocompleteNoDataFound" class="autocomplete-option" >
+                  <mat-option *ngIf="!autocompleteLoading && model.$catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && autocompleteNoDataFound" class="autocomplete-option" >
                     <span class="title">
                        No tables found for {{datasourceInput.value}}
                      </span><br/>
                     <span class="sub-title hint">No tables found.  Try a different search.</span>
                   </mat-option>
-                  <mat-option *ngIf="model.catalogDataSourceId == undefined">
+                  <mat-option *ngIf="model.$catalogDataSourceId == undefined">
                     <span class="title">Select a datasource first</span>
                   </mat-option>
 
@@ -107,7 +107,7 @@
         </div>
 
         <!-- SQL Editor -->
-        <sql-editor [sql]="this.model.sql" [datasourceId]="model.catalogDataSourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
+        <sql-editor [sql]="this.model.sql" [datasourceId]="model.$catalogDataSourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
                     [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true" (sqlChange)="advancedModeSql($event)"></sql-editor>
 
         <!-- nothing set and user cant change datasources mesage-->

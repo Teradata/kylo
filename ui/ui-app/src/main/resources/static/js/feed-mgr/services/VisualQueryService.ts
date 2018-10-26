@@ -1,7 +1,6 @@
 import {UnderscoreStatic} from "underscore";
 import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 
-import * as angular from 'angular';
 import * as _ from "underscore";
 
 import {SparkDataSet} from "../model/spark-data-set.model";
@@ -45,7 +44,7 @@ export function SqlBuilder(model: VisualQueryModel, dialect: SqlDialect) {
     this.selectedColumnsAndTables_ = null;
 }
 
-angular.extend(SqlBuilder.prototype, {
+_.extend(SqlBuilder.prototype, {
     /**
      * Generates the SQL for the model.
      *
@@ -63,7 +62,7 @@ angular.extend(SqlBuilder.prototype, {
         }
 
         // Build SELECT clause
-        angular.forEach(tree.targetList, function (target) {
+        _.each(tree.targetList, function (target) {
             select += (select.length === 0) ? "SELECT " : ", ";
             select += target.val.fields[0] + "." + self.quoteSql(target.val.fields[1]);
             if (target.name != null) {
@@ -75,18 +74,18 @@ angular.extend(SqlBuilder.prototype, {
         const fromTables: string[] = [];
         const joinClauses: string[] = [];
 
-        angular.forEach(tree.fromClause, function (node) {
+        _.each(tree.fromClause, function (node) {
             self.addFromClause(node, fromTables, joinClauses);
         });
 
         // Build FROM clause
         let sql = "";
 
-        angular.forEach(fromTables, function (table) {
+        _.each(fromTables, function (table) {
             sql += (sql.length === 0) ? select + " FROM " : ", ";
             sql += table;
         });
-        angular.forEach(joinClauses, function (join) {
+        _.each(joinClauses, function (join) {
             sql += " " + join;
         });
 
@@ -112,15 +111,34 @@ angular.extend(SqlBuilder.prototype, {
     },
 
     /**
-     * Gets the set of data sources used in the model.
+     * Gets the set of  legacy data sources used in the model.
      *
      * @public
      * @return {Array.<string>} the unique data source ids
      */
     getDatasourceIds: function (): string[] {
+        let catalogDatasourceIds = this.getCatalogDataSourceIds();
         return _.chain(this.model_.nodes)
+            .filter(node => node.datasourceId != null && node.datasourceId != undefined)
+            .filter(node => catalogDatasourceIds.indexOf(node.datasourceId) < 0)
             .map(function (node) {
                 return node.datasourceId;
+            })
+            .uniq()
+            .value();
+    },
+
+    /**
+     * Gets the set of catalog data sources used in the model.
+     *
+     * @public
+     * @return {Array.<string>} the unique data source ids
+     */
+    getCatalogDataSourceIds: function (): string[] {
+        return _.chain(this.model_.nodes)
+            .filter(node => node.dataset != null && node.dataset != undefined &&  node.dataset.dataSource != undefined)
+            .map(function (node) {
+                return node.dataset.dataSource.id;
             })
             .uniq()
             .value();
@@ -209,7 +227,7 @@ angular.extend(SqlBuilder.prototype, {
         var srcID = tableInfo.data.id;
         graph[srcID].seen = true;
 
-        angular.forEach(graph[srcID].edges, function (connection, dstID) {
+        _.each(graph[srcID].edges, function (connection, dstID) {
             if (connection !== null) {
                 self.getJoinTree(tableInfo.data, graph[dstID].data, connection, graph, joinClauses);
                 edges.push(dstID);
@@ -219,7 +237,7 @@ angular.extend(SqlBuilder.prototype, {
         });
 
         // Add JOIN clauses for tables connected to child nodes
-        angular.forEach(edges, function (nodeID) {
+        _.each(edges, function (nodeID) {
             self.addTableJoins(graph[nodeID], graph, null, joinClauses);
         });
     },
@@ -243,7 +261,7 @@ angular.extend(SqlBuilder.prototype, {
             : self.getRangeVar(src);
 
         // Use default if missing join keys
-        if (angular.isUndefined(connection.joinKeys.destKey) || angular.isUndefined(connection.joinKeys.sourceKey) || angular.isUndefined(connection.joinType)) {
+        if (_.isUndefined(connection.joinKeys.destKey) || _.isUndefined(connection.joinKeys.sourceKey) || _.isUndefined(connection.joinType)) {
             joinClauses.push({
                 type: VisualQueryService.NodeTag.JoinExpr,
                 jointype: VisualQueryService.JoinType.JOIN,
@@ -332,7 +350,7 @@ angular.extend(SqlBuilder.prototype, {
         var graph = this.createTableJoinMap();
         var joinClauses: any = [];
 
-        angular.forEach(graph, function (node) {
+        _.each(graph, function (node) {
             if (_.size(node.edges) === 0) {
                 fromTables.push(self.getRangeVar(node.data));
             }
@@ -356,10 +374,10 @@ angular.extend(SqlBuilder.prototype, {
         var self = this;
         var targetList: any = [];
 
-        angular.forEach(this.model_.nodes, function (node) {
+        _.each(this.model_.nodes, function (node) {
             var table = TABLE_PREFIX + node.id;
 
-            angular.forEach(node.nodeAttributes.attributes, function (attr) {
+            _.each(node.nodeAttributes.attributes, function (attr) {
                 if (attr.selected) {
                     // Determine column alias
                     var alias = _.find(self.getColumnAliases(node.name, attr.name), function (name: any) {
@@ -402,12 +420,12 @@ angular.extend(SqlBuilder.prototype, {
         var map = {};
 
         // Add every node to the map
-        angular.forEach(this.model_.nodes, function (node) {
+        _.each(this.model_.nodes, function (node) {
             map[node.id] = {data: node, edges: {}, seen: false};
         });
 
         // Add edges to the map
-        angular.forEach(this.model_.connections, function (connection) {
+        _.each(this.model_.connections, function (connection) {
             map[connection.source.nodeID].edges[connection.dest.nodeID] = connection;
             map[connection.dest.nodeID].edges[connection.source.nodeID] = connection;
         });
@@ -425,10 +443,10 @@ angular.extend(SqlBuilder.prototype, {
         var aliasCount = {};
         var self = this;
 
-        angular.forEach(this.model_.nodes, function (node) {
-            angular.forEach(node.nodeAttributes.attributes, function (attr) {
+        _.each(this.model_.nodes, function (node) {
+            _.each(node.nodeAttributes.attributes, function (attr) {
                 if (attr.selected) {
-                    angular.forEach(self.getColumnAliases(node.name, attr.name), function (alias) {
+                    _.each(self.getColumnAliases(node.name, attr.name), function (alias) {
                         aliasCount[alias] = (typeof(aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;
                     });
                 }
@@ -483,7 +501,7 @@ angular.extend(SqlBuilder.prototype, {
     getColumnSql: function (column: any, quoteSchema: any) {
         var self = this;
         var sql = "";
-        angular.forEach(column.fields, function (field) {
+        _.each(column.fields, function (field) {
             if (sql.length > 0) {
                 sql += ".";
             }
@@ -533,10 +551,10 @@ angular.extend(SqlBuilder.prototype, {
     getRangeVar: function (node: any) {
         var schema;
         var table;
-        if (angular.isArray(node.nodeAttributes.reference)) {
+        if (_.isArray(node.nodeAttributes.reference)) {
             schema = node.nodeAttributes.reference[0];
             table = node.nodeAttributes.reference[1];
-        } else if (angular.isString(node.nodeAttributes.sql)) {
+        } else if (_.isString(node.nodeAttributes.sql)) {
             var parts = node.nodeAttributes.sql.split(".");
             schema = parts[0].substr(1, parts[0].length - 2).replace(/``/g, "`");
             table = parts[1].substr(1, parts[1].length - 2).replace(/``/g, "`");
@@ -548,7 +566,7 @@ angular.extend(SqlBuilder.prototype, {
             relname: table,
             aliasName: TABLE_PREFIX + node.id
         };
-        if (angular.isString(node.datasourceId)) {
+        if (node.datasourceId != null && _.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
         }
         if(node.dataset){
@@ -636,7 +654,6 @@ export class VisualQueryService {
      * @type {{selectedDatasourceId: string, visualQueryModel: VisualQueryModel, visualQuerySql: string}}
      */
     model: any = {selectedDatasourceId: VisualQueryService.HIVE_DATASOURCE };
-    a:string = "aaaa"
 
     constructor(){
         console.log("NEW VISUALQUERYSERVICE!!!")

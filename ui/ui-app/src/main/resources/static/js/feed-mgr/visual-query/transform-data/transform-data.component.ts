@@ -306,6 +306,14 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             if (Array.isArray(this.model.datasourceIds) && this.model.datasourceIds.length > 0) {
                 useSqlModel = (this.model.datasourceIds.length > 1 || (typeof this.model.datasourceIds[0] !== "undefined" && this.model.datasourceIds[0] !== "HIVE"));  // TODO remove "HIVE"
             }
+            if (this.model.datasets && this.model.datasets.length > 0) {
+                //use the node model if we are using anything but Hive.
+                //only Hive is able to use the adv SQL model
+
+                useSqlModel = this.model.datasets.find(ds => {
+                    return ds.dataSource.connector.pluginId != "hive";
+                }) != undefined;
+            }
             if (!useSqlModel) {
                 useSqlModel = _.chain(this.sqlModel.nodes)
                     .map(_.property("nodeAttributes"))

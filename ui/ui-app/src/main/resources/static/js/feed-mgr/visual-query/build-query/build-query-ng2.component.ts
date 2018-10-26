@@ -146,9 +146,18 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     availableSQLDatasources: UserDatasource[] = [];
 
-    catalogSQLDataSources: DataSource[] = [];
+    /**
+     *
+     * @type {any[]}
+     */
+    availableCatalogSQLDataSources: DataSource[] = [];
 
-    catalogSqlDataSourceIds:string[];
+    availableCatalogSqlDataSourceIds:string[];
+
+    /**
+     * the id representing the Hive datasourceIds
+     */
+    hiveCatalogDataSourceIds:string[];
 
     /**
      * Model for the chart.
@@ -202,6 +211,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      * holds the metadata about each column and table that is used to build the SQL str in the getSQLModel() method
      */
     selectedColumnsAndTables: any = [];
+
+    /**
+     * list of catalog datasources used in this model
+     * @type {any[]}
+     */
+    selectedCatalogDatsSourceIds: string[] = []
 
     @ViewChild("flowChart")
     flowChart: FlowChartComponent;
@@ -262,7 +277,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             let datasource = new FormControl();
             this.form.addControl("datasource", datasource);
             datasource.valueChanges.subscribe((datasourceId: string) => {
-                this.model.catalogDataSourceId = datasourceId;
+                this.model.$catalogDataSourceId = datasourceId;
                 this.onDatasourceChange();
             });
 
@@ -374,24 +389,24 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     private fetchCatalogDataSources() :Observable<DataSource[]>{
        return this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"])
             .pipe(map(datasources => {
-            this.catalogSqlDataSourceIds = []
+            this.availableCatalogSqlDataSourceIds = []
             if(datasources && datasources.length >0){
-                this.catalogSQLDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
+                this.availableCatalogSQLDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
                     return ds.title;
                 }).sortBy((ds:DataSource) =>{
                     return ds.connector.pluginId;
                 }).value()
 
-                this.catalogSQLDataSources.forEach(ds => {
-                    if(this.catalogSqlDataSourceIds.indexOf(ds.id) <0){
-                        this.catalogSqlDataSourceIds.push(ds.id);
+                this.availableCatalogSQLDataSources.forEach(ds => {
+                    if(this.availableCatalogSqlDataSourceIds.indexOf(ds.id) <0){
+                        this.availableCatalogSqlDataSourceIds.push(ds.id);
                     }
                 })
             }
             else {
-                this.catalogSQLDataSources = [];
+                this.availableCatalogSQLDataSources = [];
             }
-            return  this.catalogSQLDataSources;
+            return  this.availableCatalogSQLDataSources;
         }));
 
     }
@@ -644,11 +659,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.datasourceIds = this.model.$selectedDatasourceId != undefined && this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId.toUpperCase()) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
             //save the catalog datasource ids????
-            if(this.model.catalogDataSourceId == undefined && this.catalogSQLDataSources && this.catalogSQLDataSources.length){
-                if(this.model.datasets)
-                this.model.catalogDataSourceId = this.catalogSQLDataSources.find(ds => ds.id == this.model.datasets[0].dataSource.id);
-                if(this.model.catalogDataSourceId == undefined) {
-                    this.model.catalogDataSourceId = this.catalogSQLDataSources[0].id;
+            if(this.model.$catalogDataSourceId == undefined && this.availableCatalogSQLDataSources && this.availableCatalogSQLDataSources.length){
+                if(this.model.datasets) {
+                    this.model.$catalogDataSourceId = this.availableCatalogSQLDataSources.find(ds => ds.id == this.model.datasets[0].dataSource.id);
+                }
+                if(this.model.$catalogDataSourceId == undefined) {
+                    this.model.$catalogDataSourceId = this.availableCatalogSQLDataSources[0].id;
                 }
             }
 
@@ -661,7 +677,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
             //mark the datasourceId if its not a catalog datasource
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && this.catalogSqlDataSourceIds.indexOf(id) <0);
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && this.availableCatalogSqlDataSourceIds.indexOf(id) <0);
+            this.model.catalogDataSourceIds = this.selectedCatalogDatsSourceIds;
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -820,7 +837,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     onTableClick(table: any) {
         this.loadingPage = true;
         //get attributes for table
-        const datasourceId = this.model.catalogDataSourceId;
+        const datasourceId = this.model.$catalogDataSourceId;
 
         this.catalogService.createJdbcTableDataSet(datasourceId,table.schema,table.tableName).subscribe( (ds:DatasetTable) => {
             let nodeName = ds.dataSet.title;
@@ -912,6 +929,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
         this.selectedColumnsAndTables = builder.getSelectedColumnsAndTables();
         this.selectedDatasourceIds = builder.getDatasourceIds();
+        this.selectedCatalogDatsSourceIds = builder.getCatalogDataSourceIds()
         return sql;
     }
 
@@ -1090,11 +1108,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             txt = "";
         }
         if(typeof txt == 'string') {
-            if(txt == "" || this.model.catalogDataSourceId == undefined){
+            if(txt == "" || this.model.$catalogDataSourceId == undefined){
                 return  Observable.of([]);
             }
             else {
-                return this.catalogService.listTables(this.model.catalogDataSourceId, txt);
+                return this.catalogService.listTables(this.model.$catalogDataSourceId, txt);
             }
         }
         else {
