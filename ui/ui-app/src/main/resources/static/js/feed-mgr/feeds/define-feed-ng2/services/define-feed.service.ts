@@ -729,7 +729,7 @@ export class DefineFeedService {
 
     revertDraft(feed: Feed): void {
         feed.validate(false);
-        if (feed.isDraft() && feed.isValid && feed.isComplete()) {
+        if (feed.isDraft()) {
             this._translateService.get("FeedDefinition.Dialogs.RemoveDraft").pipe(
                 concatMap(text => {
                     return this._dialogService.openConfirm({
@@ -755,7 +755,7 @@ export class DefineFeedService {
             ).subscribe(
                 (version: EntityVersion) => {
                     this.openSnackBar("Removed draft "+version.id, 5000);
-                    this.stateService.go("feed-definition.summary", {feedId: version.entity.id});
+                    this.stateService.go("feed-definition.summary", {feedId: feed.id});
                 },
                 error => {
                     console.log(error);
