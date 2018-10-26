@@ -2,10 +2,9 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {TemplateMetadata, TemplateRepository} from "./model";
-import {catchError, mergeAll, concatMap, tap, mergeMap, flatMap, map} from "rxjs/operators";
+import {catchError, mergeMap} from "rxjs/operators";
 import 'rxjs/add/observable/throw';
-import {forkJoin} from "rxjs/observable/forkJoin";
-import { from } from 'rxjs';
+import {from} from "rxjs/observable/from";
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -20,17 +19,10 @@ export class TemplateService {
     }
 
     getTemplates(): Observable<TemplateMetadata[]> {
-        let allTemplates = [];
-        this.getRepositories().forEach(repos => {
-            repos.forEach(r => {
-                this.getTemplatesInRepository(r).subscribe((templates: TemplateMetadata[]) => {
-                    allTemplates = allTemplates.concat(templates);
-                    // console.log(allTemplates);
-                });
-            });
-        });
 
-        return from(allTemplates);
+        return this.getRepositories().pipe(
+            mergeMap(repos => from(repos)),
+            mergeMap(r => this.getTemplatesInRepository(r)));
     }
 
     getTemplatesInRepository(repository: TemplateRepository): Observable<any> {
