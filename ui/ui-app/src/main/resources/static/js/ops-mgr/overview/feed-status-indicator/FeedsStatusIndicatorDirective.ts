@@ -9,7 +9,7 @@ export default class controller implements ng.IComponentController {
     dataLoaded: boolean = false;
     feedSummaryData: any = null;
     chartData: any[] = [];
-    dataMap: any = {'Healthy':{count:0, color:'#b71c1c'},'Unhealthy':{count:0,color:'#388e3c'}};
+    dataMap: any = {'Healthy':{count:0, color:'#388e3c'},'Unhealthy':{count:0,color:'#b71c1c'}};
     chartOptions: any;
 
     static readonly $inject = ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService","OpsManagerDashboardService","BroadcastService","$filter"];
