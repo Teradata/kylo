@@ -94,7 +94,7 @@ public class ConnectorControllerTest {
         Mockito.when(provider.find(Mockito.any(Connector.ID.class))).thenReturn(Optional.of(connector));
         Mockito.when(connectorId.toString()).thenReturn("C1");
 
-        final Response response = controller.getConnector("C1");
+        final Response response = controller.getConnector("C1", true);
 
         assertThat(response.getEntity())
             .isNotNull()
@@ -108,6 +108,6 @@ public class ConnectorControllerTest {
     public void getConnectorForMissing() {
         Mockito.when(provider.find(Mockito.any(Connector.ID.class))).thenReturn(Optional.empty());
 
-        controller.getConnector("C1");
+        controller.getConnector("C1", true);
     }
 }

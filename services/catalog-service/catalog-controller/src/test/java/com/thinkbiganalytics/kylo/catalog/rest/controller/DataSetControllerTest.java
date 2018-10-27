@@ -135,7 +135,7 @@ public class DataSetControllerTest {
         Mockito.when(dataSetId.toString()).thenReturn("dataSet1");
         
         final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource src = modelTransform.dataSourceToRestModel().apply(dataSource);
-        final Response response = controller.createDataSet(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet(src, "MySQL Test"));
+        final Response response = controller.createDataSet(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet(src, "MySQL Test"), true);
         
         assertThat(response.getEntity())
             .isNotNull()
@@ -150,7 +150,7 @@ public class DataSetControllerTest {
         Mockito.when(dataSetBuilder.build()).thenThrow(new DataSourceNotFoundException(null));
         
         final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource src = modelTransform.dataSourceToRestModel().apply(dataSource);
-        controller.createDataSet(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet(src, ""));
+        controller.createDataSet(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet(src, ""), true);
     }
 
     /**
@@ -161,7 +161,7 @@ public class DataSetControllerTest {
         Mockito.when(dataSetProvider.find(Mockito.any(DataSet.ID.class))).thenReturn(Optional.of(dataSet));
         Mockito.when(dataSetId.toString()).thenReturn("dataSet1");
 
-        final Response response = controller.getDataSet("dataSet1");
+        final Response response = controller.getDataSet("dataSet1", true);
         
         assertThat(response.getEntity())
             .isNotNull()
@@ -175,6 +175,6 @@ public class DataSetControllerTest {
     public void getDataSetForMissing() {
         Mockito.when(dataSetProvider.find(Mockito.any(DataSet.ID.class))).thenReturn(Optional.empty());
 
-        controller.getDataSet("id");
+        controller.getDataSet("id", true);
     }
 }

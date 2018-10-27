@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.kylo.catalog.dataset;
 
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+
 /*-
  * #%L
  * kylo-catalog-core
@@ -27,6 +29,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * Provides access to {@link DataSet} objects.
@@ -70,6 +74,9 @@ public class DataSetProvider {
      */
     @Nonnull
     private PathValidator pathValidator;
+    
+    @Nonnull
+    private final AccessController accessController;
 
     /**
      * Constructs a {@code DataSetProvider}.
@@ -80,22 +87,25 @@ public class DataSetProvider {
                            @Nonnull final com.thinkbiganalytics.metadata.api.catalog.DataSetProvider metadataProvider,
                            @Nonnull final MetadataAccess metadataService,
                            @Nonnull final CatalogModelTransform modelTransform,
+                           @Nonnull final AccessController accessController,
                            @Nonnull final PathValidator pathValidator) {
         this.dataSourceMetadataProvider = dataSourceMetadataProvider;
         this.dataSourceProvider = dataSourceProvider;
         this.metadataProvider = metadataProvider;
         this.metadataService = metadataService;
         this.modelTransform = modelTransform;
+        this.accessController = accessController;
         this.pathValidator = pathValidator;
     }
 
     /**
      * Creates a new data set using the specified template.
+     * @param encryptedCredentials 
      *
      * @throws CatalogException if the data set is not valid
      */
     @Nonnull
-    public DataSet createDataSet(@Nonnull final DataSet source) {
+    public DataSet createDataSet(@Nonnull final DataSet source, boolean encryptedCredentials) {
         // Find data source
         final DataSource dataSource = Optional.of(source).map(DataSet::getDataSource).map(DataSource::getId).flatMap(dataSourceProvider::findDataSource)
             .orElseThrow(() -> new CatalogException("catalog.dataset.datasource.invalid"));
@@ -107,10 +117,13 @@ public class DataSetProvider {
 
         // Create and store data set
         return metadataService.commit(() -> {
+            // Require admin permission if the results should include unencrypted credentials.
+            accessController.checkPermission(AccessController.SERVICES, encryptedCredentials ? FeedServicesAccessControl.EDIT_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+
             // Resolve the real data set if possible, otherwise create
             com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceMetadataProvider.resolveId(dataSource.getId());
             com.thinkbiganalytics.metadata.api.catalog.DataSet ds = modelTransform.buildDataSet(source, metadataProvider.build(dataSourceId));
-            return modelTransform.dataSetToRestModel().apply(ds);
+            return modelTransform.dataSetToRestModel(encryptedCredentials).apply(ds);
         });
     }
 
@@ -118,31 +131,37 @@ public class DataSetProvider {
      * Finds the data set with the specified id.
      */
     @Nonnull
-    public Optional<DataSet> findDataSet(@Nonnull final String id) {
+    public Optional<DataSet> findDataSet(@Nonnull final String id, final boolean encryptedCredentials) {
         return metadataService.read(() -> {
+            // Require admin permission if the results should include unencrypted credentials.
+            accessController.checkPermission(AccessController.SERVICES, encryptedCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+            
             com.thinkbiganalytics.metadata.api.catalog.DataSet.ID domainId = metadataProvider.resolveId(id);
-            return metadataProvider.find(domainId).map(modelTransform.dataSetToRestModel());
+            return metadataProvider.find(domainId).map(modelTransform.dataSetToRestModel(encryptedCredentials));
         });
     }
 
     @Nonnull
-    public DataSet findOrCreateDataSet(@Nonnull final DataSet source) {
+    public DataSet findOrCreateDataSet(@Nonnull final DataSet source, final boolean encryptedCredentials) {
         // Resolve the real data set if possible, otherwise create
         if (StringUtils.isBlank(source.getId())) {
-            return createDataSet(source);
+            return createDataSet(source, encryptedCredentials);
         } else {
-            return findDataSet(source.getId()).orElseThrow(() -> new CatalogException("catalog.dataset.notFound"));
+            return findDataSet(source.getId(), encryptedCredentials).orElseThrow(() -> new CatalogException("catalog.dataset.notFound"));
         }
     }
 
     @Nonnull
-    public DataSet updateDataSet(@Nonnull final DataSet dataSet) {
+    public DataSet updateDataSet(@Nonnull final DataSet dataSet, final boolean encryptedCredentials) {
         return metadataService.commit(() -> {
+            // Require admin permission if the results should include unencrypted credentials.
+            accessController.checkPermission(AccessController.SERVICES, encryptedCredentials ? FeedServicesAccessControl.EDIT_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+
             final com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dSetId = metadataProvider.resolveId(dataSet.getId());
 
             return metadataProvider.find(dSetId)
                 .map(domain -> modelTransform.updateDataSet(dataSet, domain))
-                .map(modelTransform.dataSetToRestModel())
+                .map(modelTransform.dataSetToRestModel(encryptedCredentials))
                 .orElseThrow(() -> {
                     log.debug("Data set not found with ID: {}", dSetId);
                     return new CatalogException("catalog.dataset.notfound.id", dSetId);

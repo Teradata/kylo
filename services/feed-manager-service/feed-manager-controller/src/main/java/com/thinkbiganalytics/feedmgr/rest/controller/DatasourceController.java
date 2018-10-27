@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
@@ -267,7 +268,9 @@ public class DatasourceController {
 
             if (ds != null) {
                 final Datasource restModel = datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
-                if (ds instanceof AccessControlled) {
+                if (accessController.isEntityAccessControlled() && ds instanceof AccessControlled) {
+                    ((AccessControlled) ds).getAllowedActions().checkPermission(DatasourceAccessControl.ACCESS_DETAILS);
+                    
                     securityTransform.applyAccessControl((AccessControlled) ds, restModel);
                 }
                 return restModel;

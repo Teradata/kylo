@@ -575,13 +575,14 @@ public class ExecuteSparkJob extends BaseProcessor {
 
                 final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet;
                 try {
-                    dataSet = provider.getDataSet(id);
+                    dataSet = provider.getDataSet(id, false);
                 } catch (final Exception e) {
                     getLog().error("Unable to access data set: {}: {}", new Object[]{id, e}, e);
                     session.penalize(flowFile);
                     session.transfer(flowFile);
                     return null;
                 }
+
                 if (dataSet.isPresent()) {
                     if (dataSet.get().getJars() != null) {
                         extraJarPaths.addAll(dataSet.get().getJars());

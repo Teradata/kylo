@@ -322,8 +322,8 @@ public class MetadataClientProvider implements MetadataProvider {
     }
 
     @Override
-    public Optional<DataSet> getDataSet(@Nonnull final String id) {
-        return client.getDataSet(id);
+    public Optional<DataSet> getDataSet(@Nonnull final String id, final boolean encryptedCredentials) {
+        return client.getDataSet(id, encryptedCredentials);
     }
 
     protected void feedRemoved(String feedId, String category, String feedName) {
