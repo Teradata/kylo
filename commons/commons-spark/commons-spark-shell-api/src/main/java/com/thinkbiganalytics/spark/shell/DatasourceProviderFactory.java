@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 
 import java.util.Collection;
@@ -38,5 +39,5 @@ public interface DatasourceProviderFactory {
      * @return the data source provider
      */
     @Nonnull
-    DatasourceProvider getDatasourceProvider(@Nonnull Collection<Datasource> datasources);
+    DatasourceProvider getDatasourceProvider(@Nonnull Collection<Datasource> datasources, Collection<DataSource> catalogDataSources);
 }

@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.rest.model;
  */
 
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import java.util.List;
@@ -44,6 +45,12 @@ public class TransformRequest {
      * List of the catalog datasources
      */
     private List<DataSet> catalogDatasets;
+
+
+    /**
+     * List of the catalogDataSources used for sql transformations
+     */
+    private List<DataSource> catalogDataSources;
 
     /**
      * Whether to perform validation
@@ -218,6 +225,15 @@ public class TransformRequest {
      */
     public void setCatalogDatasets(List<DataSet> catalogDatasets) {
         this.catalogDatasets = catalogDatasets;
+    }
+
+
+    public List<DataSource> getCatalogDataSources() {
+        return catalogDataSources;
+    }
+
+    public void setCatalogDataSources(List<DataSource> catalogDataSources) {
+        this.catalogDataSources = catalogDataSources;
     }
 
     /**

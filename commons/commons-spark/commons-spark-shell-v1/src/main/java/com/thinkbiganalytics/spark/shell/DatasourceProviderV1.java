@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 
 import org.apache.spark.sql.DataFrame;
@@ -44,8 +45,8 @@ public class DatasourceProviderV1 extends AbstractDatasourceProvider<DataFrame> 
      *
      * @param datasources the data sources
      */
-    DatasourceProviderV1(@Nonnull final Collection<Datasource> datasources) {
-        super(datasources);
+    DatasourceProviderV1(@Nonnull final Collection<Datasource> datasources, Collection<DataSource> catalogDataSources) {
+        super(datasources,catalogDataSources);
     }
 
     @Nonnull

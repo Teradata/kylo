@@ -7,6 +7,7 @@ import {FeedTableDefinition} from "./feed/feed-table-definition.model";
 import {FeedTableSchema} from "./feed/feed-table-schema.model";
 import ChartDataModel = FlowChart.ChartDataModel;
 import {KyloObject} from "../../common/common.model";
+import {DataSource} from "../catalog/api/models/datasource";
 
 
 export interface SampleFile{
@@ -64,6 +65,11 @@ export interface FeedDataTransformation {
     $catalogDataSourceId?:string;
 
     /**
+     * List of the catalogdatasources used
+     */
+    $catalogDataSources:DataSource[];
+
+    /**
      * Model for the flowchart
      */
     chartViewModel: FlowChart.ChartDataModel;
@@ -76,7 +82,7 @@ export interface FeedDataTransformation {
     /**
      * list of datasourceIds with datasets used by this feed
      */
-    catalogDataSourceIds:string[];
+    catalogDataSourceIds?:string[];
 
     /**
      * Script with data transformations
@@ -120,6 +126,21 @@ export class DefaultFeedDataTransformation implements FeedDataTransformation, Ky
      * List of user data sources
      */
     $datasources: any;
+
+    /**
+     * List of the catalogdatasources used
+     */
+    $catalogDataSources:DataSource[];
+
+    /**
+     * id of the selected catalog source
+     */
+    $catalogDataSourceId?:string;
+
+    /**
+     * list of datasourceIds with datasets used by this feed
+     */
+    catalogDataSourceIds:string[];
 
     /**
      * List of selected columns and tables

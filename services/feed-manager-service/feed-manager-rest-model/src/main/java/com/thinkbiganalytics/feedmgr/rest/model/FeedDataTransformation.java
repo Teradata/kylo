@@ -48,6 +48,16 @@ public class FeedDataTransformation {
     private List<String> datasourceIds;
 
     /**
+     * List of required catalog datasource ids
+     * This will only be populated if ther user goes to Advanced Mode and uses SQL query
+     * otherwise DataSets will be used with the chartViewModel
+     */
+    private List<String> catalogDataSourceIds;
+
+    @MetadataField(description = "Comma separated list of the catalog datasource ids used. This will only be populated when using wrangler SQL Mode using a query")
+    private String catalogDataSourceIdsString;
+
+    /**
      * Spark script
      */
     @MetadataField(description = "The Data Transformation Spark Script")
@@ -153,5 +163,20 @@ public class FeedDataTransformation {
             }
         }
         return tables;
+    }
+
+    public List<String> getCatalogDataSourceIds() {
+        return catalogDataSourceIds;
+    }
+
+    public void setCatalogDataSourceIds(List<String> catalogDataSourceIds) {
+        this.catalogDataSourceIds = catalogDataSourceIds;
+        if(this.catalogDataSourceIds != null){
+            this.catalogDataSourceIdsString = this.catalogDataSourceIds.stream().collect(Collectors.joining(","));
+        }
+    }
+
+    public String getCatalogDataSourceIdsString() {
+        return catalogDataSourceIdsString;
     }
 }

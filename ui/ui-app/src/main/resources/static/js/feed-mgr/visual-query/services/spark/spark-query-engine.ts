@@ -281,8 +281,14 @@ export class SparkQueryEngine extends QueryEngine<string> {
             body["catalogDatasets"] = this.datasets;
         }
 
+        if(this.catalogDataSources_ != null) {
+            body['catalogDataSources'] = this.catalogDataSources_;
+        }
+
         // Send the request
         let transformId: string;
+
+        console.log("SaveTransform !!!! ",body)
 
         return this.$http.post<TransformResponse>(this.apiUrl + "/transform", JSON.stringify(body), {
             headers: {"Content-Type": "application/json"},
@@ -417,6 +423,10 @@ export class SparkQueryEngine extends QueryEngine<string> {
             body["catalogDatasets"] = this.datasets;
         }
 
+        if(this.catalogDataSources_ != null) {
+            body['catalogDataSources'] = this.catalogDataSources_;
+        }
+
         // Create the response handlers
         let self = this;
         let deferred = new Subject();
@@ -493,6 +503,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
             deferred.error(message);
         };
 
+        console.log("TRANSFORMING!!!! ",body)
+
         // Send the request
         self.$http.post<TransformResponse>(this.apiUrl + "/transform", JSON.stringify(body), {
             headers: {"Content-Type": "application/json"},
@@ -512,7 +524,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * Parses the specified source into a script for the initial state.
      */
     protected parseQuery(source: any): string {
-        return new SparkQueryParser(this.VisualQueryService).toScript(source, this.datasources_);
+        return new SparkQueryParser(this.VisualQueryService).toScript(source, this.datasources_, this.catalogDataSources_);
     }
 
     /**

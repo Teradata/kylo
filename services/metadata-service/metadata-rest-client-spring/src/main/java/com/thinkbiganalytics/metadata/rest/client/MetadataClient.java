@@ -29,6 +29,7 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
@@ -723,6 +724,29 @@ public class MetadataClient {
             }
         }
     }
+
+    /**
+     * Gets the data set with the specified id.
+     *
+     * @param id data set id
+     * @return the data set, if found
+     * @throws RestClientException if the data set is unavailable
+     */
+    public Optional<DataSource> getCatalogDataSource(@Nonnull final String dataSourceId) {
+        try {
+            return Optional.of(get(path("catalog", "datasource", dataSourceId),
+                                   uri -> (uri != null) ? uri.queryParam("encrypt", false) : null,
+                                   DataSource.class));
+        } catch (final HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
+    }
+
+
 
     private UriComponentsBuilder base(Path path) {
         return UriComponentsBuilder.fromUri(this.base).path("/").path(path.toString());

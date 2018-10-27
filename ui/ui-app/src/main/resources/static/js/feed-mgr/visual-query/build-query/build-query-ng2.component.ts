@@ -468,21 +468,6 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         if(datasources ) {
             this.availableDatasources = datasources;
         }
-/*
-        let fileIndex = this.availableDatasources.indexOf(this.fileDataSource);
-        if(this.advancedMode == true){
-                if(fileIndex >=0) {
-                    //remove the file datasource for adv. mode
-                    this.availableDatasources.splice(fileIndex, 1);
-                }
-         }
-            else {
-            if(fileIndex <0) {
-                //add in the File data source
-                this.availableDatasources.push(this.fileDataSource);
-            }
-        }
-        */
     }
 
     private _keydown(evt: KeyboardEvent) {
@@ -644,6 +629,35 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             });
     }
 
+    private getCatalogDataSources():DataSource[] {
+        const datasourceIds:string[] = [];
+        const $catalogDataSources:DataSource[] = [];
+
+        //save the catalog datasource ids????
+        if(this.model.$catalogDataSourceId == undefined && this.availableCatalogSQLDataSources && this.availableCatalogSQLDataSources.length){
+            if(this.model.datasets) {
+                this.model.datasets
+                    .filter(dataSet => dataSet.dataSource && dataSet.dataSource.connector && dataSet.dataSource.connector.pluginId == "jdbc")
+                    .map(dataSet => dataSet.dataSource)
+                    .forEach(dataSource => {
+                    if(datasourceIds.indexOf(dataSource.id) <0) {
+                        datasourceIds.push(dataSource.id);
+                        $catalogDataSources.push(dataSource);
+                    }
+                })
+            }
+        } else  if(this.model.$catalogDataSourceId != undefined && this.availableCatalogSQLDataSources && this.availableCatalogSQLDataSources.length) {
+            const ds = this.availableCatalogSQLDataSources.find(ds => ds.id == this.model.$catalogDataSourceId);
+            if(ds != null && ds != undefined) {
+                if(ds.connector.pluginId == "jdbc" && datasourceIds.indexOf(ds.id) <0) {
+                    datasourceIds.push(ds.id);
+                    $catalogDataSources.push(ds);
+                }
+            }
+        }
+        return $catalogDataSources;
+    }
+
     /**
      * Validate the canvas.
      * If there is at least one table defined, it is valid
@@ -658,15 +672,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.chartViewModel = null;
             this.model.datasourceIds = this.model.$selectedDatasourceId != undefined && this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId.toUpperCase()) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
-            //save the catalog datasource ids????
-            if(this.model.$catalogDataSourceId == undefined && this.availableCatalogSQLDataSources && this.availableCatalogSQLDataSources.length){
-                if(this.model.datasets) {
-                    this.model.$catalogDataSourceId = this.availableCatalogSQLDataSources.find(ds => ds.id == this.model.datasets[0].dataSource.id);
-                }
-                if(this.model.$catalogDataSourceId == undefined) {
-                    this.model.$catalogDataSourceId = this.availableCatalogSQLDataSources[0].id;
-                }
-            }
+            this.model.$catalogDataSources = this.getCatalogDataSources();
+
 
         } else if (this.model.$selectedDatasourceId == 'FILE') {
             this.isValid = this.model.sampleFile != undefined;
@@ -679,6 +686,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             //mark the datasourceId if its not a catalog datasource
             this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && this.availableCatalogSqlDataSourceIds.indexOf(id) <0);
             this.model.catalogDataSourceIds = this.selectedCatalogDatsSourceIds;
+            this.model.$catalogDataSources = this.getCatalogDataSources();
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
         } else {
             this.isValid = false;
@@ -1148,6 +1156,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         let data = new DatasetPreviewStepperDialogData(true,"Add");
         let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
         dialogConfig.data = data;
+        dialogConfig.viewContainerRef = this.viewContainerRef;
         this._dialogService.open(DatasetPreviewStepperDialogComponent,dialogConfig)
             .afterClosed()
             .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {

@@ -341,13 +341,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             if (this.model.datasets) {
                 this.engine.setDatasets(this.model.datasets)
             }
-
             if (Array.isArray(this.model.states) && this.model.states.length > 0) {
-                this.engine.setQuery(source, this.model.$datasources);
+                this.engine.setQuery(source, this.model.$datasources, this.model.$catalogDataSources);
                 this.engine.setState(this.model.states);
                 this.functionHistory = this.engine.getHistory();
             } else {
-                this.engine.setQuery(source, this.model.$datasources);
+                this.engine.setQuery(source, this.model.$datasources, this.model.$catalogDataSources);
                 this.functionHistory = this.engine.getHistory();
             }
 

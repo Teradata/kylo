@@ -67,6 +67,7 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
     protected applyUpdatesToFeed(): (Observable<any> | boolean | null) {
         super.applyUpdatesToFeed();
         this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
+        this.feed.dataTransformation.catalogDataSourceIds = this.feed.dataTransformation.$catalogDataSources.map(ds => ds.id);
         if (this.feed.table.schemaChanged) {
             this.dialogService.openAlert({
                 title: 'Error saving feed.  Table Schema Changed.',
