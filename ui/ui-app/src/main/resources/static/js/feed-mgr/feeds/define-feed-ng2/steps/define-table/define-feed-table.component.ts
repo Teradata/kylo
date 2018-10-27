@@ -927,7 +927,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     protected applyUpdatesToFeed(): Observable<any> | boolean | null {
        if(this.catalogBrowserOpen){
-           return this.dialogService.openConfirm({title:"Pending source sample changes", message:"There are pending changes in the source sample that have not been applied to the target.  Are you sure you want to save without applying these changes?  "})
+           return  this.dialogService.openConfirm(
+               {title:"Pending source sample changes",
+                   message:"There are pending changes in the source sample that have not been applied to the target.  Are you sure you want to save without applying these changes?  "
+               }).afterClosed();
        }
        return true;
     }

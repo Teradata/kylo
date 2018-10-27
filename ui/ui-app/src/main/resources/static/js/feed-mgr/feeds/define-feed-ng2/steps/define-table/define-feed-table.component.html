@@ -10,7 +10,7 @@
             <span fxFlex></span>
           </mat-card-header>
           <mat-card-content class="pull-top-md">
-            <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly"  [showSkipSourceButton]="false" [showCatalog]="showSourceSampleCatalog" (sampleSaved)="onSampleSourceSaved($event)"  (showCatalogCanceled)="onCatalogCanceled($event)" [feed]="feed" [step]="step"></define-feed-step-source-sample>
+            <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly"  [showSkipSourceButton]="false" [showCatalog]="showSourceSampleCatalog" (showCatalogChange)="onShowCatalogChange($event)" (sampleSaved)="onSampleSourceSaved($event)"  (showCatalogCanceled)="onCatalogCanceled($event)" [feed]="feed" [step]="step"></define-feed-step-source-sample>
           </mat-card-content>
         </mat-card>
       </form>
