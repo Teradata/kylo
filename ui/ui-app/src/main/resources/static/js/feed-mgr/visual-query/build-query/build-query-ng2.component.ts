@@ -674,6 +674,22 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
             this.model.$catalogDataSources = this.getCatalogDataSources();
 
+            if(this.model.$catalogDataSourceId == undefined){
+                if(this.availableCatalogSqlDataSourceIds != undefined
+                    && this.availableCatalogSqlDataSourceIds.length >0
+                    && this.model.catalogDataSourceIds
+                    && this.model.catalogDataSourceIds.length >0
+                    && this.availableCatalogSqlDataSourceIds.indexOf(this.model.catalogDataSourceIds[0]) >=0){
+                    this.model.$catalogDataSourceId = this.model.catalogDataSourceIds[0];
+                }
+                else if(this.availableCatalogSqlDataSourceIds && this.availableCatalogSqlDataSourceIds.length >0){
+                    this.model.$catalogDataSourceId = this.availableCatalogSqlDataSourceIds[0];
+                }
+
+                if(this.model.$catalogDataSourceId){
+                    this.form.get("datasource").setValue(this.model.$catalogDataSourceId);
+                }
+            }
 
         } else if (this.model.$selectedDatasourceId == 'FILE') {
             this.isValid = this.model.sampleFile != undefined;
@@ -740,6 +756,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 this.advancedMode = true;
                 this.advancedModeText = "Visual Mode";
                 this.updateAvailableDatasources();
+                this.validate();
             };
             if (this.chartViewModel.nodes.length > 0) {
                 this._dialogService.openConfirm({
