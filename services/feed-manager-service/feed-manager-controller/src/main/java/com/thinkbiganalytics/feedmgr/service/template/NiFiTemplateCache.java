@@ -206,7 +206,7 @@ public class NiFiTemplateCache {
         if (cachedProperties == null || templateDTO.getTimestamp().getTime() > cachedProperties.getLastUpdated()) {
             List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateDTO, includePropertyDescriptors);
             Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations = new NiFiTemplateCacheProcessorGraph(templateDTO).build();
-            if (cachedProperties == null) {
+            if (cachedProperties == null && registeredTemplate != null ) {
                 cachedProperties = new TemplatePropertiesCache(templateDTO.getId(), includePropertyDescriptors, templateDTO.getTimestamp().getTime());
                 templatePropertiesCache.put(cacheKey, cachedProperties);
             }
@@ -226,8 +226,8 @@ public class NiFiTemplateCache {
 
     }
 
-    public Map<String, List<NifiFlowCacheBaseProcessorDTO>> getInputProcessorRelationships(TemplateDTO templateDTO){
-        getTemplateProperties(templateDTO, true, null);
+    public Map<String, List<NifiFlowCacheBaseProcessorDTO>> getInputProcessorRelationships(TemplateDTO templateDTO, RegisteredTemplate registeredTemplate){
+        getTemplateProperties(templateDTO, true, registeredTemplate);
         String cacheKey = cacheKey(templateDTO, true);
         TemplatePropertiesCache cachedProperties = templatePropertiesCache.getIfPresent(cacheKey);
         return cachedProperties.getInputProcessorRelations();
