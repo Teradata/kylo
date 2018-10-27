@@ -140,17 +140,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             this.feed.inputProcessorType = this.inputProcessor.type;
         }
         else {
-            if(this.feed.inputProcessor == undefined && this.feed.registeredTemplate) {
-                //attempt to get the first one
-                //get the first input processor and select it
-                let inputProcessors = this.feed.inputProcessors && this.feed.inputProcessors.length >0 ? this.feed.inputProcessors : this.feed.registeredTemplate && this.feed.registeredTemplate.inputProcessors && this.feed.registeredTemplate.inputProcessors.length >0 ? this.feed.registeredTemplate.inputProcessors : []
-                if(inputProcessors.length >0) {
-                    let input: Templates.Processor = inputProcessors[0];
-                    this.feed.inputProcessor = input;
-                    this.feed.inputProcessorName = input.name;
-                    this.feed.inputProcessorType = input.type;
-                }
-            }
+            this.ensureFeedInputProcessor();
             inputProperties = this.feed.inputProcessor.properties
         }
 
@@ -300,6 +290,19 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             this.processorsChange.emit(new NiFiPropertiesProcessorsChangeEvent(this.mode, this.feed, this.inputProcessors, this.nonInputProcessors, this.noPropertiesExist));
         }
     }
+    private ensureFeedInputProcessor(){
+        if(this.feed.inputProcessor == undefined && this.feed.registeredTemplate) {
+            //attempt to get the first one
+            //get the first input processor and select it
+            let inputProcessors = this.feed.inputProcessors && this.feed.inputProcessors.length >0 ? this.feed.inputProcessors : this.feed.registeredTemplate && this.feed.registeredTemplate.inputProcessors && this.feed.registeredTemplate.inputProcessors.length >0 ? this.feed.registeredTemplate.inputProcessors : []
+            if(inputProcessors.length >0) {
+                let input: Templates.Processor = inputProcessors[0];
+                this.feed.inputProcessor = input;
+                this.feed.inputProcessorName = input.name;
+                this.feed.inputProcessorType = input.type;
+            }
+        }
+    }
 
     private setProcessors(inputProcessors: Templates.Processor[], nonInputProcessors: Templates.Processor[], selected?: Templates.Processor, feed?: Feed) {
         let hasVisibleProcessors = false;
@@ -323,6 +326,8 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                 .find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
         }
         if (this.isShowAdditionalProperties()) {
+            this.ensureFeedInputProcessor()
+
             let inputName = this.feed.inputProcessor.name;
             let inputProcessorRelationships = this.feed.registeredTemplate.inputProcessorRelationships;
             let downstreamProcessors = inputProcessorRelationships != undefined ? inputProcessorRelationships[inputName] : undefined;
