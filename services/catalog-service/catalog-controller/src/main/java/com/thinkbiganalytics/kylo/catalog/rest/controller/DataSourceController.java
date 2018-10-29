@@ -204,10 +204,12 @@ public class DataSourceController extends AbstractCatalogController {
         }
         ConnectorTab connectorTab = tabs.get(0);
         String sref = connectorTab.getSref();
+        DataSource decrypted = modelTransform.decryptOptions(dataSource);
+        
         if (".browse".equals(sref)) {
-            doListFiles(DataSourceUtil.getPaths(dataSource).orElseThrow(IllegalStateException::new).get(0), dataSource);
+            doListFiles(DataSourceUtil.getPaths(decrypted).orElseThrow(IllegalStateException::new).get(0), decrypted);
         } else if (".connection".equals(sref)) {
-            doListTables(null, null, dataSource);
+            doListTables(null, null, decrypted);
         } else {
             throw new BadRequestException(getMessage("catalog.datasource.testDataSource.testNotAvailableForTab", sref));
         }

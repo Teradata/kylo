@@ -89,6 +89,19 @@ public class CatalogModelTransform {
             return model;
         };
     }
+    
+    public DataSource decryptOptions(DataSource dataSource) {
+        DataSetTemplate template = decryptOptions(dataSource.getTemplate());
+        dataSource.setTemplate(template);
+        return dataSource;
+    }
+    
+    public DataSetTemplate decryptOptions(DataSetTemplate template) {
+        template.getOptions().entrySet().stream()
+            .filter(entry -> encryptionService.isEncrypted(entry.getValue()))
+            .forEach(entry -> template.getOptions().put(entry.getKey(), encryptionService.decrypt(entry.getValue())));
+        return template;
+    }
 
     private Function<DataSetSparkParameters, DataSetTemplate> sparkParamsToRestModel(String connectorPuginId, final boolean encryptedCredentials) {
         return (domain) -> {
