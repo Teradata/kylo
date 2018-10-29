@@ -41,7 +41,7 @@ ngOnInit() {
             useVoronoi: false,
             clipEdge: false,
             duration: 0,
-            height:136,
+            height:146,
             useInteractiveGuideline: true,
             xAxis: {
                 axisLabel: 'Time',

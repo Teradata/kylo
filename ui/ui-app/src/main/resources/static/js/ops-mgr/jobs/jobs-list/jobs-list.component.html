@@ -80,7 +80,8 @@
           >
 
             <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
-                                    <span  [ngClass]="{'success':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'error':row.displayStatus == 'FAILED', 'warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
+                                    <span
+                                        [ngClass]="{'tc-positive':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'tc-negative':row.displayStatus == 'FAILED', 'tc-warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
                                         <mat-icon size="20">{{row.icon}}</mat-icon>
                                         <!--<span hide show-gt-md>{{row.displayStatus}}</span>-->
                                     </span>

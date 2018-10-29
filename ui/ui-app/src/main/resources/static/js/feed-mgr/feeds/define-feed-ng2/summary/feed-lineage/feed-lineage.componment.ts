@@ -88,7 +88,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                     sortMethod: 'directed'
                 }
             },
-            autoResize: false,
+            autoResize: true,
             physics:false,
             nodes: {
                 shape: 'box',
@@ -147,6 +147,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     panelOpenState = false;
 
     onSelect(item: any) {
+        console.log("onSelect!!");
         if (item && item.nodes && item.nodes[0]) {
             this.changed = true;
             var firstItem = item.nodes[0];
@@ -174,24 +175,6 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         }
     }
 
-    stabilizationIterationsDone() {
-        // this.options.physics.enabled = false;
-        this.options = {
-            physics: {enabled: false, stabilization: false},
-            interaction: {dragNodes: true},
-            layout: {
-                hierarchical: {
-                    enabled: false
-                }
-            }
-        };
-
-    }
-
-    stabilized() {
-        this.stabilizationIterationsDone();
-    }
-
     init() {
         this.getFeedLineage();
     }
@@ -217,6 +200,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     }
 
     redraw() {
+        console.log("redraw");
         if (this.isDetailedGraph()) {
             this.onDetailedView();
         }

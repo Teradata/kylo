@@ -14,6 +14,7 @@ export default class IconUtil {
                 data.icon = 'mood';
                 data.style = 'healthy';
                 data.color = "#009933";
+                data.class = "tc-positive";
                 data.text = "HEALTHY"
                 break;
             case "UNHEALTHY":
