@@ -73,6 +73,7 @@ public class KyloEsClient extends EsClient {
     private static final String USR_PROPERTIES_PREFIX_WITH_WILDCARD = USR_PROPERTIES_PREFIX + "*";
     public static final String USR_PROPERTIES_DELIMITER = "\t";
     private static final String USR_PROPERTIES_PROPERTY = "usr:properties";
+    private static final String FEED_ID_PROPERTY = "meta:feedId";
 
     public KyloEsClient(String host, int port) {
         super(host, port);
@@ -373,6 +374,7 @@ public class KyloEsClient extends EsClient {
                             }
                         }
                     }
+                    fullDocumentJsonObjectInternal.put(FEED_ID_PROPERTY, kyloEsClientFeedIds.getTbaFeedId());
                     fullDocumentJsonObjectInternal = augmentFeedMetadataDocWithUserProperties(name, type, kyloEsClientFeedIds, fullDocumentJsonObjectInternal.toString());
                 } else {
                     log.warn("[feed] Null node found in metadata for feed (summary). Node id: {}, Feed id: {}", kyloEsClientFeedIds.getTbaFeedSummaryId(), kyloEsClientFeedIds.getTbaFeedId());
