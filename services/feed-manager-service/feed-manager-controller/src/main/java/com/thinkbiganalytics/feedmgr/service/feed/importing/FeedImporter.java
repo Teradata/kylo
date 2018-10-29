@@ -46,7 +46,6 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ImportFeedException;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
-import com.thinkbiganalytics.feedmgr.service.feed.importing.model.LegacyDatasource;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.importing.ImportException;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
@@ -69,7 +68,6 @@ import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessContro
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -92,7 +90,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -439,6 +436,7 @@ public class FeedImporter {
 
     /**
      * Validates that user data sources can be imported with provided properties.
+     * Legacy UserDatasources will be remapped toe Catalog DataSources or DataSets
      *
      * @return {@code true} if the feed can be imported, or {@code false} otherwise
      */
@@ -466,10 +464,10 @@ public class FeedImporter {
         final boolean valid = componentOption.getProperties().stream()
             .allMatch(property -> {
                 if (property.getPropertyValue() != null) {
-                    if(property.getAdditioanlPropertyValue("legacyDataSource") != null  && "true".equalsIgnoreCase(property.getAdditioanlPropertyValue("legacyDataSource"))){
+                    if(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.LEGACY_TABLE_DATA_SOURCE_KEY) != null && "true".equalsIgnoreCase(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.LEGACY_TABLE_DATA_SOURCE_KEY))){
                         //remap
-                        String table = property.getAdditioanlPropertyValue("table");
-                        String datasourceId = property.getAdditioanlPropertyValue("datasourceId");
+                        String table = property.getAdditionalPropertyValue("table");
+                        String datasourceId = property.getAdditionalPropertyValue("datasourceId");
                         String datasetId = property.getPropertyValue();
                         com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet = metadataAccess.read(() -> {
                            return catalogDataSetProvider.find(catalogDataSetProvider.resolveId(datasetId))
@@ -478,14 +476,35 @@ public class FeedImporter {
                        if(dataSet != null){
                            FeedImportDatasourceUtil.replaceLegacyDataSourceScript(metadata, table, datasourceId, dataSet);
                            datasetIds.add(dataSet.getId());
+                           //TODO is this needed?
                            chartModelReplacements.put(datasourceId, dataSet.getDataSource().getId());
                        }
                        else {
                            return false;
                        }
                     }
+                    if(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.LEGACY_QUERY_DATA_SOURCE_KEY) != null && "true".equalsIgnoreCase(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.LEGACY_QUERY_DATA_SOURCE_KEY))){
+                        //remap
+                        //thre is only 1 datasource throughout, replace the method call and the datasource id with the new one
+                        String datasourceId = property.getAdditionalPropertyValue("datasourceId");
+                        String catalogDataSourceId = property.getPropertyValue();
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = metadataAccess.read(() -> {
+                            return catalogDataSourceProvider.find(catalogDataSourceProvider.resolveId(catalogDataSourceId))
+                                .map(catalogDataSource -> catalogModelTransform.dataSourceToRestModel().apply(catalogDataSource)).orElse(null);
+                        });
+                        if(dataSource != null){
+                            FeedImportDatasourceUtil.replaceLegacyQueryDataSourceScript(metadata,datasourceId,dataSource);
+                            //TODO is this needed?
+                            chartModelReplacements.put(datasourceId, dataSource.getId());
+                        }
+                        else {
+                            return false;
+                        }
+                    }
                     else {
-                        ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
+                        //Shouldnt get here now!!
+                       // ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
+                        return false;
                     }
                     return true;
                 } else {
@@ -495,7 +514,9 @@ public class FeedImporter {
 
         if (valid) {
             //make the final replacements and add in the sources
-            metadata.setSourceDataSetIds(datasetIds.stream().collect(Collectors.joining(",")));
+            if(datasetIds != null) {
+                metadata.setSourceDataSetIds(datasetIds.stream().collect(Collectors.joining(",")));
+            }
             FeedImportDatasourceUtil.replaceChartModelReferences(metadata, chartModelReplacements);
             statusMessage.update("Validated data sources.", true);
         } else {
@@ -584,7 +605,7 @@ public class FeedImporter {
             });
 
             FeedMetadata metadata = importFeed.getFeedToImport();
-            //find the data sets that need importinga
+            //find the data sets that need importing
 
             Map<String,Map<String,String>> datasetAdditionalProperties = new HashMap<>();
 

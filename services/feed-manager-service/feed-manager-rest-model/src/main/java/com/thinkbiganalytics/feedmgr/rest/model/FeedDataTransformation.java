@@ -171,7 +171,11 @@ public class FeedDataTransformation {
 
     public void setCatalogDataSourceIds(List<String> catalogDataSourceIds) {
         this.catalogDataSourceIds = catalogDataSourceIds;
-        if(this.catalogDataSourceIds != null){
+        updateDataSourceIdsString();
+    }
+    @JsonIgnore
+    public void updateDataSourceIdsString(){
+        if(this.catalogDataSourceIds != null) {
             this.catalogDataSourceIdsString = this.catalogDataSourceIds.stream().collect(Collectors.joining(","));
         }
     }

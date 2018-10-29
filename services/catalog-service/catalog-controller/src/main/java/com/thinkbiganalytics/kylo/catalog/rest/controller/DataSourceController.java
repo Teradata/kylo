@@ -434,7 +434,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         return metadataService.read(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, true);
+            final DataSource dataSource = findDataSource(dataSourceId, false);
             final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
 
             return Response.ok(log.exit(tables)).build();

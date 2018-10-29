@@ -229,22 +229,21 @@
 
 </ng-template>
 
-
+<!--
 <ng-template #importDataSourcesOptionPropertiesInputTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">
 
-  <!-- Data source properties required -->
   <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
     <form [formGroup]="getNestedFormGroup(importOption)">
       <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
 
       <mat-list class="pull-left">
-        <mat-list-item *ngFor="let prop of importOption.properties">
+        <mat-list-item *ngFor="let prop of importOption.filter">
           <div matLine *ngIf="displayComponentName">Data Source: {{prop.componentName}}</div>
           <div matLine>
 
             <mat-form-field>
               <mat-select placeholder="Select new data source" [formControlName]="prop.propertyKey">
-                <mat-option [value]="datasource.id" *ngFor="let datasource of availableDatasources">{{datasource.name}}</mat-option>
+                <mat-option [value]="datasource.id" *ngFor="let datasource of catalogDataSources">{{datasource.name}}</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -253,6 +252,7 @@
     </form>
   </div>
 </ng-template>
+-->
 
 
 <ng-template #datasetPropertiesTemplate let-importOption>
@@ -261,7 +261,8 @@
       <div class="mat-title"> {{"views.import_feed.dataset-required" | translate}}</div>
       <div class="subheading-1">{{"views.import_feed.choose-datasets-message" | translate}}</div>
 
-      <ng-container *ngFor="let prop of importOption.properties">
+      <ng-container *ngFor="let prop of findDatasetPropertiesFilter(importOption)">
+        <!-- if the property is for a table then show the dataset button -->
         <div fxLayout="row">
           <mat-list class="pull-left">
             <mat-list-item>
@@ -276,6 +277,23 @@
           <div fxLayoutAlign="center center">
             <button mat-raised-button color="accent" (click)="updateDataSet(prop, importOption)">{{"views.import_feed.update-dataset" | translate}}</button>
           </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngFor="let prop of findDataSourcePropertiesFilter(importOption)">
+        <div fxLayout="row">
+          <mat-list class="pull-left">
+            <mat-list-item>
+              <mat-icon mat-list-icon color="warn" *ngIf="!prop.propertyValue == ''">warning</mat-icon>
+              <mat-icon mat-list-icon color="primary" *ngIf="prop.propertyValue != ''">check</mat-icon>
+              <div matLine>Data Source: {{prop.componentName}}</div>
+              <mat-form-field class="pad-left">
+                <mat-select placeholder="Select a source" [formControlName]="prop.propertyKey" required>
+                  <mat-option [value]="datasource.id" *ngFor="let datasource of catalogDataSources">{{datasource.title}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </mat-list-item>
+          </mat-list>
         </div>
       </ng-container>
     </form>
