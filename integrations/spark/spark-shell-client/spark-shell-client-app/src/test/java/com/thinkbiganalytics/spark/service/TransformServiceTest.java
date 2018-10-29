@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.service;
  */
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
@@ -129,7 +130,7 @@ public class TransformServiceTest {
         // Mock data source provider factory
         final DatasourceProvider datasourceProvider = Mockito.mock(DatasourceProvider.class);
         final DatasourceProviderFactory datasourceProviderFactory = Mockito.mock(DatasourceProviderFactory.class);
-        Mockito.when(datasourceProviderFactory.getDatasourceProvider(Mockito.anyCollectionOf(Datasource.class))).thenReturn(datasourceProvider);
+        Mockito.when(datasourceProviderFactory.getDatasourceProvider(Mockito.anyCollectionOf(Datasource.class), Mockito.anyCollectionOf(DataSource.class))).thenReturn(datasourceProvider);
 
         // Mock profiler
         final Profiler profiler = Mockito.mock(Profiler.class);
