@@ -1,8 +1,8 @@
-<div fxLayout="row" class="centered">
+<div fxLayout="row" class="centered layout-padding">
   <mat-card fxFlex="65%">
     <div fxLayout="column" fxLayoutAlign="space-evenly start">
       <div class="card-title push-md" fxFlex="80">Repository</div>
-      <div fxLayout="row" class="pull-left-sm" style="width: 100%;" fxLayoutAlign="space-around center">
+      <div fxLayout="row" style="width: 100%;" fxLayoutAlign="space-around center">
         <mat-form-field fxFlex="20">
           <mat-select placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates($event)">
             <mat-option *ngFor="let repository of repositories" [value]="repository">
@@ -25,11 +25,11 @@
     <mat-table *ngIf="!loading && templates.length !== 0" [dataSource]="dataSource" matSort (matSortChange)="sortData($event)" class="mat-elevation-z8">
 
       <ng-container matColumnDef="templateName">
-        <mat-header-cell *matHeaderCellDef mat-sort-header="templateName"> <span style="padding-left: 50px;"> Template </span></mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <div flex="60" fxLayout="column" class="item-column md-list-item-text">
+        <mat-header-cell fxFlex *matHeaderCellDef mat-sort-header="templateName"> <span style="padding-left: 22px;"> Template </span></mat-header-cell>
+        <mat-cell fxFlex *matCellDef="let element">
+          <div  fxLayout="column" class="item-column md-list-item-text">
             <div fxLayout="row">
-              <span style="white-space: nowrap" title="{{element.templateName}}">{{element.templateName | truncate:50}}</span>
+              <span class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>
               <span fxFlex="5"></span>
               <span *ngIf="element.updateAvailable"
                     style="white-space: nowrap; cursor: pointer;"
@@ -44,28 +44,28 @@
               </span>
             </div>
             <div title="{{element.description}}" class="column-title column-title-bottom">
-              {{element.description | truncate:50}}
+              {{element.description}}
             </div>
           </div>
         </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let element">
+        <mat-header-cell fxFlex="250px" *matHeaderCellDef></mat-header-cell>
+        <mat-cell fxFlex="250px" *matCellDef="let element">
           <div fxLayout="row" fxLayoutAlign="end center">
             <button mat-button color="primary" (click)="downloadTemplate(element)">
-              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
+              <ng-md-icon icon="file_download" size="20" class="tc-accent"></ng-md-icon>
               <span class="md-body-2">Download</span>
             </button>
 
             <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
-              <ng-md-icon icon="done" size="20" style="fill:#F08C38"></ng-md-icon>
+              <ng-md-icon icon="done" size="20" class="tc-accent"></ng-md-icon>
               <span class="md-body-2">Import</span>
             </button>
 
             <button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">
-              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
+              <ng-md-icon icon="import_export" size="20" class="tc-accent"></ng-md-icon>
               <span class="md-body-2">Import</span>
             </button>
           </div>
