@@ -42,33 +42,33 @@ export class IconPickerDialog implements ng.IComponentController{
                 private RestUrlService: RestUrlService,
                 @Inject(MAT_DIALOG_DATA) private data: any){}
 
-    selectIcon = (tile: any) => {
+    selectIcon (tile: any) {
         this.selectedIconTile = tile;
     };
 
-    selectColor = (tile: any) => {
+    selectColor (tile: any) {
         this.selectedColorTile = tile;
         this.fillStyle = {'fill': tile.background };
     };
     
-    getBackgroundStyle = (tile: any) => {
+    getBackgroundStyle (tile: any) {
         return {'background-color': tile.background };
     };
     
-    save = () => {
+    save () {
         var data = {icon:this.selectedIconTile.title, color:this.selectedColorTile.background};
         this.dialogRef.close(data);
     };
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 
-    cancel = () => {
+    cancel () {
         this.dialogRef.close();
     };
 
-    fetchIcons =( ) => {
+    fetchIcons ( ) {
         this.loadingIcons = true;
         this.http.get(this.RestUrlService.ICONS_URL).toPromise().then((response: any) =>{
 
@@ -84,7 +84,7 @@ export class IconPickerDialog implements ng.IComponentController{
         });
     }
 
-    fetchColors=() => {
+    fetchColors () {
         this.loadingColors = true;
         this.http.get(this.RestUrlService.ICON_COLORS_URL).toPromise().then( (response: any) =>{
             var colors = response;

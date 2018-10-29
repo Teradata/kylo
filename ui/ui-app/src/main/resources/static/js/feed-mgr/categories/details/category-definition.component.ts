@@ -1,8 +1,7 @@
-import { Component, Input, Inject, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import * as _ from "underscore";
 import AccessControlService from "../../../services/AccessControlService";
 import StateService from "../../../services/StateService";
-import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { IconPickerDialog } from "../../../common/icon-picker-dialog/icon-picker-dialog.component";
 import CategoriesService from "../../services/CategoriesService";
 import { FeedSecurityGroups } from "../../services/FeedSecurityGroups";
@@ -124,7 +123,7 @@ export class CategoryDefinition {
          *  new 1,  editable 1, !feeds 0 - not auto generated, editable
          *  new 1,  editable 1,  feeds 1 - invalid state (cannot be editable with feeds)
          */
-        getSystemNameDescription = () => {
+        getSystemNameDescription () {
             // console.log("this.isNewCategory() = " + this.isNewCategory());
             // console.log("this.isSystemNameEditable() = " + this.isSystemNameEditable());
             // console.log("this.hasFeeds() = " + this.hasFeeds());
@@ -156,23 +155,23 @@ export class CategoryDefinition {
             return "";
         };
 
-        isNewCategory = () => {
+        isNewCategory () {
             return this.editModel.id == undefined;
         };
 
-        isSystemNameEditable = () => {
+        isSystemNameEditable () {
             return this.systemNameEditable;
         };
 
-        hasFeeds = () => {
+        hasFeeds () {
             return !this.hasNoFeeds();
         };
 
-        hasNoFeeds = () => {
+        hasNoFeeds () {
             return (!Array.isArray(this.model.relatedFeedSummaries) || this.model.relatedFeedSummaries.length === 0);
         };
 
-        allowEditSystemName = () => {
+        allowEditSystemName () {
             this.systemNameEditable = true;
             setTimeout(() => {
                 var systemNameInput = window.document.getElementById("systemName");
@@ -182,7 +181,7 @@ export class CategoryDefinition {
             }, 1000);
         };
 
-        splitSecurityGroups = () => {
+        splitSecurityGroups () {
             if (this.model.securityGroups) {
                 return _.map(this.model.securityGroups, (securityGroup:any) =>{
                     return securityGroup.name
@@ -194,7 +193,7 @@ export class CategoryDefinition {
          * Indicates if the category can be deleted.
          * @return {boolean} {@code true} if the category can be deleted, or {@code false} otherwise
          */
-        canDelete = () => {
+        canDelete () {
             return this.allowDelete && (ObjectUtils.isString(this.model.id) && this.hasNoFeeds());
         };
 
@@ -240,7 +239,7 @@ export class CategoryDefinition {
         /**
          * Check for duplicate display and system names.
          */
-        validateDisplayAndSystemName = () => {
+        validateDisplayAndSystemName () {
             var displayNameExists = false;
             var systemNameExists = false;
             var newDisplayName = this.editModel.name;
@@ -279,7 +278,7 @@ export class CategoryDefinition {
         /**
          * Check for duplicate display and system names.
          */
-        validateDisplayName = () => {
+        validateDisplayName () {
             var nameExists = false;
             var newName = this.editModel.name;
 
@@ -308,7 +307,7 @@ export class CategoryDefinition {
         /**
          * Check for duplicate display and system names.
          */
-        validateSystemName = () => {
+        validateSystemName () {
             var nameExists = false;
             var newName = this.editModel.systemName;
 
@@ -367,7 +366,7 @@ export class CategoryDefinition {
         /**
          * Shows the icon picker dialog.
          */
-        showIconPicker = () => {
+        showIconPicker () {
 
             let dialogRef = this._tdDialogService.open(IconPickerDialog, {
                 data: { iconModel: this.editModel },
@@ -383,11 +382,11 @@ export class CategoryDefinition {
 
         };
 
-        getIconColorStyle = (iconColor:any) => {
+        getIconColorStyle (iconColor:any) {
             return  {'fill': iconColor};
         };
 
-        checkAccessPermissions =() => {
+        checkAccessPermissions () {
             // Apply the entity access permissions
             this.accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, this.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS).then((access:any) =>{
                 this.allowEdit = access;

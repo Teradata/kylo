@@ -138,7 +138,7 @@ export class RegisterSelectTemplateController implements OnInit {
     }
 
     // setup the Stepper types
-    initTemplateTableOptions = () => {
+    initTemplateTableOptions () {
         if (this.model.templateTableOption == null) {
 
             if (this.model.defineTable) {
@@ -153,7 +153,7 @@ export class RegisterSelectTemplateController implements OnInit {
         }
     };
 
-    changeTemplate = () => {
+    changeTemplate () {
         this.errorMessage = null;
         this.loadingTemplate = true;
         this.showProgress();
@@ -197,19 +197,19 @@ export class RegisterSelectTemplateController implements OnInit {
         });
     }
 
-    disableTemplate = () => {
+    disableTemplate () {
         if (this.model.id) {
             this.registerTemplateService.disableTemplate(this.model.id)
         }
     }
 
-    enableTemplate = () => {
+    enableTemplate () {
         if (this.model.id) {
             this.registerTemplateService.enableTemplate(this.model.id)
         }
     }
 
-    deleteTemplateError = (errorMsg: any) => {
+    deleteTemplateError (errorMsg: any) {
         // Display error message
         var msg = "<p>The template cannot be deleted at this time.</p><p>";
         msg += ObjectUtils.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
@@ -227,7 +227,7 @@ export class RegisterSelectTemplateController implements OnInit {
         });
     }
 
-    deleteTemplate = () => {
+    deleteTemplate () {
         if (this.model.id) {
 
             this.registerTemplateService.deleteTemplate(this.model.id).then((response: any) => {
@@ -250,7 +250,7 @@ export class RegisterSelectTemplateController implements OnInit {
     /**
      * Displays a confirmation dialog for deleting the feed.
      */
-    confirmDeleteTemplate = () => {
+    confirmDeleteTemplate () {
 
         let dialogRef = this.dialog.open(TemplateDeleteDialog, {
             data: {model: this.model},
@@ -265,7 +265,7 @@ export class RegisterSelectTemplateController implements OnInit {
     };
 
 
-    publishTemplate = (overwriteParam: boolean) => {
+    publishTemplate (overwriteParam: boolean) {
         if (this.model.id) {
 
             this.http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).toPromise().then((response: any) => {
@@ -278,7 +278,7 @@ export class RegisterSelectTemplateController implements OnInit {
         }
     }
 
-    publishTemplateError = (errorMsg: any) => {
+    publishTemplateError (errorMsg: any) {
         // Display error message
         var msg = "Template could not be published. ";
         msg += ObjectUtils.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
@@ -294,7 +294,7 @@ export class RegisterSelectTemplateController implements OnInit {
     /**
      * Called when the user changes the radio buttons
      */
-    onTableOptionChange = () => {
+    onTableOptionChange () {
         if (this.model.templateTableOption === 'DEFINE_TABLE') {
             this.model.defineTable = true;
             this.model.dataTransformation = false;
@@ -332,7 +332,7 @@ export class RegisterSelectTemplateController implements OnInit {
         }
     }
 
-    isLoading = () => {
+    isLoading () {
         return this.loadingTemplate || this.fetchingTemplateList || this.model.loading;
     }
 
@@ -340,7 +340,7 @@ export class RegisterSelectTemplateController implements OnInit {
      * Navigate the user to the state
      * @param link
      */
-    templateNavigationLink = (link: any) => {
+    templateNavigationLink (link: any) {
         var templateId = this.registeredTemplateId;
         var templateName = this.model.templateName;
         this.$state.go(link.sref, {templateId: templateId, templateName: templateName, model: this.model});
@@ -350,7 +350,7 @@ export class RegisterSelectTemplateController implements OnInit {
      * Gets the templates for the select dropdown
      * @returns {HttpPromise}
      */
-    getTemplates = () => {
+    getTemplates () {
         this.fetchingTemplateList = true;
         this.showProgress();
         this.registerTemplateService.getTemplates().then((response: any) => {

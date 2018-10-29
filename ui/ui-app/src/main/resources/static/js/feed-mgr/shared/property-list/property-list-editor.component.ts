@@ -53,7 +53,7 @@ export class PropertyListEditorComponent {
     /**
      * Adds a new user-defined property.
      */
-    addProperty = () => {
+    addProperty () {
         this.propertyList.push({ description: null, displayName: null, locked: false, order: this.propertyList.length, required: true, systemName: "", value: "", $error: {} });
         this.onPropertyChange();
         this.modelChange.emit(this.propertyList);
@@ -62,7 +62,7 @@ export class PropertyListEditorComponent {
     /**
      * Updates the property list with changes to the model.
      */
-    onModelChange = () => {
+    onModelChange () {
         if (!_.isEqual(this.model, this.lastModel)) {
             // Convert model to properties
             this.propertyList = [];
@@ -95,7 +95,7 @@ export class PropertyListEditorComponent {
     /**
      * Updates the model with changes to the property list.
      */
-    onPropertyChange = () => {
+    onPropertyChange () {
         // Convert properties to model
         var hasError: any = false;
         var keys: any = {};
@@ -130,7 +130,7 @@ export class PropertyListEditorComponent {
      *
      * @param {number} index the index of the property to delete
      */
-    removeProperty = (index: any) => {
+    removeProperty (index: any) {
         this.propertyList.splice(index, 1);
         this.onPropertyChange();
         this.modelChange.emit(this.propertyList);

@@ -162,7 +162,7 @@ export class DatasourcesDetailsComponent implements OnInit{
     /**
      * Deletes the current data source.
      */
-    onDelete = () => {
+    onDelete () {
         if (!ObjectUtils.isArray(this.model.sourceForFeeds) || this.model.sourceForFeeds.length === 0) {
             this.datasourcesService.deleteById(this.model.id)
                 .then(() => {

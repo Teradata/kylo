@@ -929,7 +929,7 @@ export class FeedService {
         return this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
     }
 
-    diffCollectionOperation = (path: any) => {
+    diffCollectionOperation (path: any) {
         const self = this;
         if (this.versionFeedModelDiff) {
             if (this.versionFeedModelDiff[path]) {
@@ -947,7 +947,7 @@ export class FeedService {
         return 'no-change';
     }
 
-    joinVersionOperations = (op1: any, op2: any) => {
+    joinVersionOperations (op1: any, op2: any) {
         const opLevels = { 'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2 };
         if (opLevels[op1] === opLevels[op2] && op1 !== 'no-change') {
             return 'replace';
@@ -955,7 +955,7 @@ export class FeedService {
         return opLevels[op1] > opLevels[op2] ? op1 : op2;
     }
 
-    resetVersionFeedModel = () => {
+    resetVersionFeedModel () {
         this.versionFeedModel = {};
         this.versionFeedModelDiff = {};
     }
@@ -1024,11 +1024,11 @@ export class FeedSavingDialogController {
     constructor(private dialogRef: MatDialogRef<FeedSavingDialogController>,
         @Inject(MAT_DIALOG_DATA) private data: any) { }
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 
-    cancel = () => {
+    cancel() {
         this.dialogRef.close();
     };
 }

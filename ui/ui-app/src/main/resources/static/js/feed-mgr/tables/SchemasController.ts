@@ -65,17 +65,17 @@ export class SchemasController {
         this.getDatasource(this.datasourceId).then(this.getSchemas);
     };
 
-    onViewTypeChange = (viewType: any) => {
+    onViewTypeChange (viewType: any) {
         this.paginationDataService.viewType(this.pageName, this.viewType);
     };
 
-    onOrderChange = (order: any) => {
+    onOrderChange (order: any) {
         this.paginationDataService.sort(this.pageName, order);
         this.tableOptionsService.setSortOption(this.pageName, order);
         this.getSchemas();
     };
 
-    onPaginationChange = (page: any, limit: any) => {
+    onPaginationChange (page: any, limit: any) {
         this.paginationDataService.currentPage(this.pageName, null, page);
         this.currentPage = page;
     };
@@ -84,7 +84,7 @@ export class SchemasController {
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedTableOption = (option: any) => {
+    selectedTableOption (option: any) {
         var sortString = this.tableOptionsService.toSortString(option);
         var savedSort = this.paginationDataService.sort(this.pageName, sortString);
         var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
@@ -129,7 +129,7 @@ export class SchemasController {
         return promise;
     }
 
-    onClickSchema = (schema: any) => {
+    onClickSchema (schema: any) {
         this.stateService.FeedManager().Table().navigateToTables(this.datasource.id, schema);
     };
 

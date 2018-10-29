@@ -13,17 +13,6 @@ export default class UserService {
     constructor(private http: HttpClient, private commonRestUrlService: CommonRestUrlService, private userGroupService: UserGroupService) {
     }
 
-    private extractData(res: Response) {
-        let body = res.json();
-        return body || {};
-    }
-
-
-    private handleError(error: any): Promise<any> {
-        //  console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
-
     /**
      * Deletes the group with the specified system name.
      *

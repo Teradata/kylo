@@ -8,7 +8,7 @@ export class EntityAccessControlDialogService {
     constructor(private $mdDialog : any) {
 
     }
-    showAccessControlDialog = (entity: any, entityType: any, entityTitle: any, onSave: any, onCancel: any) => {
+    showAccessControlDialog (entity: any, entityType: any, entityTitle: any, onSave: any, onCancel: any) {
 
         var callbackEvents = { onSave: onSave, onCancel: onCancel };
         return this.$mdDialog.show({

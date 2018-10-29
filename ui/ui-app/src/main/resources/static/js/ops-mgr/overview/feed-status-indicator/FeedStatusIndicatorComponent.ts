@@ -72,20 +72,20 @@ export default class FeedStatusIndicatorComponent {
        
         }// end of constructor
 
-        initializePieChart=()=> {
+        initializePieChart () {
                 this.chartData.push({key: "Healthy", value: 0})
                 this.chartData.push({key: "Unhealthy", value: 0})
         }
 
-        onHealthyClick = ()=>{
+        onHealthyClick () {
             this.OpsManagerDashboardService.selectFeedHealthTab('Healthy');
         }
 
-        onUnhealthyClick = ()=>{
+        onUnhealthyClick () {
             this.OpsManagerDashboardService.selectFeedHealthTab('Unhealthy');
         }
 
-    watchDashboard=()=> {
+    watchDashboard () {
 
             this.BroadcastService.subscribe(null, this.OpsManagerDashboardService.DASHBOARD_UPDATED,
                                             (dashboard: any)=>{
@@ -97,11 +97,11 @@ export default class FeedStatusIndicatorComponent {
             });
         }
 
-        onChartElementClick=(key: any)=>{
+        onChartElementClick(key: any) {
             this.OpsManagerDashboardService.selectFeedHealthTab(key);
         }
 
-        updateChartData= ()=>{
+        updateChartData () {
             this.chartData.forEach((row: any,i: any)=>{
                 row.value = this.dataMap[row.key].count;
             });
@@ -113,7 +113,7 @@ export default class FeedStatusIndicatorComponent {
             }
         }
 
-        updateChart = ()=>{
+        updateChart () {
             if(this.chartApi.update) {
                 this.chartApi.update();
             }

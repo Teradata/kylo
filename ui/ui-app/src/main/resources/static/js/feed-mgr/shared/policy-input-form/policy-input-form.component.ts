@@ -99,12 +99,12 @@ export class PolicyInputFormController {
         }
     }
 
-    onPropertyChanged = (property:any) => {
+    onPropertyChanged (property:any) {
         if(this.propertyChanged != undefined){
             this.propertyChanged.emit(property);
         }
     }
-    validateRequiredChips = (property:any) => {
+    validateRequiredChips (property:any) {
         return this.PolicyInputFormService.validateRequiredChips(this.theForm, property);
     }
    

@@ -31,7 +31,7 @@ export class PreviewController {
         this.getDatasource(this.datasourceId).then(this.query);
     }
 
-    query = () => {
+    query () {
         // console.log('query');
         this.loading = true;
 
@@ -65,7 +65,7 @@ export class PreviewController {
         }
         promise.then(successFn, errorFn);
     };
-    onLimitChange = (item: any) => {
+    onLimitChange (item: any) {
         this.query();
     };
 

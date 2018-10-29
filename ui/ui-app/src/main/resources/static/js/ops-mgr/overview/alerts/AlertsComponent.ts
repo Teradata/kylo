@@ -45,7 +45,7 @@ export default class AlertsComponent {
                 private OpsManagerDashboardService: OpsManagerDashboardService,
                 private BroadcastService: BroadcastService) {}
 
-        watchDashboard=()=> {
+        watchDashboard () {
             this.BroadcastService.subscribe(null,this.OpsManagerDashboardService.DASHBOARD_UPDATED,(dashboard: any)=>{
                 var alerts = this.OpsManagerDashboardService.dashboard.alerts;
                 this.alertsServiceV2.transformAlertSummaryResponse(alerts);
@@ -53,20 +53,20 @@ export default class AlertsComponent {
             });
         }
 
-        fetchFeedAlerts=()=>{
+        fetchFeedAlerts () {
             this.alertsServiceV2.fetchFeedAlerts(this.feedName).then((alerts: any)=> {
                 this.alerts =alerts;
             });
         }
 
-        stopFeedRefresh=()=>{
+        stopFeedRefresh () {
             if(this.feedRefresh != null){
                 clearInterval(this.feedRefresh);
                 this.feedRefresh = null;
             }
         }
 
-        navigateToAlerts = (alertsSummary: any)=>{
+        navigateToAlerts (alertsSummary: any) {
             //generate Query
             var query = "UNHANDLED,"+ alertsSummary.type;
             if(alertsSummary.groupDisplayName != null && alertsSummary.groupDisplayName != null) {

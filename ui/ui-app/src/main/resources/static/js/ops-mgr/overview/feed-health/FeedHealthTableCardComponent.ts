@@ -83,7 +83,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
                     super(_dataTableService);
                 } // end of constructor
   
-        onTabSelected = (tab: any) =>{
+        onTabSelected (tab: any) {
             this.tabs[tab].clearContent();
             this.tabService.selectedTab(this.pageName, this.tabs[tab]);
             if(this.loaded || (!this.loaded && !this.opsManagerDashboardService.isFetchingDashboard())) {
@@ -91,13 +91,13 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             }
         };        
 
-        onSortChange = (sortEvent: ITdDataTableSortChangeEvent) => {
+        onSortChange (sortEvent: ITdDataTableSortChangeEvent) {
             this.sortFeed.sortBy = sortEvent.name;
             this.sortFeed.sortOrder = sortEvent.order;
             this.sort(sortEvent);
         }
 
-        onPaginationChange = (pagingEvent: IPageChangeEvent) => {
+        onPaginationChange (pagingEvent: IPageChangeEvent) {
 
             var activeTab= this.tabService.getActiveTab(this.pageName);
             if(activeTab.currentPage != pagingEvent.page) {
@@ -112,12 +112,12 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
     
         }
     
-        onSearchTable = (searchTerm: string) => {
+        onSearchTable (searchTerm: string) {
             this.filterFeed = searchTerm;
             this.loadFeeds(true, true);
         }
 
-        feedDetails = (event: any)=>{
+        feedDetails (event: any) {
             if(event.row.stream) {
                 this.stateService.OpsManager().Feed().navigateToFeedStats(event.row.feed);
             }
@@ -130,7 +130,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
          * Add additional data back to the data object.
          * @param feeds
          */
-        mergeUpdatedFeeds(feeds: any) {
+        mergeUpdatedFeeds (feeds: any) {
             var activeTab = this.tabService.getActiveTab(this.pageName);
            var tab = activeTab.title.toLowerCase();
 
@@ -176,7 +176,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
            }
        }
 
-        getFeedHealthQueryParams() {
+        getFeedHealthQueryParams () {
             var limit = this.paginationData.rowsPerPage;
             var activeTab = this.tabService.getActiveTab(this.pageName);
             var tab = activeTab.title;

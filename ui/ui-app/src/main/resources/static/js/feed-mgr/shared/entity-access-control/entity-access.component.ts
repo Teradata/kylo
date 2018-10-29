@@ -132,7 +132,7 @@ export class EntityAccessControlComponent implements OnInit {
      * @param query
      * @returns {Array}
      */
-    filterCollection = (collection: any, query: any, keys: any) => {
+    filterCollection (collection: any, query: any, keys: any) {
         return query ? _.filter(collection, (item) => {
             var lowercaseQuery = query.toLowerCase();
             var found = _.find(keys, (key: any) => {
@@ -151,7 +151,7 @@ export class EntityAccessControlComponent implements OnInit {
      * Query users and groups
      * @param query
      */
-    queryUsersAndGroups = (query: any) => {
+    queryUsersAndGroups (query: any) {
         this.entity.roleMembershipsUpdated = true;
         var df = this.$injector.get("$q").defer();
         var request = { groups: this.getAllGroups(), users: this.getAllUsers() };
@@ -170,7 +170,7 @@ export class EntityAccessControlComponent implements OnInit {
      * If an attempt is made to remove a non-editable member of a role membership then
      * re-add that member to the membership set.
      */
-    onRemovedMember = (member: any, members: any) => {
+    onRemovedMember (member: any, members: any) {
         if (member.editable == false) {
             members.unshift(member);
         }
@@ -180,7 +180,7 @@ export class EntityAccessControlComponent implements OnInit {
      * Query users
      * @param query
      */
-    queryUsers = (query: any) => {
+    queryUsers (query: any) {
         var df = this.$injector.get("$q").defer();
         this.getAllUsers().then((users: any) => {
             var matchingUsers = this.filterCollection(users, query, ['_lowerDisplayName', '_lowerSystemName']);
@@ -190,7 +190,7 @@ export class EntityAccessControlComponent implements OnInit {
     }
 
 
-    getAllGroups = () => {
+    getAllGroups () {
         var df = this.$injector.get("$q").defer();
         if (this.allGroups == null) {
             // Get the list of groups
@@ -210,7 +210,7 @@ export class EntityAccessControlComponent implements OnInit {
         return df.promise;
     };
 
-    getAllUsers = () => {
+    getAllUsers () {
         var df = this.$injector.get("$q").defer();
         if (this.allUsers == null) {
             // Get the list of groups
@@ -237,7 +237,7 @@ export class EntityAccessControlComponent implements OnInit {
         return df.promise;
     };
 
-    init = () => {
+    init () {
         if (this.rolesInitialized == false) {
             this.$injector.get("$q").when(this.entityAccessControlService.mergeRoleAssignments(this.entity, this.entityType, this.entity[this.roleMembershipsProperty]))
                 .then(() => {

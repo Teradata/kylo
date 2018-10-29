@@ -40,16 +40,16 @@ export class TableController {
         this.getDatasource(this.datasourceId).then(this.init);
     };
     
-    init = () =>{
+    init () {
         this.getTable(this.schema, this.tableName);
     };
 
-    successFn = (response:any) =>{
+    successFn (response:any) {
         this.tableSchema = response.data;
         this.cardTitle = this.schema;
         this.loading = false;
     };
-    errorFn = (err:any) => {
+    errorFn (err:any) {
         this.loading = false;
 
     };
@@ -65,13 +65,13 @@ export class TableController {
     getNonHiveTable(schema:any, table:any){
         var params = {schema: schema};
         var promise = this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + this.datasource.id + "/tables/" + table, {params: params});
-        promise.then(this.successFn, this.errorFn);
+        promise.then((response:any) => {this.successFn(response)}, (err: any)=> { this.errorFn(err)});
         return promise;
     }
 
     getHiveTable(schema:any,table:any){
         var promise = this.$http.get(this.RestUrlService.HIVE_SERVICE_URL+"/schemas/"+schema+"/tables/"+table);
-        promise.then(this.successFn, this.errorFn);
+        promise.then((response : any) => {this.successFn(response)},(err:any) => {this.errorFn(err)});
         return promise;
     }
 

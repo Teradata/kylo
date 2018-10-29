@@ -56,7 +56,7 @@ export class RegisterNewTemplateController {
     /**
          * Creates a new Feed Manager template from a NiFi template.
          */
-    createFromNifi = () => {
+    createFromNifi () {
         this.registerTemplateService.resetModel();
         this.stateService.FeedManager().Template().navigateToRegisterNifiTemplate();
     }
@@ -64,7 +64,7 @@ export class RegisterNewTemplateController {
     /**
      * Imports a Feed Manager template from a file.
      */
-    importFromFile = () => {
+    importFromFile () {
         this.registerTemplateService.resetModel();
         this.stateService.FeedManager().Template().navigateToImportTemplate();
     }

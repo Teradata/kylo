@@ -52,22 +52,22 @@ export class CardFilterHeaderComponent {
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedOption = (option: any) => {
+    selectedOption (option: any) {
         if (option.type == 'sort') {
-            var currentSort = this.TableOptionsService.toggleSort(this.pageName, option);
+            this.TableOptionsService.toggleSort(this.pageName, option);
             if (this.onSelectedOption) {
                 this.onSelectedOption(option);
             }
         }
     }
 
-    selectedAdditionalOption = (option: any) => {
+    selectedAdditionalOption (option: any) {
         if (this.onSelectedAdditionalOption) {
             this.onSelectedAdditionalOption(option);
         }
     }
 
-    showFilterHelpPanel = (ev: any) => {
+    showFilterHelpPanel (ev: any) {
         if (this.onShowFilterHelp) {
             this.onShowFilterHelp(ev);
         }
@@ -77,7 +77,7 @@ export class CardFilterHeaderComponent {
      *
      * @param options {sortOptions:this.sortOptions,additionalOptions:this.additionalOptions}
      */
-    menuOpen = (options: any) => {
+    menuOpen (options: any) {
         if (this.onMenuOpen) {
             this.onMenuOpen(options);
         }

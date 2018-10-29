@@ -22,7 +22,7 @@ export class PolicyInputFormService {
 
             this.init();
     }
-    groupProperties = (metric: any) => {
+    groupProperties (metric: any) {
         var group = _.groupBy(metric.properties, 'group');
         var groupedProperties: any = [];
         var index = 0;
@@ -53,27 +53,27 @@ export class PolicyInputFormService {
 
     }
 
-    updatePropertyIndex = (rule: any)=> {
+    updatePropertyIndex (rule: any) {
         _.each(rule.properties, (property: any) => {
             property.formKey = 'property_' + this.formKeyNumber++;
         });
     }
 
-    createFilterFor=(query: any) =>{
+    createFilterFor (query: any) {
         var lowercaseQuery = query.lowercaseQuery();
         return function filterFn(option: any) {
             return (((option.value).lowercase()).indexOf(lowercaseQuery) >= 0);
         };
     }
-    attachCurrentFeedValueToProperty = (prop: any, feedName: any) => {
+    attachCurrentFeedValueToProperty (prop: any, feedName: any) {
         if (prop.value == undefined || prop.value == null || prop.value == this.CURRENT_FEED_DEFAULT_VALUE) {
             prop.value = feedName;
         }
     };
-    currentFeedValue = (feed: any) => {
+    currentFeedValue (feed: any) {
         return feed.category.systemName + "." + feed.systemFeedName;
     };
-    attachCurrentFeedValues = (data: any, feedName: any) => {
+    attachCurrentFeedValues (data: any, feedName: any) {
         //set the currentFeed property value to be this.feed if it is not null
         var currentFeedProperties: any = [];
         _.each(data, (rules: any) => {
@@ -92,7 +92,7 @@ export class PolicyInputFormService {
 
     };
 
-    groupPolicyOptions = (options: any, currentFeedName: any) => {
+    groupPolicyOptions (options: any, currentFeedName: any) {
         if (currentFeedName != null && currentFeedName != undefined) {
             this.attachCurrentFeedValues(options, currentFeedName);
         }
@@ -104,10 +104,10 @@ export class PolicyInputFormService {
         });
         return optionsArr;
     };
-    isFeedProperty = (property: any) => {
+    isFeedProperty (property: any) {
         return (property.type == 'currentFeed' || property.type == 'feedSelect' || property.type == 'feedChips');
     };
-    getRuleNames = (ruleArray: any) => {
+    getRuleNames (ruleArray: any) {
         var properties = [];
         var names = _.map(ruleArray, (rule: any) => {
             return rule.name;
@@ -119,7 +119,7 @@ export class PolicyInputFormService {
      * @param sla
      * @return {Array}
      */
-    getFeedNames = (ruleArray: any) => {
+    getFeedNames (ruleArray: any) {
         var names: any = [];
         _.each(ruleArray, (rule: any) => {
             _.each(rule.properties, (property: any) => {
@@ -140,7 +140,7 @@ export class PolicyInputFormService {
      * remove all feeds from the selectable values where the "feed:editDetails" property is false
      * @param policies array of policies
      */
-    stripNonEditableFeeds = (policies: any) => {
+    stripNonEditableFeeds (policies: any) {
         _.each(policies, (rule: any) => {
 
             _.each(rule.properties, (prop: any) => {
@@ -165,7 +165,7 @@ export class PolicyInputFormService {
 
         });
     };
-    validateRequiredChips = (theForm: any, property: any) => {
+    validateRequiredChips (theForm: any, property: any) {
         if (property.required && property.values.length == 0) {
             //INVALID
             theForm[property.formKey].$setValidity("required", false);
@@ -181,7 +181,7 @@ export class PolicyInputFormService {
      * Validate the form before adding/editing a Rule for an SLA
      * @returns {boolean}
      */
-    validateForm = (theForm: any, ruleProperties: any, showErrorDialog: any) => {
+    validateForm (theForm: any, ruleProperties: any, showErrorDialog: any) {
         if (showErrorDialog == undefined) {
             showErrorDialog = true;
         }
@@ -224,12 +224,12 @@ export class PolicyInputFormService {
 
         return validForm;
     };
-    queryChipSearch = (property: any, query: any) => {
+    queryChipSearch (property: any, query: any) {
         var options = property.selectableValues;
         var results = query ? options.filter(this.createFilterFor(query)) : [];
         return results;
     };
-    transformChip = (chip: any) => {
+    transformChip (chip: any) {
         // If it is an object, it's already a known chip
         if (ObjectUtils.isObject(chip)) {
             return chip;
@@ -237,7 +237,7 @@ export class PolicyInputFormService {
         // Otherwise, create a new one
         return { name: chip }
     };
-    init = () => {
+    init () {
 
     }
 }

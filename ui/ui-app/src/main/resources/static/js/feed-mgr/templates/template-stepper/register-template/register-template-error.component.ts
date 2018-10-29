@@ -20,7 +20,7 @@ export class RegisterTemplateErrorDialog {
     constructor(@Inject(MAT_DIALOG_DATA) private data: any,
                 private dialogRef: MatDialogRef<RegisterTemplateErrorDialog>) {}
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 }

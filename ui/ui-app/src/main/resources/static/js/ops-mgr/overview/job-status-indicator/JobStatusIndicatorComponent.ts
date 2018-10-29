@@ -93,16 +93,16 @@ export default class JobStatusIndicatorComponent {
         private chartJobStatusService: ChartJobStatusService,
         private BroadcastService: BroadcastService) {}// end of constructor
      
-        updateChart = ()=>{
+        updateChart () {
             if(this.chartApi.update) {
                 this.chartApi.update();
             }
         }
 
-        chartClick = ()=>{
+        chartClick () {
             this.StateService.OpsManager().Job().navigateToJobs("Running",null);
         }
-        getRunningFailedCounts=()=> {
+        getRunningFailedCounts () {
                 var successFn = (response: any)=> {
                     if(response){
                      this.updateCounts(response.data);
@@ -127,11 +127,11 @@ export default class JobStatusIndicatorComponent {
 
         };
 
-        refresh=()=>{
+        refresh () {
             this.getRunningFailedCounts();
         }
 
-        updateCounts=(responseData: any)=>{
+        updateCounts (responseData: any) {
             //zero them out
             this.running =0;
             this.failed = 0;
@@ -154,7 +154,7 @@ export default class JobStatusIndicatorComponent {
          * if the Job Status changes, update the summary data and notify the Feed Health Card
          * @param jobStatus the list of Job Status counts by feed
          */
-        ensureFeedSummaryMatches=(jobStatus: any)=>{
+        ensureFeedSummaryMatches (jobStatus: any) {
             var summaryData = this.OpsManagerDashboardService.feedSummaryData;
             var feedSummaryUpdated: any[] = [];
             var runningFeedNames: any[] = [];
@@ -195,7 +195,7 @@ export default class JobStatusIndicatorComponent {
         }
 
 
-        addChartData=(data: any)=>{
+        addChartData (data: any) {
             if(this.chartData.length >0) {
                 this.chartData[0].values.push([data.date, data.count]);
             }
@@ -221,7 +221,7 @@ export default class JobStatusIndicatorComponent {
                 this.chartOptions.chart.yAxis.ticks = ticks;
             }
         }
-        createChartData=(responseData: any)=>{
+        createChartData (responseData: any) {
             this.chartData = this.chartJobStatusService.toChartData(responseData);
             var max = d3.max(this.runningCounts, (d: any)=>{
                 return d.count; } );
@@ -237,14 +237,14 @@ export default class JobStatusIndicatorComponent {
         }
 
 
-        clearRefreshInterval= ()=>{
+        clearRefreshInterval () {
             if(this.refreshInterval != null){
                 clearInterval(this.refreshInterval);
                 this.refreshInterval = null;
             }
         }
 
-        setRefreshInterval=()=>{
+        setRefreshInterval () {
             this.clearRefreshInterval();
             if(this.refreshIntervalTime) {
                 this.refreshInterval = setInterval(this.refresh,this.refreshIntervalTime);

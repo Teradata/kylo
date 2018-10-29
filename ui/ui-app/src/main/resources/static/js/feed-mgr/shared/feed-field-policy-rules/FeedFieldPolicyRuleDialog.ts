@@ -395,7 +395,7 @@ class FieldPolicyRuleOptionsFactory {
     getSparkParserOptions() {
         return this.$http.get(this.RestUrlService.LIST_SPARK_FILE_PARSERS, {cache: true});
     }
-    getOptionsForType = (type: any) => {
+    getOptionsForType (type: any) {
         if (type == 'standardization-validation') {
             var defer = this.$q.defer();
             var requests = { validation: this.getValidationOptions(), standardization: this.getStandardizationOptions() };
@@ -417,7 +417,7 @@ class FieldPolicyRuleOptionsFactory {
             return this.getSparkParserOptions();
         }
     }
-    getTitleForType = (type: any) => {
+    getTitleForType (type: any) {
         if (type == 'standardization') {
             return "Standardization Policies";
         }
@@ -430,7 +430,7 @@ class FieldPolicyRuleOptionsFactory {
         }
 
     }
-    getStandardizersAndValidators = () => {
+    getStandardizersAndValidators () {
         return this.getOptionsForType('standardization-validation');
     }
 }
@@ -441,7 +441,7 @@ class FeedFieldPolicyRuleService {
     constructor() {
 
     }
-    getAllPolicyRules = (field: any) => {
+    getAllPolicyRules (field: any) {
         if (field === undefined) {
             return [];
         }

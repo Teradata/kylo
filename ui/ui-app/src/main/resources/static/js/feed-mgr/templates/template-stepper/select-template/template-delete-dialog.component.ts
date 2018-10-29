@@ -17,7 +17,7 @@ export class TemplateDeleteDialog {
     constructor(@Inject(MAT_DIALOG_DATA) private data: any,
                 private dialogRef: MatDialogRef<TemplateDeleteDialog>) {}
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 

@@ -94,7 +94,7 @@ export class RegisteredTemplatesController extends BaseFilteredPaginatedTableVie
      * @param event
      * @param template
      */
-    templateDetails = (template: any) =>{
+    templateDetails (template: any) {
         if (this.allowEdit && template != undefined) {
             this.RegisterTemplateService.resetModel();
 
@@ -112,7 +112,7 @@ export class RegisteredTemplatesController extends BaseFilteredPaginatedTableVie
         }
     };
 
-    getRegisteredTemplates = (): Promise<any> =>{
+    getRegisteredTemplates (): Promise<any> {
 
         let successFn = (response :any) => {
             this.loading = false;
@@ -139,7 +139,7 @@ export class RegisteredTemplatesController extends BaseFilteredPaginatedTableVie
 
     }
 
-    exportTemplate = (event: any, template: any) => {
+    exportTemplate (event: any, template: any) {
         var promise = this.http.get(this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id);
     }
 }

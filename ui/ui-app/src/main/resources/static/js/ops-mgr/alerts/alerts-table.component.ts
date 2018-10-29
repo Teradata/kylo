@@ -327,11 +327,11 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
      * @param event
      * @param alert
      */
-    alertDetails = (event: any) => {
+    alertDetails (event: any) {
         this.StateService.OpsManager().Alert().navigateToAlertDetails(event.row.id);
     };
 
-    onChangeLinks = (page: any) => {
+    onChangeLinks (page: any) {
         var activeTab = this.TabService.getActiveTab(this.pageName);
         var prevPage = this.PaginationDataService.currentPage(this.pageName, activeTab.title);
         
@@ -348,7 +348,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
         return this.loadAlerts(this.direction);
     }
 
-    onPaginationChange = (pagingEvent: IPageChangeEvent) => {
+    onPaginationChange (pagingEvent: IPageChangeEvent) {
 
         if(this.page != pagingEvent.page) {
             this.page = pagingEvent.page;
@@ -362,7 +362,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
 
     }
 
-    onSearchTable = (searchTerm: string) => {
+    onSearchTable (searchTerm: string) {
         this.filterTable = searchTerm;
         this.loadAlerts(true);
     }

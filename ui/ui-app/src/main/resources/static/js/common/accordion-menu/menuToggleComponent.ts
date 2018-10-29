@@ -1,7 +1,6 @@
 import * as _ from "underscore";
 import AccessControlService from "../../services/AccessControlService";
 import { Component, Input, Output, EventEmitter, SimpleChanges, ElementRef } from "@angular/core";
-import { ObjectUtils } from "../utils/object-utils";
 
 // TODO 
 // ng-if-permission [ngIfPermission]="item.permission" at line 20

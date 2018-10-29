@@ -34,7 +34,7 @@ export class KyloOptionsComponent {
     constructor(private http: HttpClient,
                 private AboutKyloService: AboutKyloService) {}
 
-    openMenu = ($mdOpenMenu: any, ev: any) => {
+    openMenu ($mdOpenMenu: any, ev: any) {
         //callback
         if (this.openedMenu) {
             this.openedMenu();

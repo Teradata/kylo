@@ -57,7 +57,7 @@ export class PropertiesAdminController implements OnInit{
     /**
      * Updates the field list with changes to the model.
      */
-    onModelChange = () => {
+    onModelChange () {
         if (!_.isEqual(this.model, this.lastModel)) {
             // Convert model to fields
             this.fieldList = [];

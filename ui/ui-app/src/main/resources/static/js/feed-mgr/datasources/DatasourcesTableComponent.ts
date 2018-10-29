@@ -4,8 +4,7 @@ import StateService from '../../services/StateService';
 import { DatasourcesService } from '../services/DatasourcesService';
 import AddButtonService from '../../services/AddButtonService';
 import { Component } from '@angular/core';
-import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from '@covalent/core/data-table';
-import { IPageChangeEvent } from '@covalent/core/paging';
+import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 import { ObjectUtils } from '../../common/utils/object-utils';
 
@@ -13,8 +12,6 @@ import { ObjectUtils } from '../../common/utils/object-utils';
  * Identifier for this page.
  * @type {string}
  */
-const PAGE_NAME = "datasources";
-
 @Component({
     templateUrl : 'js/feed-mgr/datasources/list.html',
     selector : 'datasources-table'
@@ -83,7 +80,7 @@ export class DatasourcesTableComponent extends BaseFilteredPaginatedTableView{
         *
         * @param {Object} datasource the data source
         */
-    editDatasource = (datasource: any) => {
+    editDatasource (datasource: any) {
         this.stateService.FeedManager().Datasource().navigateToDatasourceDetails(datasource.id);
     };
 
@@ -93,7 +90,7 @@ export class DatasourcesTableComponent extends BaseFilteredPaginatedTableView{
      * @param {Object} datasource the data source
      * @returns {number} the number of related feeds
      */
-    getRelatedFeedsCount = (datasource: any) => {
+    getRelatedFeedsCount (datasource: any) {
         return ObjectUtils.isArray(datasource.sourceForFeeds) ? datasource.sourceForFeeds.length : 0;
     };
 }

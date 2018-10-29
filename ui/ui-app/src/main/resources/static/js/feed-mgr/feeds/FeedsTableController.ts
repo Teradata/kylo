@@ -155,7 +155,7 @@ export default class FeedsTableController implements ng.IComponentController {
         return sortOptions;
     }
 
-    feedDetails = ($event:any, feed:any)=> {
+    feedDetails ($event:any, feed:any) {
         if(feed !== undefined) {
             if(feed.mode == "DRAFT") {
                 this.StateService.FeedManager().Feed().navigateToFeedDefinition(feed.id)

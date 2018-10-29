@@ -55,7 +55,7 @@ export class PropertiesAdminEditorController {
     /**
     * Adds a new user-defined field.
     */
-    addField = () => {
+    addField () {
         this.fieldList.push({ description: null, displayName: "", order: this.fieldList.length, required: false, systemName: "", $error: {}, $isNew: true });
         this.onFieldChange();
         this.modelChange.emit(this.fieldList);
@@ -66,7 +66,7 @@ export class PropertiesAdminEditorController {
      *
      * @param index the index of the field
      */
-    moveDown = (index: any) => {
+    moveDown (index: any) {
         this.fieldList.splice(index, 2, this.fieldList[index + 1], this.fieldList[index]);
         this.onFieldChange();
         this.modelChange.emit(this.fieldList);
@@ -77,7 +77,7 @@ export class PropertiesAdminEditorController {
      *
      * @param index the index of the field
      */
-    moveUp = (index: any) => {
+    moveUp (index: any) {
         this.fieldList.splice(index - 1, 2, this.fieldList[index], this.fieldList[index - 1]);
         this.onFieldChange();
         this.modelChange.emit(this.fieldList);
@@ -86,7 +86,7 @@ export class PropertiesAdminEditorController {
     /**
      * Updates the model with changes to the field list.
      */
-    onFieldChange = () => {
+    onFieldChange () {
         // Convert fields to model
         var hasError: any = false;
         var keys: any = {};
@@ -120,7 +120,7 @@ export class PropertiesAdminEditorController {
     /**
      * Updates the field list with changes to the model.
      */
-    onModelChange = () => {
+    onModelChange () {
         if (!_.isEqual(this.model, this.lastModel)) {
             // Convert model to fields
             this.fieldList = [];
@@ -146,7 +146,7 @@ export class PropertiesAdminEditorController {
      *
      * @param {number} index the index of the field to delete
      */
-    removeField = (index: any) => {
+    removeField (index: any) {
         this.fieldList.splice(index, 1);
         this.onFieldChange();
         this.modelChange.emit(this.fieldList);
@@ -157,7 +157,7 @@ export class PropertiesAdminEditorController {
      *
      * @param field the user-defined field
      */
-    updateField = (field: any) => {
+    updateField (field: any) {
         if (field.$isNew) {
             field.systemName = field.displayName
                 .replace(/[^a-zA-Z0-9]+([a-zA-Z0-9]?)/g, (match: any, p1: any) => { return p1.toUpperCase(); })

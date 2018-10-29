@@ -1,5 +1,4 @@
-import {moduleName} from "../module-name";
-import {Component, Inject, Input, Injectable} from "@angular/core";
+import {Component, Input, Injectable} from "@angular/core";
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 import "../module";
@@ -57,10 +56,10 @@ export default class AboutKyloDialogController {
         this.http.get("/proxy/v1/about/version", {responseType: 'text'}).toPromise()
         .then((response: any) => {
             this.version = response;
-        },(response: any)=>{
+        },(err: any) =>{
             this.version = "Not Available"
         });
-        this.hide = ()=> {
+        this.hide = () => {
             this.dialogRef.close();
         };
         this.cancel = ()=> {
@@ -75,7 +74,7 @@ export default class AboutKyloDialogController {
 export class AboutKyloService{
     constructor(private dialog: MatDialog){}
 
-    showAboutDialog = () => {
+    showAboutDialog () {
         let dialogRef = this.dialog.open(AboutKyloDialogController, {
             maxWidth: '35%',
             maxHeight: '100%',

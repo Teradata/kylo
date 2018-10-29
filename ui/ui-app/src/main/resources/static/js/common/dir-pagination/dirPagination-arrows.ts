@@ -1,5 +1,4 @@
 import * as angular from "angular";
-import {moduleName} from "../module-name";
 
 angular.module('templates.arrow.html', []).run(['$templateCache', function ($templateCache: any) {
     'use strict';

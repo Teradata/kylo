@@ -100,12 +100,14 @@ export class FeedLineageController implements ng.IComponentController {
 
     options:any = null;
 
+    processedDatasource : any;
 
-    isDetailedGraph=()=>{
+
+    isDetailedGraph(){
         return this.graphMode == this.graphModes.DETAILED;
     }
 
-    redraw=()=>{
+    redraw(){
         if (this.isDetailedGraph()) {
             this.onDetailedView();
         }
@@ -118,12 +120,12 @@ export class FeedLineageController implements ng.IComponentController {
      * Called when the graph is loaded
      * @param network
      */
-    onLoad = function(network:any){
+    onLoad (network:any){
         this.network = network;
        // stabilizationIterationsDone();
     }
 
-    stabilizationIterationsDone = () => {
+    stabilizationIterationsDone () {
         this.options.physics.enabled = false;
         if (this.network) {
             this.network.setOptions({
@@ -137,13 +139,13 @@ export class FeedLineageController implements ng.IComponentController {
             });
         }
     }
-    stabilized = () =>{
+    stabilized () {
         this.stabilizationIterationsDone();
     }
 
 
 
-    onSelect = (item:any)=>{
+    onSelect (item:any) {
         if (item && item.nodes && item.nodes[0]) {
             this.changed = true;
             var firstItem = item.nodes[0];
@@ -179,7 +181,7 @@ export class FeedLineageController implements ng.IComponentController {
     
 
 
-    _draw = function () {
+    _draw () {
         this.nodes = [];
         this.edges = [];
         this.edgeKeys ={};
@@ -192,17 +194,17 @@ export class FeedLineageController implements ng.IComponentController {
         this.setNodeData();
     }
 
-    onDetailedView = function () {
+    onDetailedView () {
         this.graphMode = this.graphModes.DETAILED;
         this._draw();
 
     }
-    onSimpleView = function(){
+    onSimpleView (){
         this.graphMode = this.graphModes.SIMPLE;
         this._draw();
     }
 
-    setNodeStyle = function (node:any, style:any) {
+    setNodeStyle (node:any, style:any) {
         if (style) {
             if ((style.shape == 'icon' || !style.shape) && style.icon && style.icon.code) {
                 node.shape = 'icon';
@@ -239,7 +241,7 @@ export class FeedLineageController implements ng.IComponentController {
      * @param dsId
      * @param type
      */
-    buildDatasource = function (feed:any, dsId:any, type:any) {
+    buildDatasource (feed:any, dsId:any, type:any) {
         if(dsId) {
             var processedDatasource = this.processedNodes[dsId];
 
@@ -347,7 +349,7 @@ export class FeedLineageController implements ng.IComponentController {
              * Builds the Graph of Datasources as they are related to the incoming {@code feed}
              * @param feed
              */
-            buildDataSourceGraph = function (feed:any) {
+            buildDataSourceGraph (feed:any) {
                 if (feed.sources) {
                     _.each(feed.sources,  (src:any) => {
                         this.buildDatasource(feed, src.datasourceId, 'source');
@@ -365,7 +367,7 @@ export class FeedLineageController implements ng.IComponentController {
              * Assigns some of the fields on the datasource to the properties attribute
              * @param ds
              */
-            assignDatasourceProperties = function(ds:any){
+            assignDatasourceProperties (ds:any){
                 var keysToOmit = ['@type', 'id','name','encrypted','compressed','destinationForFeeds','sourceForFeeds'];
                 var props = _.omit(ds, keysToOmit);
                 props = _.pick(props,  (value:any, key:any) => {
@@ -378,7 +380,7 @@ export class FeedLineageController implements ng.IComponentController {
     
             }
     
-            cleanProperties = function (item:any) {
+            cleanProperties (item:any) {
                 if (item.properties) {
                     var updatedProps = _.omit(item.properties,  (val:any, key:any) => {
                         return key.indexOf("jcr:") == 0 || key == "tba:properties" || key == 'tba:processGroupId';
@@ -392,7 +394,7 @@ export class FeedLineageController implements ng.IComponentController {
              * @param ds
              * @returns {string}
              */
-            datasourceNodeLabel = function(ds:any){
+            datasourceNodeLabel (ds:any){
                 var label = "";
                 if (angular.isString(ds.datasourceType)) {
                     label = this.Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource") ? ds.datasourceType.substring(0, ds.datasourceType.toLowerCase().lastIndexOf("datasource")) : ds.datasourceType;
@@ -411,7 +413,7 @@ export class FeedLineageController implements ng.IComponentController {
              * @param feed
              * @returns {string}
              */
-            feedNodeLabel = function(feed:any){
+            feedNodeLabel (feed:any){
                 var label = feed.displayName;
                 return label;
             }
@@ -421,7 +423,7 @@ export class FeedLineageController implements ng.IComponentController {
              * @param feed
              * @returns {{id: *, label: string, title: string, group: string}}
              */
-            feedNode = function(feed:any){
+            feedNode (feed:any){
     
                 var node = {id: feed.id, label: this.feedNodeLabel(feed), title:this.feedNodeLabel(feed), group: "feed"};
                 var style = this.feedLineage.styles['feed'];
@@ -442,7 +444,7 @@ export class FeedLineageController implements ng.IComponentController {
              * Build the Lineage Graph
              * @param feed
              */
-            buildVisJsGraph = function (feed:any) {
+            buildVisJsGraph (feed:any) {
     
                 var node = this.processedNodes[feed.id] == undefined ? this.feedNode(feed) : this.processedNodes[feed.id];
                 if(this.processedNodes[node.id] == undefined) {
@@ -492,7 +494,7 @@ export class FeedLineageController implements ng.IComponentController {
              * Get the Feed Lineage Graph and build the network
              * @param feedId
              */
-            getFeedLineage = function(feedId:any) {
+            getFeedLineage (feedId:any) {
                 this.loading = true;
     
                 this.$http.get(this.RestUrlService.FEED_LINEAGE_URL(feedId)).then((response:any) => {
@@ -506,7 +508,7 @@ export class FeedLineageController implements ng.IComponentController {
             /**
              * attach the nodes to the data to the graph
              */
-            setNodeData = function(){
+            setNodeData (){
                 var visNodes = new this.VisDataSet(this.nodes);
                 var visEdges = new this.VisDataSet(this.edges);
                 this.data = {nodes:visNodes, edges:visEdges};
@@ -520,7 +522,7 @@ export class FeedLineageController implements ng.IComponentController {
     
 
     
-            navigateToFeed = function () {
+            navigateToFeed () {
                 if (this.selectedNode.type == 'FEED' && this.selectedNode.content) {
                     this.StateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
                 }

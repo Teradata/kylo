@@ -17,8 +17,6 @@ import {MatCardModule} from '@angular/material/card';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 
-import {BrowserModule} from "@angular/platform-browser";
-
 import { CovalentCommonModule } from '@covalent/core/common';
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";

@@ -34,11 +34,11 @@ export class DefineFeedGeneralInfoController {
         feedNameWatch:any;
         templateIdWatch:any;
         
-        searchTextChange = (text:string) => {
+        searchTextChange (text:string) {
             //   $log.info('Text changed to ' + text);
         }
         categorySearchTextChanged:any = this.searchTextChange;
-        selectedItemChange = (item:any) => {
+        selectedItemChange (item:any) {
             //only allow it if the category is there and the 'createFeed' flag is true
             if(item != null && item != undefined && item.createFeed) {
                 this.model.category.name = item.name;
@@ -73,7 +73,7 @@ export class DefineFeedGeneralInfoController {
         }
         
         categorySelectedItemChange:any = this.selectedItemChange;
-        existingFeedNameKey = (categoryName:string, feedName:string) => {
+        existingFeedNameKey (categoryName:string, feedName:string) {
             return categoryName + "." + feedName;
         }
 
@@ -82,7 +82,7 @@ export class DefineFeedGeneralInfoController {
         * updates the {@code existingFeedNames} object with the latest feed names from the server
         * @returns {promise}
         */
-        populateExistingFeedNames = () => {
+        populateExistingFeedNames () {
             if(!this.populatingExsitngFeedNames) {
                 this.populatingExsitngFeedNames = true;
                 this.feedService.getFeedNames().then();
@@ -102,7 +102,7 @@ export class DefineFeedGeneralInfoController {
             }
         }
 
-        _validate = () => {
+        _validate () {
             //validate to ensure the name is unique in this category
             if (this.model && this.model.category && this.existingFeedNames[this.existingFeedNameKey(this.model.category.systemName, this.model.systemFeedName)]) {
                 if (this.defineFeedGeneralForm && this.defineFeedGeneralForm['feedName']) {
@@ -116,7 +116,7 @@ export class DefineFeedGeneralInfoController {
             }
         }
 
-        validateUniqueFeedName = () => {
+        validateUniqueFeedName () {
 
             if (this.model && this.model.id && this.model.id.length > 0) {
                 this.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
@@ -132,12 +132,12 @@ export class DefineFeedGeneralInfoController {
 
         }
        
-        validate = () => {
+        validate () {
             var valid = this.isNotEmpty(this.model.category.name) && this.isNotEmpty(this.model.feedName) && this.isNotEmpty(this.model.templateId);
             this.isValid = valid;
         }
    
-        setSecurityGroups = (newVal:any) => {
+        setSecurityGroups (newVal:any) {
             if(newVal) {
                 var category = this.categoriesService.findCategoryByName(newVal)
                 if(category != null) {
@@ -147,14 +147,14 @@ export class DefineFeedGeneralInfoController {
             }
         }
 
-        isNotEmpty = (item:any) => {
+        isNotEmpty (item:any) {
             return item != null && item != undefined && item != '';
         }
         /**
          * Return a list of the Registered Templates in the system
          * @returns {HttpPromise}
          */
-        getRegisteredTemplates =  () => {
+        getRegisteredTemplates () {
             var successFn = (response:any) => {
                 this.templates = response.data;
             }

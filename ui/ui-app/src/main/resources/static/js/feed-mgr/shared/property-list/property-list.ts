@@ -67,14 +67,14 @@ class PropertyListController {
     /**
      * Adds a new user-defined property.
      */
-    addProperty = () => {
+    addProperty () {
         this.propertyList.push({ description: null, displayName: null, locked: false, order: this.propertyList.length, required: true, systemName: "", value: "", $error: {} });
     };
 
     /**
      * Updates the property list with changes to the model.
      */
-    onModelChange = () => {
+    onModelChange () {
         if (!angular.equals(this.model, this.lastModel)) {
             // Convert model to properties
             this.propertyList = [];
@@ -106,7 +106,7 @@ class PropertyListController {
     /**
      * Updates the model with changes to the property list.
      */
-    onPropertyChange = () => {
+    onPropertyChange () {
         // Convert properties to model
         var hasError: any = false;
         var keys: any = {};
@@ -141,7 +141,7 @@ class PropertyListController {
      *
      * @param {number} index the index of the property to delete
      */
-    removeProperty = (index: any) => {
+    removeProperty (index: any) {
         this.propertyList.splice(index, 1);
     };
 }

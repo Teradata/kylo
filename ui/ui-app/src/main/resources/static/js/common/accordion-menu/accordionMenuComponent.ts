@@ -79,7 +79,7 @@ export class AccordianMenuComponent implements OnChanges {
      * open the menu item
      * @param section
      */
-    openToggleItem = (section: any) => {
+    openToggleItem (section: any) {
         this.accordionMenuService.openToggleItem(section,$(this.element.nativeElement),this.allowMultipleOpen,this.toggleSections);
     }
 }
