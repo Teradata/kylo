@@ -478,6 +478,7 @@ public class FeedImporter {
                            datasetIds.add(dataSet.getId());
                            //TODO is this needed?
                            chartModelReplacements.put(datasourceId, dataSet.getDataSource().getId());
+                           return true;
                        }
                        else {
                            return false;
@@ -496,6 +497,7 @@ public class FeedImporter {
                             FeedImportDatasourceUtil.replaceLegacyQueryDataSourceScript(metadata,datasourceId,dataSource);
                             //TODO is this needed?
                             chartModelReplacements.put(datasourceId, dataSource.getId());
+                            return true;
                         }
                         else {
                             return false;
@@ -506,7 +508,6 @@ public class FeedImporter {
                        // ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
                         return false;
                     }
-                    return true;
                 } else {
                     return false;
                 }
