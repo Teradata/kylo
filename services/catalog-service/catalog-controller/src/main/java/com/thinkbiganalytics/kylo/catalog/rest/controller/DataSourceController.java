@@ -390,7 +390,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         return metadataService.read(() -> {
             // List files at path
-            final DataSource dataSource = findDataSource(dataSourceId, true);
+            final DataSource dataSource = findDataSource(dataSourceId, false);
             return Response.ok(log.exit(doListFiles(path, dataSource))).build();
         });
     }
@@ -529,7 +529,7 @@ public class DataSourceController extends AbstractCatalogController {
 
         DataSetWithTableSchema dataSetWithTableSchema = metadataService.commit(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, true);
+            final DataSource dataSource = findDataSource(dataSourceId, false);
             TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
             if (tableSchema != null) {
                 DataSet dataSet = new DataSet();
