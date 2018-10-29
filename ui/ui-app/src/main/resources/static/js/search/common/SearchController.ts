@@ -117,42 +117,44 @@ constructor(private $scope: angular.IScope,
         };
 
     onSearchResultItemClick($event: any, result: any) {
-            switch (result.type) {
-                case "KYLO_DATA":
-                    this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
-                    break;
+        let feedSystemName: any;
+        let categorySystemName: any;
 
-                case "KYLO_SCHEMA":
-                    this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
-                    break;
-
-                case "KYLO_FEEDS":
-                    var category;
-                    var feed;
-
-                    this.CategoriesService.getCategoryById(this.cleanValue(result.feedCategoryId))
-                                          .then((category1: any)=> {
-                                                category = category1;
-                                                this.FeedService.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
-                                                                .then((feed1: any) =>{
-                                                                    feed = feed1;
-                                                                    this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
-                                                                });
+        switch (result.type) {
+            case "KYLO_DATA":
+                categorySystemName = result.schemaName;
+                feedSystemName = result.tableName;
+                this.FeedService.getFeedByName(categorySystemName + "." + feedSystemName)
+                    .then((feed: any) => {
+                        this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
                     });
-                    break;
+                break;
 
-                case "KYLO_CATEGORIES":
-                    this.CategoriesService.getCategoryBySystemName(this.cleanValue(result.categorySystemName))
-                                          .then((category: any)=> {
-                                            this.StateService.Categories().navigateToCategoryDetails(category.id);
+            case "KYLO_SCHEMA":
+                categorySystemName = result.databaseName;
+                feedSystemName = result.tableName;
+                this.FeedService.getFeedByName(categorySystemName + "." + feedSystemName)
+                    .then((feed: any) => {
+                        this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
                     });
-                    break;
+                break;
 
-                case "KYLO_UNKNOWN":
-                    break;
+            case "KYLO_FEEDS":
+                this.StateService.FeedManager().Feed().navigateToFeedDetails(result.feedId);
+                break;
 
-                default:
-                    break;
+            case "KYLO_CATEGORIES":
+                this.CategoriesService.getCategoryBySystemName(this.cleanValue(result.categorySystemName))
+                                      .then((category: any)=> {
+                                        this.StateService.Categories().navigateToCategoryDetails(category.id);
+                });
+                break;
+
+            case "KYLO_UNKNOWN":
+                break;
+
+            default:
+                break;
             }
         };
 
