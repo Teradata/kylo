@@ -27,37 +27,118 @@ import {CatalogService} from '../api/services/catalog.service';
 
 
 interface UiOptionsMapper {
-    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void;
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void;
 
-    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void;
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void;
+}
+
+/**
+ * Class to track original property values and changes associated with each input.
+ * Sensitive properties will be initiall rendered with 5 ***** instead of the encrypted value
+ */
+export class OptionValue {
+    modifiedValue:string;
+    modified:boolean = false;
+
+    constructor(public key:string, public originalValue:string, public uiOption:UIOption){
+        if(this.originalValue == undefined ){
+            this.originalValue = null;
+        }
+        this.modifiedValue = this.originalValue;
+        if(this.modifiedValue && this.uiOption && this.uiOption.sensitive){
+            //default sensitive values to *****
+            this.modifiedValue ="*****";
+        }
+    }
+
+    public isModified(){
+        return this.modified;
+    }
+
+    public getValue(){
+        if(!this.modified) {
+            return this.originalValue;
+        }
+        else {
+            return this.modifiedValue;
+        }
+    }
+
 }
 
 class DefaultUiOptionsMapper implements UiOptionsMapper {
-    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void {
+
+    /**
+     * Map of the property key to the option value storing the changes
+     * @type {{}}
+     */
+    propertyMap:{ [k: string]: OptionValue } = {};
+
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
             } else if (key === "jars") {
                 ds.template.jars = (control.value && control.value.length !== 0) ? control.value.split(",") : null;
             } else {
-                ds.template.options[key] = control.value;
+                this.setModelValue(ds,key,control);
             }
         });
     }
 
-    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 control.setValue(ds.template.paths[0]);
             } else {
-                control.setValue(ds.template.options[key]);
+              this.setUiValueAndSubscribeToChanges(ds,control,key,uiOptions.get(key))
             }
+
+        });
+    }
+
+    /**
+     * Set the datasource property on the model
+     * sensitive properties that are not changed will return the original encrypted cipher, otherwise the updated value
+     * @param {DataSource} ds
+     * @param {string} key
+     * @param {FormControl} control
+     */
+    private setModelValue(ds: DataSource,key:string,control:FormControl){
+        let optionValue = this.propertyMap[key];
+        if(optionValue){
+            ds.template.options[key] = optionValue.getValue();
+        }
+        else {
+            ds.template.options[key] = control.value;
+        }
+    }
+
+    /**
+     * Set the FormControl UI value and subscribe to changes with the input.
+     * @param {DataSource} ds
+     * @param {FormControl} control
+     * @param {string} key
+     * @param {UIOption} uiOption
+     */
+    private setUiValueAndSubscribeToChanges(ds: DataSource,control: FormControl, key: string, uiOption?:UIOption) {
+        let value = ds.template.options[key];
+        let optionValue = new OptionValue(key,value, uiOption);
+        this.propertyMap[key] = optionValue;
+        control.setValue(optionValue.modifiedValue);
+        control.valueChanges.subscribe((newValue:any)=> {
+            let optValue = this.propertyMap[key];
+            if(optValue){
+                optValue.modifiedValue = newValue;
+                optValue.modified = true;
+            }
+
         });
     }
 }
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
-    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
@@ -71,7 +152,7 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
         });
     }
 
-    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>): void {
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
         controls.get("path").setValue(ds.template.paths[0]);
         _.keys(ds.template.options).forEach(option => {
             if (option.startsWith("spark.hadoop.fs.azure.account.key.")) {
@@ -114,6 +195,7 @@ export class ConnectorComponent {
 
     private titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
+    private controlToUIOption: Map<string, UIOption> = new Map();
     private isLoading: boolean = false;
     private testError: String;
     private testStatus: boolean = false;
@@ -201,7 +283,7 @@ export class ConnectorComponent {
             this.titleControl.setValue(this.datasource.title);
             const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
             if (optionsMapper) {
-                optionsMapper.mapFromModelToUi(this.datasource, this.controls);
+                optionsMapper.mapFromModelToUi(this.datasource, this.controls, this.controlToUIOption);
             } else {
                 this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
                     + " for connector " + this.connector.title);
@@ -234,6 +316,7 @@ export class ConnectorComponent {
                     control.setValue(option.value);
                 }
                 this.controls.set(option.key, control);
+                this.controlToUIOption.set(option.key,option);
             }
         }
     }
@@ -286,7 +369,7 @@ export class ConnectorComponent {
         ds.template = new DataSourceTemplate();
         ds.template.paths = [];
         ds.template.options = {};
-        optionsMapper.mapFromUiToModel(ds, this.controls);
+        optionsMapper.mapFromUiToModel(ds, this.controls, this.controlToUIOption);
         return ds;
     }
 
