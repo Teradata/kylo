@@ -32,7 +32,7 @@
   </div>
   <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
     <div fxLayout="column"  *ngIf="favorites.length >0">
-      <h3 mat-subheader class="push-sm pad-none pad-top-sm pad-left-sm tc-grey-800">Favorites</h3>
+      <h4 mat-subheader class="pad-none push push-bottom-sm tc-grey-800">Favorites</h4>
       <ng-container [ngTemplateOutlet]="templateCards"
                     [ngTemplateOutletContext]="{$implicit:favorites, isFavorite:true}">
       </ng-container>
@@ -40,7 +40,7 @@
 
 
     <div fxLayout="column">
-      <h3 mat-subheader class="push-sm pad-none pad-top-sm pad-left-sm tc-grey-800">All Templates</h3>
+      <h4 mat-subheader class="pad-none push push-bottom-sm tc-grey-800">All Templates</h4>
       <ng-container [ngTemplateOutlet]="templateCards"
                     [ngTemplateOutletContext]="{$implicit:allTemplates, isFavorite:false}">
       </ng-container>
@@ -55,30 +55,30 @@
     <ng-template let-template let-index="index" let-last="last" ngFor [ngForOf]="templates">
       <div [id]="template.templateName">
 
-        <mat-card fxFlex fxLayout="row" class="pad-none cursor-pointer" (click)="selectTemplate(template)" style="width:400px;height:170px">
+        <mat-card fxFlex fxLayout="row" class="kylo-card-template pad-none cursor-pointer" (click)="selectTemplate(template)">
 
           <div fxLayout="column" [style.background]="template.iconColor" fxLayoutAlign="center center" fxFlex="20">
-            <mat-icon style="color:white;font-size:45px" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
+            <mat-icon class="kylo-card-icon" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
           </div>
           <div fxLayout="column" fxFlex>
-            <mat-card-content fxFlex style="max-height:113px">
+            <mat-card-content fxFlex class="kylo-content-template">
 
-                <div class="md-title pad-bottom-sm">{{template.templateName}}</div>
+                <div class="kylo-card-title pad-bottom-sm">{{template.templateName}}</div>
                 <div [matTooltip]="template.description"
-                     matTooltipShowDelay="1000" class="md-subtitle tc-grey-600 block-with-text">
+                     matTooltipShowDelay="1000" class="kylo-card-subtitle tc-grey-600 block-with-text">
                   {{template.description}}
                 </div>
 
             </mat-card-content>
             <mat-divider inset></mat-divider>
-            <mat-card-actions fxLayoutAlign="end" class="tc-grey-700" style="padding:0px 8px">
-              <button mat-icon-button (click)="removeFavorite($event,template)" *ngIf="isFavorite">
+            <mat-card-actions fxLayoutAlign="end" class="tc-grey-700 push-left-none" style="margin-top:-10px">
+              <button mat-icon-button class="kylo-icon-button" (click)="removeFavorite($event,template)" *ngIf="isFavorite">
                 <mat-icon>favorite</mat-icon>
               </button>
-              <button mat-icon-button (click)="makeFavorite($event,template)" *ngIf="!isFavorite">
+              <button mat-icon-button class="kylo-icon-button"  (click)="makeFavorite($event,template)" *ngIf="!isFavorite">
                 <mat-icon>favorite_border</mat-icon>
               </button>
-              <button mat-icon-button>
+              <button mat-icon-button class="kylo-icon-button">
                 <mat-icon>open_in_new</mat-icon>
               </button>
             </mat-card-actions>
