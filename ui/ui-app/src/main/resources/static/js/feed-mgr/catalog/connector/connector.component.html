@@ -27,7 +27,7 @@
           </mat-form-field>
 
           <ng-template let-element let-last="last" ngFor [ngForOf]="plugin.options">
-            <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}">
+            <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}" class="pad-bottom">
               <input
                   *ngIf="isInputType(element)"
                   matInput type="{{element.type}}"

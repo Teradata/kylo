@@ -38,6 +38,7 @@
       {
         "key": "path",
         "label": "Path",
+        "hint":"Supply a location to upload to. For example 'file:/var/upload' ",
         "validators": [
           {
             "type": "url"
@@ -75,6 +76,7 @@
       {
         "key": "path",
         "label": "Path",
+        "hint":"The HDFS path to access.  For example 'hdfs://localhost:8020/app/warehouse' ",
         "validators": [
           {
             "type": "url",
@@ -114,6 +116,7 @@
       {
         "key": "url",
         "label": "Connection URL",
+        "hint":"A database connection URL used to connect to a database. May contain database system name, host, port, database name and some parameters. For example 'jdbc:mysql://localhost:3306/kylo' ",
         "validators": [
           {
             "type": "url",
@@ -125,11 +128,13 @@
       },
       {
         "key": "driver",
-        "label": "Driver Class Name"
+        "label": "Driver Class Name",
+        "hint":"Database driver class name.  For example 'org.mariadb.jdbc.Driver' "
       },
       {
         "key": "jars",
         "label": "Driver Location(s)",
+        "hint":"Comma-separated list of file paths containing the driver JAR and its dependencies (if any). For example '/var/tmp/mariadb-java-client-1.1.7.jar'",
         "required": false,
         "validators": [
           {
@@ -140,12 +145,14 @@
       {
         "key": "user",
         "label": "User"
+        "hint":"Database user name"
       },
       {
         "key": "password",
         "type": "password",
         "label": "Password",
-        "sensitive": true
+        "sensitive": true,
+        "hint":"The password for the database user"
       }
     ],
     "nifiControllerService": {
@@ -189,6 +196,7 @@
       {
         "key": "path",
         "label": "Path",
+        "hint":" Path to a directory on the box where kylo is running starting with the prefix 'file:/'.  For example: 'file:/opt/kylo/setup/data/sample-data'",
         "validators": [
           {
             "type": "url",
@@ -229,6 +237,7 @@
       {
         "key": "path",
         "label": "Path",
+        "hint":" Path to a s3 bucket starting with the prefix 's3a:'.  For example: 's3a:///my-bucket'.  To browse all buckets use, 's3a:/'",
         "validators": [
           {
             "type": "url",
