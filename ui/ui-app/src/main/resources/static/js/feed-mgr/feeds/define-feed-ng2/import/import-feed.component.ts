@@ -717,7 +717,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 let dataSet =preview.toSparkDataSet();
                 this.catalogService.createDataSet(dataSet).subscribe((ds:SparkDataSet) => {
                     //find or create dataset then
-                    console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet)
+                    console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet, ds)
                     let valid = true;
                     let schemaNeeded = "";
                     //validate schema
