@@ -163,13 +163,14 @@ md-list md-datepicker .md-button.md-icon-button {
 #content {
   background-color: #e0e0e0;
 }
-
+/*
 #content {
   padding-left: 25px;
   padding-right: 25px;
   padding-top: 17px;
   padding-bottom: 25px;
 }
+*/
 
 #content.sla-list, #content.sla-edit, #content.sla-new {
   padding:0px !important;
