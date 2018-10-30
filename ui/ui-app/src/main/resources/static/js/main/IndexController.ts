@@ -227,6 +227,15 @@ export class IndexController implements angular.IComponentController {
 
         }, this.LOADING_DIALOG_WAIT_TIME);
 
+        getStateClassName(){
+            if(this.currentState && this.currentState.name){
+                return this.currentState.name.replace(/\./g,'-')
+            }
+            else {
+                return '';
+            }
+        }
+
     /**
      * Called when transitioning to a new state.
      */

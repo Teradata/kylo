@@ -25,11 +25,15 @@
       </div>
     </mat-list>
 
-    <div *ngIf="(serviceLevelAgreements && serviceLevelAgreements.length == 0) || loading" class="no-data" fxLayout="column" fxLayoutAlign="center center">
+    <div *ngIf="(serviceLevelAgreements && serviceLevelAgreements.length == 0 && !loading)" class="no-data" fxLayout="column" fxLayoutAlign="center center">
       <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
       <h2 class="tc-grey-600" *ngIf="(serviceLevelAgreements && serviceLevelAgreements.length == 0) && !loading" translate>Sla.NoData</h2>
-      <h2 *ngIf="loading" translate>Sla.Loading</h2>
     </div>
+
+    <div *ngIf="loading" fxLayout="column" fxLayoutAlign="center center">
+      <mat-progress-spinner [diameter]="70" mode="indeterminate" color="accent"></mat-progress-spinner>
+    </div>
+
 
   </mat-card-content>
 

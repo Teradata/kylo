@@ -1,7 +1,8 @@
 <mat-card class="mat-typography">
 
   <mat-card-header>
-    <mat-card-title *ngIf="mode === editMode" translate>Sla.Details.EditSla</mat-card-title>
+    <mat-card-title *ngIf="mode === editMode && sla == undefined" translate>Sla.Details.EditSla</mat-card-title>
+    <mat-card-title *ngIf="mode === editMode && sla != undefined && slaName != undefined" >{{slaName}}</mat-card-title>
     <mat-card-title *ngIf="mode === newMode" translate>Sla.Details.CreateNewSla</mat-card-title>
     <mat-card-subtitle *ngIf="feedModel && (feedModel.state === stateDisabled)" class="warn" translate>Sla.DisabledFeedWarning</mat-card-subtitle>
   </mat-card-header>
@@ -10,6 +11,10 @@
     <form [formGroup]="slaForm">
       <sla-form [formGroup]="slaForm" [sla]="sla" [feed]="feedModel" [mode]="mode"></sla-form>
     </form>
+
+    <div *ngIf="loadingSla" fxLayout="column" fxLayoutAlign="center center" class="pad">
+      <mat-progress-spinner [diameter]="70" mode="indeterminate" color="accent"></mat-progress-spinner>
+    </div>
 
     <!--<div>Loading Feed: {{loadingFeed}}, Loading SLA: {{loadingSla}}, allowEdit: {{allowEdit}}</div>-->
   </mat-card-content>

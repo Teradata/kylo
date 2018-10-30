@@ -1,12 +1,13 @@
 import {Component, Injector, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
-import {Sla} from '../sla.componment';
+import {Sla} from '../model/sla.model';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
-import {Feed} from '../../../../../model/feed/feed.model';
+import {Feed} from '../..//model/feed/feed.model';
 import * as _ from 'underscore';
-import {PolicyInputFormService} from '../../../../../shared/field-policies-angular2/policy-input-form.service';
+import {PolicyInputFormService} from '../../shared/field-policies-angular2/policy-input-form.service';
 import * as angular from 'angular';
 import {FormMode, RuleType} from './sla-details.componment';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {SlaService} from "../../services/sla.service";
 
 
 export function nonEmptyValidator(): ValidatorFn {
@@ -20,8 +21,8 @@ export function nonEmptyValidator(): ValidatorFn {
 
 @Component({
     selector: "sla-form",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.scss"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/details/sla-form.component.html"
+    styleUrls: ["js/feed-mgr/sla/details/sla-form.component.scss"],
+    templateUrl: "js/feed-mgr/sla/details/sla-form.component.html"
 })
 export class SlaFormComponent implements OnInit, OnChanges {
 
@@ -84,8 +85,8 @@ export class SlaFormComponent implements OnInit, OnChanges {
     private loadingConditions: boolean;
 
 
-    constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService, private loadingService: TdLoadingService) {
-        this.slaService = $$angularInjector.get("SlaService");
+    constructor(private $$angularInjector: Injector, private policyInputFormService: PolicyInputFormService, private loadingService: TdLoadingService, private slaService:SlaService) {
+
         this.stateService = $$angularInjector.get("StateService");
 
         this.createLoader(SlaFormComponent.conditionsLoader);
@@ -117,7 +118,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
             if (this.feedModel != null) {
                 currentFeedValue = this.policyInputFormService.currentFeedValue(this.feedModel);
             }
-            this.options = this.policyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
+            this.options = this.policyInputFormService.groupPolicyOptions(response, currentFeedValue);
             if (this.allowCreate || this.allowEdit) {
                 this.policyInputFormService.stripNonEditableFeeds(this.options);
             }
@@ -136,7 +137,7 @@ export class SlaFormComponent implements OnInit, OnChanges {
             if (this.feedModel != null) {
                 currentFeedValue = this.policyInputFormService.currentFeedValue(this.feedModel);
             }
-            this.slaActionOptions = this.policyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
+            this.slaActionOptions = this.policyInputFormService.groupPolicyOptions(response, currentFeedValue);
             if (this.slaActionOptions.length > 0) {
                 this.showActionOptions = true;
 

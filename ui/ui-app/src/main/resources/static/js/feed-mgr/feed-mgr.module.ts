@@ -33,6 +33,7 @@ import {EntityAccessControlComponent} from "./shared/entity-access-control/entit
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
 import {TranslateModule} from "@ngx-translate/core";
+import {SlaService} from "./services/sla.service";
 
 
 @NgModule({
@@ -79,7 +80,8 @@ import {TranslateModule} from "@ngx-translate/core";
         hiveServiceProvider,
         visualQueryServiceProvider,
         datasourcesServiceProvider,
-        NiFiService
+        NiFiService,
+        SlaService
     ]
 })
 export class KyloFeedManagerModule {

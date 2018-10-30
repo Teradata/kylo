@@ -176,7 +176,7 @@ class Route {
                 });
             }
         })
-
+/*
         $stateProvider.state({
             name: 'service-level-agreements.**',
             url: '/service-level-agreements',
@@ -186,13 +186,13 @@ class Route {
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
                 const onModuleLoad = () => {
-                    return import(/* webpackChunkName: "feed-mgr.sla.module" */ "./feed-mgr/sla/module")
+                    return import(/***** webpackChunkName: "feed-mgr.sla.module"  "./feed-mgr/sla/module")
                         .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-agreements", transition.params()));
                 };
-                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+                import(/***** webpackChunkName: "feed-mgr.module-require" "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
-
+*/
         $stateProvider.state({
             name: 'users.**',
             url: '/users',
@@ -639,6 +639,12 @@ class Route {
             name: 'import-template.**',
             url: '/importTemplate',
             loadChildren: './repository/repository.module#RepositoryModule'
+        });
+
+        $stateProvider.state({
+            name: 'sla.**',
+            url: '/sla',
+            loadChildren: './feed-mgr/sla/sla.module#SlaRouterModule'
         });
     }
 

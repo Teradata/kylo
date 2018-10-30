@@ -1,6 +1,8 @@
 import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 import {catchError} from "rxjs/operators/catchError";
 import {finalize} from "rxjs/operators/finalize";
+import {map} from "rxjs/operators/map";
+import {first} from "rxjs/operators/first";
 
 import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedComponent} from "./define-feed.component";
@@ -20,9 +22,9 @@ import {ProfileContainerComponent} from './summary/profile/container/profile-con
 import {ProfileHistoryComponent} from './summary/profile/history/profile-history.component';
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
-import {SlaComponent} from './summary/sla/sla.componment';
-import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
-import {SlaListComponent} from './summary/sla/list/sla-list.componment';
+import {FeedSlaComponent} from './summary/sla/feed-sla.component';
+//import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
+//import {SlaListComponent} from './summary/sla/list/sla-list.componment';
 import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
 import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed-activity-summary.component";
 import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
@@ -31,9 +33,11 @@ import {Transition} from "@uirouter/core";
 import {Subject} from "rxjs/Subject";
 import {ReplaySubject} from "rxjs/ReplaySubject";
 import {Feed, LoadMode} from "../../model/feed/feed.model";
-import {error} from "ng-packagr/lib/util/log";
 import {ImportFeedComponent} from "../define-feed-ng2/import/import-feed.component";
 import {FeedVersionsComponent} from "./summary/versions/feed-versions.component";
+import {SlaListComponent} from "../../sla/list/sla-list.componment";
+import {SlaDetailsComponent} from "../../sla/details/sla-details.componment";
+import {tap} from "rxjs/operators";
 
 
 const resolveFeed :any =
@@ -42,8 +46,13 @@ const resolveFeed :any =
             deps: [StateService, DefineFeedService],
         resolveFn: (state: StateService, feedService:DefineFeedService) => {
         let feedId = state.transition.params().feedId;
-        feedService.loadFeed(feedId)
-                .toPromise();
+            let promise = feedService.loadFeed(feedId)
+                .pipe(catchError((err: any, o: Observable<any>) => {
+                    console.error('Failed to load feed', err);
+                    return Observable.of({});
+                }))
+                .pipe(first()).toPromise();
+            return promise;
     }
     }
 
@@ -405,13 +414,14 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla",
         url: "/:feedId/sla",
         redirectTo: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.list",
-        component: SlaComponent,
+        component: FeedSlaComponent,
         resolve: [
             {
                 token: 'stateParams',
                 deps: [StateService],
                 resolveFn: (state: StateService) => state.transition.params()
-            }
+            },
+            resolveFeed
         ]
     },
     {
@@ -423,7 +433,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 token: 'stateParams',
                 deps: [StateService],
                 resolveFn: (state: StateService) => state.transition.params()
-            }
+            },
+            resolveFeed
         ]
     },
     {
@@ -435,7 +446,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 token: 'stateParams',
                 deps: [StateService],
                 resolveFn: (state: StateService) => state.transition.params()
-            }
+            },
+            resolveFeed
         ]
     },
     {
@@ -447,7 +459,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 token: 'stateParams',
                 deps: [StateService],
                 resolveFn: (state: StateService) => state.transition.params()
-            }
+            },
+            resolveFeed
         ]
     },
     {

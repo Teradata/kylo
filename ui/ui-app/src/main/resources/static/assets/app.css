@@ -171,6 +171,10 @@ md-list md-datepicker .md-button.md-icon-button {
   padding-bottom: 25px;
 }
 
+#content.sla-list, #content.sla-edit, #content.sla-new {
+  padding:0px !important;
+}
+
 #content, #content .main-content {
   height: 100%;
 }

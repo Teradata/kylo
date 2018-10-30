@@ -1,9 +1,9 @@
 import {Component, Input} from "@angular/core";
-import {Sla} from '../sla.componment';
+import {Sla} from '../model/sla.model';
 
 @Component({
     selector: "sla-row",
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/summary/sla/list/sla-row.component.html"
+    templateUrl: "js/feed-mgr/sla/list/sla-row.component.html"
 })
 export class SlaRowComponent {
 
