@@ -90,6 +90,12 @@ public class CatalogModelTransform {
         };
     }
     
+    public com.thinkbiganalytics.kylo.catalog.rest.model.DataSet decryptOptions(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
+        DataSource dataSource = decryptOptions(dataSet.getDataSource());
+        dataSet.setDataSource(dataSource);
+        return dataSet;
+    }
+    
     public DataSource decryptOptions(DataSource dataSource) {
         DataSetTemplate template = decryptOptions(dataSource.getTemplate());
         dataSource.setTemplate(template);

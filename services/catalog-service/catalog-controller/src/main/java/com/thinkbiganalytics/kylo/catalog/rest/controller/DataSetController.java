@@ -148,11 +148,10 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list uploaded files", response = RestResponseStatus.class)
                   })
-    public Response getUploads(@PathParam("id") @UUID final String dataSetId,
-                               @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response getUploads(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
 
-        final DataSet dataSet = findDataSet(dataSetId, encryptCredentials);
+        final DataSet dataSet = findDataSet(dataSetId, false);
         final List<DataSetFile> files;
         try {
             log.debug("Listing uploaded files for dataset {}", dataSetId);
@@ -186,7 +185,7 @@ public class DataSetController extends AbstractCatalogController {
             throw new BadRequestException(getMessage("catalog.dataset.postUpload.missingBodyPart"));
         }
 
-        final DataSet dataSet = findDataSet(dataSetId, true);
+        final DataSet dataSet = findDataSet(dataSetId, false);
         final DataSetFile file;
         try {
             final BodyPart part = bodyParts.get(0);
