@@ -868,11 +868,15 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.ensureTableFields();
             this.ensurePartitionData();
             this.showSourceSampleCatalog = false;
+            this.catalogBrowserOpen = false;
             if(this.virtualScroll) {
                this.virtualScroll.refresh();
             }
             this.feedLoadingService.resolveLoading();
             this.cd.reattach();
+            this.cd.markForCheck();
+            this.cd.detectChanges();
+            console.log('_update controls ',this)
         }
 
 
@@ -929,7 +933,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
        if(this.catalogBrowserOpen){
            return  this.dialogService.openConfirm(
                {title:"Pending source sample changes",
-                   message:"There are pending changes in the source sample that have not been applied to the target.  Are you sure you want to save without applying these changes?  "
+                   message:"There are pending changes in the source sample that have not been applied to the target.  Are you sure you want to save without applying these changes?  ",
+                   acceptButton: "Abandon changes",
+                   cancelButton: "Cancel and review"
                }).afterClosed();
        }
        return true;
