@@ -26,7 +26,7 @@ import org.joda.time.DateTime;
 
 public interface ChangeComment {
 
-    DateTime getCreatedTime();
+    DateTime getCreateDateTime();
 
     String getComment();
 

@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import org.joda.time.DateTime;
 
 /**
  */
@@ -82,7 +83,9 @@ public interface FeedManagerTemplate extends AccessControlled, Auditable, Iconab
 
     List<ChangeComment> getChangeComments();
 
-    ChangeComment addChangeComment(String comment);
+    ChangeComment addChangeComment(String comment, DateTime dateTime);
+
+    void clearChangeComments();
 
     void setTemplateTableOption(String templateTableOption);
 

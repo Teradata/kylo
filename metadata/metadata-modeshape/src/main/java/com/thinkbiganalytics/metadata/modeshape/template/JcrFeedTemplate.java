@@ -44,6 +44,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrLockingUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
+import org.joda.time.DateTime;
 
 /**
  */
@@ -224,8 +225,13 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     }
 
     @Override
-    public ChangeComment addChangeComment(String comment) {
-        return JcrUtil.addJcrObject(getNode(), CHANGE_COMMENTS, JcrChangeComment.NODE_TYPE, JcrChangeComment.class, comment);
+    public void clearChangeComments() {
+        JcrUtil.getIterableChildren(getNode(), CHANGE_COMMENTS).forEach(node -> JcrUtil.removeNode(node));
+    }
+
+    @Override
+    public ChangeComment addChangeComment(String comment, DateTime dateTime) {
+        return JcrUtil.addJcrObject(getNode(), CHANGE_COMMENTS, JcrChangeComment.NODE_TYPE, JcrChangeComment.class, comment, dateTime);
     }
 
     @Override

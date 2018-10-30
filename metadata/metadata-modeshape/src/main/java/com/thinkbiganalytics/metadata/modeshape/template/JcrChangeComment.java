@@ -35,6 +35,8 @@ public class JcrChangeComment extends JcrObject implements ChangeComment {
 
     public static final String CREATED_TIME = "jcr:created";
 
+    public static final String CREATE_DATE_TIME = "tba:createDateTime";
+
     public static final String CREATED_BY = "jcr:createdBy";
 
     public static final String COMMENT = "tba:comment";
@@ -48,12 +50,26 @@ public class JcrChangeComment extends JcrObject implements ChangeComment {
         JcrPropertyUtil.setProperty(getNode(), COMMENT, comment);
     }
 
+    public JcrChangeComment(Node node, String comment, DateTime dateTime) {
+        super(node);
+        JcrPropertyUtil.setProperty(getNode(), COMMENT, comment);
+        JcrPropertyUtil.setProperty(getNode(), CREATE_DATE_TIME, dateTime);
+    }
+
     public JcrChangeComment(Node node) {
         super(node);
     }
 
+//    @Override
+//    public DateTime getCreatedTime() {
+//        return JcrPropertyUtil.getProperty(getNode(), CREATED_TIME);
+//    }
+
     @Override
-    public DateTime getCreatedTime() {
+    public DateTime getCreateDateTime() {
+        if(JcrPropertyUtil.hasProperty(getNode(), CREATE_DATE_TIME))
+            return DateTime.parse(JcrPropertyUtil.getProperty(getNode(), CREATE_DATE_TIME));
+
         return JcrPropertyUtil.getProperty(getNode(), CREATED_TIME);
     }
 

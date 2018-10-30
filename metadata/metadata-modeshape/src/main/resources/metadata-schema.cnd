@@ -248,6 +248,7 @@
 
 [tba:ChangeComment] > nt:hierarchyNode, mix:created, mix:lastModified
     - tba:comment
+    - tba:createDateTime
 
 [tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconable, mix:referenceable, tba:accessControlled, mix:lockable
     - tba:defineTable (BOOLEAN) = 'false'

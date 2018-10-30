@@ -671,8 +671,8 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.changeComment = changeComment;
     }
 
-    public void addChangeComment(TemplateChangeComment changeComment) {
-        this.changeComments.add(changeComment);
+    public void setChangeComments(List<TemplateChangeComment> changeComments) {
+        this.changeComments = changeComments;
     }
 
     public List<TemplateChangeComment> getChangeComments() {
