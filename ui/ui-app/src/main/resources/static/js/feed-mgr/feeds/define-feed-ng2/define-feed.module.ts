@@ -85,11 +85,7 @@ import {FeedInfoCategoryComponent} from "./summary/setup-guide-summary/feed-info
 import {FeedInfoNameComponent} from "./summary/setup-guide-summary/feed-info/feed-info-name/feed-info-name.component";
 import {FeedItemInfoService} from "./summary/setup-guide-summary/feed-info/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/setup-guide-summary/feed-info/feed-info-tags/feed-info-tags.component";
-import {SlaComponent} from './summary/sla/sla.componment';
-import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
-import {SlaFormComponent} from './summary/sla/details/sla-form.componment';
-import {SlaListComponent} from './summary/sla/list/sla-list.componment';
-import {SlaRowComponent} from './summary/sla/list/sla-row.componment';
+import {FeedSlaComponent} from './summary/sla/feed-sla.component';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {FeedNifiPropertiesService} from "./services/feed-nifi-properties.service";
 import {FeedNifiPropertiesComponent} from "./steps/feed-details/feed-nifi-properties.component";
@@ -127,6 +123,7 @@ import {FeedVersionsComponent} from "./summary/versions/feed-versions.component"
 import {JoinPipe} from "./shared/pipes/JoinPipe";
 import {VerboseTimeUnitPipe} from "./shared/pipes/VerboseTimeUnitPipe";
 import {CharactersPipe} from "./shared/pipes/CharactersPipe";
+import {SlaModule} from "../../sla/sla.module";
 
 @NgModule({
     declarations: [
@@ -164,11 +161,11 @@ import {CharactersPipe} from "./shared/pipes/CharactersPipe";
         FeedInfoDescriptionComponent,
         FeedInfoCategoryComponent,
         FeedInfoTagsComponent,
-        SlaComponent,
-        SlaListComponent,
-        SlaRowComponent,
-        SlaDetailsComponent,
-        SlaFormComponent,
+        FeedSlaComponent,
+      //  SlaListComponent,
+      //  SlaRowComponent,
+       // SlaDetailsComponent,
+       // SlaFormComponent,
         SelectNetworkNodeComponent,
         FeedInfoTagsComponent,
         FeedNifiPropertiesComponent,
@@ -272,6 +269,7 @@ import {CharactersPipe} from "./shared/pipes/CharactersPipe";
         OpsManagerServicesModule,
         FeedStatsModule,
         JobsListModule,
+        SlaModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })
