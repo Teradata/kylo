@@ -1,7 +1,7 @@
 import {FactoryProvider} from "@angular/core";
 import * as angular from "angular";
 
-import CategoriesService from "./CategoriesService";
+import {CategoriesService} from "./CategoriesService";
 import {EntityAccessControlService} from "../shared/entity-access-control/EntityAccessControlService";
 import {FeedService} from "./FeedService";
 import {DomainTypesService} from "./DomainTypesService";
@@ -15,9 +15,9 @@ import {AngularServiceUpgrader} from "../../kylo-utils/angular-service-upgrader"
 import {HiveService} from "./HiveService";
 import {VisualQueryService} from "./VisualQueryService";
 import {DatasourcesService} from "./DatasourcesService";
-import UserGroupService from "../../services/UserGroupService";
-import AccessControlService from "../../services/AccessControlService";
-import AddButtonService from '../../services/AddButtonService';
+import {UserGroupService} from "../../services/UserGroupService";
+import {AccessControlService} from "../../services/AccessControlService";
+import {AddButtonService} from '../../services/AddButtonService';
 import {AddButtonServiceFactoryProvider} from '../../services/angular2';
 
 // export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);

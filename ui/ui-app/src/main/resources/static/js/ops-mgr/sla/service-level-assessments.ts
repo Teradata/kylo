@@ -4,9 +4,9 @@ import * as _ from 'underscore';
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import IconService from "../services/IconStatusService";
 import {TabService} from "../../services/tab.service";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
-import BroadcastService from "../../services/broadcast-service";
+import {BroadcastService} from "../../services/broadcast-service";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 
 export class controller implements ng.IComponentController{

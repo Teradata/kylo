@@ -7,7 +7,7 @@ import {SchemaParser} from "../../../model/field-policy";
     templateUrl: "./schema-parse-settings-dialog.component.html",
 })
 export class SchemaParseSettingsDialog {
-    private selectedParser : SchemaParser;
+    selectedParser : SchemaParser;
     constructor(public dialogRef: MatDialogRef<SchemaParseSettingsDialog>,
                 @Inject(MAT_DIALOG_DATA) public data: any) {
     this.selectedParser = data.schemaParser;

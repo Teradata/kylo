@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { FeedService } from '../../../services/FeedService';
-import CategoriesService from '../../../services/CategoriesService';
+import {CategoriesService} from '../../../services/CategoriesService';
 const moduleName = require('../module-name');
 
 export class DefineFeedGeneralInfoController {

@@ -15,7 +15,7 @@ import {finalize} from 'rxjs/operators/finalize';
 import {map} from "rxjs/operators/map";
 import {tap} from "rxjs/operators/tap";
 import * as _ from "underscore";
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import {EntityAccessControlService} from "../../shared/entity-access-control/EntityAccessControlService";
 
 import {Connector} from '../api/models/connector';
@@ -112,9 +112,9 @@ export class ConnectorComponent {
 
     form = new FormGroup({});
 
-    private titleControl: FormControl;
+    titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
-    private isLoading: boolean = false;
+    isLoading: boolean = false;
     private testError: String;
     private testStatus: boolean = false;
 

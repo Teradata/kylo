@@ -10,7 +10,7 @@ import {filter} from "rxjs/operators/filter";
 import {finalize} from 'rxjs/operators/finalize';
 import {tap} from "rxjs/operators/tap";
 
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import {EntityAccessControlService} from "../../shared/entity-access-control/EntityAccessControlService";
 import {DataSource} from "../api/models/datasource";
 import {CatalogService} from "../api/services/catalog.service";

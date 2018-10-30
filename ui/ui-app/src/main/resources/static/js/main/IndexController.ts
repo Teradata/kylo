@@ -5,10 +5,10 @@ import * as angular from 'angular';
 
 import "app";
 import {StateService} from  "../services/StateService";
-import AccessControlService from "../services/AccessControlService";
+import {AccessControlService} from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
 import SearchService from "../services/SearchService";
-import SideNavService from "../services/SideNavService";
+import {SideNavService} from "../services/SideNavService";
 import '../../assets/images/kylo-logo-orange-200.png';
 
 export interface IMyScope extends ng.IScope {
@@ -287,5 +287,5 @@ export class IndexController implements angular.IComponentController {
   angular.module('kylo').component("indexController", {
         controller: IndexController,
         controllerAs: "mc",
-        templateUrl: "./index.component.html"
+        template: require("./index.component.html")
     });

@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../../services/AccessControlService';
+import {AccessControlService} from '../../../services/AccessControlService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 import {HomeController} from '../../../main/HomeController';

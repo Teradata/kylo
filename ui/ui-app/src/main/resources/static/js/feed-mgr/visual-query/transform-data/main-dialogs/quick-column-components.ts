@@ -9,7 +9,7 @@ import {ColumnProfile} from "../../wrangler/api/column-profile";
 export class MiniCategoricalComponent implements OnInit {
 
     @Input() profile: ColumnProfile;
-    private chartData : any;
+    chartData : any;
     tooltipData: any;
     chartApi: any;
     chartOptions: any = {
@@ -110,7 +110,7 @@ export class MiniCategoricalComponent implements OnInit {
 }))
 export class MiniHistogramComponent implements OnInit {
     @Input() profile: ColumnProfile;
-    private chartData : any;
+    chartData : any;
     tooltipData: any;
     chartApi: any;
     chartOptions: any = {

@@ -1,12 +1,12 @@
 import * as angular from 'angular';
 import { moduleName } from './module-name';
 import * as _ from 'underscore';
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import {StateService} from '../../services/StateService';
 import { FeedService } from '../services/FeedService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 
 export class ServiceLevelAgreementController implements ng.IComponentController {
     newSla: any;

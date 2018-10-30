@@ -20,12 +20,12 @@ export class ProfileHistoryComponent implements OnInit {
     private restUrlService: any;
     private hiveService: any;
     private utils: any;
-    private showSummary: boolean = true;
+    showSummary: boolean = true;
     private profileSummary: Array<any> = [];
     private loading: boolean = false;
-    private showNoResults: boolean = false;
+    showNoResults: boolean = false;
 
-    public kyloIcons:KyloIcons = KyloIcons;
+    public kyloIcons_Links_profile = KyloIcons.Links.profile;
 
     constructor(private $$angularInjector: Injector, private http: HttpClient, private state: StateService) {
         this.hiveService = $$angularInjector.get("HiveService");

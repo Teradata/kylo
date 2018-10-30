@@ -91,7 +91,7 @@ export class TableController {
 angular.module(moduleName).component('tableController',{
     controllerAs: 'vm',
     controller :TableController,
-    templateUrl: 'js/feed-mgr/tables/table.html',
+    templateUrl: './table.html',
     bindings : {
         $transition$ : '<'
     }

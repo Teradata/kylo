@@ -4,7 +4,7 @@ import 'kylo-services';
 import './main/IndexController';
 import './main/HomeController';
 import './main/AccessDeniedController';
-import AccessControlService from './services/AccessControlService';
+import {AccessControlService} from './services/AccessControlService';
 import LoginNotificationService from "./services/LoginNotificationService";
 import {KyloRouterService} from "./services/kylo-router.service";
 import {Lazy} from './kylo-utils/LazyLoadUtil';
@@ -272,15 +272,6 @@ class Route {
 
                 import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
-        });
-
-        $stateProvider.state({
-            name: 'visual-query.**',
-            url: '/visual-query/{engine}',
-            params: {
-                engine: null
-            },
-            loadChildren: "./feed-mgr/visual-query/visual-query.module#VisualQueryRouterModule"
         });
 
         //Ops Manager
@@ -609,36 +600,6 @@ class Route {
                     return $ocLazyLoad.load('main/AccessDeniedController');
                 }]
             }
-        });
-
-        $stateProvider.state({
-            name: 'catalog.**',
-            url: '/catalog',
-            loadChildren: './feed-mgr/catalog/catalog.module#CatalogRouterModule'
-        });
-
-        $stateProvider.state({
-            name: 'feed-definition.**',
-            url: '/feed-definition',
-            loadChildren: './feed-mgr/feeds/define-feed-ng2/define-feed.module#DefineFeedModule'
-        });
-
-        $stateProvider.state({
-            name: 'repository.**',
-            url: '/repository',
-            loadChildren: './repository/repository.module#RepositoryModule'
-        });
-
-        $stateProvider.state({
-            name: 'template-info.**',
-            url: '/template-info',
-            loadChildren: './repository/repository.module#RepositoryModule'
-        });
-
-        $stateProvider.state({
-            name: 'import-template.**',
-            url: '/importTemplate',
-            loadChildren: './repository/repository.module#RepositoryModule'
         });
     }
 

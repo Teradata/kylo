@@ -53,7 +53,7 @@
         <div class="edit-form" fxLayout="column">
             <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
 
-            <div class="mat-title">{{titleText}}</div>
+            <div class="mat-title">{{viewText.titleText}}</div>
 
             <mat-radio-group [(ngModel)]="selectedOptionType" (change)="onChangedOptionType($event)" *ngIf="optionTypes != null" [ngModelOptions]="{standalone: true}">
                 <ng-template ngFor let-optionType let-index="index" let-last="last" [ngForOf]="optionTypes">

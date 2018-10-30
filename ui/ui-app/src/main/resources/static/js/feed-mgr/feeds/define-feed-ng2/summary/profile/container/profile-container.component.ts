@@ -11,16 +11,18 @@ export class ProfileContainerComponent implements OnInit {
 
     @Input() stateParams:any;
 
-    private feedId: string;
-    private processingdttm: string;
+    feedId: string;
+    processingdttm: string;
     private type: string;
     private hiveService: any;
-    private timeInMillis: number | Date;
+    timeInMillis: number | Date;
 
     private tabs = ['stats', 'valid', 'invalid'];
-    private selected = 0;
+    selected = 0;
 
-    public kyloIcons:KyloIcons = KyloIcons;
+    public kyloIcons_Links_profile = KyloIcons.Links.profile;
+
+    public reference: any; //just to make timeAgo:reference, which appears in template, compile with AOT
 
     constructor(private $$angularInjector: Injector) {
         this.hiveService = $$angularInjector.get("HiveService");

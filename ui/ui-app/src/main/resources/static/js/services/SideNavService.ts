@@ -23,9 +23,9 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
 import BroadcastConstants from "./BroadcastConstants";
-import BroadcastService from "./broadcast-service";
+import {BroadcastService} from "./broadcast-service";
 
-export default class SideNavService{
+export class SideNavService{
     isLockOpen: any;
     hideSideNav: any;
     showSideNav: any;

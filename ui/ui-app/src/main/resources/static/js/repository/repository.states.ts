@@ -32,14 +32,7 @@ export const repositoryStates: Ng2StateDeclaration[] = [
             }
         },
         resolve: {
-            loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                const onModuleLoad = () => {
-                    return import(/* webpackChunkName: "feeds.import-template.controller" */ '../feed-mgr/templates/import-template/ImportTemplateController')
-                        .then(Lazy.onModuleImport($ocLazyLoad));
-                };
-
-                return import(/* webpackChunkName: "feed-mgr.module-require" */ "../feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
-            }]
+            loadMyCtrl: ['$ocLazyLoad', loadModule]
         },
         data: {
             breadcrumbRoot: false,
@@ -65,3 +58,12 @@ export const repositoryStates: Ng2StateDeclaration[] = [
         }
     }
 ];
+
+export function loadModule($ocLazyLoad: any) {
+    const onModuleLoad = () => {
+        return import(/* webpackChunkName: "feeds.import-template.controller" */ '../feed-mgr/templates/import-template/ImportTemplateController')
+            .then(Lazy.onModuleImport($ocLazyLoad));
+    };
+
+    return import(/* webpackChunkName: "feed-mgr.module-require" */ "../feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+}

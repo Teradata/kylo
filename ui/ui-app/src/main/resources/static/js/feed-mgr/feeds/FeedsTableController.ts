@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { FeedService } from '../services/FeedService';

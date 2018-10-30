@@ -3,7 +3,7 @@ import {PreviewDataSet} from "../model/preview-data-set";
 
 @Component({
     selector: "datasets-preview-accordion-container",
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview/dataset-preview-container-accordion.component.html"
+    templateUrl: "./dataset-preview-container-accordion.component.html"
 })
 export class DatasetPreviewContainerAccordionComponent implements OnInit{
 

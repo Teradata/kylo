@@ -46,6 +46,9 @@ import {CovalentLayoutModule} from "@covalent/core/layout";
 import {DataSource} from "../../api/models/datasource";
 import {MatCardModule} from "@angular/material/card";
 import {LoadMode} from "../../../model/feed/feed.model";
+import {DatasetPreviewContainerAccordionComponent} from './preview/dataset-preview-container-accordion.component';
+import {PreviewSchemaComponent, SchemaDefinitionComponent, SimpleTableComponent} from './preview-schema.component';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @NgModule({
     declarations: [
@@ -56,7 +59,11 @@ import {LoadMode} from "../../../model/feed/feed.model";
         DatasetPreviewComponent,
         DatasetPreviewContainerComponent,
         DatasetPreviewDialogComponent,
-        CatalogPreviewDatasetComponent
+        CatalogPreviewDatasetComponent,
+        PreviewSchemaComponent,
+        DatasetPreviewContainerAccordionComponent,
+        SimpleTableComponent,
+        SchemaDefinitionComponent,
     ],
     entryComponents: [
         SatusDialogComponent,
@@ -85,6 +92,7 @@ import {LoadMode} from "../../../model/feed/feed.model";
         MatDatepickerModule,
         MatDialogModule,
         MatDividerModule,
+        MatExpansionModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
@@ -136,19 +144,16 @@ export class PreviewSchemaModule {
                     resolve: [
                         {
                             token: 'displayInCard',
-                            resolveFn: () => true
+                            resolveFn: resolveTrue
                         },
                         {
                             token: 'autoSelectSingleDataSet',
-                            resolveFn: () => true
+                            resolveFn: resolveTrue
                         },
                         {
                             token:'objectsToPreview',
                             deps:[StateService],
-                            resolveFn:(state:StateService)=> {
-                                let params = state.transition.params();
-                                return params.objectsToPreview;
-                            }
+                            resolveFn: resolveParams
                         }
                     ]
 
@@ -158,4 +163,13 @@ export class PreviewSchemaModule {
     ]
 })
 export class PreviewSchemaRouterModule {
+}
+
+export function resolveTrue() {
+    return true;
+}
+
+export function resolveParams(state:StateService) {
+    let params = state.transition.params();
+    return params.objectsToPreview;
 }

@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "./module-name";
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
 
 export class CatalogController {
@@ -58,6 +58,6 @@ export class CatalogController {
 angular.module(moduleName).component('catalogController', {
     controller: CatalogController,
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/tables/catalog.html'
+    templateUrl: './catalog.html'
 });
 

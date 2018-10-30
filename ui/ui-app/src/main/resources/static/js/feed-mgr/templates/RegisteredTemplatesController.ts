@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { moduleName } from "./module-name";
 import { ListTableView } from "../../services/ListTableViewTypes";
 import PaginationData = ListTableView.PaginationData;

@@ -26,7 +26,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     utils: any;
     StateService: any;
 
-    public kyloIcons:KyloIcons = KyloIcons
+    public kyloIcons_Links_lineage = KyloIcons.Links.lineage;
 
 
 

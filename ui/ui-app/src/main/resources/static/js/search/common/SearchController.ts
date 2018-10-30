@@ -3,8 +3,8 @@ import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import {Transition} from "@uirouter/core";
 import SearchService from "../../services/SearchService";
-import Utils from "../../services/Utils";
-import CategoriesService from "../../feed-mgr/services/CategoriesService";
+import {Utils} from "../../services/Utils";
+import {CategoriesService} from "../../feed-mgr/services/CategoriesService";
 import {StateService} from "../../services/StateService";
 import {FeedService} from "../../feed-mgr/services/FeedService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
@@ -169,7 +169,7 @@ angular.module(moduleName)
         },
         controller: controller,
         controllerAs: "vm",
-        templateUrl: "js/search/common/search.html"
+        templateUrl: "./search.html"
     });  
 /*angular.module(moduleName).controller('SearchController',
                         ["$scope", 

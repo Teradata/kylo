@@ -4,7 +4,7 @@
       <div style="white-space: nowrap; margin: 20px 0 20px 20px;" class="card-title" fxFlex="80">Search Feeds and Templates</div>
       <div fxLayout="row" style="width: 100%;" fxLayoutAlign="space-around center">
         <mat-form-field fxFlex="20">
-          <mat-select placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates($event)">
+          <mat-select placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates()">
             <mat-option *ngFor="let repository of repositories" [value]="repository">
               {{repository.name}}
             </mat-option>

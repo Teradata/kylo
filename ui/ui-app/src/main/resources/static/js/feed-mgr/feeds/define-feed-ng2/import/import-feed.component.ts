@@ -1,6 +1,6 @@
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {ImportComponentType, ImportComponentOption, ImportService, ImportProperty} from "../../../services/ImportComponentOptionTypes";
-import FileUpload from "../../../../services/FileUploadService";
+import {FileUpload} from "../../../../services/FileUploadService";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {HttpClient} from "@angular/common/http";
 import {KyloIcons} from "../../../../kylo-utils/kylo-icons";
@@ -165,7 +165,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
      */
     message: string;
 
-    kyloIcons:KyloIcons = KyloIcons;
+    public kyloIcons_Feed_importFeed = KyloIcons.Feed.importFeed;
 
     @ViewChild("categoryAutoComplete")
     categoryAutoComplete:CategoryAutocompleteComponent

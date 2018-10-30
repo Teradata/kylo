@@ -1,11 +1,11 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import {StateService} from '../../services/StateService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import { DatasourcesService } from '../services/DatasourcesService';
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 const moduleName = require('feed-mgr/datasources/module-name');
 
 /**
@@ -182,7 +182,7 @@ export class DatasourcesListController {
 
 }
 angular.module(moduleName).component("datasourcesListController", {
-    templateUrl: "js/feed-mgr/datasources/list.html",
+    templateUrl: "./list.html",
     controller: DatasourcesListController,
     controllerAs: "vm"
 });

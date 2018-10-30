@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import 'kylo-common-module';
 import 'kylo-services';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 
 
 var getBlockNodes = function (nodes: any) {

@@ -5,7 +5,7 @@ import * as _ from 'underscore';
 import {OpsManagerJobService} from "../services/ops-manager-jobs.service";
 import IconService from "../services/IconStatusService";
 import {TabService} from "../../services/tab.service";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 
 export class JobsCardController implements ng.IComponentController{
     allowAdmin: boolean;

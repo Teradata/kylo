@@ -22,7 +22,7 @@ import * as angular from 'angular';
 import {moduleName} from './module-name';
 import CommonRestUrlService from "./CommonRestUrlService";
 
-export default class UserGroupService{
+export class UserGroupService{
     currentUser: any = null;
 /**
  * Interacts with the Users REST API.

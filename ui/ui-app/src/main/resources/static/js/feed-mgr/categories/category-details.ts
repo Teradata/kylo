@@ -1,6 +1,6 @@
 import {Transition} from "@uirouter/core";
 import * as angular from 'angular';
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 
 const moduleName = require('./module-name');
 

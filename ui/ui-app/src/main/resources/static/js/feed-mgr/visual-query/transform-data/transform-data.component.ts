@@ -6,7 +6,7 @@ import * as _ from "underscore";
 
 import StepperService from '../../../common/stepper/StepperService';
 import {CloneUtil} from "../../../common/utils/clone-util";
-import BroadcastService from '../../../services/broadcast-service';
+import {BroadcastService} from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {Feed} from "../../model/feed/feed.model";
@@ -26,7 +26,7 @@ import {ProfileOutputRow, ScriptState, StringUtils} from "../wrangler/index";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {AnalyzeColumnDialog} from "./main-dialogs/analyze-column-dialog";
-import VisualQueryProfileStatsController from "./main-dialogs/VisualQueryProfileStats";
+import {VisualQueryProfileStatsController} from "./main-dialogs/VisualQueryProfileStats";
 import {WranglerDataService} from "./services/wrangler-data.service";
 import {VisualQueryTable} from "./visual-query-table/visual-query-table.component";
 import {QuickColumnsDialog, QuickColumnsDialogData} from "./main-dialogs/quick-columns-dialog";

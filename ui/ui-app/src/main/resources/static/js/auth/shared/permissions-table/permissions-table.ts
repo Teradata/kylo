@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import {moduleName} from "../../module-name";
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 export interface IMyScope extends ng.IScope {
   model?: any;
   readOnly?: boolean;

@@ -10,7 +10,7 @@
                         fxFlex="75">
             <input matInput
                    [placeholder]="placeholder"
-                   [value]="files?.length ? (files?.length + ' files') : files?.name"
+                   [value]="getInputValue()"
                    readonly>
         </mat-form-field>
         <span>
@@ -20,7 +20,7 @@
         </span>
 
         <td-file-input class="push-left-sm push-right-sm" #fileInput [(ngModel)]="files" multiple
-                       [disabled]="disabled" (select)="fileSelected($event)">
+                       (select)="fileSelected($event)">
             <mat-icon class="accent-color">folder</mat-icon>
             <span class="text-upper accent-color">Browse...</span>
         </td-file-input>

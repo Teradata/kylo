@@ -1,8 +1,8 @@
 import {Component, Inject, Input, OnInit} from "@angular/core";
 import {HttpClient} from "@angular/common/http";
-import UserGroupService from "../../../services/UserGroupService";
+import {UserGroupService} from "../../../services/UserGroupService";
 import {EntityAccessControlService} from "./EntityAccessControlService";
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import {Observable} from 'rxjs/Observable';
 import * as _ from "underscore";
 import {of} from "rxjs/observable/of";

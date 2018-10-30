@@ -22,7 +22,7 @@ import {moduleName} from './module-name';
 import "pascalprecht.translate";
 import * as moment from "moment";
 
-export default class Utils{
+export class Utils{
   constructor (private $timeout: any,
                 private $filter: any) {
 

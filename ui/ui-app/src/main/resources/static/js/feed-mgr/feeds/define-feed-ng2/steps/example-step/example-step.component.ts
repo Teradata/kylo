@@ -11,8 +11,8 @@ import {Observable} from "rxjs/Observable";
 
 @Component({
     selector: "define-feed-example-step",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/example-step/example-step.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/example-step/example-step.component.html"
+    styleUrls: ["./example-step.component.scss"],
+    templateUrl: "./example-step.component.html"
 })
 export class ExampleStepComponent extends AbstractFeedStepComponent {
 

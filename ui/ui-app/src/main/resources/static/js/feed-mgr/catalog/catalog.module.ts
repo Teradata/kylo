@@ -37,6 +37,8 @@ import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-sch
 import {TablesRouterModule} from "./datasource/tables/tables.module";
 import {DataSourcesComponent} from "./datasources/datasources.component";
 import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
+import {CreateFeedComponent} from './datasource/create-feed/create-feed.component';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @NgModule({
     declarations: [
@@ -45,7 +47,8 @@ import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.d
         ConnectorsComponent,
         ConnectorComponent,
         CatalogComponent,
-        VisibleOnMouseOverDirective
+        VisibleOnMouseOverDirective,
+        CreateFeedComponent,
     ],
     exports: [
         DataSourcesComponent,
@@ -76,13 +79,14 @@ import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.d
         ReactiveFormsModule,
         MatFormFieldModule,
         MatDividerModule,
+        MatExpansionModule,
         MatListModule,
         MatTabsModule,
         MatToolbarModule,
         MatNativeDateModule,
         MatButtonModule,
         MatSnackBarModule,
-        UIRouterModule.forChild(),
+        UIRouterModule,
         TranslateModule
     ]
 })

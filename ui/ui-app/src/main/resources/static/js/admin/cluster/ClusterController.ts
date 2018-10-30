@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 
 export class ClusterController implements ng.IComponentController{
         simpleMessage: any;

@@ -4,7 +4,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {RestResponseStatus, RestResponseStatusType} from "../../../../../../common/common.model";
 import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 import {OpsManagerFeedService} from "../../../../../../ops-mgr/services/ops-manager-feed.service";
-import BroadcastService from "../../../../../../services/broadcast-service";
+import {BroadcastService} from "../../../../../../services/broadcast-service";
 import {FeedStats} from "../../../../../model/feed/feed-stats.model";
 import {FeedSummary} from "../../../../../model/feed/feed-summary.model";
 import {Feed, FeedAccessControl} from "../../../../../model/feed/feed.model";
@@ -42,7 +42,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     refreshTime: number = 5000;
 
     constructor(private opsManagerFeedService: OpsManagerFeedService,
-                private broadcastService: BroadcastService,
+                @Inject("BroadcastService") private broadcastService: BroadcastService,
                 private _dialogService: TdDialogService,
                 private defineFeedService: DefineFeedService,
                 @Inject("RestUrlService") restUrlService: RestUrlService) {

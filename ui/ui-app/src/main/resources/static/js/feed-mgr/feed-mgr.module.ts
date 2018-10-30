@@ -33,6 +33,9 @@ import {EntityAccessControlComponent} from "./shared/entity-access-control/entit
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
 import {TranslateModule} from "@ngx-translate/core";
+import {FeedLoadingService} from './feeds/define-feed-ng2/services/feed-loading-service';
+import {DefineFeedService} from './feeds/define-feed-ng2/services/define-feed.service';
+import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-access-control.service';
 
 
 @NgModule({
@@ -66,6 +69,9 @@ import {TranslateModule} from "@ngx-translate/core";
         EntityAccessControlComponent
     ],
     providers: [
+        FeedLoadingService,
+        DefineFeedService,
+        FeedAccessControlService,
         categoriesServiceProvider,
         entityAccessControlServiceProvider,
         userGroupServiceProvider,

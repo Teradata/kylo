@@ -28,7 +28,7 @@ import {FeedFieldPolicyRuleService} from "../../../../shared/feed-field-policy-r
 export class FeedVersionsComponent extends AbstractLoadFeedComponent implements OnInit {
 
     static LINK_NAME = VERSIONS_LINK;
-    public kyloIcons: KyloIcons = KyloIcons;
+    public kyloIcons_Links_versions= KyloIcons.Links.versions;
     historyVersions: any;
     feedService: FeedService;
     restUrlService: RestUrlService;

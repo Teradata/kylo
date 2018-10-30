@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import {StateService} from  "../services/StateService";
-import AccessControlService from "../services/AccessControlService";
+import {AccessControlService} from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
 export class HomeController implements ng.IComponentController{
     static readonly $inject = ['$scope', '$mdDialog', 'AccessControlService','StateService'];

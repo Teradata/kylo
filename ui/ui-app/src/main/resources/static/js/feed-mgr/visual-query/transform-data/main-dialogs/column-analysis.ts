@@ -12,6 +12,8 @@ export class ColumnAnalysisController implements OnInit {
     data: Array<any> = [];
     @Input() profile: ColumnProfile;
     @Input() field: string;
+    showValid = false;
+    emptyCount = null;
 
     ngOnInit(): void {
         this.show();

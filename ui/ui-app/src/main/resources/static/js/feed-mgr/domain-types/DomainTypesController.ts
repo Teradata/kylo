@@ -2,7 +2,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "./module-name";
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 import { DomainTypesService } from '../services/DomainTypesService';
 import "./module-require";
 /**

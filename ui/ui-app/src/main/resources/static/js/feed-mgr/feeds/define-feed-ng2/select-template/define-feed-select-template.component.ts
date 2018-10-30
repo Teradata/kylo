@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../../../services/AccessControlService';
+import {AccessControlService} from '../../../../services/AccessControlService';
 import {Feed} from "../../../model/feed/feed.model";
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {HttpClient} from "@angular/common/http";

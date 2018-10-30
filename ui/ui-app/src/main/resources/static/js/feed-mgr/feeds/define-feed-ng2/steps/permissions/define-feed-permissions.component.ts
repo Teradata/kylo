@@ -8,7 +8,7 @@ import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {StateRegistry, StateService} from "@uirouter/angular";
 import {Component, Inject, ViewChild} from "@angular/core";
 import {EntityAccessControlComponent} from "../../../../shared/entity-access-control/entity-access-control.component";
-import AccessControlService from "../../../../../services/AccessControlService";
+import {AccessControlService} from "../../../../../services/AccessControlService";
 import {of} from "rxjs/observable/of";
 import {Observable} from "rxjs/Observable";
 

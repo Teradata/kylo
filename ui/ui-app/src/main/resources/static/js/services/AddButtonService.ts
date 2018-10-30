@@ -1,11 +1,11 @@
 import * as angular from 'angular';
-import BroadcastService from "./broadcast-service";
+import {BroadcastService} from "./broadcast-service";
 
 import {moduleName} from './module-name';
 
 import "./module"; // ensure module is loaded first
 
-export default class AddButtonService {
+export class AddButtonService {
     addButtons: any = {};
     NEW_ADD_BUTTON_EVENT: any = 'newAddButton';
     HIDE_ADD_BUTTON_EVENT: any = 'hideAddButton';

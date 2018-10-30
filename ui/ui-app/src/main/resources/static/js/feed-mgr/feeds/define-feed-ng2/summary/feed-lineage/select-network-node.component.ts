@@ -10,4 +10,6 @@ export class SelectNetworkNodeComponent {
     selectedNode: any;
 
     objectKeys = Object.keys;
+
+    panelOpenState = false;
 }

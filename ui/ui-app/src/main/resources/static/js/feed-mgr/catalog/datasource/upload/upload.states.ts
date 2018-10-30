@@ -11,8 +11,12 @@ export const uploadStates: Ng2StateDeclaration[] = [
         resolve: [
             {
                 token: "renderContinueButton",
-                resolveFn: () => true
+                resolveFn: resolveTrue
             }
         ]
     }
 ];
+
+export function resolveTrue() {
+    return true;
+}

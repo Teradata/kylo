@@ -58,6 +58,9 @@ export class ConnectionDialog {
     destKey: string;
     joinType: string;
 
+    message = null;
+    isNew = false;
+
     constructor(private dialog: MatDialogRef<ConnectionDialog>, formBuilder: FormBuilder, @Inject(MAT_DIALOG_DATA) public data: ConnectionDialogConfig) {
         this.form = formBuilder.group({});
 

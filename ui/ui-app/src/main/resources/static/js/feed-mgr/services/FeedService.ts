@@ -2,7 +2,7 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import {TableColumnDefinition} from "../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../model/TableFieldPolicy";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";

@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "./module-name";
 import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import HttpService from "../../services/HttpService";
 import '../alerts/module-require';
 import './module-require';

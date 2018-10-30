@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 
  angular.module(moduleName)
         .directive('menuToggle', ['$timeout','AccessControlService', ($timeout: any,accessControlService: AccessControlService)=> {

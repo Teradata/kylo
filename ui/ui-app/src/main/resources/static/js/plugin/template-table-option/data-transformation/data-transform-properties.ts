@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import {Input} from '@angular/core';
-import AccessControlService from '../../../services/AccessControlService';
+import {AccessControlService} from '../../../services/AccessControlService';
 
 export class DataTransformPropertiesController implements ng.IComponentController {
 

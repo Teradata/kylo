@@ -90,6 +90,9 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
      */
     singleSelection: boolean;
 
+    feedDefintionDatasourceState = undefined;
+    stateParams = undefined;
+
     constructor(private selectionService: SelectionService,
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,

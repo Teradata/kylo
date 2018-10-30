@@ -87,7 +87,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -101,7 +101,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -116,15 +116,15 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             },
             {
                 token: 'loadMode',
-                resolveFn: () => LoadMode.DEPLOYED
+                resolveFn: resolveLoadModeDeployed
             },
             {
                 token: 'refresh',
-                resolveFn: () => false
+                resolveFn: resolveFalse
             }
         ]
     },
@@ -170,7 +170,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
 
             ]
@@ -227,20 +227,20 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         resolve: [
             {
                 token: 'showHeader',
-                resolveFn: () => true
+                resolveFn: resolveTrue
             },
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             },
             {
                 token: 'loadMode',
-                resolveFn: () => LoadMode.LATEST
+                resolveFn: resolveLoadModeLatest
             },
             {
                 token: 'refresh',
-                resolveFn: () => false
+                resolveFn: resolveFalse
             }
             ]
     },
@@ -255,15 +255,15 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             },
             {
                 token: 'loadMode',
-                resolveFn: () => LoadMode.DEPLOYED
+                resolveFn: resolveLoadModeDeployed
             },
             {
                 token: 'refresh',
-                resolveFn: () => false
+                resolveFn: resolveFalse
             }
         ]
     },
@@ -361,7 +361,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -373,7 +373,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             },
         ]
     },
@@ -385,7 +385,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             },
         ]
     },
@@ -397,7 +397,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -410,7 +410,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -422,7 +422,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -434,7 +434,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -446,7 +446,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -458,7 +458,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     }
@@ -468,3 +468,22 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
 ];
 
 
+export function resolveParams(state: StateService) {
+    return state.transition.params();
+}
+
+export function resolveFalse() {
+    return false;
+}
+
+export function resolveTrue() {
+    return true;
+}
+
+export function resolveLoadModeDeployed() {
+    return LoadMode.DEPLOYED;
+}
+
+export function resolveLoadModeLatest() {
+    return LoadMode.LATEST;
+}

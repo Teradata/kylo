@@ -60,7 +60,7 @@ import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import {INJECTOR} from "./wrangler/api/index";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
 import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-factory.service";
-import VisualQueryProfileStatsController from "./transform-data/main-dialogs/VisualQueryProfileStats";
+import {VisualQueryProfileStatsController} from "./transform-data/main-dialogs/VisualQueryProfileStats";
 import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
 import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
 import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/main-dialogs/quick-column-components";
@@ -88,7 +88,9 @@ registerQueryEngine('spark', SparkQueryEngine);
         TransformDataComponent,
         UploadSampleFileComponent,
         VisualQueryControlDirective,
+
         VisualQueryProfileStatsController,
+
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
         VisualQueryTable,

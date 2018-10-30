@@ -7,7 +7,7 @@ import {mergeMap} from "rxjs/operators/mergeMap";
 import {startWith} from "rxjs/operators/startWith";
 
 import {Category} from "../../../model/category/category.model";
-import CategoriesService from "../../../services/CategoriesService";
+import {CategoriesService} from "../../../services/CategoriesService";
 import {CategoryAutocompleteValidators} from "./category-autocomplete.validators";
 
 @Component({

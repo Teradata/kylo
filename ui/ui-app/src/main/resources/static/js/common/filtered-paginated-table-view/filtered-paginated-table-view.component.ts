@@ -37,7 +37,9 @@ export class FilteredPaginatedTableViewComponent implements AfterViewInit {
     cardView:boolean = true;
 
     @Input()
-    tableHeight:number = 400
+    tableHeight:number = 400;
+
+    loading: boolean = false;
 
     ctx:FilteredPaginatedTableViewComponent = this;
 

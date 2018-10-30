@@ -23,13 +23,13 @@ export class SlaListComponent implements OnInit {
     private feedId: string;
     private slaService: any;
     private accessControlService: any;
-    private loading = false;
+    loading = false;
     serviceLevelAgreements: Sla[] = [];
-    private allowCreate = false;
+    allowCreate = false;
     stateDisabled = FeedState.DISABLED;
-    private feedModel: Feed;
+    feedModel: Feed;
 
-    public kyloIcons:KyloIcons = KyloIcons;
+    public kyloIcons_Links_sla = KyloIcons.Links.sla;
 
     constructor(private $$angularInjector: Injector, private state: StateService, private loadingService: TdLoadingService, private feedLoadingService: FeedLoadingService) {
         this.slaService = $$angularInjector.get("SlaService");

@@ -1,6 +1,6 @@
 import {Component, Injector, OnInit} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
 import {MatDialog} from "@angular/material/dialog";
 

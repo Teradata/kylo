@@ -3,8 +3,8 @@ import * as _ from "underscore";
 import { moduleName } from "../module-name";
 import { Transition } from '@uirouter/core';
 import {StateService} from '../../../services/StateService';
-import AccessControlService from '../../../services/AccessControlService';
-import BroadcastService from '../../../services/broadcast-service';
+import {AccessControlService} from '../../../services/AccessControlService';
+import {BroadcastService} from '../../../services/broadcast-service';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import '../../../../assets/images/75_arrow.svg'
 import '../module-require';

@@ -182,7 +182,7 @@ export class controller implements ng.IComponentController{
                             },
                             controllerAs: 'vm',
                             scope: {},
-                            templateUrl: 'js/ops-mgr/feeds/feed-activity-template.html',
+                            templateUrl: './feed-activity-template.html',
                             controller: "FeedActivityController",
                             link:  ($scope: any, element: any, attrs: any, controller: any)=> {
                             },

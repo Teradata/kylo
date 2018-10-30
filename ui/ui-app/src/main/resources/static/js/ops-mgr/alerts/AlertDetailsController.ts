@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import AccessConstants from '../../constants/AccessConstants';
 import {Transition} from "@uirouter/core";
 import "./module-require";

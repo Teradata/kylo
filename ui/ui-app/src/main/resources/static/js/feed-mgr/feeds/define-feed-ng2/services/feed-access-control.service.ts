@@ -4,7 +4,7 @@ import {EntityAccessControlService} from "../../../shared/entity-access-control/
 import {Observable} from "rxjs/Observable";
 import {ReplaySubject} from "rxjs/ReplaySubject";
 import {Inject, Injectable} from "@angular/core";
-import AccessControlService from "../../../../services/AccessControlService";
+import {AccessControlService} from "../../../../services/AccessControlService";
 
 
 @Injectable()

@@ -12,7 +12,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 @Component({
     templateUrl: "./profile-stats-dialog.html"
 })
-export default class VisualQueryProfileStatsController implements ng.IComponentController {
+export class VisualQueryProfileStatsController implements ng.IComponentController {
 
     constructor(private dialog: MatDialogRef<VisualQueryProfileStatsController>, @Inject(MAT_DIALOG_DATA) private profile: any) {
     }

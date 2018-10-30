@@ -1,10 +1,10 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "../../module-name";
-import AccessControlService from '../../../../services/AccessControlService';
+import {AccessControlService} from '../../../../services/AccessControlService';
 import {StateService} from '@uirouter/core';
 import {RegisterTemplateServiceFactory} from '../../../services/RegisterTemplateServiceFactory';
-import BroadcastService from '../../../../services/broadcast-service';
+import {BroadcastService} from '../../../../services/broadcast-service';
 import {UiComponentsService} from '../../../services/UiComponentsService';
 
 

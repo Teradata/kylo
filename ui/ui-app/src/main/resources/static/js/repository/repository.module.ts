@@ -44,7 +44,7 @@ import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
 import {MatChipsModule} from "@angular/material/chips";
 import {TemplateChangeCommentsComponent} from "./template-change-comments.component";
 
-const moduleName: string = require("../../feed-mgr/templates/module-name");
+const moduleName: string = require("../feed-mgr/templates/module-name");
 
 @NgModule({
     declarations: [
@@ -104,7 +104,7 @@ export class RepositoryModule {
         // Lazy load AngularJS module and entry component
         require("../feed-mgr/templates/module");
         injector.get("$ocLazyLoad").inject(moduleName);
-        require("../../feed-mgr/templates/module-require");
+        require("../feed-mgr/templates/module-require");
         require("../feed-mgr/templates/import-template/ImportTemplateController");
     }
 }

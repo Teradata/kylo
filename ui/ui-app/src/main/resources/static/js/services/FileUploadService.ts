@@ -3,7 +3,7 @@ import {moduleName} from './module-name';
 import * as _ from "underscore";
 
 
-export default class FileUpload{
+export class FileUpload{
     uploadFileToUrl: any;
     constructor(private $http: any){
          this.uploadFileToUrl = function (files: any, uploadUrl: any, successFn: any, errorFn: any, params: any) {

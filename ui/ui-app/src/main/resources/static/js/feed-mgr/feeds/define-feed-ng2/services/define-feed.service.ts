@@ -25,7 +25,7 @@ import * as _ from "underscore";
 import {ObjectChanged} from "../../../../common/common.model";
 import {Common} from "../../../../common/CommonTypes"
 import {CloneUtil} from "../../../../common/utils/clone-util";
-import AccessControlService from "../../../../services/AccessControlService";
+import {AccessControlService} from "../../../../services/AccessControlService";
 import {SelectionService} from "../../../catalog/api/services/selection.service";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {Category} from "../../../model/category/category.model";

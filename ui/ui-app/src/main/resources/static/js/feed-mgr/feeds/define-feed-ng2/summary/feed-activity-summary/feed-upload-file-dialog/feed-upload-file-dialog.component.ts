@@ -1,6 +1,6 @@
 import {Component, Inject, OnDestroy, OnInit} from "@angular/core";
 import {MatDialogRef} from "@angular/material/dialog";
-import FileUpload from "../../../../../../services/FileUploadService";
+import {FileUpload} from "../../../../../../services/FileUploadService";
 import {MAT_DIALOG_DATA} from "@angular/material/dialog";
 import {RestUrlConstants} from "../../../../../services/RestUrlConstants";
 import {MatSnackBar} from "@angular/material/snack-bar";

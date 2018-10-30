@@ -24,10 +24,12 @@ import {CovalentLayoutModule} from "@covalent/core/layout";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {CovalentCommonModule} from "@covalent/core/common";
 import {MatIconModule} from "@angular/material/icon";
+import {BrowserComponent} from './browser.component';
 
 @NgModule({
     declarations: [
         SelectionDialogComponent,
+        BrowserComponent,
     ],
     entryComponents: [
         SelectionDialogComponent,

@@ -109,7 +109,6 @@ import {FeedSummaryContainerComponent} from "./summary/feed-summary-container.co
 import {MatMenuModule} from "@angular/material/menu";
 
 
-import {FeedStatsModule} from "../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module";
 import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
 import {OpsManagerServicesModule} from "../../../ops-mgr/services/ops-manager-services.module";
 import {KyloServicesModule} from "../../../services/services.module";
@@ -127,6 +126,9 @@ import {FeedVersionsComponent} from "./summary/versions/feed-versions.component"
 import {JoinPipe} from "./shared/pipes/JoinPipe";
 import {VerboseTimeUnitPipe} from "./shared/pipes/VerboseTimeUnitPipe";
 import {CharactersPipe} from "./shared/pipes/CharactersPipe";
+import {ExampleStepComponent} from './steps/example-step/example-step.component';
+import {TruncatePipe} from './summary/profile/container/stats/truncate-pipe';
+import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module';
 
 @NgModule({
     declarations: [
@@ -192,7 +194,9 @@ import {CharactersPipe} from "./shared/pipes/CharactersPipe";
         FeedVersionsComponent,
         JoinPipe,
         VerboseTimeUnitPipe,
-        CharactersPipe
+        CharactersPipe,
+        ExampleStepComponent,
+        TruncatePipe,
     ],
     entryComponents:[
         NewFeedDialogComponent,
@@ -201,14 +205,14 @@ import {CharactersPipe} from "./shared/pipes/CharactersPipe";
         DefineFeedPermissionsDialogComponent
     ],
     providers:[
-      DefineFeedService,
-      FeedLoadingService,
+      // DefineFeedService,
+      // FeedLoadingService,
       FilterPartitionFormulaPipe,
       FeedSideNavService,
       FeedItemInfoService,
       FeedNifiPropertiesService,
       DefineFeedSourceSampleService,
-        FeedAccessControlService
+      // FeedAccessControlService
     ],
     imports: [
         CommonModule,

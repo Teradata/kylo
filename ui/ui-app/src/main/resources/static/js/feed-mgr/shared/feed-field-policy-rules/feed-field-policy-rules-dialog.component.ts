@@ -30,7 +30,7 @@ enum EditMode {
 })
 export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
-    private loading = false;
+    loading = false;
 
     @ViewChild(PolicyInputFormComponent)
     policyInputForm:PolicyInputFormComponent
@@ -343,7 +343,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
     /**
      * when canceling a pending edit
      */
-    private cancelEdit() {
+    cancelEdit() {
         this.editMode = EditMode.NEW;
         this.viewText.addText = 'Add Rule';
         this.viewText.cancelText = 'Cancel Add';

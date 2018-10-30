@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from "@angular/core";
-import BroadcastService from "../../../../../../services/broadcast-service";
+import {Component, Injector, Input, OnInit} from "@angular/core";
+import {BroadcastService} from "../../../../../../services/broadcast-service";
 import { TranslateService } from "@ngx-translate/core";
 import { HttpClient } from "@angular/common/http";
 
@@ -83,12 +83,14 @@ export class FeedJobActivityComponent implements OnInit {
         this.changeDate('1-M');
     }
 
+    private broadcastService: BroadcastService;
     constructor(
         private opsManagerChartJobService: OpsManagerChartJobService,
-        private broadcastService: BroadcastService,
+        private $$angularInjector: Injector,
         private translate: TranslateService,
         private http: HttpClient) {
 
+        this.broadcastService = $$angularInjector.get("BroadcastService");
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', () =>{this.updateCharts()});
     }// end of constructor
 

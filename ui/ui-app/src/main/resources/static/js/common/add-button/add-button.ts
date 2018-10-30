@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import AddButtonService from "../../services/AddButtonService";
+import {AddButtonService} from "../../services/AddButtonService";
 import { TransitionService } from "@uirouter/core";
 
 export default class AddButton implements ng.IComponentController {

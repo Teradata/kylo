@@ -2,9 +2,9 @@ import {Component, ElementRef, Inject} from "@angular/core";
 import {TransitionService} from "@uirouter/core";
 import * as $ from "jquery";
 
-import AddButtonService from "../../services/AddButtonService";
-import BroadcastService from "../../services/broadcast-service";
-import AccessControlService from "../../services/AccessControlService";
+import {AddButtonService} from "../../services/AddButtonService";
+import {BroadcastService} from "../../services/broadcast-service";
+import {AccessControlService} from "../../services/AccessControlService";
 import {StateService} from "../../services/StateService";
 
 @Component({

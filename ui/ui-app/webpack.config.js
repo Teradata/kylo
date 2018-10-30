@@ -15,8 +15,6 @@ const ProgressPlugin = require('webpack/lib/ProgressPlugin');
 const AngularCompilerPlugin = require('@ngtools/webpack').AngularCompilerPlugin;
 
 const outputDir = path.resolve(__dirname, 'target/classes/static');
-const pluginOutputDir = path.resolve(__dirname, '../../plugins/ui-sqoop-table-data-processor-template/target/classes/static');
-
 const nodeModulesDir = path.resolve(__dirname, 'node_modules');
 const staticDir = path.resolve('./src/main/resources/static');
 const staticJsDir = path.join(staticDir, 'js');
@@ -39,7 +37,7 @@ const devServer = {
             '/proxy',
             '/api-docs'
         ],
-        target: 'http://kylo-demo:8400',
+        target: 'http://localhost:8400',
         secure: false,
         changeOrigin: false,
         headers: {host: 'localhost:3000'}
@@ -50,6 +48,14 @@ const SourcePlugin =  new webpack.SourceMapDevToolPlugin({
     filename: "[file].map",
     exclude: ['entryPolyfills.bundle.js', 'common.js'],
 });
+
+
+const vendorExcludes = [
+    nodeModulesDir,
+    staticNodeModules,
+    staticBower,
+    staticJsVendorDir
+];
 
 
 const webpackConfig = (env) => {
@@ -117,8 +123,8 @@ const webpackConfig = (env) => {
                 'ng-text-truncate': path.join(staticJsVendorDir, 'ng-text-truncate/ng-text-truncate'),
                 'ment-io': path.join(staticJsVendorDir, 'ment.io/mentio'),
 
-                'ng2-nvd3': path.join(staticNodeModules, 'ng2-nvd3/build/index'),
-                'ng2-codemirror': path.join(staticNodeModules, 'ng2-codemirror/lib/index'),
+                // 'ng2-nvd3': path.join(staticNodeModules, 'ng2-nvd3/build/index'), //now in root nod_modules
+                // 'ng2-codemirror': path.join(staticNodeModules, 'ng2-codemirror/lib/index.js'), //in root node_modules
 
                 'urlParams': path.join(staticDir, 'login/jquery.urlParam.js'),
             }
@@ -192,89 +198,17 @@ const webpackConfig = (env) => {
                     test: /\.js$/,
                     use: [
                         'babel-loader',
-                        // {
-                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
-                        //     options: {
-                        //         baseUrl: "src/main/resources/static/js",
-                        //         modules: ["feed-mgr", "ops-mgr"]
-                        //     }
-                        // },
-                        // {
-                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
-                        //     options: {
-                        //         baseUrl: "src/main/resources/static",
-                        //         modules: ["bower_components"]
-                        //     }
-                        // },
-                        // {
-                        //     loader: path.resolve('./webpack.angular.template.loader.js'),
-                        //     options: {
-                        //         baseUrl: "src/main/resources/static"
-                        //     }
-                        // }
+                        {
+                            loader: path.resolve('./webpack.angular.template.loader.js'),
+                            options: {
+                                baseUrl: "src/main/resources/static"
+                            }
+                        }
                         ],
                     include: [
                         staticDir
                     ],
-                    exclude: [
-                        nodeModulesDir,
-                        staticNodeModules,
-                        staticBower,
-                        staticJsVendorDir
-                    ]
-                },
-                {
-                    test: /\.ts$/,
-                    use: [
-                        // {
-                        //     loader: 'cache-loader',
-                        //     options: {
-                        //         cacheDirectory: path.resolve('target/cache/cache-loader')
-                        //     }
-                        // },
-                        // {
-                        //     loader: 'thread-loader',
-                        //     options: {
-                        //         workers: require('os').cpus().length
-                        //     }
-                        // },
-                        "@ngtools/webpack",
-                        // {
-                        //     loader: 'ts-loader',
-                        //     options: {
-                        //         configFile: tsConfigFile,
-                        //         transpileOnly: true,
-                        //         happyPackMode: true
-                        //     }
-                        // },
-                        // {
-                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
-                        //     options: {
-                        //         baseUrl: "src/main/resources/static/js",
-                        //         modules: ["feed-mgr", "ops-mgr"]
-                        //     }
-                        // },
-                        // {
-                        //     loader: path.resolve('./webpack.angular.module.loader.js'),
-                        //     options: {
-                        //         baseUrl: "src/main/resources/static",
-                        //         modules: ["bower_components"]
-                        //     }
-                        // },
-                        // {
-                        //     loader: path.resolve('./webpack.angular.template.loader.js'),
-                        //     options: {
-                        //         baseUrl: "src/main/resources/static"
-                        //     }
-                        // },
-                        // 'angular-router-loader'
-                    ],
-                    exclude: [
-                        nodeModulesDir,
-                        staticNodeModules,
-                        staticBower,
-                        staticJsVendorDir
-                    ]
+                    exclude: vendorExcludes
                 },
             ]
         },
@@ -303,13 +237,11 @@ const webpackConfig = (env) => {
                 }
             }),
 
-            new CleanWebpackPlugin(["target/classes/static", "target/cache"]),
-
-            new webpack.ContextReplacementPlugin(
-                //https://github.com/angular/angular/issues/20357
-                /angular(\\|\/)core(\\|\/)/,
-                path.resolve(__dirname, './src/main/resources/static')
-            ),
+            new CleanWebpackPlugin([
+                path.resolve(__dirname, "./target/classes/static"),
+                path.resolve(__dirname, "./target/cache"),
+                path.resolve(__dirname, "./target/aot")
+            ]),
 
             new webpack.ProvidePlugin({
                 "window.jQuery": "jquery", //https://webpack.js.org/plugins/provide-plugin/#usage-jquery-with-angular-1
@@ -318,42 +250,52 @@ const webpackConfig = (env) => {
                 "window.vis": "vis",
             }),
 
-            new FriendlyErrorsWebpackPlugin(),
-            // new ProgressPlugin(),
-
             // new BundleAnalyzerPlugin(),
 
-            new AngularCompilerPlugin({
-                mainPath: path.join(__dirname, 'src/main/resources/static/js/main.ts'),
-                tsConfigPath: tsConfigFile,
-                sourceMap: true
-            }),
-
-            // new AngularCompilerPlugin({
-            //     "mainPath": "main.ts",
-            //     "platform": 0,
-            //     "sourceMap": true,
-            //     "tsConfigPath": tsConfigFile,
-            //     "skipCodeGeneration": true,
-            //     "compilerOptions": {}
-            // })
-
-            // new AngularCompilerPlugin({
-            //     tsConfigPath: tsConfigFile,
-            //     entryModule: path.resolve(__dirname, 'src/main/resources/static/js/app.module#KyloModule'),
-            //     sourceMap: true
-            // }),
-            // new AotPlugin({
-            //     tsConfigPath: tsConfigFile,
-            //     entryModule: path.resolve(__dirname, 'src/main/resources/static/js/app.module#KyloModule'),
-            //     sourceMap: true
-            // }),
         ]
     };
 
     if (env && env.production) {
         config.devtool = 'source-map';
+        config.module.loaders.push(
+            {
+                test: /(\.ts)$/,
+                use: [
+                    {
+                        loader: path.resolve('./webpack.angular.template.loader.js'),
+                        options: {
+                            baseUrl: "src/main/resources/static"
+                        }
+                    },
+                ],
+                exclude: vendorExcludes
+            },
+            {
+                test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+                use: [
+                    "@ngtools/webpack",
+                ],
+                exclude: vendorExcludes
+            },
+        );
         config.plugins.push(
+            new webpack.LoaderOptionsPlugin({
+                htmlLoader: {
+                    minimize: false // workaround for ng2
+                }
+            }),
+            new webpack.NoEmitOnErrorsPlugin(),
+            new webpack.DefinePlugin({
+                'process.env': {
+                    'ENV': JSON.stringify("production"),
+                }
+            }),
+            new AngularCompilerPlugin({
+                mainPath: 'src/main/resources/static/js/main.ts',
+                tsConfigPath: tsConfigFile,
+                entryModule: path.join(__dirname, 'src/main/resources/static/js/app.module#KyloModule'),
+                sourceMap: true
+            }),
             new writeFilePlugin(),
             new CompressionPlugin({
                 cache: true,
@@ -369,22 +311,62 @@ const webpackConfig = (env) => {
                     warnings: false
                 }
             }),
-            new webpack.DefinePlugin({
-                "process.env.NODE_ENV": JSON.stringify("production")
-            }),
         );
     } else {
         config.devServer = devServer;
+        config.module.loaders.push(
+            {
+                test: /\.ts$/,
+                use: [
+                    {
+                        loader: 'cache-loader',
+                        options: {
+                            cacheDirectory: path.resolve('target/cache/cache-loader')
+                        }
+                    },
+                    {
+                        loader: 'thread-loader',
+                        options: {
+                            workers: require('os').cpus().length
+                        }
+                    },
+                    {
+                        loader: 'ts-loader',
+                        options: {
+                            configFile: tsConfigFile,
+                            transpileOnly: true,
+                            happyPackMode: true
+                        }
+                    },
+                    {
+                        loader: path.resolve('./webpack.angular.template.loader.js'),
+                        options: {
+                            baseUrl: "src/main/resources/static"
+                        }
+                    },
+                    'angular-router-loader'
+                ],
+                exclude: vendorExcludes
+            },
+
+        );
+        config.plugins.push(
+            new webpack.ContextReplacementPlugin(
+                //https://github.com/angular/angular/issues/20357
+                /angular(\\|\/)core(\\|\/)/,
+                path.resolve(__dirname, './src/main/resources/static')
+            ),
+            new webpack.NamedModulesPlugin(),
+            new webpack.HotModuleReplacementPlugin(),
+            new FriendlyErrorsWebpackPlugin(),
+            new ProgressPlugin(),
+            // new writeFilePlugin(),
+        );
         if (env && env.dev) { //i.e. we dont' want SourcePlugin if env is other than dev env, e.g. if env is dev-tool-cheap
             config.plugins.push(
                 SourcePlugin //this plugin is faster than devtool=source-map because its excluding node_modules, bower_components and vendor dirs
             )
         }
-        config.plugins.push(
-            // new writeFilePlugin(),
-            new webpack.NamedModulesPlugin(),
-            new webpack.HotModuleReplacementPlugin(),
-        );
     }
 
     return config;

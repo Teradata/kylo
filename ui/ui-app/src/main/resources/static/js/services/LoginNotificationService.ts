@@ -2,7 +2,7 @@
 import * as angular from 'angular';
 import CommonRestUrlService from "./CommonRestUrlService";
 import {NotificationService} from "./notification.service";
-import AccessControlService from "./AccessControlService";
+import {AccessControlService} from "./AccessControlService";
 import {moduleName} from "./module-name";
 import {TemplateService} from "../repository/services/template.service";
 import {TemplateMetadata} from "../repository/services/model";

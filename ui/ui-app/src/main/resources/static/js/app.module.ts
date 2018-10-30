@@ -1,4 +1,4 @@
-import {DOCUMENT} from "@angular/common";
+import {APP_BASE_HREF, DOCUMENT} from "@angular/common";
 import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/http";
 import {FactoryProvider, NgModule, NgModuleFactoryLoader, SystemJsNgModuleLoader} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
@@ -20,7 +20,6 @@ import {KyloServicesModule} from "./services/services.module";
 import '../node_modules/@fortawesome/fontawesome-free/sprites/brands.svg';
 import '../node_modules/@fortawesome/fontawesome-free/sprites/regular.svg';
 import '../node_modules/@fortawesome/fontawesome-free/sprites/solid.svg';
-import '../node_modules/@fortawesome/fontawesome-free/sprites/brands.svg';
 import '../node_modules/@mdi/font/fonts/materialdesignicons-webfont.svg';
 
 /**
@@ -61,7 +60,43 @@ const translateConfig: TranslateModuleConfig = {
         KyloCommonModule,
         KyloServicesModule.forRoot(),
         TranslateModule.forRoot(translateConfig),
-        UIRouterModule,
+        UIRouterModule.forChild({
+            states: [
+                {
+                    name: 'catalog.**',
+                    url: '/catalog',
+                    loadChildren: './feed-mgr/catalog/catalog.module#CatalogRouterModule'
+                },
+                {
+                    name: 'feed-definition.**',
+                    url: '/feed-definition',
+                    loadChildren: './feed-mgr/feeds/define-feed-ng2/define-feed.module#DefineFeedModule'
+                },
+                {
+                    name: 'repository.**',
+                    url: '/repository',
+                    loadChildren: './repository/repository.module#RepositoryModule'
+                },
+                {
+                    name: 'template-info.**',
+                    url: '/template-info',
+                    loadChildren: './repository/repository.module#RepositoryModule'
+                },
+                {
+                    name: 'import-template.**',
+                    url: '/importTemplate',
+                    loadChildren: './repository/repository.module#RepositoryModule'
+                },
+                {
+                    name: 'visual-query.**',
+                    url: '/visual-query/{engine}',
+                    params: {
+                        engine: null
+                    },
+                    loadChildren: "./feed-mgr/visual-query/visual-query.module#VisualQueryRouterModule"
+                }
+            ]
+        }),
         UIRouterUpgradeModule,
         UpgradeModule
     ],

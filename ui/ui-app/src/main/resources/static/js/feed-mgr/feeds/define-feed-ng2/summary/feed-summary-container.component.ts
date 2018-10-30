@@ -10,7 +10,7 @@ import {ProfileComponent} from "./profile/profile.component";
 import {SetupGuideSummaryComponent} from "./setup-guide-summary/setup-guide-summary.component";
 import {OverviewComponent} from "./overview/overview.component";
 import {FeedLink} from "../model/feed-link.model";
-import SideNavService from "../../../../services/SideNavService";
+import {SideNavService} from "../../../../services/SideNavService";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_OVERVIEW_STATE_NAME} from "../../../model/feed/feed-constants";
 import {Feed} from "../../../model/feed/feed.model";
 

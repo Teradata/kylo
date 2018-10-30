@@ -7,7 +7,7 @@ import { DefaultPaginationDataService } from '../../services/PaginationDataServi
 import { DatasourcesService } from '../services/DatasourcesService';
 import { controller } from '../../ops-mgr/service-health/ServiceComponentHealthDetailsController';
 import { FeedService } from '../services/FeedService';
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 
 export class TablesController {
 
@@ -202,7 +202,7 @@ export class TablesController {
 angular.module(moduleName).component('tablesController', {
     controller: TablesController,
     controllerAs: 'vm',
-    templateUrl: 'js/feed-mgr/tables/tables.html',
+    templateUrl: './tables.html',
     bindings: {
         $transition$: '<'
     }

@@ -5,7 +5,7 @@ import {Subscription} from "rxjs/Subscription";
 import {moduleName} from "../module-name";
 import {DomainType} from "../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../services/details.service";
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import "../module-require";
 /**
  * Adds or updates domain types.

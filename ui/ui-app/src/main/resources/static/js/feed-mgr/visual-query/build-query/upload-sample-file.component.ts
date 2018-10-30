@@ -4,7 +4,7 @@ import {FormGroup} from "@angular/forms";
 import * as _ from "underscore";
 
 import {CloneUtil} from "../../../common/utils/clone-util";
-import FileUpload from "../../../services/FileUploadService";
+import {FileUpload} from "../../../services/FileUploadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {RestUrlConstants} from "../../services/RestUrlConstants";
 import {SparkConstants} from "../services/spark/spark-constants";

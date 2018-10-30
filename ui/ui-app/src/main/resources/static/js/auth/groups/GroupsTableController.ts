@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import {moduleName} from "../module-name";
 import UserService from "../services/UserService";
-import AddButtonService from  "../../services/AddButtonService";
+import {AddButtonService} from  "../../services/AddButtonService";
 import {DefaultPaginationDataService} from  "../../services/PaginationDataService";
 import {StateService} from  "../../services/StateService";
 import {DefaultTableOptionsService} from  "../../services/TableOptionsService";

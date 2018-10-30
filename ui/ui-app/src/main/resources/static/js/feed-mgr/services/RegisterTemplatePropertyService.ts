@@ -36,7 +36,7 @@ import PropertyAndProcessors = Templates.PropertyAndProcessors;
 import Processor = Templates.Processor;
 import MetadataProperty = Templates.MetadataProperty;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import { EmptyTemplate, ExtendedTemplate, SaveAbleTemplate } from '../model/template-models';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";

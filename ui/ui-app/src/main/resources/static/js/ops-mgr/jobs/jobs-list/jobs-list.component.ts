@@ -1,10 +1,10 @@
 import * as _ from 'underscore';
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import {TabService} from "../../../services/tab.service";
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import { Component, Output, Input, OnChanges, SimpleChanges, Inject, EventEmitter } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
-import BroadcastService from "../../../services/broadcast-service";
+import {BroadcastService} from "../../../services/broadcast-service";
 import {StateService as  KyoStateService} from "../../../services/StateService";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
 import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from "@covalent/core/data-table";
@@ -93,7 +93,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
               //  private IconService: IconService,
                 private tabService: TabService,
                 @Inject("AccessControlService") private accessControlService: AccessControlService,
-                private broadcastService: BroadcastService,
+                @Inject("BroadcastService") private broadcastService: BroadcastService,
                 public _dataTableService: TdDataTableService) {
         super(_dataTableService);
     }
@@ -563,7 +563,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
 
 
-    showFilterHelpPanel(ev: any) {
+    showFilterHelpPanel() {
 
         var position = $("#jobs_more_vert").position();
 

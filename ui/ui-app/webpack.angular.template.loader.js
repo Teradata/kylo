@@ -9,7 +9,7 @@ var stringRegex = /(['`"])((?:[^\\]\\\1|.)*?)\1/g;
 
 function replaceStringsWithRequires(baseUrl, string) {
     return string.replace(stringRegex, function (match, quote, url) {
-        if (url.startsWith("./")) {
+        if (url.startsWith("./") || url.startsWith("../")) {
             return "require('" + url + "')";
         } else {
             let relative = path.relative(baseUrl, url);

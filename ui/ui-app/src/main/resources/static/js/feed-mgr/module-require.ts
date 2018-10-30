@@ -40,7 +40,7 @@ import "./shared/apply-domain-type/domain-type-conflict.component"
 import "./services/CategoriesService";
 import "./shared/entity-access-control/EntityAccessControlService";
 import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
-import CategoriesService from "./services/CategoriesService";
+import {CategoriesService} from "./services/CategoriesService";
 import {FeedSavingDialogController, FeedService} from "./services/FeedService";
 import {DomainTypesService} from "./services/DomainTypesService";
 import {DefaultFeedPropertyService} from "./services/DefaultFeedPropertyService";

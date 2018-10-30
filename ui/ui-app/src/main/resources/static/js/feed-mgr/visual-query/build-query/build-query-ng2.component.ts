@@ -18,7 +18,7 @@ import {Observable} from "rxjs/Observable";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
 
-import SideNavService from "../../../services/SideNavService";
+import {SideNavService} from "../../../services/SideNavService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {SparkDataSet} from "../../model/spark-data-set.model";
 import {UserDatasource} from "../../model/user-datasource";
@@ -39,7 +39,6 @@ import {DataSource} from "../../catalog/api/models/datasource";
 import {DatasetTable} from "../../catalog/api/models/dataset-table";
 import {TableColumn} from "../../catalog/datasource/preview-schema/model/table-view-model";
 import {Common} from "../../../common/CommonTypes";
-import {SchemaField} from "../../model/schema-field";
 import {HttpClient} from "@angular/common/http";
 
 /**
@@ -210,7 +209,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Aysnc autocomplete list of tables
      */
-    public filteredTables: Observable<DatasourcesServiceStatic.TableReference[]> = [];
+    public filteredTables: any = [];
 
     /**
      * List of native data sources to exclude from the model.
@@ -272,20 +271,23 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 .pipe(
                     debounceTime(300),
                     tap(() => {
-                        this.databaseConnectionError = false
                         this.autocompleteLoading = true;
+                        this.databaseConnectionError = false;
                         this.autocompleteNoDataFound = false;
                     }),
                     switchMap(text => {
                         searchTerm = text;
                         return this.onAutocompleteQuerySearch(text)
                                 .pipe(
-                                    catchError( () => this.databaseConnectionError = true),
+                                    catchError( () => {
+                                        this.databaseConnectionError = true;
+                                        return null;
+                                    }),
                                     finalize(() => this.autocompleteLoading = false))
                         }
                     )).subscribe(results => {
-                        this.filteredTables = results
-                        if(searchTerm && searchTerm != "" && this.filteredTables.length == 0){
+                        this.filteredTables = results;
+                        if (searchTerm && searchTerm != "" && this.filteredTables.length == 0){
                             this.autocompleteNoDataFound = true;
                         }
                         else {
@@ -1081,7 +1083,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Search the list of table names.
      */
-    onAutocompleteQuerySearch(txt: any): Observable<DatasourcesServiceStatic.TableReference[]> {
+    onAutocompleteQuerySearch(txt: any): any {
         let promise: Promise<DatasourcesServiceStatic.TableReference[]> = null;
         if(txt == undefined ){
             txt = "";
@@ -1138,8 +1140,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     autoCompleteEnabledCheck(){
-        this.http.get("/api/v1/ui/wrangler/table-auto-complete-enabled",  {responseType: 'text'}).subscribe((enabled:boolean) => {
-            this.showDatasources = enabled;
+        this.http.get("/api/v1/ui/wrangler/table-auto-complete-enabled",  {responseType: 'text'}).subscribe(enabled => {
+            this.showDatasources = enabled === "true";
         })
     }
 }

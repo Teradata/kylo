@@ -4,7 +4,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DynamicFormDialogData} from "../../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
 import {Template} from "../../../model/template-models";
 import {AbstractControl, FormGroup} from "@angular/forms";
-import CategoriesService from "../../../services/CategoriesService";
+import {CategoriesService} from "../../../services/CategoriesService";
 import {Observable} from "rxjs/Observable";
 import {Category} from "../../../model/category/category.model";
 import {fromPromise} from "rxjs/observable/fromPromise";

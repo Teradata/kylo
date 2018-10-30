@@ -4,7 +4,7 @@ import AccessConstants from '../constants/AccessConstants';
 import 'kylo-services-module';
 import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
-import BroadcastService from "./broadcast-service";
+import {BroadcastService} from "./broadcast-service";
 
 
 export default class AngularModuleExtensionService{

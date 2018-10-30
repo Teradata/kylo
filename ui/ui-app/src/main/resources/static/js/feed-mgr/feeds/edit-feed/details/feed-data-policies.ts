@@ -5,7 +5,7 @@ import {FeedServiceTypes} from "../../../services/FeedServiceTypes";
 import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
 import {CheckAll} from "../../shared/checkAll";
-import AccessControlService from '../../../../services/AccessControlService';
+import {AccessControlService} from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');

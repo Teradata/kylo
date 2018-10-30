@@ -11,14 +11,14 @@
     "module": "amd",
     "target": "es5",
     "moduleResolution": "node",
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
     "typeRoots": [
       "../../../../node_modules/@types"
     ],
-    "outDir": "../../../../target/typescript",
+    "outDir": "../../../../target/classes/static",
     "sourceMap": true,
     "allowJs": true,
     "sourceRoot": ".",
@@ -35,9 +35,9 @@
     "./js/vendor"
   ],
   "angularCompilerOptions": {
-    "genDir": "target/aot",
-    "skipMetadataEmit" : true,
-    "fullTemplateTypeCheck": true,
+    "genDir": "../../../../target/classes/static",
+    "skipMetadataEmit" : false,
+    "fullTemplateTypeCheck": false,
     "preserveWhitespaces": true
   }
 }

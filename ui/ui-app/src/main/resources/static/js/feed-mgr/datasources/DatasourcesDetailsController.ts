@@ -1,7 +1,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import { DatasourcesService } from '../services/DatasourcesService';
 import {StateService} from '../../services/StateService';
 import { Transition } from '@uirouter/core';

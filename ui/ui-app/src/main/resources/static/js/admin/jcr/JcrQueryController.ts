@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 
 export class JcrQueryController implements ng.IComponentController{
     sql: string = "";
@@ -265,6 +265,6 @@ export class JcrQueryController implements ng.IComponentController{
  .component("jcrQueryController", {
         controller: JcrQueryController,
         controllerAs: "vm",
-        templateUrl: "js/admin/jcr/jcr-query.html"
+        templateUrl: "./jcr-query.html"
     });
  //.controller("JcrQueryController", [JcrQueryController]);

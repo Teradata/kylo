@@ -42,8 +42,7 @@ import {PreviewDatasetCollectionService} from "../../api/services/preview-datase
 //NOT USED NOW!!!
 @Component({
     selector: "preview-schema",
-    styleUrls: ["js/feed-mgr/catalog/datasource/preview-schema/preview-schema.component.scss"],
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview-schema.component.html"
+    template: "<div></div>"
 })
 export class PreviewSchemaComponent implements OnInit {
 
@@ -465,8 +464,8 @@ export class PreviewSchemaComponent implements OnInit {
 
 
 @Component({
-    selector: 'dataset-simple-table',
-    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/dataset-simple-table.component.scss"],
+    selector: 'dataset-simple-table-X',
+    styleUrls:["./dataset-simple-table.component.scss"],
     template:`
    
     <div class="dataset-simple-table">
@@ -517,7 +516,7 @@ export class PreviewSchemaComponent implements OnInit {
     
     
     
-    <div  *ngIf="!filteredData.length ===0" fxLayout="row" fxLayoutAlign="center center">
+    <div  *ngIf="filteredData.length !== 0" fxLayout="row" fxLayoutAlign="center center">
       <h3>No results to display.</h3>
     </div>`
 })
@@ -600,7 +599,7 @@ export class SimpleTableComponent {
 
 
 @Component({
-    selector:'dataset-schema-definition',
+    selector:'dataset-schema-definition-X',
     template:`
         <dataset-simple-table [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
     `

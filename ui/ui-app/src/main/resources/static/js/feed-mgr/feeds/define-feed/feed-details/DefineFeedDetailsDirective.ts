@@ -21,7 +21,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { FeedService } from '../../../services/FeedService';
-import BroadcastService from '../../../../services/broadcast-service';
+import {BroadcastService} from '../../../../services/broadcast-service';
 import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
 import {FeedInputProcessorPropertiesTemplateService} from "../../../services/FeedInputProcessorPropertiesTemplateService";
 const moduleName = require('../module-name');

@@ -3,7 +3,7 @@ import * as _ from 'underscore';
 import {moduleName} from "../../module-name";
 import UserService from "../../services/UserService";
 import {StateService} from  "../../../services/StateService";
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
 import "../../module";
 import "../../module-require";

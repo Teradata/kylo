@@ -76,7 +76,7 @@ export class CatalogService {
     getDataSourcesForPluginIds(pluginIds:string[]): Observable<DataSource[]> {
         let params = new HttpParams();
         params = params.append('pluginIds', pluginIds.join(','));
-        return this.http.get<DataSource>("/proxy/v1/catalog/datasource/plugin-id",{params:params});
+        return this.http.get<DataSource[]>("/proxy/v1/catalog/datasource/plugin-id",{params:params});
     }
 
 
@@ -120,7 +120,7 @@ export class CatalogService {
         const self = this;
         let params = new HttpParams();
         params = params.append('schema', schema);
-        return this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
+        return this.http.post<DatasetTable>("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
     }
 
 

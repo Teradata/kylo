@@ -22,6 +22,10 @@ export interface DomainTypeConflictDialogData {
      * Domain type.
      */
     domainType: DomainType;
+
+    propertyName: string;
+
+    propertyValue: string;
 }
 
 /**

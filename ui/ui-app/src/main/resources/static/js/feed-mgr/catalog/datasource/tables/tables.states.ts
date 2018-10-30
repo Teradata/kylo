@@ -3,6 +3,19 @@ import {Ng2StateDeclaration} from "@uirouter/angular";
 import {TablesComponent} from "./tables.component";
 import {StateService} from "@uirouter/angular";
 
+export function resolveParams(state: StateService) {
+    const params: any = {};
+    const transParams: any = state.transition.params();
+    if (transParams.catalog && transParams.catalog != "") {
+        params.catalog = transParams.catalog;
+    }
+    if (transParams.schema && transParams.schema != "") {
+        params.schema = transParams.schema;
+    }
+    return params;
+}
+
+
 export const tablesStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.connection",
@@ -13,17 +26,7 @@ export const tablesStates: Ng2StateDeclaration[] = [
             {
                 token: "params",
                 deps: [StateService],
-                resolveFn: (state: StateService) => {
-                    const params: any = {};
-                    const transParams: any = state.transition.params();
-                    if (transParams.catalog && transParams.catalog != "") {
-                        params.catalog = transParams.catalog;
-                    }
-                    if (transParams.schema && transParams.schema != "") {
-                        params.schema = transParams.schema;
-                    }
-                    return params;
-                }
+                resolveFn: resolveParams
             }
         ]
     }

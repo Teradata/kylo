@@ -163,7 +163,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     ngOnInit(): void {
         // Get list of Kylo data sources
         this.target.jdbc;
-        this.target.catalogDatasource = {};
+        this.target.catalogDatasource = new DataSource();
         const kyloSourcesPromise = Promise.all([this.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
             .then(resultList => {
                 this.kyloDataSources = resultList[0].concat(resultList[1]);

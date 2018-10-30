@@ -489,7 +489,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             var dataTypeChanged = (domainType.field.derivedDataType && columnDef.derivedDataType !== domainType.field.derivedDataType);
             if (nameChanged || dataTypeChanged) {
 
-                let domainTypeDialogData:DomainTypeConflictDialogData = {columnDef:columnDef,domainType:domainType};
+                let domainTypeDialogData:DomainTypeConflictDialogData = {columnDef:columnDef,domainType:domainType, propertyName:'', propertyValue:''};
 
                 const dialogRef = this.dialog.open(DomainTypeConflictDialogComponent, {
                     width: '600px',

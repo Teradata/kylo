@@ -23,7 +23,9 @@ export class FeedAlertsComponent implements OnInit, OnDestroy{
 
     kyloIcons:KyloIcons = KyloIcons;
 
-    alerts:any[] = []
+    alerts:any[] = [];
+
+    last = false;
 
     ngOnInit(){
         this.fetchFeedAlerts();

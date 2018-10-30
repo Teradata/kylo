@@ -32,7 +32,7 @@ export interface BroadcastEvent {
  * to notify call this:
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
-export default class BroadcastService {
+export class BroadcastService {
 
     private readonly bus  :{ [key: string]: Subject<BroadcastEvent>; } = {};
     //new Subject<BroadcastEvent>();

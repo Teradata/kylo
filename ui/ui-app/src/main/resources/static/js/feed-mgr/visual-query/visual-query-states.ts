@@ -14,13 +14,7 @@ export const visualQueryStates: Ng2StateDeclaration[] = [
         resolve: [{
             token: "engineName",
             deps: [Injector, StateService],
-            resolveFn: ($injector: Injector, stateService: StateService) => {
-                let engineName = stateService.transition.params().engine;
-                if (engineName === null) {
-                    engineName = "spark";
-                }
-                return engineName;
-            }
+            resolveFn: resolveEngineName
         }],
         views: {
             "content": {
@@ -34,3 +28,12 @@ export const visualQueryStates: Ng2StateDeclaration[] = [
         }
     }
 ];
+
+
+export function resolveEngineName($injector: Injector, stateService: StateService) {
+    let engineName = stateService.transition.params().engine;
+    if (engineName === null) {
+        engineName = "spark";
+    }
+    return engineName;
+}

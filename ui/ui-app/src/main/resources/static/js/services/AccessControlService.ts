@@ -4,9 +4,9 @@ import  AccessConstants from '../constants/AccessConstants';
 import 'kylo-services-module';
 import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
-import UserGroupService from "./UserGroupService";
+import {UserGroupService} from "./UserGroupService";
 
-export default class AccessControlService extends AccessConstants {
+export class AccessControlService extends AccessConstants {
  /**
  * Interacts with the Access Control REST API.
  * @constructor
