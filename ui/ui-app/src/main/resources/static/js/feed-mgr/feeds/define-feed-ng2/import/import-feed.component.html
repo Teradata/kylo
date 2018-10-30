@@ -20,16 +20,16 @@
         <!-- upload widget -->
 
         <div fxLayout="column" fxFlex="50" fxLayoutAlign="start">
-          <file-upload (filesChange)="onFilesChange($event)" [files]="feedFile" placeholder="select or drop feed archive (zip) file" *ngIf="!uploadInProgress"
+          <file-upload (filesChange)="onFilesChange($event)" [files]="feedFile" placeholder="{{'views.import_feed.SelectOrDropFeedArchiveZipFile' | translate}}" *ngIf="!uploadInProgress"
                        [renderSubmitButton]="false"></file-upload>
-          <div class="mat-title" *ngIf="uploadInProgress">Uploading feed ...</div>
+          <div class="mat-title" *ngIf="uploadInProgress">{{"views.import_feed.UploadingFeedThreeDots" | translate}}</div>
         </div>
 
         <form [formGroup]="formGroup">
 
           <div fxLayout="column">
             <div fxFlex="50" class="pad-bottom">
-              <category-autocomplete placeholder="Change the category" hint="Optionally import this feed into a different category" [required]="false" [renderClearButton]="true" #categoryAutoComplete
+              <category-autocomplete placeholder="Change the category" hint="{{'views.import_feed.OptionallyImportFeedInADifferentCategory' | translate}}" [required]="false" [renderClearButton]="true" #categoryAutoComplete
                                      (categorySelected)="onCategorySelected($event)"></category-autocomplete>
             </div>
             <!-- validation messages -->
@@ -91,7 +91,7 @@
                 </div>
               </div>
             </div>
-            <div class="mat-title" *ngIf="requiredPropertyCount >0"> You have {{requiredPropertyCount}} required properties that need updating</div>
+            <div class="mat-title" *ngIf="requiredPropertyCount >0" translate [translateParams]="{propertyCount: requiredPropertyCount}"> views.import_feed.YouHaveNRequiredPropertiesForUpdating </div>
 
             <!-- Feed properties required -->
             <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
@@ -180,7 +180,7 @@
 
             <mat-list class="padding-left" *ngFor="let errorKey of getErrorMapKeys()">
               <mat-list-item *ngFor="let error of errorMap[errorKey]; let $last=last ">
-                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">Processor: {{error.processorName}}</h4>
+                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">{{views.import_feed.Processor}} {{error.processorName}}</h4>
                 <div class="warn">{{error.message}}</div>
                 <mat-divider *ngIf="!$last"></mat-divider>
               </mat-list-item>
