@@ -98,9 +98,9 @@
           <button mat-raised-button class="mat-primary" (click)="isShowSampleMenu = false; resample();">Update</button>
         </div>
       </div>
-      <mat-progress-bar class="wrangler-determinate-theme md-accent" mode="determinate" [value]="queryProgress" *ngIf="executingQuery && queryProgress > 0"
+      <mat-progress-bar class="wrangler-determinate-theme" color="accent" mode="determinate" [value]="queryProgress" *ngIf="executingQuery && queryProgress > 0"
                         style="top: 0;height:2px"></mat-progress-bar>
-      <mat-progress-bar mode="indeterminate" class="wrangler-indeterminate-theme md-accent" *ngIf="executingQuery && queryProgress == 0" style="top: -2px;height:2px"></mat-progress-bar>
+      <mat-progress-bar mode="indeterminate" class="wrangler-indeterminate-theme" color="accent" *ngIf="executingQuery && queryProgress == 0" style="top: -2px;height:2px"></mat-progress-bar>
       <visual-query-table [actual-cols]="actualCols" [actual-rows]="actualRows" [table-columns]="tableColumns" [table-domain-types]="domainTypes" [table-rows]="tableRows"
                           [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState" offset-height="0"
                           browser-height browser-height-scroll-y="false" [browser-height-offset]="(heightOffset || 0) + 128"

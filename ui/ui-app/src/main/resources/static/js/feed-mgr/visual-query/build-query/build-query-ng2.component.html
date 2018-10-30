@@ -72,13 +72,13 @@
               <mat-error *ngIf="databaseConnectionError" style="position:absolute;top:42px">Unable to connect to selected data source.</mat-error>
             </div>
           </div>
-          <button matTooltip="Add dataset" mat-raised-button mat-icon-button class="mat-primary" aria-label="Add dataset" (click)="onAddTable()" [disabled]="selectedTable == null"
+          <button matTooltip="Add dataset" mat-raised-button mat-icon-button color="accent" aria-label="Add dataset" (click)="onAddTable()" [disabled]="selectedTable == null"
                   style="margin-left:-5px"
                   *ngIf=" showDatasources">
             <ng-md-icon icon="add"></ng-md-icon>
           </button>
 
-          <button matTooltip="Browse catalog" mat-raised-button mat-icon-button [color]="'accent'" class="md-kylo-theme" aria-label="Browse catalog" (click)="openCatalogBrowser()"
+          <button matTooltip="Browse catalog" mat-raised-button mat-icon-button color="accent" class="md-kylo-theme" aria-label="Browse catalog" (click)="openCatalogBrowser()"
                   *ngIf="!advancedMode">
             <ng-md-icon icon="playlist_add"></ng-md-icon>
           </button>
@@ -86,13 +86,14 @@
           <span fxFlex="auto"></span>
 
           <button matTooltip="Edit SQL" mat-raised-button mat-icon-button aria-label="Edit SQL" (click)="toggleAdvancedMode()" [disabled]="error != null">
-            <ng-md-icon icon="code" class="function-icon" style="color:#666"></ng-md-icon>
+            <ng-md-icon icon="code" class="function-icon tc-grey-600"></ng-md-icon>
           </button>
 
           <div fxFlex="20px"></div>
 
           <button mat-button (click)="back.emit()" type="button" *ngIf="showCancel" style="padding-top:3px" class="text-upper">Cancel</button>
-          <button mat-button [color]="form.valid ? 'primary' : ''" (click)="next.emit()" style="padding-top:3px" type="button" [disabled]="!form.valid || (chartViewModel.data.nodes.length == 0 && (model.sql == '' || model.sql == null))"
+          <button mat-button [color]="form.valid ? 'accent' : ''" (click)="next.emit()" style="padding-top:3px" type="button"
+                  [disabled]="!form.valid || (chartViewModel.data.nodes.length == 0 && (model.sql == '' || model.sql == null))"
                   class="text-upper">Next
           </button>
 

@@ -4,7 +4,7 @@ import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynam
 import {ColumnController} from "../../column-controller";
 import {FormGroup} from "@angular/forms";
 
-export class ImputeMissingForm extends ColumnForm {
+export class FillForwardForm extends ColumnForm {
 
     private form: FormGroup;
 
@@ -16,7 +16,7 @@ export class ImputeMissingForm extends ColumnForm {
     buildForm() {
         let fieldName = this.fieldName;
         let columns = ColumnUtil.toColumnArray(this.grid.columns, this.fieldName)
-        return new DynamicFormBuilder().setTitle("Rescale Min/Max").setMessage("Specify windowing options to source fill-forward values:")
+        return new DynamicFormBuilder().setTitle("Fill forward").setMessage("Specify windowing options to source fill-forward values:")
             .column()
             .select().setKey("groupBy").setPlaceholder("Group By").setOptionsArray(columns).setRequired(true).done()
             .select().setKey("orderBy").setPlaceholder("Order By").setOptionsArray(columns).setRequired(true).done()
@@ -27,7 +27,7 @@ export class ImputeMissingForm extends ColumnForm {
 
                 const script = `coalesce(${fieldName}, last(${fieldName}, true).over(partitionBy(${groupBy}).orderBy(${orderBy}))).as("${fieldName}")`;
                 const formula = ColumnUtil.toFormula(script, this.column, this.grid);
-                this.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Impute missing values ${fieldName}`});
+                this.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Fill-forward missing values ${fieldName}`});
                 })
             .build()
             }

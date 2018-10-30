@@ -12,7 +12,7 @@ import {CrossTabForm} from "./core/columns/cross-tab-form";
 import {ExtractDelimsForm} from "./core/columns/extract-delims-form";
 import {ExtractIndexForm} from "./core/columns/extract-index-form";
 import {ExtractRegexForm} from "./core/columns/extract-regex-form";
-import {ImputeMissingForm} from "./core/columns/impute-missing-form";
+import {FillForwardForm} from "./core/columns/fill-forward-form";
 import {LpadForm} from "./core/columns/lpad-form";
 import {OrderByForm} from "./core/columns/order-by-form";
 import {RenameColumnForm} from "./core/columns/rename-column-form";
@@ -640,13 +640,13 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
-     * Impute missing strings using a fill-forward method provided a grouping column and ordering
+     * Fill missing strings using a fill-forward method provided a grouping column and ordering
      * @param column
      * @param grid
      */
-    imputeMissingColumn(column: any, grid: any) {
+    fillForwardColumn(column: any, grid: any) {
 
-        let form = new ImputeMissingForm(column, grid, this.controller)
+        let form = new FillForwardForm(column, grid, this.controller)
         this.dialog.openColumnForm(form);
     }
 
@@ -1139,7 +1139,7 @@ export class ColumnDelegate implements IColumnDelegate {
             );
 
             transforms.ml.push(
-                {description: 'Impute missing values by fill-forward', name: 'Impute missing values...',icon:'ndi mdi-basket-fill', operationFn: self.imputeMissingColumn},
+                {description: 'Fill-forward missing values', name: 'Fill-forward missing...',icon:'mdi mdi-basket-fill', operationFn: self.fillForwardColumn},
                 {description: 'Index labels', name: 'Index labels',icon:'mdi mdi-label-outline', operationFn: self.indexColumn},
                 {description: 'One hot encode (or pivot) categorical values',  name: 'One hot encode',icon:'mdi mdi-matrix', operationFn: self.oneHotEncodeColumn},
                 {description: 'Replace NAN with a specified value', name: 'Replace NaN...',icon:'mdi mdi-null', operationFn: self.replaceNaNWithValue},
