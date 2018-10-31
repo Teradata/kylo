@@ -68,6 +68,7 @@ export class ListTemplatesComponent implements OnInit {
                 this.filteredList = data;
                 this.dataSource.data = data;
                 this.search();
+                this.sortData(null);
                 this.loading = false;
             },
             (error: any) => {
@@ -82,18 +83,8 @@ export class ListTemplatesComponent implements OnInit {
     }
 
     sortData(sort: Sort) {
-
-        this.dataSource.data= this.dataSource.data.sort((a, b) => {
-            const isAsc = sort.direction === 'asc';
-            switch (sort.active) {
-                case 'templateName': return this.compare(a.templateName, b.templateName, isAsc);
-                default: return 0;
-            }
-        });
-    }
-
-    private compare(a: number | string, b: number | string, isAsc: boolean) {
-        return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+        this.dataSource.data = this.dataTableService.sortData(this.dataSource.data, "templateName");
+        this.filteredList = this.dataSource.data as TemplateMetadata[];
     }
 
     /*
