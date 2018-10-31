@@ -76,7 +76,7 @@ export class CatalogService {
     getDataSourcesForPluginIds(pluginIds:string[]): Observable<DataSource[]> {
         let params = new HttpParams();
         params = params.append('pluginIds', pluginIds.join(','));
-        return this.http.get<DataSource>("/proxy/v1/catalog/datasource/plugin-id",{params:params});
+        return this.http.get<DataSource[]>("/proxy/v1/catalog/datasource/plugin-id",{params:params});
     }
 
 
@@ -107,6 +107,11 @@ export class CatalogService {
         return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
     }
 
+    createDataSetWithTitle(dataSet: SparkDataSet): Observable<SparkDataSet> {
+        const body = CloneUtil.deepCopy(dataSet);
+        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+    }
+
 
     /**
      * Gets the schema for the specified table.
@@ -120,7 +125,7 @@ export class CatalogService {
         const self = this;
         let params = new HttpParams();
         params = params.append('schema', schema);
-        return this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
+        return <Observable<DatasetTable>> this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
     }
 
 

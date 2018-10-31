@@ -226,7 +226,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     /**
      * Aysnc autocomplete list of tables
      */
-    public filteredTables: Observable<DatasourcesServiceStatic.TableReference[]> = [];
+    public filteredTables: DatasourcesServiceStatic.TableReference[] =[];
 
     /**
      * List of native data sources to exclude from the model.
@@ -297,10 +297,13 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                         searchTerm = text;
                         return this.onAutocompleteQuerySearch(text)
                                 .pipe(
-                                    catchError( () => this.databaseConnectionError = true),
+                                    catchError( () => {
+                                        this.databaseConnectionError = true
+                                        return Observable.of([])
+                                    }),
                                     finalize(() => this.autocompleteLoading = false))
                         }
-                    )).subscribe(results => {
+                    )).subscribe((results:DatasourcesServiceStatic.TableReference[]) => {
                         this.filteredTables = results
                         if(searchTerm && searchTerm != "" && this.filteredTables.length == 0){
                             this.autocompleteNoDataFound = true;
@@ -521,7 +524,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     ensureDataSetId(dataset:SparkDataSet) :Observable<SparkDataSet>{
         if(dataset.id == undefined){
-         return this.catalogService.createDataSet(dataset).pipe(map((ds:SparkDataSet) => {
+         return this.catalogService.createDataSetWithTitle(dataset).pipe(map((ds:SparkDataSet) => {
              dataset.id = ds.id;
              return dataset;
          }))
@@ -1005,6 +1008,16 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      */
     onDeleteSelectedCallback() {
         this.validate();
+        let datasets:SparkDataSet[] = [];
+        this.chartViewModel.data.nodes.forEach((node:any)=> {
+            if(node.dataset){
+                let datasetId = node.dataset.id;
+                if(datasets.find(ds => ds.id == datasetId) == undefined){
+                    datasets.push(<SparkDataSet>node.dataset)
+                }
+            }
+        });
+        this.model.datasets = datasets;
     };
 
     showConnectionDialog(isNew: any, connectionViewModel: any, connectionDataModel: any, source: any, dest: any) {
@@ -1137,7 +1150,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 return  Observable.of([]);
             }
             else {
-                return this.catalogService.listTables(this.model.$catalogDataSourceId, txt);
+                return <Observable<DatasourcesServiceStatic.TableReference[]>> this.catalogService.listTables(this.model.$catalogDataSourceId, txt);
             }
         }
         else {
@@ -1185,8 +1198,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     autoCompleteEnabledCheck(){
-        this.http.get("/api/v1/ui/wrangler/table-auto-complete-enabled",  {responseType: 'text'}).subscribe((enabled:boolean) => {
-            this.showDatasources = enabled;
+        this.http.get("/api/v1/ui/wrangler/table-auto-complete-enabled",  {responseType: 'text'}).subscribe((enabled:string|boolean) => {
+            this.showDatasources = enabled == true || enabled == "true";
         })
     }
 }
