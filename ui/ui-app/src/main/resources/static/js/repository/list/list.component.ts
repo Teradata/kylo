@@ -61,6 +61,7 @@ export class ListTemplatesComponent implements OnInit {
                 this.templates = data;
                 this.filteredList = data;
                 this.search();
+                this.sortData(null);
                 this.loading = false;
             },
             (error: any) => {
@@ -103,8 +104,8 @@ export class ListTemplatesComponent implements OnInit {
      */
     downloadTemplate(template: TemplateMetadata) {
         this.templateService.downloadTemplate(template).subscribe(blob => {
-            var link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
+            var link: any = document.createElement('a');
+            link.href = (window.URL as any).createObjectURL(blob);
             link.download = template.fileName;
             link.click();
         });
