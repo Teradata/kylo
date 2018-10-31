@@ -6,8 +6,6 @@
      <mat-icon color="warn">error</mat-icon>
       <span class="pad-left">{{errorMessage}}</span>
     </div>
-    <file-upload #fileUpload (onSubmit)="onUploadFiles($event)" *ngIf="!uploading"></file-upload>
+    <file-upload #fileUpload (onCancel)="cancel()" (onSubmit)="onUploadFiles($event)" *ngIf="!uploading"></file-upload>
   </div>
 </div>
-
-

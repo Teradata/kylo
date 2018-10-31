@@ -34,6 +34,9 @@ export class FileUploadComponent implements OnChanges{
     @Input()
     renderSubmitButton?:boolean = true;
 
+    @Output()
+    onCancel: EventEmitter<any> = new EventEmitter<any>();
+
    constructor() { }
 
 
