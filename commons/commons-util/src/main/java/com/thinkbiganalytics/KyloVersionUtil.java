@@ -20,13 +20,12 @@ package com.thinkbiganalytics;
  * #L%
  */
 
+import com.google.common.base.Strings;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
-
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
@@ -38,14 +37,12 @@ import java.util.Properties;
 public class KyloVersionUtil {
 
     private static final Logger log = LoggerFactory.getLogger(KyloVersionUtil.class);
+    public static String versionString = null;
+    public static String buildTimestamp = null;
 
     public static KyloVersion getBuildVersion() {
         return parseVersion(getBuildVersionString());
     }
-
-    public static String versionString = null;
-
-    public static String buildTimestamp = null;
 
     public static boolean isUpToDate(KyloVersion dbVersion) {
         KyloVersion deployedVersion = getBuildVersion();
@@ -57,28 +54,28 @@ public class KyloVersionUtil {
             String[] dotSplit = versionString.split("\\.");
             String[] dashSplit = dotSplit[dotSplit.length - 1].split("-");
             dotSplit[dotSplit.length - 1] = dashSplit[0];
-            
+
             String tag = dashSplit.length > 1 ? dashSplit[1] : "";
             String major = "";
             String minor = "";
             String point = "";
             int majorIdx = 0;
-            
+
             if (dotSplit[0].startsWith("0")) {
-                major = dotSplit[0] + "." + dotSplit[1]; 
+                major = dotSplit[0] + "." + dotSplit[1];
                 majorIdx = 1;
             } else {
                 major = dotSplit[0];
             }
-            
+
             if (majorIdx + 1 < dotSplit.length) {
                 minor = dotSplit[majorIdx + 1];
             }
-            
+
             if (majorIdx + 2 < dotSplit.length) {
                 point = dotSplit[majorIdx + 2];
             }
-            
+
             return new Version(major, minor, point, tag);
         } else {
             return null;
@@ -91,7 +88,7 @@ public class KyloVersionUtil {
             Properties prop = new Properties();
             String versionFile = "version.txt";
 
-            try(InputStream in = KyloVersionUtil.class.getClassLoader().getResourceAsStream(versionFile)) {
+            try (InputStream in = KyloVersionUtil.class.getClassLoader().getResourceAsStream(versionFile)) {
                 URL url = KyloVersionUtil.class.getClassLoader().getResource(versionFile);
                 if (in != null) {
                     try {
@@ -105,7 +102,7 @@ public class KyloVersionUtil {
 
                     log.info("loaded Kylo version file: {}  build Time: {}", currentVersion, buildTimestamp);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 log.error("Error loading properties from input stream", e);
             }
             versionString = currentVersion;
@@ -143,7 +140,7 @@ public class KyloVersionUtil {
             this.minorVersion = minor;
             this.pointVersion = point;
             this.tag = tag;
-            
+
             // Fix the case where the minor version contains a tag due to an old schema version.
             if (this.minorVersion.contains("-")) {
                 String[] split = this.minorVersion.split("-");
@@ -194,7 +191,7 @@ public class KyloVersionUtil {
         public void setMinorVersion(String minorVersion) {
             this.minorVersion = minorVersion;
         }
-        
+
         public String getPointVersion() {
             return pointVersion == null ? "" : this.pointVersion;
         }
@@ -210,7 +207,7 @@ public class KyloVersionUtil {
         public void setTag(String tag) {
             this.tag = tag;
         }
-        
+
         @Override
         public KyloVersion withoutTag() {
             return new Version(this.getMajorVersion(), this.getMinorVersion(), this.getPointVersion(), null);
@@ -252,11 +249,11 @@ public class KyloVersionUtil {
             }
 
             KyloVersion that = (KyloVersion) o;
-            
-            return Objects.equals(this.getMajorVersion(), that.getMajorVersion()) && 
-                            Objects.equals(this.getMinorVersion(), that.getMinorVersion()) && 
-                            Objects.equals(this.getPointVersion(), that.getPointVersion()) && 
-                            Objects.equals(this.getTag(), that.getTag());
+
+            return Objects.equals(this.getMajorVersion(), that.getMajorVersion()) &&
+                   Objects.equals(this.getMinorVersion(), that.getMinorVersion()) &&
+                   Objects.equals(this.getPointVersion(), that.getPointVersion()) &&
+                   Objects.equals(this.getTag(), that.getTag());
         }
 
         @Override
@@ -269,9 +266,9 @@ public class KyloVersionUtil {
          */
         @Override
         public String toString() {
-            return getMajorVersion() + "." + getMinorVersion() 
-                + (Strings.isNullOrEmpty(getPointVersion()) ? "" : "." + getPointVersion())
-                + (Strings.isNullOrEmpty(getTag()) ? "" : "-" + getTag());
+            return getMajorVersion() + "." + getMinorVersion()
+                   + (Strings.isNullOrEmpty(getPointVersion()) ? "" : "." + getPointVersion())
+                   + (Strings.isNullOrEmpty(getTag()) ? "" : "-" + getTag());
         }
 
         /* (non-Javadoc)
@@ -280,13 +277,19 @@ public class KyloVersionUtil {
         @Override
         public int compareTo(KyloVersion o) {
             int result = 0;
-            if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) return result;
-            if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) return result;
-            if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
+            if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) {
+                return result;
+            }
+            if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) {
+                return result;
+            }
+            if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) {
+                return result;
+            }
             return getTag().compareTo(o.getTag());
         }
-        
-        
+
+
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String)
          */
@@ -294,7 +297,7 @@ public class KyloVersionUtil {
         public boolean isBefore(String major, String minor, String point) {
             return compareTo(new Version(major, minor, point, null)) < 0;
         }
-        
+
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
          */
