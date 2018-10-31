@@ -34,13 +34,12 @@
     <ng-container *ngIf="!loading && filteredList.length !== 0" >
       <mat-list>
         <mat-list-item *ngFor="let element of filteredList" style="height: 80px;">
-          <div fxLayout="row" fxLayoutAlign="space-evenly center" fxFlex="95">
-            <div fxLayout="column" class="item-column md-list-item-text">
+          <div fxLayout="row" fxLayoutAlign="space-evenly center" fxFlex="100">
+            <div fxFlex="70" fxLayout="column" class="item-column md-list-item-text">
               <div fxLayout="row">
-                <span class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>
+                <span fxFlex class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>
                 <span fxFlex="5"></span>
-                <span *ngIf="element.updateAvailable"
-                      style="white-space: nowrap; cursor: pointer;">
+                <span *ngIf="element.updateAvailable" style="white-space: nowrap; cursor: pointer;">
                     <mat-chip-list>
                       <mat-chip color="accent"
                                 selected
@@ -50,22 +49,23 @@
                   </span>
               </div>
               <div title="{{element.description}}" class="column-title column-title-bottom">
-                {{element.description|truncate:50}}
+                {{element.description}}
               </div>
             </div>
-            <span fxFlex>&nbsp;</span>
-            <button mat-button color="primary" (click)="downloadTemplate(element)">
-              <mat-icon icon="file_download" size="20" class="tc-accent"></mat-icon>
-              <span class="md-body-2">Download</span>
-            </button>
-            <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
-              <mat-icon icon="done" size="20" class="tc-accent"></mat-icon>
-              <span class="md-body-2">Import</span>
-            </button>
-            <button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">
-              <mat-icon icon="import_export" size="20" class="tc-accent"></mat-icon>
-              <span class="md-body-2">Import</span>
-            </button>
+            <div fxFlex="30" fxLayoutAlign="end" style="min-width:150px">
+              <button mat-button color="primary" (click)="downloadTemplate(element)">
+                <mat-icon  size="20" color="accent">file_download</mat-icon>
+                <span class="md-body-2">Download</span>
+              </button>
+              <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
+                <mat-icon  size="20" color="accent">done</mat-icon>
+                <span class="md-body-2">Import</span>
+              </button>
+              <button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">
+                <mat-icon size="20" color="accent">import_export</mat-icon>
+                <span class="md-body-2">Import</span>
+              </button>
+            </div>
           </div>
           <mat-divider></mat-divider>
         </mat-list-item>
