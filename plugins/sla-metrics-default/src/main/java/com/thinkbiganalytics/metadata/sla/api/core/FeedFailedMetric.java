@@ -29,8 +29,8 @@ import com.thinkbiganalytics.policy.PolicyPropertyTypes;
  * SLA metric used to notify if a feed fails
  * This will be exposed to the User Interface since it is annotated with {@link ServiceLevelAgreementMetric}
  */
-@ServiceLevelAgreementMetric(name = "Feed Failure Notification",
-                             description = "Act upon a Feed Failure")
+@ServiceLevelAgreementMetric(name = "Feed failure notification",
+                             description = "Act upon a feed failure")
 public class FeedFailedMetric implements Metric {
 
     @PolicyProperty(name = "FeedName",
@@ -42,7 +42,7 @@ public class FeedFailedMetric implements Metric {
 
     @Override
     public String getDescription() {
-        StringBuilder bldr = new StringBuilder("Feed Failure Notification:");
+        StringBuilder bldr = new StringBuilder("Feed failure notification:");
         bldr.append("\"").append(this.feedName).append("\" ");
         return bldr.toString();
     }

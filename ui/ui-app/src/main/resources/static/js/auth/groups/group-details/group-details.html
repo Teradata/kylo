@@ -22,9 +22,9 @@
     <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
         <header-section>
             <div layout="row" layout-align="center start">
-                <div class="card-title">Group Details</div>
+                <div class="card-title push-top-sm">Group Details</div>
                 <span flex></span>
-                <ng-md-icon icon="group" style="padding-right: 16px" size="30"></ng-md-icon>
+                <ng-md-icon icon="group" class="tc-accent" style="padding-right: 16px" size="30"></ng-md-icon>
             </div>
         </header-section>
         <body-section>
@@ -32,7 +32,7 @@
                 <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
                                          editable="vm.isEditable" is-valid="vm.isValid" allow-edit="vm.allowAdmin">
                     <readonly-section>
-                        <div layout="row" class="layout-padding-top-bottom">
+                        <div layout="row" class="layout-padding-bottom">
                             <span flex="25" class="property-name">Group Name</span>
 
                             <div flex>
@@ -59,8 +59,8 @@
                             <label>Group Name</label>
                             <input name="systemName" type="text" ng-model="vm.editModel.systemName"/>
                             <div ng-messages="vm.$error" md-auto-hide="false">
-                                <div ng-message="duplicateName">That group name is already in use.</div>
-                                <div ng-message="missingName">A group name is required.</div>
+                                <div ng-message="duplicateName">Group name is in use.</div>
+                                <div ng-message="missingName">Group name is required.</div>
                             </div>
                         </md-input-container>
                         <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.systemName !== null">
@@ -85,16 +85,16 @@
             </form>
             <vertical-section-layout section-title="Permissions" on-save-edit="vm.onSavePermissions()" on-edit="vm.onEditPermissions()" editable="vm.isPermissionsEditable"
                                      allow-edit="!vm.loading && vm.model.systemName !== null && vm.allowAdmin" ng-if="vm.groupId">
-                <readonly-section>
+                <readonly-section class="pull-top">
                     <thinkbig-permissions-table allowed="vm.actions" read-only="true"></thinkbig-permissions-table>
                 </readonly-section>
-                <editable-section>
+                <editable-section class="pull-top">
                     <thinkbig-permissions-table allowed="vm.editActions"></thinkbig-permissions-table>
                 </editable-section>
             </vertical-section-layout>
             <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Users" ng-if="vm.allowUsers" ng-if="vm.groupId">
                 <readonly-section>
-                    <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="!vm.loading && vm.model.systemName !== null && vm.model.memberCount > 0">
+                    <md-list layout-fill class="list-item-table list-condensed md-dense" id="policy-list" ng-if="!vm.loading && vm.model.systemName !== null && vm.model.memberCount > 0">
                         <md-list-item>
                             <div layout="row" layout-fill>
                                 <div flex="30" class="md-list-item-text hint">
@@ -125,7 +125,7 @@
                         </md-list-item>
                     </md-list>
                     <div ng-if="vm.loading || vm.model.systemName === null || vm.model.memberCount === 0">
-                        There are no users associated with this group.
+                        No users in group.
                     </div>
                 </readonly-section>
             </vertical-section-layout>

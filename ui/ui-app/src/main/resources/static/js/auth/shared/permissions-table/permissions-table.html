@@ -21,7 +21,7 @@
     <md-list-item ng-repeat="action in vm.available" class="md-2-line">
         <md-checkbox class="permissions-indent-{{action.$$level}}" ng-checked="action.$$allowed" ng-click="vm.toggle(action)" ng-disabled="readOnly"></md-checkbox>
         <div class="md-list-item-text" layout="column">
-            <h3>{{action.title}}</h3>
+            <h4>{{action.title}}</h4>
             <p>{{action.description}}</p>
         </div>
     </md-list-item>

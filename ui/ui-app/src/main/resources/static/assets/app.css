@@ -162,17 +162,14 @@ md-list md-datepicker .md-button.md-icon-button {
 
 #content {
   background-color: #e0e0e0;
-}
-/*
-#content {
   padding-left: 25px;
   padding-right: 25px;
   padding-top: 17px;
   padding-bottom: 25px;
-}
-*/
 
-#content.sla-list, #content.sla-edit, #content.sla-new {
+}
+
+#content.sla-list, #content.sla-edit, #content.sla-new, #content.template-info {
   padding:0px !important;
 }
 
@@ -939,10 +936,10 @@ Fade a element in/out
 
 /**
 Vertical section directive
- */
-
+*/
 .vertical-step-border {
-  border-left: grey 1px solid;
+  /* border-left: grey 1px solid; */
+  margin-top: -16px
 }
 
 /**

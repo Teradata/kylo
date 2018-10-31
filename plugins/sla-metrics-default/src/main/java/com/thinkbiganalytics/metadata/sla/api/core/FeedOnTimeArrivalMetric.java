@@ -50,8 +50,8 @@ import java.util.Locale;
  * SLA metric to ensure a feed gets executed by a specified time
  * This will be exposed to the User Interface since it is annotated with {@link ServiceLevelAgreementMetric}
  */
-@ServiceLevelAgreementMetric(name = "Feed Processing deadline",
-                             description = "Ensure a Feed processes data by a specified time")
+@ServiceLevelAgreementMetric(name = "Feed processing deadline",
+                             description = "Ensure a feed processes data by a specified time")
 public class FeedOnTimeArrivalMetric implements Metric {
 
     @PolicyProperty(name = "FeedName",
@@ -63,7 +63,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
     @PolicyProperty(name = "ExpectedDeliveryTime",
                     displayName = "Expected Delivery Time",
                     type = PolicyPropertyTypes.PROPERTY_TYPE.cron,
-                    hint = "Cron Expression for when you expect to receive this data",
+                    hint = "Cron expression of expected delivery",
                     value = "0 0 12 1/1 * ? *",
                     required = true)
     private String cronString;
@@ -73,7 +73,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
                     type = PolicyPropertyTypes.PROPERTY_TYPE.string,
                     pattern = "^\\d+$",
                     patternInvalidMessage = "The value must be numeric digits",
-                    hint = "Number specifying the amount of time allowed after the Expected Delivery Time",
+                    hint = "Tolerance after expected time",
                     group = "lateTime",
                     required = true)
     private Integer lateTime;
