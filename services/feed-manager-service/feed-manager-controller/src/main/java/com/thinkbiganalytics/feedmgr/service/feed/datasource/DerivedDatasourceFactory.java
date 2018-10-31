@@ -238,22 +238,23 @@ public class DerivedDatasourceFactory {
             }
 
             // Extract properties from node
-             DatasourceDefinition datasourceDefinition = null;
+            DatasourceDefinition datasourceDefinition = null;
             final Map<String, String> properties = new HashMap<>();
+            String userDatasourceId = (String) node.get("datasourceId");
 
-            if (node.get("datasourceId") == null || ((String) node.get("datasourceId")).equalsIgnoreCase("HIVE")) {
+            if ((userDatasourceId == null && node.get("dataset") == null) || (userDatasourceId != null && userDatasourceId.equalsIgnoreCase("HIVE"))) {
                 final String name = (String) node.get("name");
                 datasourceDefinition = hiveDefinition;
                 properties.put(HIVE_SCHEMA_KEY, StringUtils.trim(StringUtils.substringBefore(name, ".")));
                 properties.put(HIVE_TABLE_KEY, StringUtils.trim(StringUtils.substringAfterLast(name, ".")));
-            } else {
-                final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve((String) node.get("datasourceId")));
-               if(datasource != null) {
-                   datasourceDefinition = jdbcDefinition;
-                   properties.put(JDBC_CONNECTION_KEY, datasource.getName());
-                   properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
-                   properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, datasource.getName()));
-               }
+            } else if (userDatasourceId != null) {
+                final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(userDatasourceId));
+                if (datasource != null) {
+                    datasourceDefinition = jdbcDefinition;
+                    properties.put(JDBC_CONNECTION_KEY, datasource.getName());
+                    properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
+                    properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, datasource.getName()));
+                }
 
             }
             if (datasourceDefinition != null) {
