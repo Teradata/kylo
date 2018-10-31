@@ -36,6 +36,11 @@ public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
 
     public static final String NODE_TYPE = "tba:feedSource";
 
+    /**
+     * boolean flag indicating this source entry is used as a sample and should not be used in feed lineage
+     */
+    public static final String IS_SAMPLE = "tba:isSample";
+
     public JcrFeedSource(Node node) {
         super(node);
     }
@@ -60,6 +65,15 @@ public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
         
         super.remove();
     }
-    
+
+
+    @Override
+    public boolean isSample() {
+        return getProperty(IS_SAMPLE);
+    }
+
+    public void setSample(boolean isSample) {
+        setProperty(IS_SAMPLE, isSample);
+    }
     
 }
