@@ -15,7 +15,7 @@
         </mat-form-field>
         <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item [disableRipple]="true">
+          <button mat-menu-item style="cursor: default;">
             <span>Sort Options</span>
           </button>
           <button mat-menu-item (click)="sortData($event)">
