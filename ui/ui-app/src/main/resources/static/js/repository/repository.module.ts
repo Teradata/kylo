@@ -44,6 +44,7 @@ import {MatExpansionModule} from "@angular/material/expansion";
 import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
 import {MatChipsModule} from "@angular/material/chips";
 import {TemplateChangeCommentsComponent} from "./template-change-comments.component";
+import {MatIconModule} from "@angular/material/icon";
 
 const moduleName: string = require("feed-mgr/templates/module-name");
 
@@ -81,6 +82,7 @@ const moduleName: string = require("feed-mgr/templates/module-name");
         MatChipsModule,
         MatDividerModule,
         MatExpansionModule,
+        MatIconModule,
         MatInputModule,
         MatListModule,
         MatMenuModule,
