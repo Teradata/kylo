@@ -1,15 +1,22 @@
-import {moduleName} from "../module-name";
+import {OnDestroy, OnInit} from "@angular/core";
+import {StateService} from "@uirouter/angular";
 import * as angular from "angular";
+import {empty} from "rxjs/observable/empty";
+import {of} from "rxjs/observable/of";
+import {timer} from "rxjs/observable/timer";
+import {catchError} from "rxjs/operators/catchError";
+import {concatMap} from "rxjs/operators/concatMap";
+import {expand} from "rxjs/operators/expand";
+import {Subscription} from "rxjs/Subscription";
 
 import * as _ from "underscore";
 import {Common} from "../../../common/CommonTypes";
-import {StateService} from "@uirouter/angular";
-import {OnInit} from "@angular/core";
-import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
-import Map = Common.Map;
 import {ImportComponentOption, ImportComponentType, ImportService, ImportTemplateResult, InputPortListItem, RemoteProcessInputPort} from '../../services/ImportComponentOptionTypes';
+import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
+import {moduleName} from "../module-name";
+import Map = Common.Map;
 
-export class ImportTemplateController implements ng.IController, OnInit {
+export class ImportTemplateController implements angular.IController, OnDestroy, OnInit {
 
     /**
      * the angular ng-form for validity checks
@@ -62,7 +69,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * handle on the $interval object to cancel later
      * @type {null}
      */
-    uploadStatusCheck: angular.IPromise<any> = undefined;
+    uploadStatusCheck: Subscription;
 
     /**
      * Percent upload complete
@@ -215,11 +222,25 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.checkRemoteProcessGroupAware();
     }
 
-    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", "$state"];
+    $onDestroy(): void {
+        this.ngOnDestroy();
+    }
 
-    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
-        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
-        , private registerTemplateService: RegisterTemplateServiceFactory, private $state: StateService) {
+    ngOnDestroy(): void {
+        this.stopUploadStatus();
+    }
+
+    static $inject = ["$scope", "$http", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", "$state"];
+
+    constructor(private $scope: angular.IScope,
+                private $http: angular.IHttpService,
+                private $timeout: angular.ITimeoutService,
+                private $mdDialog: angular.material.IDialogService,
+                private FileUpload: any,
+                private RestUrlService: any,
+                private ImportService: ImportService,
+                private registerTemplateService: RegisterTemplateServiceFactory,
+                private $state: StateService) {
 
         /**
          * Watch when the file changes
@@ -413,17 +434,16 @@ export class ImportTemplateController implements ng.IController, OnInit {
             this.stopUploadStatus(1000);
 
 
-        }
+        };
         let errorFn = (response: angular.IHttpResponse<any>) => {
-            this.importResult = response.data;
+            this.importResult = response.data || {};
             this.uploadInProgress = false;
             this.importResultIcon = "error";
             this.importResultIconColor = "#FF0000";
-            var msg = response.data.message != undefined ? response.data.message : "Unable to import the template.";
-            this.message = msg;
+            this.message = (response.data && response.data.message) ? response.data.message : "Unable to import the template.";
 
             this.stopUploadStatus(1000);
-        }
+        };
 
         //build up the options from the Map and into the array for uploading
         var importComponentOptions = this.ImportService.getImportOptionsForUpload(this.importComponentOptions);
@@ -469,25 +489,14 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Stop the upload and stop the progress indicator
      * @param {number} delay  wait this amount of millis before stopping
      */
-    stopUploadStatus(delay: number) {
-
-        let stopStatusCheck = () => {
+    stopUploadStatus(delay?: number) {
+        const trigger = delay ? timer(delay) : empty();
+        trigger.subscribe(null, null, () => {
             this.uploadProgress = 0;
-            if (angular.isDefined(this.uploadStatusCheck)) {
-                this.$interval.cancel(this.uploadStatusCheck);
-                this.uploadStatusCheck = undefined;
+            if (this.uploadStatusCheck) {
+                this.uploadStatusCheck.unsubscribe();
             }
-        }
-
-        if (delay != null && delay != undefined) {
-            this.$timeout(() => {
-                stopStatusCheck();
-            }, delay)
-        }
-        else {
-            stopStatusCheck();
-        }
-
+        });
     }
 
     /**
@@ -496,16 +505,26 @@ export class ImportTemplateController implements ng.IController, OnInit {
     startUploadStatus() {
         this.stopUploadStatus(null);
         this.uploadStatusMessages = [];
-        this.uploadStatusCheck = this.$interval(() => {
-            //poll for status
-            this.$http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).then((response: angular.IHttpResponse<any>) => {
+        this.uploadStatusCheck = of(null).pipe(
+            expand(() => {
+                return timer(500).pipe(
+                    concatMap(() => this.$http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey))),
+                    catchError(err => {
+                        console.log("Failed to get upload status", err);
+                        return of(null);
+                    })
+                );
+            }),
+        ).subscribe(
+            (response: angular.IHttpResponse<any>) => {
                 if (response && response.data && response.data != null) {
                     this.uploadStatusMessages = response.data.messages;
                     this.uploadProgress = response.data.percentComplete;
                 }
-            }, (err: any) => {
+            },
+            err => {
+                console.log("Error in upload status loop", err);
             });
-        }, 500);
     }
 
 

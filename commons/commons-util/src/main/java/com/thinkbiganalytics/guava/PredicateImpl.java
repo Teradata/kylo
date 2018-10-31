@@ -24,17 +24,19 @@ import com.google.common.base.Predicate;
  * <p>Derived class needs to implement the {@link #test} method.
  *
  * <p>Helps with the transition to {@code java.util.function.Predicate},
- * which was introduced in JDK 1.8, and is required in Guava 21.0 and higer,
- * but still works on JDK 1.7.
+ * which was introduced in JDK 1.8, and is required in Guava 21.0 and higer, but still works on JDK 1.7.
  *
  * @param <T> the type of the input to the predicate
  * @implNote Copied from Apache licensed org/apache/calcite/runtime/PredicateImpl.java
  */
 public abstract class PredicateImpl<T> implements Predicate<T> {
+
     public final boolean apply(T input) {
         return test(input);
     }
 
-    /** Overrides {@code java.util.function.Predicate#test} in JDK8 and higher. */
-    public abstract boolean test( T t);
+    /**
+     * Overrides {@code java.util.function.Predicate#test} in JDK8 and higher.
+     */
+    public abstract boolean test(T t);
 }

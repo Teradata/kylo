@@ -9,9 +9,9 @@ package com.thinkbiganalytics;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,7 +30,6 @@ import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.joda.time.format.PeriodParser;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -39,8 +38,8 @@ import java.util.Locale;
  */
 public class DateTimeUtil {
 
-    static PeriodFormatter periodFormatter = new PeriodFormatterBuilder().append(null, new StringPeriodParser()).toFormatter();
-
+    public static final DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
+    public static final DateTimeFormatter dateTimeFormatWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z");
     static final PeriodFormatter STANDARD_PERIOD_FORMAT = new PeriodFormatterBuilder()
         .appendDays()
         .appendSuffix(" day", " days")
@@ -56,11 +55,7 @@ public class DateTimeUtil {
         .minimumPrintedDigits(2)
         .appendSuffix(" sec ", " sec ")
         .toFormatter();
-
-    public static final DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
-
-    public static final DateTimeFormatter dateTimeFormatWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z");
-
+    static PeriodFormatter periodFormatter = new PeriodFormatterBuilder().append(null, new StringPeriodParser()).toFormatter();
 
     public static Date convertToUTC(Date date) {
         DateTime time = new DateTime(date.getTime());
@@ -103,8 +98,7 @@ public class DateTimeUtil {
     }
 
     /**
-     * Parse a string period into a Joda time period
-     * i.e. 3Y, 20W
+     * Parse a string period into a Joda time period i.e. 3Y, 20W
      *
      * @param period a string period (i.e. 3Y, 20W)
      * @return return the period
@@ -183,7 +177,7 @@ public class DateTimeUtil {
             period.addHours(0);
             period.addMinutes(0);
             period.addSeconds(0);
-            for(String part:parts){
+            for (String part : parts) {
                 addToPeriod(period, part);
             }
             return periodStr.length();

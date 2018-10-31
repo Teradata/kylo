@@ -3,18 +3,19 @@ import {TemplateMetadata, TemplateRepository} from "../services/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {StateService} from "@uirouter/angular";
-import {MatPaginator} from "@angular/material/paginator";
+import {MatPaginator, PageEvent} from "@angular/material/paginator";
 import {MatSort, Sort} from "@angular/material/sort";
 import {MatTableDataSource} from "@angular/material/table";
-import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
 import {MatDialog} from "@angular/material/dialog";
 import {TemplateUpdatesDialog} from "../dialog/template-updates-dialog";
+import {IPageChangeEvent} from "@covalent/core";
 
 /**
  * List templates from repository ready for installation.
  */
 @Component({
     selector: "list-templates",
+    styleUrls: ['js/repository/list/list.component.css'],
     templateUrl: "js/repository/list/list.component.html"
 })
 export class ListTemplatesComponent implements OnInit {
@@ -35,6 +36,7 @@ export class ListTemplatesComponent implements OnInit {
      * List of available templates
      */
     templates: TemplateMetadata[] = [];
+    filteredList: TemplateMetadata[] = [];
     repositories: TemplateRepository[] = [];
     selectedRepository: TemplateRepository;
 
@@ -63,7 +65,9 @@ export class ListTemplatesComponent implements OnInit {
         this.templateService.getTemplatesInRepository(this.selectedRepository).subscribe(
             (data: TemplateMetadata[]) => {
                 this.templates = data;
+                this.filteredList = data;
                 this.dataSource.data = data;
+                this.search();
                 this.loading = false;
             },
             (error: any) => {
@@ -116,10 +120,25 @@ export class ListTemplatesComponent implements OnInit {
 
     pageSize: number = 50;
     currentPage: number = 1;
-    searchTerm: string = '';
+    fromRow: number = 1;
+    filteredTotal = 0;
+    searchTerm = '';
+    pageEvent: PageEvent;
 
-    search(filter: string): void {
-        this.dataSource.filter = filter.trim().toLowerCase();
+    search(): void {
+        // this.dataSource.filter = filter.trim().toLowerCase();
+        let newData = this.dataTableService.filterData(this.templates, this.searchTerm, true, []);
+        this.filteredTotal = newData.length;
+        newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
+        this.filteredList = newData;
+    }
+
+    page(pagingEvent: IPageChangeEvent): void {
+        console.log(pagingEvent.fromRow, pagingEvent.page, pagingEvent.pageSize)
+        this.fromRow = pagingEvent.fromRow;
+        this.currentPage = pagingEvent.page;
+        this.pageSize = pagingEvent.pageSize;
+        this.search();
     }
 
     viewUpdates(template: TemplateMetadata): void {
