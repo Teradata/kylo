@@ -1,11 +1,8 @@
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {TemplateMetadata, TemplateRepository} from "../services/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {StateService} from "@uirouter/angular";
-import {MatPaginator, PageEvent} from "@angular/material/paginator";
-import {MatSort, Sort} from "@angular/material/sort";
-import {MatTableDataSource} from "@angular/material/table";
 import {MatDialog} from "@angular/material/dialog";
 import {TemplateUpdatesDialog} from "../dialog/template-updates-dialog";
 import {IPageChangeEvent} from "@covalent/core";
@@ -15,7 +12,6 @@ import {IPageChangeEvent} from "@covalent/core";
  */
 @Component({
     selector: "list-templates",
-    styleUrls: ['js/repository/list/list.component.css'],
     templateUrl: "js/repository/list/list.component.html"
 })
 export class ListTemplatesComponent implements OnInit {
@@ -29,9 +25,6 @@ export class ListTemplatesComponent implements OnInit {
     loading:boolean = true;
     selectedTemplate: TemplateMetadata;
     errorMsg: string = "";
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
-
     /**
      * List of available templates
      */
@@ -40,11 +33,7 @@ export class ListTemplatesComponent implements OnInit {
     repositories: TemplateRepository[] = [];
     selectedRepository: TemplateRepository;
 
-    dataSource = new MatTableDataSource();
-
     public ngOnInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
         this.init();
     }
 
@@ -66,7 +55,6 @@ export class ListTemplatesComponent implements OnInit {
             (data: TemplateMetadata[]) => {
                 this.templates = data;
                 this.filteredList = data;
-                this.dataSource.data = data;
                 this.search();
                 this.loading = false;
             },
@@ -81,15 +69,24 @@ export class ListTemplatesComponent implements OnInit {
         );
     }
 
-    sortData(sort: Sort) {
+    direction: string = "";
+    icon: string = "";
+    sortData(event: any) {
 
-        this.dataSource.data= this.dataSource.data.sort((a, b) => {
-            const isAsc = sort.direction === 'asc';
-            switch (sort.active) {
-                case 'templateName': return this.compare(a.templateName, b.templateName, isAsc);
-                default: return 0;
-            }
+        const isAsc = this.direction === 'asc' || this.direction === "";
+        if(isAsc){
+            this.direction = 'desc';
+            this.icon = "keyboard_arrow_up";
+        } else{
+            this.direction = 'asc';
+            this.icon = "keyboard_arrow_down";
+        }
+        this.templates = this.templates.sort((a, b) => {
+            return this.compare(a.templateName, b.templateName, isAsc);
         });
+        this.search();
+        event.stopPropagation();
+        event.preventDefault();
     }
 
     private compare(a: number | string, b: number | string, isAsc: boolean) {
@@ -118,12 +115,11 @@ export class ListTemplatesComponent implements OnInit {
         this.state.go("import-template", param);
     }
 
-    pageSize: number = 50;
+    pageSize: number = 10;
     currentPage: number = 1;
     fromRow: number = 1;
     filteredTotal = 0;
     searchTerm = '';
-    pageEvent: PageEvent;
 
     search(): void {
         // this.dataSource.filter = filter.trim().toLowerCase();
@@ -134,7 +130,6 @@ export class ListTemplatesComponent implements OnInit {
     }
 
     page(pagingEvent: IPageChangeEvent): void {
-        console.log(pagingEvent.fromRow, pagingEvent.page, pagingEvent.pageSize)
         this.fromRow = pagingEvent.fromRow;
         this.currentPage = pagingEvent.page;
         this.pageSize = pagingEvent.pageSize;
@@ -142,7 +137,7 @@ export class ListTemplatesComponent implements OnInit {
     }
 
     viewUpdates(template: TemplateMetadata): void {
-
+        console.log(template.updates);
         this.dialog.open(TemplateUpdatesDialog, {
             data: {updates: template.updates},
             width: '40%'

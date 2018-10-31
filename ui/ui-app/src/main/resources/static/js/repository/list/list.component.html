@@ -15,11 +15,14 @@
         </mat-form-field>
         <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item disabled>
+          <button mat-menu-item [disableRipple]="true">
             <span>Sort Options</span>
           </button>
-          <button mat-menu-item>
-            <span (click)="sortData($event)">Template Name</span>
+          <button mat-menu-item (click)="sortData($event)">
+                <span fxLayout="row">
+                  <span fxFlex>Template Name</span>
+                  <span fxFlex="10"><mat-icon *ngIf="icon !== ''">{{icon}}</mat-icon></span>
+                </span>
           </button>
         </mat-menu>
       </div>
@@ -36,10 +39,10 @@
         <mat-list-item *ngFor="let element of filteredList" style="height: 80px;">
           <div fxLayout="row" fxLayoutAlign="space-evenly center" fxFlex="100">
             <div fxFlex="70" fxLayout="column" class="item-column md-list-item-text">
-              <div fxLayout="row">
-                <span fxFlex class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>
+              <div fxLayout="row" fxLayoutAlign="start center">
+                <span class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>
                 <span fxFlex="5"></span>
-                <span *ngIf="element.updateAvailable" style="white-space: nowrap; cursor: pointer;">
+                <span *ngIf="element.updates.length > 0" style="white-space: nowrap; cursor: pointer;">
                     <mat-chip-list>
                       <mat-chip color="accent"
                                 selected
@@ -82,56 +85,3 @@
     </ng-container>
 </mat-card>
 </div>
-    <!--<mat-table *ngIf="!loading && templates.length !== 0" [dataSource]="dataSource" matSort (matSortChange)="sortData($event)" class="mat-elevation-z8">-->
-
-      <!--<ng-container matColumnDef="templateName">-->
-        <!--<mat-header-cell fxFlex *matHeaderCellDef mat-sort-header="templateName"> <span style="padding-left: 22px;"> Template </span></mat-header-cell>-->
-        <!--<mat-cell fxFlex *matCellDef="let element">-->
-          <!--<div  fxLayout="column" class="item-column md-list-item-text">-->
-            <!--<div fxLayout="row">-->
-              <!--<span class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>-->
-              <!--<span fxFlex="5"></span>-->
-              <!--<span *ngIf="element.updateAvailable"-->
-                    <!--style="white-space: nowrap; cursor: pointer;"-->
-                    <!--&gt;-->
-                <!--&lt;!&ndash;<ng-md-icon icon="update" size="20" style="fill:#F08C38"></ng-md-icon>View Updates&ndash;&gt;-->
-                <!--<mat-chip-list>-->
-                  <!--<mat-chip color="accent"-->
-                            <!--selected-->
-                            <!--style="cursor: pointer; height: 3px; font-size: 10px;"-->
-                            <!--(click)="viewUpdates(element)">View Updates</mat-chip>-->
-                <!--</mat-chip-list>-->
-              <!--</span>-->
-            <!--</div>-->
-            <!--<div title="{{element.description}}" class="column-title column-title-bottom">-->
-              <!--{{element.description}}-->
-            <!--</div>-->
-          <!--</div>-->
-        <!--</mat-cell>-->
-      <!--</ng-container>-->
-
-      <!--<ng-container matColumnDef="actions">-->
-        <!--<mat-header-cell fxFlex="250px" *matHeaderCellDef></mat-header-cell>-->
-        <!--<mat-cell fxFlex="250px" *matCellDef="let element">-->
-          <!--<div fxLayout="row" fxLayoutAlign="end center">-->
-            <!--<button mat-button color="primary" (click)="downloadTemplate(element)">-->
-              <!--<ng-md-icon icon="file_download" size="20" class="tc-accent"></ng-md-icon>-->
-              <!--<span class="md-body-2">Download</span>-->
-            <!--</button>-->
-
-            <!--<button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">-->
-              <!--<ng-md-icon icon="done" size="20" class="tc-accent"></ng-md-icon>-->
-              <!--<span class="md-body-2">Import</span>-->
-            <!--</button>-->
-
-            <!--<button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">-->
-              <!--<ng-md-icon icon="import_export" size="20" class="tc-accent"></ng-md-icon>-->
-              <!--<span class="md-body-2">Import</span>-->
-            <!--</button>-->
-          <!--</div>-->
-        <!--</mat-cell>-->
-      <!--</ng-container>-->
-
-      <!--<mat-header-row *matHeaderRowDef="['templateName', 'actions']"></mat-header-row>-->
-      <!--<mat-row *matRowDef="let row; columns: ['templateName', 'actions']"></mat-row>-->
-    <!--</mat-table>-->
