@@ -206,9 +206,11 @@ public class NiFiTemplateCache {
         if (cachedProperties == null || templateDTO.getTimestamp().getTime() > cachedProperties.getLastUpdated()) {
             List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateDTO, includePropertyDescriptors);
             Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations = new NiFiTemplateCacheProcessorGraph(templateDTO).build();
-            if (cachedProperties == null && registeredTemplate != null ) {
+            if (cachedProperties == null  ) {
                 cachedProperties = new TemplatePropertiesCache(templateDTO.getId(), includePropertyDescriptors, templateDTO.getTimestamp().getTime());
-                templatePropertiesCache.put(cacheKey, cachedProperties);
+                if(registeredTemplate != null){
+                    templatePropertiesCache.put(cacheKey, cachedProperties);
+                }
             }
             if (registeredTemplate != null) {
                 //merge in the saved state of the template
