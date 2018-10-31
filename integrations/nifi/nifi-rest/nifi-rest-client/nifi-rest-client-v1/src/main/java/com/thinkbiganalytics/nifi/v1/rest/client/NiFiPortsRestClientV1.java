@@ -88,7 +88,7 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
            //NIFI bug
            if(StringUtils.isNotBlank(inputPort.getId())  && NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(inputPort.getState())) {
                Set<ConnectionDTO> connectionDTOS = client.connections().findConnectionsToEntity(processGroupId, inputPort.getId());
-               if(connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getDestination().getId().equals(inputPort.getId()))){
+               if(connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getSource().getId().equals(inputPort.getId()))){
                    log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are on upstream connections to it ",inputPort.getId(), inputPort.getName(), processGroupId);
                    update = false;
                }
@@ -103,6 +103,13 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
                revision.setVersion(current.getRevision().getVersion());
                entity.setRevision(revision);
 
+               //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
+               if(current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && inputPort.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())){
+                   //first need to make it ENABLED
+                   inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                   PortDTO port = updateInputPort(processGroupId,inputPort);
+                   inputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+               }
                try {
                    return client.put("/input-ports/" + inputPort.getId(), entity, PortEntity.class).getComponent();
                } catch (final NotFoundException e) {
