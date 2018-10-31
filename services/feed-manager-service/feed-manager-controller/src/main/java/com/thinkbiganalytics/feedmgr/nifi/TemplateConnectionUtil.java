@@ -262,12 +262,9 @@ public class TemplateConnectionUtil {
                     }
                 }
                 //ensure the input port is running
-                //ensure its running
-              //  if(!reusableTemplatePort.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
                     reusableTemplatePort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
                     log.info("Connected feed to reusable input port.  Marking reusable input port as running {} ({})  ", reusableTemplatePort.getName(), reusableTemplatePort.getId());
                     restClient.getNiFiRestClient().ports().updateInputPort(reusableTemplateCategoryGroupId, reusableTemplatePort);
-               // }
 
 
             }
