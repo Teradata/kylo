@@ -40,13 +40,13 @@
                       (inputChange)="queryUsersAndGroups($event)"
                       [ngModelOptions]="{standalone: true}">
             <ng-template td-chip let-chip="chip">
-              {{ chip.title }}
+              {{ chip.title ? chip.title : chip.systemName }}
             </ng-template>
             <ng-template td-autocomplete-option let-option="option">
               <span class="item-title">
                 <ng-md-icon icon="group" class="accent-color" *ngIf="option.type=='group'"></ng-md-icon>
                 <ng-md-icon icon="account_circle" class="primary-color-1" *ngIf="option.type=='user'"></ng-md-icon>
-                <span> {{option.title}} </span>
+                <span> {{ option.title ? option.title : option.systemName }} </span>
               </span>
             </ng-template>
             </td-chips>
