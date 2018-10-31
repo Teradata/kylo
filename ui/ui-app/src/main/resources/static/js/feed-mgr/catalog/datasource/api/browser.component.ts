@@ -1,22 +1,21 @@
 import {HttpClient} from "@angular/common/http";
-import { Location } from '@angular/common';
-import {Component, Input, Output, OnInit, EventEmitter, TemplateRef, ContentChild, OnDestroy} from "@angular/core";
-import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
-import {DataSource} from '../../api/models/datasource';
-import {StateService,Transition, UIRouter,StateObject} from "@uirouter/angular";
-import {IPageChangeEvent} from '@covalent/core/paging';
-import {SelectionService, SelectionStrategy} from '../../api/services/selection.service';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {MatDialog} from '@angular/material/dialog';
-import {SelectionDialogComponent} from './dialog/selection-dialog.component';
-import {Node} from '../../api/models/node';
-import {BrowserObject} from '../../api/models/browser-object';
-import {BrowserColumn} from '../../api/models/browser-column';
+import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
-import {finalize} from 'rxjs/operators/finalize';
+import {IPageChangeEvent} from '@covalent/core/paging';
+import {StateService} from "@uirouter/angular";
 import {catchError} from 'rxjs/operators/catchError';
-import {NgForOfContext} from "@angular/common";
-import {BrowserService} from "./browser.service";
+import {finalize} from 'rxjs/operators/finalize';
+
 import {KyloRouterService} from "../../../../services/kylo-router.service";
+import {BrowserColumn} from '../../api/models/browser-column';
+import {BrowserObject} from '../../api/models/browser-object';
+import {DataSource} from '../../api/models/datasource';
+import {Node} from '../../api/models/node';
+import {SelectionService, SelectionStrategy} from '../../api/services/selection.service';
+import {BrowserService} from "./browser.service";
+import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 
 @Component({
     selector: "remote-files",
@@ -133,34 +132,34 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.errorMsg = undefined;
         this.loadingService.register(BrowserComponent.topOfPageLoader);
         this.loadingService.register(BrowserComponent.tableLoader);
-        this.http.get(this.getUrl(), {params: this.params})
-            .pipe(finalize(() => {
+        this.http.get(this.getUrl(), {params: this.params}).pipe(
+            finalize(() => {
                 this.loadingService.resolve(BrowserComponent.topOfPageLoader);
                 this.loadingService.resolve(BrowserComponent.tableLoader);
-            }))
-            .pipe(catchError((err) => {
+            }),
+            catchError((err) => {
                 this.errorMsg = err.message;
                 return [];
-            }))
-            .subscribe((data: Array<any>) => {
-                this.files = data.map(serverObject => {
-                    const browserObject = this.mapServerResponseToBrowserObject(serverObject);
-                    const node = new Node(browserObject.name);
-                    node.setBrowserObject(browserObject);
-                    thisNode.addChild(node);
-                    return browserObject;
-                });
-                if(selectLastPath){
-                    let lastPath = this.selectionService.getLastPathNodeName(this.datasource.id);
-                    if(lastPath && this.node) {
-                        if(!this.isSelectChildDisabled(lastPath)) {
-                            this.selectionStrategy.toggleChild(this.node, lastPath, true);
-                        }
+            })
+        ).subscribe((data: Array<any>) => {
+            this.files = data.map(serverObject => {
+                const browserObject = this.mapServerResponseToBrowserObject(serverObject);
+                const node = new Node(browserObject.name);
+                node.setBrowserObject(browserObject);
+                thisNode.addChild(node);
+                return browserObject;
+            });
+            if(selectLastPath){
+                let lastPath = this.selectionService.getLastPathNodeName(this.datasource.id);
+                if(lastPath && this.node) {
+                    if(!this.isSelectChildDisabled(lastPath)) {
+                        this.selectionStrategy.toggleChild(this.node, lastPath, true);
                     }
                 }
-                this.initSelection();
-                this.filter();
-            });
+            }
+            this.initSelection();
+            this.filter();
+        });
     }
 
     ngOnDestroy(){
@@ -438,7 +437,17 @@ export class BrowserComponent implements OnInit, OnDestroy {
         newData = this.dataTableService.filterData(newData, this.searchTerm, true, excludedColumns);
         newData = this.applyCustomFilter(newData);
         this.filteredTotal = newData.length;
-        newData = this.dataTableService.sortData(newData, this.sortBy, this.sortOrder);
+        newData.sort((a, b) => {  // use a custom sort as TdDataTableService only does case-sensitive sorting
+            let direction = 0;
+            if (!Number.isNaN(Number.parseFloat(a[this.sortBy])) && !Number.isNaN(Number.parseFloat(b[this.sortBy]))) {
+                direction = Number.parseFloat(a[this.sortBy]) - Number.parseFloat(b[this.sortBy]);
+            } else if (typeof a[this.sortBy] === "string" && typeof b[this.sortBy] === "string") {
+                direction = a[this.sortBy].localeCompare(b[this.sortBy]);
+            } else {
+                direction = a[this.sortBy] < b[this.sortBy] ? -1 : a[this.sortBy] > b[this.sortBy] ? 1 : 0;
+            }
+            return direction * (this.sortOrder === TdDataTableSortingOrder.Descending ? -1 : 1);
+        });
         newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
         this.filteredFiles = newData;
         this.browserService.onBrowserDataFiltered(newData)

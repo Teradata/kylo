@@ -41,7 +41,7 @@ export class RemoteFilesComponent extends BrowserComponent {
     }
 
     getSortByColumnName() {
-        return this.columns[1].name;
+        return this.columns[2].name;
     }
 
     getStateName(): string {
