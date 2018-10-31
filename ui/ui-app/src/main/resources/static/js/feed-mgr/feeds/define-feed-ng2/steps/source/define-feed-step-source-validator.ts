@@ -2,7 +2,7 @@ import {FeedStepValidator} from "../../../../model/feed/feed-step-validator";
 import {SKIP_SOURCE_CATALOG_KEY, Feed} from "../../../../model/feed/feed.model";
 import {Step} from "../../../../model/feed/feed-step.model";
 
-export class DefineFeedStepSourceSampleValidator extends FeedStepValidator {
+export class DefineFeedStepSourceValidator extends FeedStepValidator {
 
     constructor(){
         super();

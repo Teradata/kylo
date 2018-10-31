@@ -44,10 +44,10 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedServiceTypes} from "../../../../services/FeedServiceTypes";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
-import {ShowCatalogCanceledEvent} from "../source-sample/define-feed-step-source-sample.component";
+import {ShowCatalogCanceledEvent} from "./source-sample/define-feed-step-source-sample.component";
 import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
-import {DefineFeedSourceSampleService} from "../source-sample/define-feed-source-sample.service";
+import {DefineFeedSourceSampleService} from "./source-sample/define-feed-source-sample.service";
 import {CatalogService} from "../../../../catalog/api/services/catalog.service";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
@@ -398,6 +398,23 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
         this.tableFormControls.removePartitionFieldFormControls(partitions[0]);
     };
+
+    /**
+     * Should the skip header row option be shown?
+     * @returns {boolean}
+     */
+    allowSkipHeaderOption(): boolean {
+        return true;
+        /*
+        if(this.feed && this.feed.sampleDataSet && this.feed.sampleDataSet.preview && this.feed.sampleDataSet.preview instanceof  PreviewFileDataSet) {
+            return (<PreviewFileDataSet> this.feed.sampleDataSet.preview).schemaParser.allowSkipHeader;
+        }
+        else {
+            return false;
+        }
+        */
+    }
+
 
     onIndexCheckAllChange() : boolean {
         this.indexCheckAll.toggleAll();

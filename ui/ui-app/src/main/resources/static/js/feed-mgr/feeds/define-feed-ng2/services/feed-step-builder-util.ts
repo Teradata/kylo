@@ -1,7 +1,7 @@
 import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
 import {Step} from "../../../model/feed/feed-step.model";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
-import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
+import {DefineFeedStepSourceValidator} from "../steps/source/define-feed-step-source-validator";
 import {FeedStepBuilder, StepBuilder} from "../../../model/feed/feed-step-builder";
 import {TranslateService} from "@ngx-translate/core";
 import {DefineFeedPropertiesValidator} from "../steps/properties/define-feed-properties-validator";
@@ -49,7 +49,7 @@ export class FeedStepBuilderUtil {
 
     sourceStep(required:boolean = true):StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Source.Name")
-        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Define source options").setSref("datasources").setRequired(required).setValidator(new DefineFeedStepSourceSampleValidator());
+        return  new StepBuilder().setName(name).setIcon("work").setSystemName(FeedStepConstants.STEP_FEED_SOURCE).setDescription("Define source options").setSref("datasources").setRequired(required).setValidator(new DefineFeedStepSourceValidator());
     }
 
     wranglerStep():StepBuilder {

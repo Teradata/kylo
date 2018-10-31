@@ -841,7 +841,7 @@ export class Feed  implements KyloObject{
         if(previewDataSet){
             let sampleFile = previewDataSet instanceof PreviewFileDataSet;
             let table = previewDataSet instanceof  PreviewHiveDataSet || previewDataSet instanceof PreviewJdbcDataSet;
-            if(this.sampleFile) {
+            if(sampleFile) {
                 this.table.method = "SAMPLE_FILE";
             }
             else  if(table) {

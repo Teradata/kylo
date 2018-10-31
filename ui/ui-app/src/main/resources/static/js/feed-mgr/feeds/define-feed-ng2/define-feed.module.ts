@@ -63,7 +63,7 @@ import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-c
 import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
 import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";
-import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
+import {DefineFeedStepSourceSampleComponent} from "./steps/define-table/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
@@ -89,8 +89,8 @@ import {FeedSlaComponent} from './summary/sla/feed-sla.component';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {FeedNifiPropertiesService} from "./services/feed-nifi-properties.service";
 import {FeedNifiPropertiesComponent} from "./steps/feed-details/feed-nifi-properties.component";
-import {DefineFeedSourceSampleService} from "./steps/source-sample/define-feed-source-sample.service";
-import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
+import {DefineFeedSourceSampleService} from "./steps/define-table/source-sample/define-feed-source-sample.service";
+import {DefineFeedStepSourceComponent} from "./steps/source/define-feed-step-source.component";
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
@@ -162,10 +162,6 @@ import {SlaModule} from "../../sla/sla.module";
         FeedInfoCategoryComponent,
         FeedInfoTagsComponent,
         FeedSlaComponent,
-      //  SlaListComponent,
-      //  SlaRowComponent,
-       // SlaDetailsComponent,
-       // SlaFormComponent,
         SelectNetworkNodeComponent,
         FeedInfoTagsComponent,
         FeedNifiPropertiesComponent,

@@ -12,10 +12,7 @@
         </form>
 
 
-        <div fxLayout="column">
-          <h3 mat-subheader translate class="property-heading">views.define-feed-general-info.AdditionalFeedOptions</h3>
-          <mat-checkbox [(ngModel)]="feed.options.skipHeader" [disabled]="feed.readonly" [ngModelOptions]="{standalone: true}">{{"views.feed-data-policies.Shr" | translate}}</mat-checkbox>
-        </div>
+
 
       </mat-card-content>
       <mat-card-actions *ngIf="!feed.readonly">
