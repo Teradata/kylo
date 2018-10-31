@@ -330,9 +330,11 @@ public class FeedDetails extends JcrObject implements PropertiedMixin, Auditable
         return new JcrFeedSource(feedSrcNode, datasource);
     }
     
-    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSource) {
+    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSource, boolean isSample) {
         Node feedSrcNode = JcrUtil.addNode(getNode(), FeedDetails.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
-        return new JcrFeedSource(feedSrcNode, dataSource);
+        JcrFeedSource feedSource = new JcrFeedSource(feedSrcNode, dataSource);
+        feedSource.setSample(isSample);
+        return feedSource;
     }
 
     protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {

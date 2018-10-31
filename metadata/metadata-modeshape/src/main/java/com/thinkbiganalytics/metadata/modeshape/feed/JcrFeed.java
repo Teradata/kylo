@@ -611,8 +611,8 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
         return getFeedDetails().map(d -> d.ensureFeedSource(datasource)).orElse(null);
     }
     
-    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSet) {
-        return getFeedDetails().map(d -> d.ensureFeedSource(dataSet)).orElse(null);
+    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSet, boolean isSample) {
+        return getFeedDetails().map(d -> d.ensureFeedSource(dataSet, isSample)).orElse(null);
     }
 
     protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {

@@ -324,6 +324,7 @@
     - tba:dataSet (WEAKREFERENCE) 
 
 [tba:feedSource] > tba:feedConnection
+    - tba:isSample (BOOLEAN) = false
 
 [tba:feedDestination] > tba:feedConnection 
 //  + fieldPolicies (tba:fieldPolicy) sns

@@ -397,13 +397,28 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
         if (source == null) {
             return dataSetProvider.find(dsId)
-                .map(ds -> feed.ensureFeedSource((JcrDataSet) ds))
+                .map(ds -> feed.ensureFeedSource((JcrDataSet) ds, false))
                 .orElseThrow(() -> new DataSetNotFoundException(dsId));
         } else {
             return source;
         }
     }
-    
+
+    @Override
+    public FeedSource ensureFeedSource(ID feedId, DataSet.ID dsId, boolean isSample) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        FeedSource source = feed.getSource(dsId);
+
+        if (source == null) {
+            return dataSetProvider.find(dsId)
+                .map(ds -> feed.ensureFeedSource((JcrDataSet) ds, isSample))
+                .orElseThrow(() -> new DataSetNotFoundException(dsId));
+        } else {
+            return source;
+        }
+    }
+
+
     @Override
     public FeedDestination ensureFeedDestination(ID feedId, DataSet.ID dsId) {
         JcrFeed feed = (JcrFeed) findById(feedId);

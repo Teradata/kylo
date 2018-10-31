@@ -45,6 +45,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVe
     
     FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId);
 
+    FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId, boolean isSample);
+
     FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId);
     
     FeedDestination ensureFeedDestination(Feed.ID feedId, DataSet.ID dsId);

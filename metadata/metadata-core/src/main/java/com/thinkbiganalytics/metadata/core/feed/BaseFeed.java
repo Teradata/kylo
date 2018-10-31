@@ -524,6 +524,9 @@ public class BaseFeed implements Feed {
 
     }
 
+
+
+
     @Override
     public Principal getOwner() {
         return owner;
@@ -652,6 +655,11 @@ public class BaseFeed implements Feed {
         
         public Source(DataSet ds) {
             super(ds);
+        }
+
+        @Override
+        public boolean isSample() {
+            return false;
         }
     }
 

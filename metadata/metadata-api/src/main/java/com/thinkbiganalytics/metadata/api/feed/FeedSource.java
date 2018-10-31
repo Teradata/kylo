@@ -28,5 +28,7 @@ package com.thinkbiganalytics.metadata.api.feed;
  */
 public interface FeedSource extends FeedConnection {
 
+    boolean isSample();
+
     
 }
