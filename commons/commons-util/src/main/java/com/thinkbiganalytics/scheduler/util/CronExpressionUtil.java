@@ -102,6 +102,9 @@ public class CronExpressionUtil {
         Date lastDate = new Date();
         for (int i = 0; i < count; i++) {
             Date nextDate = cron.getNextValidTimeAfter(lastDate);
+            if(nextDate == null){
+                break;
+            }
             dates.add(nextDate);
             lastDate = nextDate;
         }
