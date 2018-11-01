@@ -47,7 +47,7 @@ public class DefaultHaveTableSettings extends DefaultTableSettings implements Hi
 
     @Override
     public void setStructured(boolean structured) {
-        this.structured = true;
+        this.structured = structured;
     }
 
     @Override
