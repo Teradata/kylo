@@ -241,7 +241,7 @@ export class IndexController implements angular.IComponentController {
      */
     onTransitionStart(transition: Transition) {
         if (this.stateLoaderTimeout == null) {
-            this.stateLoaderTimeout = setTimeout(() => this.loadingService.register(STATE_LOADER), 250);
+            this.stateLoaderTimeout = setTimeout(() => this.loadingService.register(STATE_LOADER), 10);
         }
     }
 
