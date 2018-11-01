@@ -235,7 +235,7 @@ public class CatalogModelTransform {
         return (domain) -> {
             com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model = new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet();
             model.setId(domain.getId().toString());
-            model.setDataSource(dataSourceToRestModel().apply(domain.getDataSource()));
+            model.setDataSource(dataSourceToRestModel(true,encryptedCredentials).apply(domain.getDataSource()));
             model.setTitle(domain.getTitle());
             // TODO: add description
             DataSetTemplate template = sparkParamsToRestModel(domain.getDataSource().getConnector().getPluginId(), encryptedCredentials).apply(domain.getSparkParameters());
