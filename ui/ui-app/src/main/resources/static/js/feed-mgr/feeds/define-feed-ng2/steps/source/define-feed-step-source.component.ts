@@ -117,9 +117,9 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     cancelFeedEdit(){
         //reassign the propertiesInitialized flag when canceling edit
-        let propertiesInitialized = this.feed.propertiesInitialized;
+       // let propertiesInitialized = this.feed.propertiesInitialized;
         super.cancelFeedEdit();
-        this.feed.propertiesInitialized = propertiesInitialized;
+       // this.feed.propertiesInitialized = propertiesInitialized;
 
     }
 

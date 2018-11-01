@@ -86,9 +86,10 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
 
 
     cancelFeedEdit(){
-        let oldFeed = this.defineFeedService.getFeed();
-        this.propertyList.reset(oldFeed.userProperties);
-        this.initEditActions();
+        super.cancelFeedEdit();
+        //let oldFeed = this.defineFeedService.getFeed();
+        //this.propertyList.reset(oldFeed.userProperties);
+        //this.initEditActions();
     }
 
     /**
