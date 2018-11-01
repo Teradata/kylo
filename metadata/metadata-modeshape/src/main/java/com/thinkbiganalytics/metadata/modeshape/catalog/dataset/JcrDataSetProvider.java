@@ -133,8 +133,24 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         return JcrUtil.toSystemName(title);
     }
 
-    private String generateTitle(DataSource dataSource, String title) {
-        return StringUtils.isEmpty(title) ? dataSource.getSystemName() + "-" + UUID.randomUUID() : title;
+    private String generateTitle(DataSource dataSource, String title, String format, Map<String, String> options, Set<String> paths) {
+        String derivedTile = title;
+        DataSetSparkParameters srcParams = dataSource.getEffectiveSparkParameters();
+        String effectiveFormat = StringUtils.isEmpty(format) ? srcParams.getFormat() : format;
+
+        if (StringUtils.isEmpty(title)) {
+            if (effectiveFormat.equals("jdbc")) {
+                derivedTile = Stream.concat(srcParams.getOptions().entrySet().stream(), options.entrySet().stream())
+                        .filter(e -> e.getKey().equals("dbtable"))
+                        .map(Entry::getValue)
+                        .findFirst()
+                        .orElse(null); 
+            } else {
+                derivedTile = Stream.concat(srcParams.getPaths().stream(), paths.stream()).collect(Collectors.joining(","));
+            }
+        }
+        
+        return StringUtils.isEmpty(derivedTile) ? dataSource.getSystemName() + "-" + UUID.randomUUID() : derivedTile;
     }
 
     private class Builder implements DataSetBuilder {
@@ -268,7 +284,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         }
 
         private DataSet create(long hash, boolean errorIfExisting) {
-            String ensuredTitle = generateTitle(this.dataSource, this.title);
+            String ensuredTitle = generateTitle(this.dataSource, this.title, this.format, this.options, this.paths);
             String dsSystemName = generateSystemName(ensuredTitle);
             Path dataSetPath = MetadataPaths.dataSetPath(this.dataSource.getConnector().getSystemName(), this.dataSource.getSystemName(), dsSystemName);
 
