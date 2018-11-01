@@ -29,7 +29,7 @@ export class FeedStepBuilderUtil {
     feedDetailsStep():StepBuilder {
         let name = this._translateService.instant("FeedDefinition.Steps.AdditionalOptions.Name")
         let desc = this._translateService.instant("FeedDefinition.Steps.AdditionalOptions.Description")
-        return new StepBuilder().setName(name).setIcon("speaker_notes").setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription(desc).setSref("feed-details").setRequired(true);
+        return new StepBuilder().setName(name).setIcon("speaker_notes").setSystemName(FeedStepConstants.STEP_FEED_DETAILS).addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).setDescription(desc).setSref("feed-details").setRequired(true);
     }
 
     permissionStep():StepBuilder {
