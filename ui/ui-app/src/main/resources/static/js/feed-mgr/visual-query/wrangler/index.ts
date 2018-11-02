@@ -9,7 +9,6 @@ export * from "./column-delegate";
 export * from "./parse-exception";
 export * from "./query-engine";
 export * from "./query-engine-constants";
-export * from "./query-engine-factory.service";
 export * from "./query-parser";
 export * from "./script-builder";
 export * from "./script-expression";

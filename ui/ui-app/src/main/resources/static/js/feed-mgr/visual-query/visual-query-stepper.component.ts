@@ -4,10 +4,10 @@ import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-d
 import {FeedDataTransformation} from "../model/feed-data-transformation";
 import {Feed} from "../model/feed/feed.model";
 import {QueryEngine} from "./wrangler/query-engine";
-import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
 import {MatIconRegistry} from "@angular/material/icon";
 import {FeedLoadingService} from "../feeds/define-feed-ng2/services/feed-loading-service";
+import {SparkQueryEngine} from './services/spark/spark-query-engine';
 
 @Component({
     selector: 'visual-query-stepper',
@@ -81,10 +81,11 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
                 @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
-                @Inject("VisualQueryEngineFactory") private queryEngineFactory: QueryEngineFactory,private matIconRegistry: MatIconRegistry,
+                private engineRef: SparkQueryEngine, private matIconRegistry: MatIconRegistry,
                 feedLoadingService: FeedLoadingService) {
         console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
         this.feedLoadingService = feedLoadingService;
+        this.engine = engineRef;
 
         matIconRegistry.registerFontClassAlias ('fa');
 
@@ -102,20 +103,10 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.getEngine();
         this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
         let collection = this.previewDataSetCollectionService.getSparkDataSets();
         this.dataModel.model.datasets = collection;
         console.log('collection', collection);
-    }
-
-    getEngine() {
-        if (this.engineName == undefined) {
-            this.engineName = 'spark';
-        }
-        this.queryEngineFactory.getEngine(this.engineName).then((engine: QueryEngine<any>) => {
-            this.engine = engine;
-        });
     }
 
     /**

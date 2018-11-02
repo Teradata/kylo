@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    "allowUnreachableCode": false,
-    "declaration": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "lib": [
       "es2015",
       "dom"
@@ -11,6 +7,10 @@
     "module": "amd",
     "target": "es5",
     "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowUnreachableCode": false,
+    "declaration": false,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

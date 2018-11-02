@@ -57,9 +57,7 @@ import {VisualQueryTable} from "./transform-data/visual-query-table/visual-query
 import {VisualQueryControlDirective} from "./visual-query-control.directive";
 import {visualQueryStates} from "./visual-query-states";
 import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
-import {INJECTOR} from "./wrangler/api/index";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
-import {QueryEngineFactory, registerQueryEngine} from "./wrangler/query-engine-factory.service";
 import {VisualQueryProfileStatsController} from "./transform-data/main-dialogs/VisualQueryProfileStats";
 import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
 import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
@@ -73,8 +71,6 @@ import {CovalentMessageModule} from "@covalent/core/message";
 import "./visual-query.component.scss";
 import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
 
-
-registerQueryEngine('spark', SparkQueryEngine);
 
 @NgModule({
     declarations: [
@@ -165,12 +161,11 @@ registerQueryEngine('spark', SparkQueryEngine);
         WranglerModule
     ],
     providers: [
-        {provide: INJECTOR, useFactory: () => QueryEngineFactory.$$wranglerInjector},
-        {provide: "VisualQueryEngineFactory", useClass: QueryEngineFactory},
         VisualQueryPainterService,
         VisualQuerySaveService,
         WranglerDataService,
-        WranglerTableService
+        WranglerTableService,
+        SparkQueryEngine,
     ]
 })
 export class VisualQueryModule {

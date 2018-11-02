@@ -7,7 +7,7 @@
     "build:webpack:prod": "webpack --progress --profile --env.production",
     "start:webpack:dev": "webpack-dev-server --progress --profile --env.dev",
     "start:webpack:dev-tool-eval": "webpack-dev-server --progress --profile --env.dev-tool --devtool eval",
-    "start:webpack:dev-tool-cheap": "webpack-dev-server --progress --env.dev-tool --devtool cheap-module-eval-source-map",
+    "start:webpack:dev-tool-cheap": "webpack-dev-server --progress --env.dev-tool-cheap --devtool cheap-module-eval-source-map",
     "build:lib": "ng-packagr -p src/main/resources/static/lib/feed/package.json",
     "build": "npm run build:webpack:prod",
     "serve": "lite-server -c bs-config.js",

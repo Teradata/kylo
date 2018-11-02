@@ -10,17 +10,12 @@ import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService
 import {UiComponentsService} from "./UiComponentsService";
 import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
 import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
-
-import {AngularServiceUpgrader} from "../../kylo-utils/angular-service-upgrader"
 import {HiveService} from "./HiveService";
 import {VisualQueryService} from "./VisualQueryService";
 import {DatasourcesService} from "./DatasourcesService";
 import {UserGroupService} from "../../services/UserGroupService";
 import {AccessControlService} from "../../services/AccessControlService";
-import {AddButtonService} from '../../services/AddButtonService';
-import {AddButtonServiceFactoryProvider} from '../../services/angular2';
 
-// export const entityAccessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(EntityAccessControlService);
 export const entityAccessControlServiceProvider: FactoryProvider = {
     provide: EntityAccessControlService,
     useFactory: EntityAccessControlServiceFactoryProvider,
@@ -30,7 +25,6 @@ export function EntityAccessControlServiceFactoryProvider(i: angular.auto.IInjec
     return i.get('EntityAccessControlService');
 }
 
-// export const datasourcesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DatasourcesService);
 export const datasourcesServiceProvider: FactoryProvider = {
     provide: DatasourcesService,
     useFactory: DatasourcesServiceFactoryProvider,
@@ -40,7 +34,6 @@ export function DatasourcesServiceFactoryProvider(i: angular.auto.IInjectorServi
     return i.get('DatasourcesService');
 }
 
-// export const categoriesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(CategoriesService);
 export const categoriesServiceProvider: FactoryProvider = {
     provide: CategoriesService,
     useFactory: CategoriesServiceFactoryProvider,
@@ -50,7 +43,6 @@ export function CategoriesServiceFactoryProvider(i: angular.auto.IInjectorServic
     return i.get('CategoriesService');
 }
 
-// export const feedServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedService);
 export const feedServiceProvider: FactoryProvider = {
     provide: FeedService,
     useFactory: FeedServiceFactoryProvider,
@@ -60,7 +52,6 @@ export function FeedServiceFactoryProvider(i: angular.auto.IInjectorService) {
     return i.get('FeedService');
 }
 
-// export const hiveServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(HiveService);
 export const hiveServiceProvider: FactoryProvider = {
     provide: HiveService,
     useFactory: HiveServiceFactoryProvider,
@@ -70,7 +61,6 @@ export function HiveServiceFactoryProvider(i: angular.auto.IInjectorService) {
     return i.get('HiveService');
 }
 
-// export const visualQueryServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(VisualQueryService);
 export const visualQueryServiceProvider: FactoryProvider = {
     provide: VisualQueryService,
     useFactory: VisualQueryServiceFactoryProvider,
@@ -80,7 +70,6 @@ export function VisualQueryServiceFactoryProvider(i: angular.auto.IInjectorServi
     return i.get('VisualQueryService');
 }
 
-// export const domainTypesServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DomainTypesService);
 export const domainTypesServiceProvider: FactoryProvider = {
     provide: DomainTypesService,
     useFactory: DomainTypesServiceFactoryProvider,
@@ -90,7 +79,6 @@ export function DomainTypesServiceFactoryProvider(i: angular.auto.IInjectorServi
     return i.get('DomainTypesService');
 }
 
-// export const feedPropertyServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(DefaultFeedPropertyService,"FeedPropertyService");
 export const feedPropertyServiceProvider: FactoryProvider = {
     provide: DefaultFeedPropertyService,
     useFactory: FeedPropertyServiceFactoryProvider,
@@ -100,7 +88,6 @@ export function FeedPropertyServiceFactoryProvider(i: angular.auto.IInjectorServ
     return i.get('FeedPropertyService');
 }
 
-// export const registerTemplatePropertyServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(RegisterTemplatePropertyService);
 export const registerTemplatePropertyServiceProvider: FactoryProvider = {
     provide: RegisterTemplatePropertyService,
     useFactory: RegisterTemplatePropertyServiceFactoryProvider,
@@ -110,7 +97,6 @@ export function RegisterTemplatePropertyServiceFactoryProvider(i: angular.auto.I
     return i.get('RegisterTemplatePropertyService');
 }
 
-// export const uiComponentsServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(UiComponentsService);
 export const uiComponentsServiceProvider: FactoryProvider = {
     provide: UiComponentsService,
     useFactory: UiComponentsServiceFactoryProvider,
@@ -120,7 +106,6 @@ export function UiComponentsServiceFactoryProvider(i: angular.auto.IInjectorServ
     return i.get('UiComponentsService');
 }
 
-// export const feedInputProcessorPropertiesTemplateServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedInputProcessorPropertiesTemplateService);
 export const feedInputProcessorPropertiesTemplateServiceProvider: FactoryProvider = {
     provide: FeedInputProcessorPropertiesTemplateService,
     useFactory: FeedInputProcessorPropertiesTemplateServiceFactoryProvider,
@@ -130,7 +115,6 @@ export function FeedInputProcessorPropertiesTemplateServiceFactoryProvider(i: an
     return i.get('FeedInputProcessorPropertiesTemplateService');
 }
 
-// export const feedDetailsProcessorRenderingHelperProvider: FactoryProvider = AngularServiceUpgrader.upgrade(FeedDetailsProcessorRenderingHelper);
 export const feedDetailsProcessorRenderingHelperProvider: FactoryProvider = {
     provide: FeedDetailsProcessorRenderingHelper,
     useFactory: FeedDetailsProcessorRenderingHelperFactoryProvider,
@@ -140,7 +124,6 @@ export function FeedDetailsProcessorRenderingHelperFactoryProvider(i: angular.au
     return i.get('FeedDetailsProcessorRenderingHelper');
 }
 
-// export const userGroupServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(UserGroupService);
 export const userGroupServiceProvider: FactoryProvider = {
     provide: UserGroupService,
     useFactory: UserGroupServiceFactoryProvider,
@@ -150,7 +133,6 @@ export function UserGroupServiceFactoryProvider(i: angular.auto.IInjectorService
     return i.get('UserGroupService');
 }
 
-// export const accessControlServiceProvider: FactoryProvider = AngularServiceUpgrader.upgrade(AccessControlService);
 export const accessControlServiceProvider: FactoryProvider = {
     provide: AccessControlService,
     useFactory: AccessControlServiceFactoryProvider,

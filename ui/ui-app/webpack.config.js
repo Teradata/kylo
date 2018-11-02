@@ -123,9 +123,6 @@ const webpackConfig = (env) => {
                 'ng-text-truncate': path.join(staticJsVendorDir, 'ng-text-truncate/ng-text-truncate'),
                 'ment-io': path.join(staticJsVendorDir, 'ment.io/mentio'),
 
-                // 'ng2-nvd3': path.join(staticNodeModules, 'ng2-nvd3/build/index'), //now in root nod_modules
-                // 'ng2-codemirror': path.join(staticNodeModules, 'ng2-codemirror/lib/index.js'), //in root node_modules
-
                 'urlParams': path.join(staticDir, 'login/jquery.urlParam.js'),
             }
         },
@@ -365,7 +362,7 @@ const webpackConfig = (env) => {
         if (env && env.dev) { //i.e. we dont' want SourcePlugin if env is other than dev env, e.g. if env is dev-tool-cheap
             config.plugins.push(
                 SourcePlugin //this plugin is faster than devtool=source-map because its excluding node_modules, bower_components and vendor dirs
-            )
+            );
         }
     }
 
@@ -393,7 +390,7 @@ const wranlgerDependencies = [
         from: './bower_components/angular-ui-grid/ui-grid.ttf',
         to: './bower_components/angular-ui-grid/ui-grid.ttf'
     }
-]
+];
 
 const templates = [
     {
