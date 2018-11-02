@@ -1,7 +1,11 @@
-<feed-info-item [feed]="feed" [name]="readonlySchedule" description="Schedule" icon="access_time" (cancel)="cancel()" (save)="save()" [editable]="true" [editing]="editing">
+<feed-info-item [feed]="feed" [name]="readonlySchedule" description="Schedule" icon="access_time" (edit)="onEdit()" (cancel)="cancel()" (save)="save()" [editable]="true" [editing]="editing" [readonlyList]="readonlyScheduleList" [isSaveDisabled]="!valid">
+<div *ngIf="!valid && !loading">
+  Invalid form
+</div>
 <form [formGroup]="formGroup">
-  <feed-schedule #feedSchedule [parentForm]="formGroup"  [editable]="true" [(feed)]="feed"></feed-schedule>
+  <feed-schedule #feedSchedule [parentForm]="formGroup"  [editable]="true" [(feed)]="feed" ></feed-schedule>
 </form>
+
 </feed-info-item>
 
 

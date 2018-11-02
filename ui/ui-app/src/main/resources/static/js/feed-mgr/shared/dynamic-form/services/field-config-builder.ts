@@ -16,7 +16,7 @@ import {Icon} from '../model/Icon';
 
 
 export abstract class FieldConfigBuilder<T> {
-    private value: any;
+    protected value: any;
     private key: string;
     private required: boolean;
     private order: number;
@@ -328,6 +328,7 @@ export class RadioButtonFieldBuilder extends FieldConfigBuilder<RadioButton> {
 
 export class ChipsFieldBuilder extends FieldConfigBuilder<Chip> {
     items:any[]
+    stacked:boolean = false;
 
     public constructor(formGroupBuilder?:DynamicFormFieldGroupBuilder) {
         super(formGroupBuilder)
@@ -342,9 +343,17 @@ export class ChipsFieldBuilder extends FieldConfigBuilder<Chip> {
         return this;
     }
 
+    setStacked(stacked:boolean):ChipsFieldBuilder {
+        this.stacked = stacked;
+        return this;
+    }
+
+
     protected buildOptions(){
         let options = super.buildOptions();
         options.items = this.items;
+        options.values = this.value;
+        options.stacked = this.stacked;
         return options;
     }
 }

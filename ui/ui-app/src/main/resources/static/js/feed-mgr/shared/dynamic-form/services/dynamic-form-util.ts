@@ -4,6 +4,7 @@ import {TranslateService} from "@ngx-translate/core";
 import {SectionHeader} from "../model/SectionHeader";
 import {StaticText} from "../model/StaticText";
 import {Checkbox} from "../model/Checkbox";
+import {Chip} from "../model/Chip";
 
 export class DynamicFormUtil {
 
@@ -80,6 +81,9 @@ export class DynamicFormUtil {
         let value:any = field.value || ''
         if(field.controlType == "checkbox"){
             value = (field as Checkbox).checked;
+        }
+        if(field.controlType == Chip.CONTROL_TYPE) {
+            value = (field as Chip).selectedItems;
         }
 
         return new FormControl(value, validatorOpts)

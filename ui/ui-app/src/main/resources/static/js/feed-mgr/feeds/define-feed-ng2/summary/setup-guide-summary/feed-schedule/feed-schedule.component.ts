@@ -1,7 +1,7 @@
 import {NiFiExecutionNodeConfiguration} from "../../../../../model/nifi-execution-node-configuration";
 import {NiFiTimerUnit} from "../../../../../model/nifi-timer-unit";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit, ViewContainerRef} from "@angular/core";
 import {Feed} from "../../../../../model/feed/feed.model";
 import {NiFiClusterStatus} from "../../../../../model/nifi-cluster-status";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -9,6 +9,7 @@ import {NiFiService} from "../../../../../services/NiFiService";
 import {FeedConstants} from "../../../../../services/FeedConstants";
 import * as _ from "underscore";
 import {FeedPreconditionDialogService} from "../../../../../shared/feed-precondition/feed-precondition-dialog-service";
+import {CloneUtil} from "../../../../../../common/utils/clone-util";
 
 @Component({
     selector: "feed-schedule",
@@ -54,6 +55,13 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
 
     /**
+     * copy of the preconditions that will be modified and applied back to the feed on save
+     */
+    preconditions:any[];
+
+
+
+    /**
      * NiFi Timer Units
      * @type {NiFiTimerUnit[]}
      */
@@ -75,7 +83,8 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
     constructor( private nifiService: NiFiService,
                  private dialogService: TdDialogService,
-                 private preconditionDialogService: FeedPreconditionDialogService) {
+                 private preconditionDialogService: FeedPreconditionDialogService,
+                 private _viewContainerRef:ViewContainerRef) {
         this.scheduleForm = new FormGroup({});
        this.allScheduleStrategies = Object.keys(FeedConstants.SCHEDULE_STRATEGIES).map(key => FeedConstants.SCHEDULE_STRATEGIES[key])
 
@@ -92,7 +101,8 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         if(this.parentForm){
             this.parentForm.registerControl("scheduleForm",this.scheduleForm);
         }
-        this.registerFormControls();
+        this.preconditions = this.feed.schedule.preconditions != undefined ? this.feed.schedule.preconditions : [];
+        this.initializFormControls();
     }
 
     ngOnDestroy() {
@@ -130,11 +140,22 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         }
     }
 
+    private initializFormControls(){
+        if(!this.checkAndSetValue("scheduleStrategy",this.feed.schedule.schedulingStrategy)) {
+            let scheduleStrategyControl = new FormControl(this.feed.schedule.schedulingStrategy, []);
+            scheduleStrategyControl.valueChanges.subscribe(value => {
+                this.registerFormControls();
+            })
+            this.scheduleForm.registerControl("scheduleStrategy", scheduleStrategyControl);
+        }
+        this.registerFormControls();
+    }
+
     /**
      * register form controls with the feed values
      */
    private registerFormControls(){
-        let cronExpressionValue = FeedConstants.DEFAULT_CRON;
+       let cronExpressionValue = FeedConstants.DEFAULT_CRON;
        let timerAmountValue = 5;
        let timerUnitsValue  = 'min';
 
@@ -145,11 +166,6 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
        } else if(this.feed.schedule.schedulingStrategy == FeedConstants.SCHEDULE_STRATEGIES.CRON_DRIVEN.value){
            cronExpressionValue = this.feed.schedule.schedulingPeriod;
        }
-
-        if(!this.checkAndSetValue("scheduleStrategy",this.feed.schedule.schedulingStrategy)) {
-            let scheduleStrategyControl = new FormControl(this.feed.schedule.schedulingStrategy, []);
-            this.scheduleForm.registerControl("scheduleStrategy", scheduleStrategyControl);
-        }
 
        this.checkAndSetValue("cronExpression",cronExpressionValue);
 
@@ -168,10 +184,19 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
             this.scheduleForm.registerControl("timerUnits", timerUnitsFormControl)
         }
 
+        if(this.isTriggerDriven()) {
+            let preconditions = this.preconditions.map(precondition => precondition.propertyValuesDisplayString).join(",");
+            if(!this.checkAndSetValue("preconditions",preconditions)){
+                this.scheduleForm.addControl("preconditions", new FormControl(preconditions,[Validators.required]));
+            }
+        }
+        else {
+            if(this.scheduleForm.contains("preconditions")){
+                this.scheduleForm.removeControl("preconditions");
+            }
+        }
+
     }
-
-
-
 
     /**
      * Show alert for a rapid timer for batch feed.
@@ -202,6 +227,9 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         if(this.isCronDriven()){
             this.feed.schedule.schedulingPeriod = formModel.cronExpression;
         }
+        else if(this.isTriggerDriven()) {
+            this.feed.schedule.preconditions = this.preconditions;
+        }
         else {
             this.feed.schedule.schedulingPeriod = formModel.timerAmount+" "+formModel.timerUnits;
         }
@@ -213,6 +241,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
      * @param {Feed} feed
      */
     reset(feed:Feed){
+        this.preconditions = this.feed.schedule.preconditions != undefined ? this.feed.schedule.preconditions : [];
         this.registerFormControls();
     }
 
@@ -275,15 +304,33 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
 
    private showPreconditionDialog(index: any) {
-        this.preconditionDialogService.openDialog({feed: this.feed, itemIndex: index});
+        this.preconditionDialogService.openDialog({feed: this.feed, preconditions:this.preconditions, itemIndex: index}, this._viewContainerRef).subscribe((preconditions:any[]) => {
+            let preconditionsString =preconditions.map(precondition => precondition.name).join(",");
+            this.checkAndSetValue("preconditions",preconditionsString)
+            console.log('SAVED ',preconditions)
+            this.preconditions = preconditions;
+       });
    }
 
     /**
      * Validates the inputs are good
      */
-   private validate() {
-        //TODO: To be implemented
+   public validate() {
+       if(this.feed) {
+           if (FeedConstants.SCHEDULE_STRATEGIES.TRIGGER_DRIVEN.value == this.feed.schedule.schedulingStrategy) {
+               return this.preconditions.length >0;
+           }
+           else if (!this.editable) {
+               this.feed.schedule.schedulingPeriod != null
+           }
+           else {
+               return this.scheduleForm.valid;
+           }
        }
+       else {
+           return false;
+       }
+    }
 
 
     /**

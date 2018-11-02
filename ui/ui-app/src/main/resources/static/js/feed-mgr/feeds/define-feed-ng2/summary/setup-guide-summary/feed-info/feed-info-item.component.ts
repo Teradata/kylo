@@ -7,7 +7,7 @@ import {ISubscription} from "rxjs/Subscription";
 
 @Component({
     selector:"feed-info-item",
-    styleUrls:["./feed-info-item.component.css"],
+    styleUrls:["./feed-info-item.component.scss"],
     templateUrl:"./feed-info-item.component.html"
 })
 export class FeedInfoItemComponent implements OnDestroy{
@@ -31,6 +31,15 @@ export class FeedInfoItemComponent implements OnDestroy{
 
     @Input()
     description:string;
+
+    @Input()
+    readonlyList:string[];
+
+    @Input()
+    customReadonlyLayout:boolean = false;
+
+    @Input()
+    isSaveDisabled:boolean = false;
 
     @Output()
     edit:EventEmitter<any> = new EventEmitter<any>();
