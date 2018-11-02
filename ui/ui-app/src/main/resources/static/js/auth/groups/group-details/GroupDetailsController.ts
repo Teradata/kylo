@@ -129,7 +129,7 @@ export class GroupDetailsController implements ng.IComponentController {
          */
         onCancel() {
             if (this.model.systemName === null) {
-                this.StateService.Auth().navigateToGroups();
+                this.StateService.Auth.navigateToGroups();
             }
         };
 
@@ -138,14 +138,14 @@ export class GroupDetailsController implements ng.IComponentController {
          */
         onDelete() {
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
-             this.UserService.deleteGroup(this.$transition$.params().groupId)
+             this.UserService.deleteGroup(this.model.systemName)
                     .then(() => {
                         this.$mdToast.show(
                                 this.$mdToast.simple()
                                         .textContent("Successfully deleted the group " + name)
                                         .hideDelay(3000)
                         );
-                        this.StateService.Auth().navigateToGroups();
+                        this.StateService.Auth.navigateToGroups();
                     }, () => {
                         this.$mdDialog.show(
                                 this.$mdDialog.alert()
@@ -237,8 +237,8 @@ export class GroupDetailsController implements ng.IComponentController {
      *
      * @param user the user
      */
-    onUserClick = function(user: any) {
-        this.StateService.Auth().navigateToUserDetails(user.systemName);
+    onUserClick(user: any) {
+        this.StateService.Auth.navigateToUserDetails(user.systemName);
     };
 }
 

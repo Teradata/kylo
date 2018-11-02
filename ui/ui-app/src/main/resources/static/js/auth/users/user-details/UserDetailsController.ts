@@ -168,7 +168,7 @@ export class UserDetailsController implements ng.IComponentController {
          */
         onCancel() {
             if (this.model.systemName === null) {
-                this.StateService.Auth().navigateToUsers();
+                this.StateService.Auth.navigateToUsers();
             }
         };
 
@@ -184,7 +184,7 @@ export class UserDetailsController implements ng.IComponentController {
                                         .textContent("Successfully deleted the user " + name)
                                         .hideDelay(3000)
                         );
-                        this.StateService.Auth().navigateToUsers();
+                        this.StateService.Auth.navigateToUsers();
                     }, () => {
                         this.$mdDialog.show(
                                 this.$mdDialog.alert()

@@ -108,14 +108,12 @@
                                 </div>
                             </div>
                         </md-list-item>
-                        <md-list-item ng-repeat="user in vm.users" ng-click="vm.onUserClick(user)">
-                            <div layout="row" layout-fill>
-                                <div flex="30" class="md-list-item-text">
-                                    <md-input-container class="md-block" flex-gt-sm>
-                                        <div>{{vm.getUserName(user)}}</div>
-                                    </md-input-container>
+                        <md-list-item ng-repeat="user in vm.users" class="hover">
+                            <div layout="row" layout-fill ng-click="vm.onUserClick(user)">
+                                <div flex="30" class="md-list-item-text overflow-hidden pad-right-md" style="text-overflow: ellipsis; white-space: nowrap">
+                                    {{vm.getUserName(user)}}
                                 </div>
-                                <div flex="50" class="md-list-item-text">
+                                <div flex="50" class="md-list-item-text overflow-hidden pad-right-md" style="text-overflow: ellipsis; white-space: nowrap">
                                     {{user.email}}
                                 </div>
                                 <div flex="20" class="md-list-item-text">

@@ -42,10 +42,10 @@ export class HomeController implements ng.IComponentController{
                 return this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
             }
             if (this.accessControlService.hasAction(AccessConstants.USERS_ACCESS, actions)) {
-                return this.StateService.Auth().navigateToUsers();
+                return this.StateService.Auth.navigateToUsers();
             }
             if (this.accessControlService.hasAction(AccessConstants.GROUP_ACCESS, actions)) {
-                return this.StateService.Auth().navigateToGroups();
+                return this.StateService.Auth.navigateToGroups();
             }
 
             /*
