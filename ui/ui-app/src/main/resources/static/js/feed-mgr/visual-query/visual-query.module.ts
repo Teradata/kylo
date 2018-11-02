@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {Inject, NgModule} from "@angular/core";
+import {NgModule} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
@@ -34,7 +34,6 @@ import {UIRouterModule} from "@uirouter/angular";
 import {CodemirrorModule} from "ng2-codemirror";
 import {NvD3Module} from "ng2-nvd3";
 import {DndListModule} from "ngx-drag-and-drop-lists";
-import {ILazyLoad} from "ocLazyLoad";
 import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
 
 import {KyloCommonModule} from "../../common/common.module";
@@ -170,13 +169,7 @@ import {WranglerModule} from "./wrangler/core/wrangler.module";
         SparkQueryEngine,
     ]
 })
-export class VisualQueryModule {
-    constructor(@Inject("$ocLazyLoad") $ocLazyLoad: ILazyLoad) {
-        $ocLazyLoad.load({
-            files: []
-        });
-    }
-}
+export class VisualQueryModule {}
 
 @NgModule({
     imports: [
