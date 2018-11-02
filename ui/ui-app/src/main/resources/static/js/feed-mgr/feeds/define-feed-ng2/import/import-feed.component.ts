@@ -1,10 +1,10 @@
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {ImportComponentType, ImportComponentOption, ImportService, ImportPropertyFilter, ImportProperty} from "../../../services/ImportComponentOptionTypes";
+import {ImportComponentOption, ImportComponentType, ImportProperty, ImportService} from "../../../services/ImportComponentOptionTypes";
 import {FileUpload} from "../../../../services/FileUploadService";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {HttpClient} from "@angular/common/http";
 import {KyloIcons} from "../../../../kylo-utils/kylo-icons";
-import {FormControl, FormGroup, NgForm, Validators} from "@angular/forms";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
 import * as _ from "underscore"
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {FeedNifiErrorUtil} from "../../../services/feed-nifi-error-util";
@@ -15,17 +15,11 @@ import {MatDialogConfig} from "@angular/material/dialog";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {CatalogService} from "../../../catalog/api/services/catalog.service";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
-import {FormGroupUtil} from "../../../../services/form-group-util";
 import {Category} from "../../../model/category/category.model";
 import {DatasourcesService} from "../../../services/DatasourcesService";
-import {DatasourcesServiceStatic} from "../../../visual-query/wrangler";
 import {KyloRouterService} from "../../../../services/kylo-router.service";
 import {StringUtils} from "../../../../common/utils/StringUtils";
-import {map} from "rxjs/operators";
 import {DataSource} from "../../../catalog/api/models/datasource";
-import {Observable} from "rxjs/Observable";
-import Templates from "../../../services/TemplateTypes";
-import {take} from "rxjs/operator/take";
 
 @Component({
     selector: "import-feed",
@@ -248,7 +242,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
     }
 
 
-    private fetchCatalogDataSources() :Observable<DataSource[]>{
+    private fetchCatalogDataSources(): void {
          this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"]).subscribe(datasources => {
                 this.catalogDataSources = []
                 if(datasources && datasources.length >0){

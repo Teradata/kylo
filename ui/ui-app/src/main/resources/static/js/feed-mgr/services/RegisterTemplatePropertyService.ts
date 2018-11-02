@@ -463,7 +463,7 @@ export class RegisterTemplatePropertyService {
                 }
 
                 //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
-                this.feedPropertyService.initSensitivePropertyForEditing(property);
+                this.feedPropertyService.initSensitivePropertyForEditing([property]);
 
                 this.feedPropertyService.updateDisplayValue(property);
 

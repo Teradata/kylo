@@ -94,6 +94,11 @@ const translateConfig: TranslateModuleConfig = {
                         engine: null
                     },
                     loadChildren: "./feed-mgr/visual-query/visual-query.module#VisualQueryRouterModule"
+                },
+                {
+                    name: 'sla.**',
+                    url: '/sla',
+                    loadChildren: './feed-mgr/sla/sla.module#SlaRouterModule'
                 }
             ]
         }),

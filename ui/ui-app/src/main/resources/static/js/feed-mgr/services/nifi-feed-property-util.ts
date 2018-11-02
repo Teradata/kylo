@@ -1,5 +1,5 @@
 import * as _ from "underscore"
-import Templates, {default as Templates} from "./TemplateTypes";
+import {Templates} from "./TemplateTypes";
 import Property = Templates.Property;
 import Processor = Templates.Processor;
 

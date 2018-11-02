@@ -24,7 +24,7 @@ export class TemplateService {
             mergeMap(repos => from(repos)),
             mergeMap(r => this.getTemplatesInRepository(r)),
             mergeMap(templates => from(templates)),
-            filter(template => template.updateAvailable),
+            filter(template => (template as any).updateAvailable),
             take(1))
             .catch(err => Observable.throw(err));
     }

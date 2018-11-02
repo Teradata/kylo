@@ -60,7 +60,7 @@ import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data
 import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
 import {SampleDialog} from "./transform-data/main-dialogs/sample-dialog";
 import {SchemaLayoutDialog} from "./transform-data/main-dialogs/schema-layout-dialog";
-import VisualQueryProfileStatsController from "./transform-data/main-dialogs/VisualQueryProfileStats";
+import {VisualQueryProfileStatsController} from "./transform-data/main-dialogs/VisualQueryProfileStats";
 import {WranglerDataService} from "./transform-data/services/wrangler-data.service";
 import {WranglerTableService} from "./transform-data/services/wrangler-table.service";
 import {TransformDataComponent} from "./transform-data/transform-data.component";

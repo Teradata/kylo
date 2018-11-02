@@ -15,16 +15,20 @@ export class Sla {
 
 @Component({
     selector: "sla",
-    styleUrls: ["js/feed-mgr/sla/sla.component.scss"],
-    templateUrl: "js/feed-mgr/sla/sla.component.html"
+    styleUrls: ["./sla.component.scss"],
+    templateUrl: "./sla.component.html"
 })
 export class SlaComponent implements OnInit {
+
+    feed: any = undefined;
+
+    ngOnInit(): void {
+    }
 
 
     constructor() {
 
     }
-
 
     init() {
 

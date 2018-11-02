@@ -550,7 +550,7 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
 
                 assignPropertyRenderType(property)
 
-                this.feedPropertyService.initSensitivePropertyForEditing(property);
+                this.feedPropertyService.initSensitivePropertyForEditing([property]);
 
                 property.templateValue = property.value;
                 property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;

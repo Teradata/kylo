@@ -26,7 +26,6 @@ export class SlaListComponent implements OnInit {
     feedModel: Feed;
 
     private feedId: string;
-    private slaService: any;
     private accessControlService: any;
     loading = true;
     serviceLevelAgreements: Sla[] = [];

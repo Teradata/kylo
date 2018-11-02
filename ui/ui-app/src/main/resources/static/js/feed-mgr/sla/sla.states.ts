@@ -5,7 +5,7 @@ import {SlaDetailsComponent} from "./details/sla-details.componment";
 import {FEED_DEFINITION_STATE_NAME} from "../model/feed/feed-constants";
 import {DefineFeedComponent} from "../feeds/define-feed-ng2/define-feed.component";
 
-export const SLA_ROOT_STATE = "sla"
+export const SLA_ROOT_STATE = "sla";
 
 export const slaStates: Ng2StateDeclaration[] = [
 
@@ -31,7 +31,7 @@ export const slaStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -43,7 +43,7 @@ export const slaStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     },
@@ -55,8 +55,12 @@ export const slaStates: Ng2StateDeclaration[] = [
             {
                 token: 'stateParams',
                 deps: [StateService],
-                resolveFn: (state: StateService) => state.transition.params()
+                resolveFn: resolveParams
             }
         ]
     }
 ];
+
+export function resolveParams(state: StateService) {
+    return state.transition.params();
+}

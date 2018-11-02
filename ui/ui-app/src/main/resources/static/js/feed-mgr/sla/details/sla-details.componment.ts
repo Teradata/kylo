@@ -45,17 +45,14 @@ export class SlaDetailsComponent implements OnInit {
     feedModel: Feed;
 
     private slaId: string;
-    private slaService: any;
     private accessControlService: any;
     private policyInputFormService: any;
     allowEdit = false;
     sla: Sla;
-    feedModel: Feed;
-
     /**
      * a copy of the loaded SLA name (separate from the modifiable sla object (sla.name) for display purposes
      */
-    private slaName:string;
+    slaName:string;
 
     slaForm: FormGroup = new FormGroup({});
     private feedId: string;

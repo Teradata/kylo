@@ -72,7 +72,6 @@ export class SlaFormComponent implements OnInit, OnChanges {
     slaName: FormControl;
     slaDescription: FormControl;
 
-    private slaService: any;
     private stateService: any;
     options: any;
     private allowCreate = true;

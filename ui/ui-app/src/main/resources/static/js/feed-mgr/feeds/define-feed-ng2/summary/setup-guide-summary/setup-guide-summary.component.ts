@@ -102,7 +102,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     deployFeed(){
 
         if(this.feed.accessControl.allowEdit){
-            let config ={data:new DeployFeedDialogComponentData(this.feed), width:"600px"};
+            let config ={data:new DeployFeedDialogComponentData(this.feed), width:"600px", viewContainerRef: undefined};
             config.viewContainerRef = this._viewContainerRef;
             this._dialogService.open(DeployFeedDialogComponent,config);
         }

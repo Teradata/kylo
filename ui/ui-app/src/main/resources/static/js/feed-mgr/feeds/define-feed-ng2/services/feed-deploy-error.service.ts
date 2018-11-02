@@ -1,8 +1,9 @@
-import {FeedNifiErrorUtil} from "./feed-nifi-error-util";
+import * as angular from "angular"
 import {TdDialogService} from "@covalent/core";
+import {FeedNifiErrorUtil} from '../../../services/feed-nifi-error-util';
 
 export class FeedDeployErrorService {
-    constructor (private _dialogService:TdDialogService) {
+    constructor (private _dialogService:TdDialogService, $mdDialog:any, $filter: any) {
 
 
         function buildErrorMapAndSummaryMessage() {
@@ -86,7 +87,6 @@ export class FeedDeployErrorService {
                 return this.feedError.hasErrors;
             },
             showErrorDialog: function () {
-
                 $mdDialog.show({
                     controller: 'FeedErrorDialogController',
                     templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html',

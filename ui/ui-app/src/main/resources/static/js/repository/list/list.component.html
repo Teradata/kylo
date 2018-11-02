@@ -4,7 +4,7 @@
       <div fxLayout="row" style="width: 100%; padding-top: 20px" fxLayoutAlign="space-around center">
         <div class="card-title push-md">Repository</div>
         <mat-form-field fxFlex="20">
-          <mat-select [disabled]="loading" placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates($event)">
+          <mat-select [disabled]="loading" placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates()">
             <mat-option *ngFor="let repository of repositories" [value]="repository">
               {{repository.name}}
             </mat-option>

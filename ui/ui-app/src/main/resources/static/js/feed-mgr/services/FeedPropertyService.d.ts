@@ -9,7 +9,7 @@ declare interface FeedPropertyService {
      * If the property is sensitive we should store off the long encrypted value and show just asterisks
      * @param property
      */
-    initSensitivePropertyForEditing(property:Property):void;
+    initSensitivePropertyForEditing(properties: Templates.Property[]):void;
     /**
      * Return true if every char in value == '*'
      */

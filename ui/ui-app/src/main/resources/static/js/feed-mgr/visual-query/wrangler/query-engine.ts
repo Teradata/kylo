@@ -703,7 +703,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Sets the query and datasources.
      */
-    setQuery(query: string | object, datasources: UserDatasource[] = [], catalogDataSources:[] = [], pageSpec: PageSpec = null): void {
+    setQuery(query: string | object, datasources: UserDatasource[] = [], catalogDataSources: DataSource[] = [], pageSpec: PageSpec = null): void {
         this.datasources_ = (datasources.length > 0) ? datasources : null;
         this.catalogDataSources_ = catalogDataSources.length >0 ? catalogDataSources : null;
         this.redo_ = [];

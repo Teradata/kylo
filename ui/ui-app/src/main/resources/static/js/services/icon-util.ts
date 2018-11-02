@@ -6,7 +6,7 @@ export default class IconUtil {
         return IconUtil.iconForHealth(health);
     }
     static iconForHealth(health: any) {
-        var data = { icon: "help", style: 'unknown', color: '#eee', text: 'UNKNOWN' };
+        var data = { icon: "help", style: 'unknown', color: '#eee', text: 'UNKNOWN', class: '' };
         switch (health) {
             case "HEALTHY":
             case "UP":

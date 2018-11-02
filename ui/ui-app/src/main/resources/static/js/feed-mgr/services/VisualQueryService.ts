@@ -62,7 +62,7 @@ _.extend(SqlBuilder.prototype, {
         }
 
         // Build SELECT clause
-        _.each(tree.targetList, function (target) {
+        _.each(tree.targetList, function (target: any) {
             select += (select.length === 0) ? "SELECT " : ", ";
             select += target.val.fields[0] + "." + self.quoteSql(target.val.fields[1]);
             if (target.name != null) {
@@ -237,7 +237,7 @@ _.extend(SqlBuilder.prototype, {
         });
 
         // Add JOIN clauses for tables connected to child nodes
-        _.each(edges, function (nodeID) {
+        _.each(edges, function (nodeID: any) {
             self.addTableJoins(graph[nodeID], graph, null, joinClauses);
         });
     },
@@ -350,7 +350,7 @@ _.extend(SqlBuilder.prototype, {
         var graph = this.createTableJoinMap();
         var joinClauses: any = [];
 
-        _.each(graph, function (node) {
+        _.each(graph, function (node: any) {
             if (_.size(node.edges) === 0) {
                 fromTables.push(self.getRangeVar(node.data));
             }
@@ -374,10 +374,10 @@ _.extend(SqlBuilder.prototype, {
         var self = this;
         var targetList: any = [];
 
-        _.each(this.model_.nodes, function (node) {
+        _.each(this.model_.nodes, function (node: any) {
             var table = TABLE_PREFIX + node.id;
 
-            _.each(node.nodeAttributes.attributes, function (attr) {
+            _.each(node.nodeAttributes.attributes, function (attr: any) {
                 if (attr.selected) {
                     // Determine column alias
                     var alias = _.find(self.getColumnAliases(node.name, attr.name), function (name: any) {
@@ -420,12 +420,12 @@ _.extend(SqlBuilder.prototype, {
         var map = {};
 
         // Add every node to the map
-        _.each(this.model_.nodes, function (node) {
+        _.each(this.model_.nodes, function (node: any) {
             map[node.id] = {data: node, edges: {}, seen: false};
         });
 
         // Add edges to the map
-        _.each(this.model_.connections, function (connection) {
+        _.each(this.model_.connections, function (connection: any) {
             map[connection.source.nodeID].edges[connection.dest.nodeID] = connection;
             map[connection.dest.nodeID].edges[connection.source.nodeID] = connection;
         });
@@ -443,10 +443,10 @@ _.extend(SqlBuilder.prototype, {
         var aliasCount = {};
         var self = this;
 
-        _.each(this.model_.nodes, function (node) {
-            _.each(node.nodeAttributes.attributes, function (attr) {
+        _.each(this.model_.nodes, function (node: any) {
+            _.each(node.nodeAttributes.attributes, function (attr: any) {
                 if (attr.selected) {
-                    _.each(self.getColumnAliases(node.name, attr.name), function (alias) {
+                    _.each(self.getColumnAliases(node.name, attr.name), function (alias: any) {
                         aliasCount[alias] = (typeof(aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;
                     });
                 }

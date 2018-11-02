@@ -27,9 +27,9 @@ import {CatalogService} from '../api/services/catalog.service';
 
 
 interface UiOptionsMapper {
-    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void;
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UiOption>): void;
 
-    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void;
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UiOption>): void;
 }
 
 /**
@@ -40,7 +40,7 @@ export class OptionValue {
     modifiedValue:string;
     modified:boolean = false;
 
-    constructor(public key:string, public originalValue:string, public uiOption:UIOption){
+    constructor(public key:string, public originalValue:string, public uiOption:UiOption){
         if(this.originalValue == undefined ){
             this.originalValue = null;
         }
@@ -74,7 +74,7 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
      */
     propertyMap:{ [k: string]: OptionValue } = {};
 
-    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UiOption>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
@@ -86,7 +86,7 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
         });
     }
 
-    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UiOption>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 control.setValue(ds.template.paths[0]);
@@ -119,9 +119,9 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
      * @param {DataSource} ds
      * @param {FormControl} control
      * @param {string} key
-     * @param {UIOption} uiOption
+     * @param {UiOption} uiOption
      */
-    private setUiValueAndSubscribeToChanges(ds: DataSource,control: FormControl, key: string, uiOption?:UIOption) {
+    private setUiValueAndSubscribeToChanges(ds: DataSource,control: FormControl, key: string, uiOption?:UiOption) {
         let value = ds.template.options[key];
         let optionValue = new OptionValue(key,value, uiOption);
         this.propertyMap[key] = optionValue;
@@ -138,7 +138,7 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
 }
 
 class AzureUiOptionsMapper implements UiOptionsMapper {
-    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
+    mapFromUiToModel(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UiOption>): void {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 ds.template.paths.push(control.value);
@@ -152,7 +152,7 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
         });
     }
 
-    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UIOption>): void {
+    mapFromModelToUi(ds: DataSource, controls: Map<string, FormControl>, uiOptions: Map<string, UiOption>): void {
         controls.get("path").setValue(ds.template.paths[0]);
         _.keys(ds.template.options).forEach(option => {
             if (option.startsWith("spark.hadoop.fs.azure.account.key.")) {
@@ -196,7 +196,7 @@ export class ConnectorComponent {
     titleControl: FormControl;
     private controls: Map<string, FormControl> = new Map();
     isLoading: boolean = false;
-    private controlToUIOption: Map<string, UIOption> = new Map();
+    private controlToUIOption: Map<string, UiOption> = new Map();
     private testError: String;
     private testStatus: boolean = false;
 

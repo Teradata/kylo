@@ -18,7 +18,7 @@ export class FeedNifiErrorUtil {
 
             if (nifiFeed.errorMessages != null && nifiFeed.errorMessages.length > 0) {
                 _.each(nifiFeed.errorMessages,  (msg:any) => {
-                    errorMap['FATAL'].push({category: 'General', message: msg});
+                    errorMap['FATAL'].push({category: 'General', message: msg, severity: 'FATAL'});
                     count++;
                 })
             }

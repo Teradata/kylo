@@ -1,14 +1,8 @@
 import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 import {catchError} from "rxjs/operators/catchError";
-import {finalize} from "rxjs/operators/finalize";
-import {map} from "rxjs/operators/map";
 import {first} from "rxjs/operators/first";
-
-import {DefineFeedStepSourceSampleComponent} from "./steps/define-table/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedComponent} from "./define-feed.component";
 import {DefineFeedSelectTemplateComponent} from "./select-template/define-feed-select-template.component";
-import {TdLoadingService} from "@covalent/core/loading";
-import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {DefineFeedService} from "./services/define-feed.service";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
@@ -23,41 +17,22 @@ import {ProfileHistoryComponent} from './summary/profile/history/profile-history
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
 import {FeedSlaComponent} from './summary/sla/feed-sla.component';
-//import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
-//import {SlaListComponent} from './summary/sla/list/sla-list.componment';
 import {DefineFeedStepSourceComponent} from "./steps/source/define-feed-step-source.component";
 import {FeedActivitySummaryComponent} from "./summary/feed-activity-summary/feed-activity-summary.component";
 import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
 import {FeedSummaryContainerComponent} from "./summary/feed-summary-container.component";
-import {Transition} from "@uirouter/core";
-import {Subject} from "rxjs/Subject";
-import {ReplaySubject} from "rxjs/ReplaySubject";
-import {Feed, LoadMode} from "../../model/feed/feed.model";
+import {LoadMode} from "../../model/feed/feed.model";
 import {ImportFeedComponent} from "../define-feed-ng2/import/import-feed.component";
 import {FeedVersionsComponent} from "./summary/versions/feed-versions.component";
 import {SlaListComponent} from "../../sla/list/sla-list.componment";
 import {SlaDetailsComponent} from "../../sla/details/sla-details.componment";
-import {tap} from "rxjs/operators";
 import {Observable} from "rxjs/Observable";
 
-
-const resolveFeed :any =
-    {
-        token: 'feed',
-            deps: [StateService, DefineFeedService],
-        resolveFn: (state: StateService, feedService:DefineFeedService) => {
-        let feedId = state.transition.params().feedId;
-            let promise = feedService.loadFeed(feedId)
-                .pipe(catchError((err: any, o: Observable<any>) => {
-                    console.error('Failed to load feed', err);
-                    return Observable.of({});
-                }))
-                .pipe(first()).toPromise();
-            return promise;
-    }
-    }
-
-
+const resolveFeed = {
+    token: 'feed',
+    deps: [StateService, DefineFeedService],
+    resolveFn: loadFeed
+};
 
 export const defineFeedStates: Ng2StateDeclaration[] = [
     {
@@ -481,6 +456,15 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
 
 ];
 
+export function loadFeed(state: StateService, feedService:DefineFeedService) {
+    let feedId = state.transition.params().feedId;
+    return feedService.loadFeed(feedId)
+        .pipe(catchError((err: any, o: Observable<any>) => {
+            console.error('Failed to load feed', err);
+            return Observable.of({});
+        }))
+        .pipe(first()).toPromise();
+}
 
 export function resolveParams(state: StateService) {
     return state.transition.params();
