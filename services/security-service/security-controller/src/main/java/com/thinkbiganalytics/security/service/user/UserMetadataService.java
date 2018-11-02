@@ -161,21 +161,22 @@ public class UserMetadataService implements UserService {
     }
 
     @Override
-    public void updateGroup(@Nonnull final UserGroup group) {
-        metadataAccess.commit(() -> {
+    public UserGroup updateGroup(@Nonnull final UserGroup group) {
+        return metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
 
             final com.thinkbiganalytics.metadata.api.user.UserGroup domain = userProvider.findGroupByName(group.getSystemName())
                 .orElseGet(() -> userProvider.createGroup(group.getSystemName()));
             domain.setDescription(group.getDescription());
             domain.setTitle(group.getTitle());
-            return userProvider.updateGroup(domain);
+            final com.thinkbiganalytics.metadata.api.user.UserGroup updated = userProvider.updateGroup(domain);
+            return UserModelTransform.toGroupPrincipal().apply(updated);
         });
     }
 
     @Override
-    public void updateUser(@Nonnull final User user) {
-        metadataAccess.commit(() -> {
+    public User updateUser(@Nonnull final User user) {
+        return metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_USERS);
 
             final com.thinkbiganalytics.metadata.api.user.User domain = userProvider.findUserBySystemName(user.getSystemName())
@@ -189,7 +190,8 @@ public class UserMetadataService implements UserService {
                 .collect(Collectors.toSet());
             domain.setGroups(groups);
 
-            return userProvider.updateUser(domain);
+            final com.thinkbiganalytics.metadata.api.user.User updated = userProvider.updateUser(domain);
+            return UserModelTransform.toUserPrincipal().apply(updated);
         });
     }
 }

@@ -41,8 +41,6 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -338,11 +336,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      */
     @Nonnull
     private String encodeGroupName(@Nonnull final String groupName) {
-        try {
-            return URLEncoder.encode(groupName, JcrUserGroup.ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Unsupported encoding for system name of group: " + groupName, e);
-        }
+        return JcrUtil.toSystemName(groupName, true);
     }
 
     /**
@@ -353,10 +347,6 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      */
     @Nonnull
     private String encodeUserName(@Nonnull final String username) {
-        try {
-            return URLEncoder.encode(username, JcrUser.ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Unsupported encoding for system name of user: " + username, e);
-        }
+        return JcrUtil.toSystemName(username, true);
     }
 }

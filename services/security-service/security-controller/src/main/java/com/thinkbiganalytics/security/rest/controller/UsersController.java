@@ -82,8 +82,8 @@ public class UsersController {
                   })
     @Nonnull
     public Response addUser(@Nonnull final User user) {
-        userService.updateUser(user);
-        return Response.noContent().build();
+        final User updated = userService.updateUser(user);
+        return Response.ok(updated).build();
     }
 
     /**

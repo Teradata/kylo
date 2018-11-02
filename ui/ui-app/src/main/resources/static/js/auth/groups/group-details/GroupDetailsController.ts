@@ -216,8 +216,8 @@ export class GroupDetailsController implements ng.IComponentController {
     onSave() { 
         var model = angular.copy(this.editModel);
         this.UserService.saveGroup(model)
-                .then(() => {
-                    this.model = model;
+                .then((updated: any) => {
+                    this.model = updated;
                     this.groupId = this.model.systemName;
                 });
     };

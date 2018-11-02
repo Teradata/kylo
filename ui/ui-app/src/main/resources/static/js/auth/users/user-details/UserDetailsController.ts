@@ -256,8 +256,8 @@ export class UserDetailsController implements ng.IComponentController {
         onSave() {
             var model = angular.copy(this.editModel);
             this.UserService.saveUser(model)
-                    .then(() => {
-                        this.model = model;
+                    .then((updated: any) => {
+                        this.model = updated;
                     });
         };
 

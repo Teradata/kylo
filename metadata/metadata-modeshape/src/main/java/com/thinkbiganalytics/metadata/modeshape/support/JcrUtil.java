@@ -70,6 +70,11 @@ public class JcrUtil {
     private static final Logger log = LoggerFactory.getLogger(JcrUtil.class);
     
     /**
+     * Encoding for system names
+     */
+    public static final String ENCODING = "UTF-8";
+    
+    /**
      * Dereference the underlying node if the argument node is a Proxy delegating to
      * a NodeModificationInvocationHandler.
      * @param node the possible proxy node
@@ -98,12 +103,25 @@ public class JcrUtil {
      */
     public static String toSystemName(String text) {
         try {
-            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[\\[\\]/*|:]", "_"), "UTF-8");
-//            return URLEncoder.encode(text.toLowerCase().replaceAll("\\s+", "_").replaceAll("[\\[\\]/*|:]", "_").replaceAll("_{2,}", "_"), "UTF-8");
-//            return URLEncoder.encode("aAa  bBb[]/*|: cCc".toLowerCase().replaceAll("[\\s\\[\\]/*|:]+", "_"), "UTF-8");
+            return URLEncoder.encode(text.replaceAll("\\s+", "_").replaceAll("[\\[\\]/*|:]", "_"), ENCODING);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("The text could not be converted into a system name: " + text, e);
         }
+    }
+    
+    /**
+     * Generates a name from some arbitrary text that is both a valid JCR node name
+     * and is consistent with other "system names".  Generally, it substitutes any sequence of
+     * invalid node name characters and all white space with with an underscore, and then URL 
+     * encodes the result.  If case sensitive it set to false then the result will be
+     * lower case.
+     * 
+     * @param text
+     * @param caseSensitive indicates whether the result should retain case (true) or be lower case
+     * @return
+     */
+    public static String toSystemName(String text, boolean caseSensitive) {
+        return caseSensitive ? toSystemName(text) : toSystemName(text.toLowerCase());
     }
 
     /**

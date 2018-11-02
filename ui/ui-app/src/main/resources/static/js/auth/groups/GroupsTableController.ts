@@ -135,7 +135,7 @@ export class GroupsTableController implements ng.IComponentController {
      * @param TableOptionsService the table options service
      * @param UserService the user service
      */
-        constructor (
+    constructor (
         private $scope:angular.IScope,
         private AddButtonService:AddButtonService,
         private PaginationDataService:DefaultPaginationDataService,

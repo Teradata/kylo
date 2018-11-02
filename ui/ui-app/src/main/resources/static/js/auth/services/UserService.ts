@@ -110,10 +110,10 @@ export default class UserService {
      * @returns {Promise} for when the group is saved
      */
     saveGroup(group: any): Promise<any> {
-        return this.http.post(this.CommonRestUrlService.SECURITY_GROUPS_URL, angular.toJson(group)/*,this.options*/)
-            /* .toPromise().then(this.extractData)
-             .catch(this.handleError); */
-            ;
+        return this.http.post(this.CommonRestUrlService.SECURITY_GROUPS_URL, angular.toJson(group))
+            .then(function (response: any) {
+                return response.data;
+            });
     }
 
     /**
@@ -123,11 +123,10 @@ export default class UserService {
      * @returns {Promise} for when the user is saved
      */
     saveUser(user: any): Promise<any> {
-        return this.http.post(this.CommonRestUrlService.SECURITY_USERS_URL, angular.toJson(user)/*,this.options*/)
-            /* .toPromise().then(this.extractData)
-             .catch(this.handleError);  */
-            ;
-
+        return this.http.post(this.CommonRestUrlService.SECURITY_USERS_URL, angular.toJson(user))
+            .then(function (response: any) {
+                return response.data;
+            });
     }
 }
 
