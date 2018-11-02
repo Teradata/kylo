@@ -97,7 +97,7 @@ const webpackConfig = (env) => {
                 'angular-ui-grid': path.join(staticBower, 'angular-ui-grid/ui-grid.min'),
                 'angularAnimate': path.join(staticBower, 'angular-animate/angular-animate.min'),
                 'angularAria': path.join(staticBower, 'angular-aria/angular-aria.min'),
-                'angularMaterial': path.join(staticBower, 'angular-material/angular-material.min'),
+                'angularMaterial': path.join(staticBower, 'angular-material/angular-material'),
                 'angularMessages': path.join(staticBower, 'angular-messages/angular-messages.min'),
                 'jquery': path.join(staticBower, 'jquery/dist/jquery.min'),
                 'ng-fx': path.join(staticBower, 'ngFx/dist/ngFx.min'),
