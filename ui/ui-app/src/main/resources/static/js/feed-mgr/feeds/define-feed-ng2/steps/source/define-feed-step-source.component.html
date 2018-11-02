@@ -6,14 +6,10 @@
         <mat-card-title>Source</mat-card-title>
         <mat-card-subtitle>Specify source options</mat-card-subtitle>
       </mat-card-header>
-      <mat-card-content class="pull-top-md">
+      <mat-card-content class="pull-top-sm">
         <form [formGroup]="sourcePropertiesForm">
           <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step" [formGroup]="sourcePropertiesForm" mode="INPUT"  ></feed-nifi-properties>
         </form>
-
-
-
-
       </mat-card-content>
       <mat-card-actions *ngIf="!feed.readonly">
         <button mat-button (click)="onCancelEdit()">Cancel</button>

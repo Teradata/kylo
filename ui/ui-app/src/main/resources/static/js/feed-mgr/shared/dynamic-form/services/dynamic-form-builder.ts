@@ -31,6 +31,8 @@ export class HintLengthPaddingStrategy implements StyleClassStrategy{
     constructor(private hintLength1:number  = 120, private hintLength2: number = 160, private hintLength3:number = 200){}
 
     applyStyleClass(builder:FieldConfigBuilder<any>):void{
+        builder.appendStyleClass("pad-bottom");
+        /*
         if(builder.getHint() ){
             if(builder.getHint().length > this.hintLength3){
                 builder.appendStyleClass("pad-bottom-lg");
@@ -40,6 +42,7 @@ export class HintLengthPaddingStrategy implements StyleClassStrategy{
                 builder.appendStyleClass("pad-bottom");
             }
         }
+        */
     }
 }
 

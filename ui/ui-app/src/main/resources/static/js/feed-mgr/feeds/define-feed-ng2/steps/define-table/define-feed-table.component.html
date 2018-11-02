@@ -31,7 +31,7 @@
               <div fxLayout="column" fxFlex="100">
                 <div fxLayout="row" class="push-bottom-md">
                   <div fxFlex="30">Name</div>
-                  <div fxFlex="40" style="margin-right:20px">Data Type</div>
+                  <div fxFlex="40">Data Type</div>
                   <div fxFlex="10">Index</div>
                   <div fxFlex="10">Profile</div>
                   <div class="scrollbar-width"></div>
@@ -47,7 +47,7 @@
                     <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
                       <span fxFlex="30" [class.strike]="row.deleted">{{row.name}}</span>
 
-                      <div fxLayout="row" fxFlex="40"[class.strike]="row.deleted" style="margin-right:20px;overflow:hidden;text-overflow: ellipsis;">
+                      <div fxLayout="row" fxFlex="40"[class.strike]="row.deleted" style="overflow:hidden;text-overflow: ellipsis;">
 
                         <span>{{row.derivedDataType}}</span>
 
@@ -63,7 +63,7 @@
                         <mat-icon class="grey" *ngIf="row.fieldPolicy.profile">check</mat-icon>
                         <mat-icon class="grey" *ngIf="!row.fieldPolicy.profile">check_box_outline_blank</mat-icon>
                       </div>
-                      <!--<div fxFlex="10"  class="push-top-sm"></div>-->
+                      <div fxFlex="" class="push-top-sm"></div>
                     </div>
 
                   </ng-template>
@@ -94,8 +94,7 @@
                     <a href="" (click)="onProfileCheckAllChange()">Profile</a>
                    </div>
                   <div fxFlex="10" *ngIf="!tablePermissions.tableLocked">Remove</div>
-                  <div fxFlex="10"></div>
-                  <div class="scrollbar-width"></div>
+                  <div fxFlex="6"></div>
                 </div>
                 <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
                   <ng-template let-row="row"
@@ -154,7 +153,8 @@
                       </div>
 
                       <div fxFlex="10" *ngIf="!tablePermissions.tableLocked">
-                        <button mat-icon-button style="margin-top:-2px" [disabled]="!tablePermissions.canRemoveFields || row.deleted" (click)="removeColumn(index)">
+                        <button mat-icon-button  style="margin-top:-2px" [disabled]="!tablePermissions.canRemoveFields || row.deleted"
+                                (click)="removeColumn(index)">
                           <mat-icon class="tc-grey-500">delete</mat-icon>
                         </button>
                       </div>
@@ -164,6 +164,8 @@
                           <mat-icon class="grey">undo</mat-icon>
                         </button>
                       </div>
+
+                      <div fxFlex></div>
 
                     </div>
 

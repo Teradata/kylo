@@ -176,12 +176,12 @@
     "views.entity-access-control.Owner": "Owner",
     "views.entity-access-control.Roles": "Roles",
     "views.entity-access-control.Members": "Members",
-    "views.entity-access-control.AUGa": "Add User/Group access",
+    "views.entity-access-control.AUGa": "Add user/group access",
     "views.entity-access-control.Remove": "Remove",
     "views.entity-access-control.Save": "Save",
     "views.entity-access-control.Saving": "Saving...",
     "views.entity-access-control.Cancel": "Cancel",
-    "views.entity-access-control.NotEnabled": "Entity access control is not enabled for Kylo.",
+    "views.entity-access-control.NotEnabled": "Entity access control not enabled",
     "views.feed-definition.FD": "Feed Definition",
     "views.feed-definition.FN": "Feed Name",
     "views.feed-definition.SN": "System Name",
@@ -197,7 +197,7 @@
     "views.feed-details.FD": "Feed Details",
     "views.feed-details.Details": "Details",
     "views.feed-details.LF": "Loading Feed",
-    "views.feed-details.Utftf": "Unable to find the feed.  Either this feed doesnt exist or you don't have access to view it.",
+    "views.feed-details.Utftf": "No matching feeds",
     "views.feed-details.Profile": "Profile",
     "views.feed-details.Lineage": "Lineage",
     "views.feed-details.SLA": "SLA",
@@ -407,7 +407,7 @@
     "views.feed-lineage.Datasource": "Datasource",
 
     "views.feed-service-level-agreements.Filter": "Filter",
-    "views.feed-service-level-agreements.Warning": "Warning.  This feed is disabled.  Service Level Agreements can be modified, but they will not run until this feed is enabled.",
+    "views.feed-service-level-agreements.Warning": "Warning.  This feed is disabled.  SLA can be modified, but they will not run until this feed is enabled.",
     "views.feed-service-level-agreements.ASLA": "Add SLA",
 
     "views.service-level-agreement-form.BtL": "Back to List",
@@ -507,7 +507,7 @@
 
     "views.preview.Limit": "Limit",
 
-    "views.hql-editor.Iad": "Initializing autocomplete data",
+    "views.hql-editor.Iad": "Initializing auto-complete data",
     "views.hql-editor.EQ": "Enter Query",
     "views.hql-editor.ExecuteQ": "Execute Query",
     "views.hql-editor.FS": "Full Screen",
@@ -768,7 +768,7 @@
     "views.job-details-template.Parameters": "Parameters",
     "views.job-details-template.Values": "Values",
     "views.job-details-template.CP": "Context Parameters",
-    "views.job-details-template.Utftj": "Unable to find the job.  This job either doesn't exist or you do not have access to view this job.",
+    "views.job-details-template.Utftj": "No matching jobs",
     "views.job-details-template.ABANDON": "ABANDON",
     "views.job-details-template.FAIL": "FAIL",
     "views.job-details-template.Type": "Type",
@@ -902,7 +902,7 @@
                 "TITLE": "Delete connector"
             },
             "EMPTY": {
-                "CATALOG_TEXT": "Create a new data source from the Catalog page",
+                "CATALOG_TEXT": "Create a new data source from the catalog page",
                 "CREATE_TEXT": "Click the 'Create' button to add a new data source",
                 "TITLE": "No data sources"
             },
@@ -1031,7 +1031,7 @@
         "AddSla": "Add SLA",
         "NoData": "No Service Level Agreements",
         "Loading": "Loading...",
-        "DisabledFeedWarning": "Warning. This feed is disabled. Service Level Agreements can be modified, but they will not run until this feed is enabled.",
+        "DisabledFeedWarning": "Warning. This feed is disabled. SLA can be modified, but they will not run until this feed is enabled.",
 
         "Details": {
             "EditSla": "Edit SLA",
