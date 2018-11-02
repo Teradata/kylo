@@ -714,10 +714,6 @@ export class DefineFeedService {
 
                 }
                 console.log(error1, caught);
-                this._dialogService.openAlert({
-                    title:"Error deploying feed",
-                    message:"There was an error deploying the feed "+error1
-                });
              //   this._loadingService.resolve("processingFeed")
                   return Observable.throw(error1);
             }).share();
