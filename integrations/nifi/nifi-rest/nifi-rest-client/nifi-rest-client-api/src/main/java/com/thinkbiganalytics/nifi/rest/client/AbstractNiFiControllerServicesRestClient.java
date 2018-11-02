@@ -148,6 +148,7 @@ public abstract class AbstractNiFiControllerServicesRestClient implements NiFiCo
                     //error unable to change the state of the references. ... error
                     throw new NifiClientRuntimeException("Unable to stop processor references to this controller service " + controllerService.getName() + " before making the update");
                 }
+                processorRevisions.values().forEach(r -> r.setVersion(r.getVersion()+1L));
             }
 
             //disable any controller service references
