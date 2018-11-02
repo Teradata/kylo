@@ -1,4 +1,4 @@
-<mat-progress-bar  mode="indeterminate" *ngIf="isFeedSaving()"></mat-progress-bar>
+<mat-progress-bar  mode="indeterminate" *ngIf="isFeedSaving" color="accent"></mat-progress-bar>
 <mat-horizontal-stepper #stepper *ngIf="engine != null" [linear]="true" class="mat-stepper-no-header" (selectionChange)="onStepChange($event)">
   <mat-step>
     <ng-template matStepLabel>Build Query</ng-template>
@@ -7,7 +7,7 @@
   <mat-step>
     <ng-template matStepLabel>Transform Data</ng-template>
     <thinkbig-visual-query-transform [warnWhenLeaving]="false" [active]="stepper.selectedIndex == 1" [engine]="engine" [model]="dataModel.model" [heightOffset]="this.heightOffset"
-                                     [nextButton]="showSaveStep ? 'Next' : 'Save'" [feedModel]="feed" (back)="stepper.previous()" (next)="showSaveStep ? stepper.next() : doSave()"
+                                     [nextButton]="showSaveStep ? 'Next' : 'Save'" [feedModel]="feed" [disableNextButton]="isFeedSaving" (back)="stepper.previous()" (next)="showSaveStep ? stepper.next() : doSave()"
                                      *ngIf="visitedTransform">
     </thinkbig-visual-query-transform>
   </mat-step>

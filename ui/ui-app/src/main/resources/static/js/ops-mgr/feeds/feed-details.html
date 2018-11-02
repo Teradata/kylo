@@ -53,7 +53,8 @@
                 <md-list-item>
                     <div layout="column"  class="item-column md-list-item-text ">
 
-                                   <span  class="item-title" ng-class="{'healthy':vm.feed.displayStatus == 'COMPLETED' || vm.feed.displayStatus =='RUNNING','error':vm.feed.displayStatus == 'FAILED'}">
+                                   <span  class="item-title"
+                                          ng-class="{'tc-positive':vm.feed.displayStatus == 'COMPLETED' || vm.feed.displayStatus =='RUNNING','tc-negative':vm.feed.displayStatus == 'FAILED'}">
                                      {{vm.feed.displayStatus | translate}}</span>
                                      <span class="column-title column-title-bottom">
                                      {{"views.feeds.feed-details.Status" | translate}}
@@ -104,7 +105,7 @@
         <div layout="column" layout-align="center center" flex>
           <h2 class="md-title">{{"views.feeds.feed-details.LF" | translate}}</h2>
         <div layout-align="center center" layout="column">
-          <md-progress-circular md-mode="indeterminate" md-diameter="30"></md-progress-circular>
+          <md-progress-circular md-mode="indeterminate" md-diameter="30" class="md-accent"></md-progress-circular>
         </div>
         </div>
       </md-card>

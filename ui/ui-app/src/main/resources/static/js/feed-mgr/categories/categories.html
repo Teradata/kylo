@@ -17,8 +17,59 @@
   limitations under the License.
   #L%
   -->
+
+<style>
+
+  /* styles for '...' */
+  .block-with-text {
+    /* hide text if it more than N lines  */
+    overflow: hidden;
+    /* for set '...' in absolute position */
+    position: relative;
+    /* use this value to count block height */
+    line-height: 1.2em;
+    /* max-height = line-height (1.2) * lines max number (3) */
+    max-height: 3.6em;
+    /* fix problem when last visible word doesn't adjoin right side  */
+    text-align: justify;
+    /* place for '...' */
+    margin-right: -1em;
+    padding-right: 1em;
+  }
+
+  .kylo-card-title {
+    font-size:18px;
+    font-weight:300;
+  }
+
+  .kylo-card-subtitle {
+    font-size:13px;
+  }
+
+  .kylo-card-icon {
+    fill:white;
+    margin-left:14px;
+    margin-top:55px;
+  }
+
+  .kylo-card-template {
+    width:360px;
+    height:153px;
+    background-color:white;
+  }
+
+  .kylo-icon-button mat-icon {
+    font-size:22px;
+  }
+  .kylo-content-template {
+    max-height:98px;
+    min-height:98px;
+    height:98px;
+  }
+</style>
 <div>
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+<!--
     <div layout="row" layout-align="center start" ng-if="!vm.loading">
         <div layout="column" class="layout-max-width">
             <div style="width:60%" class="" layout="row" layout-align="center start">
@@ -31,21 +82,29 @@
             </div>
         </div>
     </div>
-    <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap ng-if="!vm.loading">
-        <md-card style="width:400px;max-width:400px;max-height:121px;height:121px" ng-repeat="category in vm.categories | orderBy:'name' | filter: vm.searchQuery track by $index" flex="initial" flex-md="initial" flex-sm="50"
-                 ng-click="vm.editCategory(category)">
-            <md-card-title>
-                <md-card-title-text>
-                    <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{category.name}}</span>
-                    <!--<span class="md-subhead category-subheader">{{category.relatedFeeds}} {{"views.categories.RF" | translate}}</span> -->
-                </md-card-title-text>
-                <md-card-title-media>
-                    <ng-md-icon icon="{{category.icon}}" size="40" ng-style="getIconColorStyle(category.iconColor)" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
-                </md-card-title-media>
-            </md-card-title>
-            <md-card-content>
-                <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{category.description | characters:100}}</div>
-            </md-card-content>
-        </md-card>
+-->
+  <div layout="row" flex class="md-padding feed-categories" layout-align="start start" style="justify-content: space-between" layout-wrap ng-if="!vm.loading">
+    <div md-whiteframe="2" class="kylo-card-template cursor-pointer push-bottom push-right"
+             ng-repeat="category in vm.categories | orderBy:'name' | filter: vm.searchQuery track by $index" flex="initial" flex-md="initial" flex-sm="50"
+             ng-click="vm.editCategory(category)" flex layout="row">
+
+      <div layout="column" ng-style="getColorStyle(category.iconColor)" layout-align="center center" flex="20">
+        <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon""></ng-md-icon>
+      </div>
+      <div fxLayout="column" flex>
+        <div flex class="kylo-content-template push-top-md push-left">
+          <div class="kylo-card-title pad-bottom-sm">{{category.name}}</div>
+          <div [matTooltip]="template.description"
+               matTooltipShowDelay="1000" style="padding-right:36px" class="kylo-card-subtitle tc-grey-600 block-with-text">
+            {{category.description || 'No description provided'}}
+          </div>
+        </div>
+        <md-divider></md-divider>
+        <md-card-actions flex layout-align="end center" class="tc-grey-700 push-left-none">
+          <div flex></div>
+        </md-card-actions>
+      </div>
     </div>
+  </div>
+
 </div>

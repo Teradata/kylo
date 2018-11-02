@@ -176,7 +176,7 @@ class Route {
                 });
             }
         })
-
+/*
         $stateProvider.state({
             name: 'service-level-agreements.**',
             url: '/service-level-agreements',
@@ -186,13 +186,13 @@ class Route {
             lazyLoad: (transition: any) => {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
                 const onModuleLoad = () => {
-                    return import(/* webpackChunkName: "feed-mgr.sla.module" */ "./feed-mgr/sla/module")
+                    return import(/***** webpackChunkName: "feed-mgr.sla.module"  "./feed-mgr/sla/module")
                         .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-agreements", transition.params()));
                 };
-                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+                import(/***** webpackChunkName: "feed-mgr.module-require" "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
-
+*/
         $stateProvider.state({
             name: 'users.**',
             url: '/users',
@@ -243,20 +243,20 @@ class Route {
             }
         });
 
-        $stateProvider.state('search.**', {
+        $stateProvider.state({
+            name: 'search.**',
             url: '/search',
             params: {
                 bcExclude_globalSearchResetPaging: null
             },
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('search/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('search', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading search ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "kylo.search" */ "./search/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "search", transition.params()));
+                };
+
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
 

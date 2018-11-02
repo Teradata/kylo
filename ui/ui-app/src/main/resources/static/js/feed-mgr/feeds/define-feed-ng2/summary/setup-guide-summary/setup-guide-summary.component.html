@@ -48,7 +48,7 @@
           <mat-card-content>
             <div fxFlex="100" fxLayout="row">
               <mat-icon>{{kyloIcons.Links.setupGuide}}</mat-icon>
-              <span> Version: v.{{feed.versionName}}</span>
+              <span class="push-left"> Version: v.{{feed.versionName}}</span>
             </div>
             <div *ngIf="feed.isDeployedWithActiveDraft()">
                  <a href="#" (click)="loadDraftVersion($event)">Draft Version</a>

@@ -43,7 +43,7 @@
     </div>
 
     <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm" >
-      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly" [autocomplete]="field.type == 'password' ? 'new-password' : 'off'" >
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly" [autocomplete]="field.type == 'password' ? 'new-password' : 'off'" [required]="field.required">
       <mat-error *ngIf="!isValid">
         {{getErrorMessage()}}
       </mat-error>
@@ -53,7 +53,7 @@
 
 
     <mat-form-field *ngSwitchCase="'select'" class="pad-top-sm">
-      <mat-select [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder">
+      <mat-select [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder" [required]="field.required">
         <mat-option *ngFor="let opt of field.options" [value]="opt.value">
           {{opt.label}}
         </mat-option>

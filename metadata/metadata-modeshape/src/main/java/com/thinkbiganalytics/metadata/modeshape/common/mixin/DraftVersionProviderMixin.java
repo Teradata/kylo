@@ -81,6 +81,17 @@ public interface DraftVersionProviderMixin<T, PK extends Serializable> extends V
             })
             .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
+    
+    @Override
+    default Optional<EntityVersion<PK, T>> findVersion(PK entityId, ID versionId, boolean includeContent) {
+        return findVersionableNode(entityId)
+            .filter(versionable -> JcrEntityDraftVersion.matchesId(versionable, versionId))
+            .map(versionable -> {
+                T entity = includeContent ? asEntity(entityId, versionable) : null;
+                return Optional.<EntityVersion<PK, T>>of(new JcrEntityDraftVersion<PK, T>(versionable, entityId, entity));
+            })
+            .orElseGet(() -> VersionProviderMixin.super.findVersion(entityId, versionId, includeContent));
+    }
 
     @Override
     default Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent) {

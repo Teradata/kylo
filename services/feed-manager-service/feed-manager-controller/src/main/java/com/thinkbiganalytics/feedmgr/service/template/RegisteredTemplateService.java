@@ -435,7 +435,7 @@ public class RegisteredTemplateService {
             properties = niFiTemplateCache.getTemplateProperties(nifiTemplate, true, null);
 
             List<NiFiRemoteProcessGroup> remoteProcessGroups = niFiTemplateCache.getRemoteProcessGroups(nifiTemplate);
-            Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships  = niFiTemplateCache.getInputProcessorRelationships(nifiTemplate);
+            Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships  = niFiTemplateCache.getInputProcessorRelationships(nifiTemplate, null);
             registeredTemplate.setRemoteProcessGroups(remoteProcessGroups);
             registeredTemplate.setNifiTemplate(nifiTemplate);
             registeredTemplate.setTemplateName(nifiTemplate.getName());
@@ -470,7 +470,7 @@ public class RegisteredTemplateService {
             if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
                 properties = niFiTemplateCache.getTemplateProperties(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors(), registeredTemplate);
-                inputProcessorRelationships = niFiTemplateCache.getInputProcessorRelationships(templateDTO);
+                inputProcessorRelationships = niFiTemplateCache.getInputProcessorRelationships(templateDTO, registeredTemplate);
             }
 
             if (templateDTO != null && !templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {

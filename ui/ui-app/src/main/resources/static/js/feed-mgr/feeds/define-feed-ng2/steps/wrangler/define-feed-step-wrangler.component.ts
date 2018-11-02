@@ -57,16 +57,15 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
     }
 
     protected cancelFeedEdit() {
-        //get the old feed
-        //
         super.cancelFeedEdit();
-        this.defineFeedService.sideNavStateChanged({opened:true})
-        this.goToSetupGuideSummary();
+       // this.defineFeedService.sideNavStateChanged({opened:true})
+       // this.goToSetupGuideSummary();
     }
 
     protected applyUpdatesToFeed(): (Observable<any> | boolean | null) {
         super.applyUpdatesToFeed();
         this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
+        this.feed.dataTransformation.catalogDataSourceIds = this.feed.dataTransformation.$catalogDataSources.map(ds => ds.id);
         if (this.feed.table.schemaChanged) {
             this.dialogService.openAlert({
                 title: 'Error saving feed.  Table Schema Changed.',
@@ -77,5 +76,9 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         else {
             return true;
         }
+    }
+
+    isFeedSaveInProgress(): boolean {
+        return this.feedLoadingService.loadingFeed;
     }
 }

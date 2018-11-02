@@ -63,7 +63,7 @@ import {DefineFeedStepReadonlyContentComponent} from "./steps/define-feed-step-c
 import {DefineFeedTableComponent, FilterPartitionFormulaPipe} from "./steps/define-table/define-feed-table.component";
 import {DefineFeedStepFeedDetailsComponent} from "./steps/feed-details/define-feed-step-feed-details.component";
 import {FeedDetailsProcessorFieldComponent} from "./steps/feed-details/feed-details-processor-field.component";
-import {DefineFeedStepSourceSampleComponent} from "./steps/source-sample/define-feed-step-source-sample.component";
+import {DefineFeedStepSourceSampleComponent} from "./steps/define-table/source-sample/define-feed-step-source-sample.component";
 import {DefineFeedStepWranglerComponent} from "./steps/wrangler/define-feed-step-wrangler.component";
 import {FeedLineageComponment} from "./summary/feed-lineage/feed-lineage.componment";
 import {OverviewComponent} from './summary/overview/overview.component';
@@ -85,16 +85,12 @@ import {FeedInfoCategoryComponent} from "./summary/setup-guide-summary/feed-info
 import {FeedInfoNameComponent} from "./summary/setup-guide-summary/feed-info/feed-info-name/feed-info-name.component";
 import {FeedItemInfoService} from "./summary/setup-guide-summary/feed-info/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/setup-guide-summary/feed-info/feed-info-tags/feed-info-tags.component";
-import {SlaComponent} from './summary/sla/sla.componment';
-import {SlaDetailsComponent} from './summary/sla/details/sla-details.componment';
-import {SlaFormComponent} from './summary/sla/details/sla-form.componment';
-import {SlaListComponent} from './summary/sla/list/sla-list.componment';
-import {SlaRowComponent} from './summary/sla/list/sla-row.componment';
+import {FeedSlaComponent} from './summary/sla/feed-sla.component';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {FeedNifiPropertiesService} from "./services/feed-nifi-properties.service";
 import {FeedNifiPropertiesComponent} from "./steps/feed-details/feed-nifi-properties.component";
-import {DefineFeedSourceSampleService} from "./steps/source-sample/define-feed-source-sample.service";
-import {DefineFeedStepSourceComponent} from "./steps/source-sample/define-feed-step-source.component";
+import {DefineFeedSourceSampleService} from "./steps/define-table/source-sample/define-feed-source-sample.service";
+import {DefineFeedStepSourceComponent} from "./steps/source/define-feed-step-source.component";
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
@@ -126,6 +122,7 @@ import {FeedVersionsComponent} from "./summary/versions/feed-versions.component"
 import {JoinPipe} from "./shared/pipes/JoinPipe";
 import {VerboseTimeUnitPipe} from "./shared/pipes/VerboseTimeUnitPipe";
 import {CharactersPipe} from "./shared/pipes/CharactersPipe";
+import {SlaModule} from "../../sla/sla.module";
 import {ExampleStepComponent} from './steps/example-step/example-step.component';
 import {TruncatePipe} from './summary/profile/container/stats/truncate-pipe';
 import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module';
@@ -166,11 +163,7 @@ import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.
         FeedInfoDescriptionComponent,
         FeedInfoCategoryComponent,
         FeedInfoTagsComponent,
-        SlaComponent,
-        SlaListComponent,
-        SlaRowComponent,
-        SlaDetailsComponent,
-        SlaFormComponent,
+        FeedSlaComponent,
         SelectNetworkNodeComponent,
         FeedInfoTagsComponent,
         FeedNifiPropertiesComponent,
@@ -205,14 +198,11 @@ import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.
         DefineFeedPermissionsDialogComponent
     ],
     providers:[
-      // DefineFeedService,
-      // FeedLoadingService,
       FilterPartitionFormulaPipe,
       FeedSideNavService,
       FeedItemInfoService,
       FeedNifiPropertiesService,
       DefineFeedSourceSampleService,
-      // FeedAccessControlService
     ],
     imports: [
         CommonModule,
@@ -276,6 +266,7 @@ import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.
         OpsManagerServicesModule,
         FeedStatsModule,
         JobsListModule,
+        SlaModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]
 })

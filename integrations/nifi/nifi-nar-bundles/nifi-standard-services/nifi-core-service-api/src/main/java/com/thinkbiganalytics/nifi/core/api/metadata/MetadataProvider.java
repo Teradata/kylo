@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
  */
 
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -241,7 +242,11 @@ public interface MetadataProvider {
      * Gets the data set with the specified id.
      *
      * @param id data set id
+     * @param encryptedCredentials true if any embedded credentials should be encrypted in the result
      * @return the data set, if found
      */
-    Optional<DataSet> getDataSet(@Nonnull String id);
+    Optional<DataSet> getDataSet(@Nonnull String id, final boolean encryptedCredentials);
+
+
+    Optional<DataSource>getCatalogDataSource(@Nonnull String id);
 }

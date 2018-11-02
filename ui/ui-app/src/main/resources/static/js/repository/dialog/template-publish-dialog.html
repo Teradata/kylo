@@ -19,7 +19,7 @@
   -->
 <div fxLayout="column" fxLayoutGap="30px">
   <div *ngIf="loading" fxLayout="row" fxLayoutAlign="center">
-    <mat-spinner [diameter]="25"></mat-spinner>
+    <mat-spinner [diameter]="25" color="accent"></mat-spinner>
   </div>
   <div *ngIf="success && !error" fxLayout="row">
     <ng-md-icon icon="check_circle" size="20" style="fill:green; margin-left: 0px; margin-right: 0px;"></ng-md-icon>

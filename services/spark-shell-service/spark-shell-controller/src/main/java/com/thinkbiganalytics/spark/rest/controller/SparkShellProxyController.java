@@ -488,6 +488,8 @@ public class SparkShellProxyController {
         // Add data source details
         addDatasourceDetails(request);
 
+
+
         addCatalogDataSource(request);
 
         // Execute request
@@ -595,6 +597,8 @@ public class SparkShellProxyController {
         //Add Catalog details
         addCatalogDataSets(request);
 
+        addCatalogDataSources(request);
+
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
         return getTransformResponse(() -> restClient.transform(process, request));
@@ -613,7 +617,8 @@ public class SparkShellProxyController {
                   })
     public Response fileMetadata(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
         TransformRequest request = new TransformRequest();
-        request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(dataSet).orElseGet(Collections::emptyList), DataSetUtil.mergeTemplates(dataSet).getOptions()));
+        DataSet decrypted = catalogModelTransform.decryptOptions(dataSet);
+        request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(decrypted).orElseGet(Collections::emptyList), DataSetUtil.mergeTemplates(decrypted).getOptions()));
 
         final SparkShellProcess process = getSparkShellProcess();
         return getModifiedTransformResponse(() -> Optional.of(restClient.transform(process, request)), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));
@@ -782,6 +787,35 @@ public class SparkShellProxyController {
         request.setDatasources(datasources);
     }
 
+
+    private void addCatalogDataSources(@Nonnull final TransformRequest request) {
+        // Skip empty data source
+        if (request.getCatalogDataSources() == null) {
+            return;
+        }
+
+        List<DataSource> dataSources = metadata.read(() -> {
+           return  request.getCatalogDataSources().stream()
+                .map(DataSource::getId)
+                .map(kyloCatalogDataSourceProvider::resolveId)
+                .map(id -> {
+                    Optional<com.thinkbiganalytics.metadata.api.catalog.DataSource> ds = kyloCatalogDataSourceProvider.find(id);
+                    if(ds.isPresent()){
+                         return catalogModelTransform.dataSourceToRestModel(true,false).apply(ds.get());
+                    }else {
+                        throw new BadRequestException("No catgalog datasource exists with the given ID: " + id);
+                    }
+                })
+                .collect(Collectors.toList());
+        });
+        if(dataSources != null){
+            request.setCatalogDataSources(dataSources);
+        }
+        else {
+            throw new BadRequestException("Unable to find catalog datasources");
+        }
+    }
+
     private void addCatalogDataSource(@Nonnull final SaveRequest request) {
         // Skip empty data source
         if (request.getCatalogDatasource() == null) {
@@ -791,7 +825,7 @@ public class SparkShellProxyController {
        DataSource catalogDataSource = metadata.read(() -> {
                          DataSource ds = kyloCatalogDataSourceProvider.find(kyloCatalogDataSourceProvider.resolveId(request.getCatalogDatasource().getId())).map(dataSource -> {
                              //merge in connection info??
-                             return catalogModelTransform.dataSourceToRestModel().apply(dataSource);
+                             return catalogModelTransform.dataSourceToRestModel(true,false).apply(dataSource);
                          }).orElse(null);
                          return ds;
                       });
@@ -840,7 +874,7 @@ public class SparkShellProxyController {
             com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = kyloCatalogDataSourceProvider.resolveId(datasourceId);
             
             return kyloCatalogDataSourceProvider.find(dsId)
-                .map(catalogModelTransform.dataSourceToRestModel())
+                .map(catalogModelTransform.dataSourceToRestModel(true,false))
                 .orElseThrow(() -> new BadRequestException("No Catalog datasource exists with the given ID: " + datasourceId));
         });
 

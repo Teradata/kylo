@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.DraftEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
@@ -427,7 +428,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
     @Override
-    public EntityVersion deployFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) {
+    public DeployResponseEntityVersion deployFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) throws DeployFeedException{
         Optional<Feed.ID> idOption = checkChangeVersions(feedIdStr);
 
         return idOption.map(domainFeedId -> {
@@ -447,10 +448,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                                 }
                             }
 
-                            FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
-
-                            deployFeed(feedMetadata, ver);
-                            return feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get());
+                           FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
+                           NifiFeed deployedFeed = deployFeed(feedMetadata, ver);
+                           EntityVersion entityVersion= feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get());
+                           return new DeployResponseEntityVersion(entityVersion,deployedFeed);
                         })
                         .orElseThrow(() -> new FeedNotFoundException(domainFeedId));
             }, MetadataAccess.SERVICE);
@@ -1174,7 +1175,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     }
 
-    private NifiFeed deployFeed(final FeedMetadata feedMetadata, com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version) {
+    private NifiFeed deployFeed(final FeedMetadata feedMetadata, com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version) throws DeployFeedException {
         Stopwatch stopwatch = Stopwatch.createStarted();
         boolean enabled = false;
 
@@ -1311,7 +1312,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 }
                 entity.setRolledBack(true);
             }
+            throw new DeployFeedException(feed);
         }
+
         feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
 
         return feed;

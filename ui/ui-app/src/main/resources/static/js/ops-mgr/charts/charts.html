@@ -23,7 +23,7 @@
 
             <body-section layout-fill transclude-to="body" >
                 <div ng-if="vm.loading" style="width:100%">
-                    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                    <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
                     <br/>
                 </div>
                 <div id="charts_tab_pivot_chart" style="width:100%" class="layout-padding-left-right">
@@ -35,7 +35,7 @@
     <card-layout flex="20" class="filter-chart">
         <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Filter Chart</header-section>
         <body-section transclude-to="body" flex layout="column">
-            <div ng-if="vm.message != ''" ng-class="{'error':vm.isWarning}" style="padding-left:25px;">
+            <div ng-if="vm.message != ''" ng-class="{'tc-negative':vm.isWarning}" style="padding-left:25px;">
                 {{vm.message}}
             </div>
             <form role="form">

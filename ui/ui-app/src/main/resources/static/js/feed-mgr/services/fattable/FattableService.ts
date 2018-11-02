@@ -172,7 +172,7 @@ function FattableService($window: any) {
             setColumnId(children.last(), header.id);
 
             const valueDiv = children.first();
-            valueDiv.css("width", (self.table.columnWidths[header.id] - settings.headerPadding - 2) + "px"); //leave 2 pixels for column separator
+            //valueDiv.css("width", (self.table.columnWidths[header.id] - settings.headerPadding - 2) + "px"); //leave 2 pixels for column separator
             const valueSpan = valueDiv.get(0);
             settings.fillHeader(valueSpan, header);
         };

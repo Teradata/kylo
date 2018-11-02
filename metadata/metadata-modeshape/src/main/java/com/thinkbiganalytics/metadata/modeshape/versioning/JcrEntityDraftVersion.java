@@ -39,6 +39,10 @@ public class JcrEntityDraftVersion<I, E> extends JcrEntityVersion<I, E> {
 
     private DateTime created;
     
+    public static boolean matchesId(Node versionable, EntityVersion.ID id) {
+        return new VersionId(JcrPropertyUtil.getIdentifier(versionable)).equals(id);
+    }
+    
     public JcrEntityDraftVersion(Node versionable, I entityId, E entity) {
         super(null, Optional.empty(), entityId, entity);
         setId(new VersionId(JcrPropertyUtil.getIdentifier(versionable)));

@@ -24,6 +24,7 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -322,8 +323,13 @@ public class MetadataClientProvider implements MetadataProvider {
     }
 
     @Override
-    public Optional<DataSet> getDataSet(@Nonnull final String id) {
-        return client.getDataSet(id);
+    public Optional<DataSet> getDataSet(@Nonnull final String id, final boolean encryptedCredentials) {
+        return client.getDataSet(id, encryptedCredentials);
+    }
+
+    @Override
+    public Optional<DataSource> getCatalogDataSource(@Nonnull String id) {
+        return client.getCatalogDataSource(id);
     }
 
     protected void feedRemoved(String feedId, String category, String feedName) {

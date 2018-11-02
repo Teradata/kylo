@@ -24,11 +24,15 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -55,6 +59,28 @@ public class FeedMetadataJsonTest {
             String json = IOUtils.toString(inputStream, Charset.defaultCharset());
             FeedMetadata feed = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
             assertNotNull(feed);
+        }
+
+    }
+
+    @Test
+    public void testBeanUtils(){
+        FeedMetadata m = new FeedMetadata();
+        m.setDataTransformation( new FeedDataTransformation());
+        List<String> list = new ArrayList<>();
+        list.add(UUID.randomUUID().toString());
+        list.add(UUID.randomUUID().toString());
+        String str = list.toString();
+        m.getDataTransformation().setCatalogDataSourceIds(list);
+        Object obj = null;
+        try {
+            obj = org.apache.commons.beanutils.BeanUtils.getProperty(m, "dataTransformation.catalogDataSourceIds");
+        } catch (Exception e) {
+            //    throw new RuntimeException(e);
+        }
+        if(obj != null){
+            System.out.println(obj.toString());
+
         }
 
     }

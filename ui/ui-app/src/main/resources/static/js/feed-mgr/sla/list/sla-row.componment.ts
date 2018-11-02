@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {Sla} from '../sla.componment';
+import {Sla} from '../model/sla.model';
 
 @Component({
     selector: "sla-row",

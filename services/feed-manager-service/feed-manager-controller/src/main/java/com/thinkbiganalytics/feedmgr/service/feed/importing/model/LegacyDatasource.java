@@ -1,4 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed.importing.model;
+
+import org.apache.commons.lang.StringUtils;
+
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -21,14 +24,32 @@ package com.thinkbiganalytics.feedmgr.service.feed.importing.model;
 public class LegacyDatasource {
     private String table;
     private String datasourceId;
+    private String query;
 
-    public LegacyDatasource(String table, String datasourceId) {
-        this.table = table;
-        this.datasourceId = datasourceId;
+    public LegacyDatasource() {
+
+    }
+
+    public static LegacyDatasource newTableDatasource(String table, String datasourceId){
+        LegacyDatasource ds = new LegacyDatasource();
+        ds.table = table;
+        ds.datasourceId = datasourceId;
+        return ds;
+    }
+
+    public static LegacyDatasource newQueryDatasource(String query, String datasourceId){
+        LegacyDatasource ds = new LegacyDatasource();
+        ds.query = query;
+        ds.datasourceId = datasourceId;
+        return ds;
     }
 
     public String getTable() {
         return table;
+    }
+
+    public String getQuery() {
+        return query;
     }
 
     public String getDatasourceId() {
@@ -36,7 +57,11 @@ public class LegacyDatasource {
     }
 
     public String getKey(){
-        return getTable()+"-"+getDatasourceId();
+        return this.isDataSet()? getTable()+"-"+getDatasourceId() : getDatasourceId();
+    }
+
+    public boolean isDataSet(){
+        return StringUtils.isNotBlank(table);
     }
 
     @Override
@@ -56,6 +81,9 @@ public class LegacyDatasource {
         if (datasourceId != null ? !datasourceId.equals(that.datasourceId) : that.datasourceId != null) {
             return false;
         }
+        if (query != null ? !query.equals(that.query) : that.query != null) {
+            return false;
+        }
 
         return true;
     }
@@ -64,6 +92,7 @@ public class LegacyDatasource {
     public int hashCode() {
         int result = table != null ? table.hashCode() : 0;
         result = 31 * result + (datasourceId != null ? datasourceId.hashCode() : 0);
+        result = 31 * result + (query != null ? query.hashCode() : 0);
         return result;
     }
 }

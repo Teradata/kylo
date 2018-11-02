@@ -37,7 +37,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     getSortByColumnName(): string {
-        return this.columns[1].name;
+        return this.columns[2].name;
     }
 
     getStateName(): string {

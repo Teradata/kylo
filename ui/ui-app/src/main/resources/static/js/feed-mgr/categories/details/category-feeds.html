@@ -32,7 +32,7 @@
         </md-list>
         <div ng-if="vm.model.loadingRelatedFeeds">
             {{"views.category-feeds.Loading" | translate}}<br/>
-            <md-progress-circular md-mode="indeterminate"  md-diameter="25px"></md-progress-circular>
+            <md-progress-circular md-mode="indeterminate"  md-diameter="25px" class="md-accent"></md-progress-circular>
         </div>
         <div ng-if="!vm.model.loadingRelatedFeeds && (vm.model.relatedFeedSummaries == null || vm.model.relatedFeedSummaries.length === 0)">
             {{"views.category-feeds.Tanfawtc" | translate}}

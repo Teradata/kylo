@@ -35,8 +35,6 @@ import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./main-dia
 import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean-dialog";
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
-import {FeedLoadingService} from "../../feeds/define-feed-ng2/services/feed-loading-service";
-
 
 declare const CodeMirror: any;
 
@@ -94,6 +92,13 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      */
     @Input()
     nextButton: string;
+
+    /**
+     * Should NEXT button be disabled?
+     * (true if feed is being saved)
+     */
+    @Input()
+    disableNextButton: boolean;
 
     /**
      * Event emitted to return to the previous step
@@ -265,8 +270,6 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @ViewChild(VisualQueryTable)
     visualQueryTable: VisualQueryTable;
 
-    feedLoadingService: FeedLoadingService;
-
     /**
      * Constructs a {@code TransformDataComponent}.
      */
@@ -274,12 +277,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
                 @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
                 @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
-                private wranglerDataService: WranglerDataService,
-                feedLoadingService: FeedLoadingService) {
+                private wranglerDataService: WranglerDataService) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
-
-        this.feedLoadingService = feedLoadingService;
     }
 
     ngAfterViewInit(): void {
@@ -305,6 +305,14 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             // Check for non-Hive datasource
             if (Array.isArray(this.model.datasourceIds) && this.model.datasourceIds.length > 0) {
                 useSqlModel = (this.model.datasourceIds.length > 1 || (typeof this.model.datasourceIds[0] !== "undefined" && this.model.datasourceIds[0] !== "HIVE"));  // TODO remove "HIVE"
+            }
+            if (this.model.datasets && this.model.datasets.length > 0) {
+                //use the node model if we are using anything but Hive.
+                //only Hive is able to use the adv SQL model
+
+                useSqlModel = this.model.datasets.find(ds => {
+                    return ds.dataSource.connector.pluginId != "hive";
+                }) != undefined;
             }
             if (!useSqlModel) {
                 useSqlModel = _.chain(this.sqlModel.nodes)
@@ -333,13 +341,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             if (this.model.datasets) {
                 this.engine.setDatasets(this.model.datasets)
             }
-
             if (Array.isArray(this.model.states) && this.model.states.length > 0) {
-                this.engine.setQuery(source, this.model.$datasources);
+                this.engine.setQuery(source, this.model.$datasources, this.model.$catalogDataSources);
                 this.engine.setState(this.model.states);
                 this.functionHistory = this.engine.getHistory();
             } else {
-                this.engine.setQuery(source, this.model.$datasources);
+                this.engine.setQuery(source, this.model.$datasources, this.model.$catalogDataSources);
                 this.functionHistory = this.engine.getHistory();
             }
 
@@ -706,7 +713,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.showError(this.cleanError(message));
 
             // Reset state
-            this.onUndo();
+            if (this.engine.canUndo()) {
+                this.onUndo();
+            }
             this.removeExecution(promise);
             deferred.error(message);
         };
@@ -1383,13 +1392,5 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
     goForward() {
         this.saveToFeedModel().then(() => this.next.emit());
-    }
-
-    /**
-     * Is the feed being saved?
-     * @returns {boolean}
-     */
-    isFeedSaving(): boolean {
-        return this.feedLoadingService.loadingFeed;
     }
 }

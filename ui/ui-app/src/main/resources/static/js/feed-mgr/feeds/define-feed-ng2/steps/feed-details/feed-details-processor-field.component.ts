@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Compiler, Component, Inject, Injector, Input, NgModuleFactory, NgModuleFactoryLoader, OnChanges, OnDestroy, SimpleChanges, Type} from "@angular/core";
+import {Compiler, Component, Inject, Injector, Input, NgModuleFactory, NgModuleFactoryLoader, OnChanges, OnDestroy, OnInit, SimpleChanges, Type} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {Observable} from "rxjs/Observable";
 import {ArrayObservable} from "rxjs/observable/ArrayObservable";
@@ -23,14 +23,15 @@ enum State {
     ERROR = "ERROR",
     FORM = "FORM",
     LOADING = "LOADING",
-    TEMPLATE = "TEMPLATE"
+    TEMPLATE = "TEMPLATE",
+    EMPTY = "EMPTY"
 }
 
 @Component({
     selector: "feed-details-processor-field",
     templateUrl: "./feed-details-processor-field.component.html"
 })
-export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy {
+export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, OnDestroy {
 
     @Input()
     processor: ProcessorRef;
@@ -42,7 +43,11 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
     childModule: NgModuleFactory<any>;
     childType: Type<any>;
     error: string;
-    form = new FormGroup({});
+    /**
+     * Map of the forms associated for each processor
+     * @type {{}}
+     */
+    forms : {[key:string]: FormGroup} = {};
     state = State.LOADING;
     statusSubscription: Subscription;
     private isSystemJsSetup = false;
@@ -51,10 +56,35 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
                 @Inject("UiComponentsService") private uiComponentsService: UiComponentsService, private _compiler: Compiler) {
     }
 
+    ngOnInit(){
+        if(this.processor == undefined){
+            this.state = State.EMPTY;
+        }
+    }
+
     ngOnDestroy(): void {
         if (this.statusSubscription != null) {
             this.statusSubscription.unsubscribe();
         }
+    }
+
+    /**
+     * Ensure the current processor is in the form map
+     * @private
+     */
+    private _ensureProcessorForm(){
+        if(this.forms[this.processor.id] == undefined){
+            this.forms[this.processor.id] = new FormGroup({});
+        }
+    }
+
+    /**
+     * Get the form for the current processor
+     * @return {}
+     */
+    getProcessorForm(){
+        this._ensureProcessorForm();
+        return this.forms[this.processor.id];
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -78,7 +108,7 @@ export class FeedDetailsProcessorFieldComponent implements OnChanges, OnDestroy 
                     catchError(err => {
                         if (err instanceof EmptyError) {
                             this.state = State.FORM;
-                            changes.processor.currentValue.control = this.form;
+                            changes.processor.currentValue.control = this.getProcessorForm();
                             return empty();
                         } else {
                             throw err;

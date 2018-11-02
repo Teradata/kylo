@@ -41,7 +41,7 @@ ngOnInit() {
             useVoronoi: false,
             clipEdge: false,
             duration: 0,
-            height:136,
+            height:146,
             useInteractiveGuideline: true,
             xAxis: {
                 axisLabel: 'Time',
@@ -235,6 +235,9 @@ constructor(private $scope: IScope,
             }
             this.chartOptions.chart.yDomain = [0, max];
             this.chartOptions.chart.yAxis.ticks =max;
+            this.chartOptions.chart.color = (d: any)=>{
+                return "#00B2B1";
+            };
           //  this.chartApi.update();
         }
 

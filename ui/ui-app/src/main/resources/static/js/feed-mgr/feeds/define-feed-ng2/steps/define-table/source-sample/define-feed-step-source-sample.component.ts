@@ -1,18 +1,18 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
-import {Feed} from "../../../../model/feed/feed.model";
-import {Step} from "../../../../model/feed/feed-step.model";
+import {Feed} from "../../../../../model/feed/feed.model";
+import {Step} from "../../../../../model/feed/feed-step.model";
 import {StateService} from "@uirouter/angular";
-import {DefineFeedService} from "../../services/define-feed.service";
-import {SelectionService} from "../../../../catalog/api/services/selection.service";
-import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
-import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {DefineFeedService} from "../../../services/define-feed.service";
+import {SelectionService} from "../../../../../catalog/api/services/selection.service";
+import {FeedStepConstants} from "../../../../../model/feed/feed-step-constants";
+import {PreviewDataSet} from "../../../../../catalog/datasource/preview-schema/model/preview-data-set";
 import {TdDialogService} from "@covalent/core/dialogs";
-import {FeedLoadingService} from "../../services/feed-loading-service";
+import {FeedLoadingService} from "../../../services/feed-loading-service";
 import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
-import {DatasetPreviewStepperCanceledEvent, DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {DatasetPreviewStepperCanceledEvent, DatasetPreviewStepperSavedEvent} from "../../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {ISubscription} from "rxjs/Subscription";
-import {SaveFeedResponse} from "../../model/save-feed-response.model";
-import {SparkDataSet} from "../../../../model/spark-data-set.model";
+import {SaveFeedResponse} from "../../../model/save-feed-response.model";
+import {SparkDataSet} from "../../../../../model/spark-data-set.model";
 
 
 export class ShowCatalogCanceledEvent{

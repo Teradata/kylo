@@ -27,7 +27,7 @@ body {
 }
 
 html, body {
-  font-size: 16px;
+  font-size: 14px;
   height: 100%;
   margin: 0px;
   padding: 0px;
@@ -128,7 +128,7 @@ md-sidenav md-list {
 }
 
 md-sidenav md-list .alerts-count {
-  background-color: red;
+  background-color: #b71c1c;
   color: white;
   padding: 3px;
   font-weight: 900;
@@ -162,13 +162,15 @@ md-list md-datepicker .md-button.md-icon-button {
 
 #content {
   background-color: #e0e0e0;
-}
-
-#content {
   padding-left: 25px;
   padding-right: 25px;
   padding-top: 17px;
   padding-bottom: 25px;
+
+}
+
+#content.sla-list, #content.sla-edit, #content.sla-new, #content.template-info {
+  padding:0px !important;
 }
 
 #content, #content .main-content {
@@ -407,7 +409,7 @@ md-list.padding-left md-list-item {
 }
 
 .md-button.border-btn-warn {
-  background-color: rgb(255, 87, 34);
+  background-color: #b71c1c !important;
   text-align: center !important;
   height: 36px;
   font-size: 12px;
@@ -418,7 +420,7 @@ md-list.padding-left md-list-item {
 }
 
 .md-button.border-btn-warn:hover {
-  background-color: rgb(244, 81, 30);
+  background-color: #b71c1c !important;
 }
 
 .md-button.border-btn-white {
@@ -610,7 +612,7 @@ md-tab-content.md-no-scroll {
 }
 
 .md-warn-text {
-  color: rgb(255, 87, 34);
+  color: #b71c1c !important;
 }
 
 md-radio-button.padding-right {
@@ -854,8 +856,8 @@ Status styles
  */
 
 .error, .unhealthy {
-  color: #FF0000; /*#FF1C1C, a94442*/
-  fill: #FF0000;
+  color: #b71c1c!important;
+  fill: #b71c1c!important;
 }
 
 .running-job-activity {
@@ -863,8 +865,8 @@ Status styles
 }
 
 .healthy, .success, .enabled {
-  color: #009933;
-  fill: #009933;
+  color: #388e3c!important;
+  fill: #388e3c!important;
 }
 
 .abandoned, .unknown, .disabled {
@@ -934,10 +936,10 @@ Fade a element in/out
 
 /**
 Vertical section directive
- */
-
+*/
 .vertical-step-border {
-  border-left: grey 1px solid;
+  /* border-left: grey 1px solid; */
+  margin-top: -16px
 }
 
 /**
@@ -1372,15 +1374,13 @@ mat-icon.kylo-title-icon {
 }
 
 mat-nav-list a[mat-list-item] .mat-list-item-content {
-   font-size: 16px !important;
+   font-size: 14px !important;
 }
 
 /** Hide the scroll bar when on the visual query and wrangler **/
 md-content.visual-query {
   overflow-y:hidden;
 }
-
-
 
 .alert-heading {
   font-size:16px;

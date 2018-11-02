@@ -1,6 +1,6 @@
 <div class="visual-query-loading-wrapper">
   <div class="visual-query-loading" flex layout="row" layout-align="center center" [fxShow]="loading">
-    <mat-progress-spinner mode="indeterminate" diameter="80"></mat-progress-spinner>
+    <mat-progress-spinner mode="indeterminate" diameter="80" color="accent"></mat-progress-spinner>
   </div>
 
   <mat-card *ngIf="!showSaveResultsCard()">
@@ -124,6 +124,7 @@
       <div *ngIf="isSavedTable()" fxLayout="column" fxLayoutAlign="start center" fxFill class="layout-padding-bottom ">
         <span class="mat-subheader">Your table is now available.</span>
       </div>
+
 
       <div *ngIf="downloadUrl != null" style="color:#4caf50;background-color:rgba(76,175,80,.1);margin:0 auto;min-height:52px;padding:0 20px;" fxLayout="row">
         <ng-md-icon icon="file_download" style="margin-right:20px;"></ng-md-icon>

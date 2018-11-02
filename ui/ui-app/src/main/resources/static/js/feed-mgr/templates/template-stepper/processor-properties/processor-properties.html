@@ -17,244 +17,232 @@
   limitations under the License.
   #L%
   -->
-<div layout="row" class="centered">
+<div layout="row" layout-align="center start">
 
-    <card-layout class="not-centered" card-css="layout-fill" style="max-width:980px;width:980px;overflow-x:inherit"
-                 flex="initial">
+  <card-layout class="not-centered" card-css="layout-fill" style="max-width:980px;width:980px;overflow-x:inherit"
+               flex="initial">
 
-        <header-section>
-            <div layout="row" layout-align="space-between-center">
-                <div class="card-title">{{::vm.cardTitle}}</div>
+    <header-section>
+      <div layout="row" layout-align="space-between-center">
+        <div class="card-title" flex>{{::vm.cardTitle}}</div>
 
-                <div class="card-sub-header">{{::vm.stepNumber}} of 5</div>
-            </div>
-        </header-section>
+        <div class="card-sub-header">{{::vm.stepNumber}} of 5</div>
+      </div>
+    </header-section>
 
-        <body-section>
-            <md-content>
-                <ng-form name="vm.propertiesForm" layout-fill>
-                    <md-virtual-repeat-container browser-height browser-height-offset="300"
-                                                 browser-height-scroll-y="false" style="width:100%;"
-                                                 md-top-index="vm.topIndex">
+    <body-section>
+      <md-content>
+        <ng-form name="vm.propertiesForm" layout-fill>
+          <md-virtual-repeat-container browser-height browser-height-offset="300"
+                                       browser-height-scroll-y="false" style="width:100%;"
+                                       md-top-index="vm.topIndex">
 
-                        <div md-virtual-repeat="property in vm.allProperties " layout="column" layout-fill>
-                            <div ng-if="property.firstProperty" layout="row" class="layout-padding-left-16 layout-padding-top-bottom" style="background-color:#F9F9F9;">
-                                <a id="{{property.processor.id}}" name="{{property.processor.name}}"></a>
-                                <span class="primary-color-1 md-subhead left-aligned">{{property.processor.name}}</span>
+            <div md-virtual-repeat="property in vm.allProperties " layout="column" layout-fill>
+              <div ng-if="property.firstProperty" layout="row" class="layout-padding-left-16 layout-padding-top-bottom" style="background-color:#F9F9F9;">
+                <a id="{{property.processor.id}}" name="{{property.processor.name}}"></a>
+                <span class="primary-color-1 md-subhead left-aligned">{{property.processor.name}}</span>
+              </div>
+              <div layout="row" style="padding-left:30px;">
+                <md-input-container style="height:30px;margin-bottom:5px;"
+                                    class="">
+                  <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                    <md-checkbox aria-label="Select" ng-model="property.selected" ng-click="vm.updateSize()"></md-checkbox>
+                  </div>
+                </md-input-container>
+                <div class="register-template-property md-padding" layout="column" layout-fill>
+                  <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
+                  <span class="hint" ng-if="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</span>
+                  <span class="hint" ng-show="property.propertyDescriptor.required">This is a NiFi required field.  You need to either allow the user to input data, or supply a default value.</span>
+                  <div class="hint">{{property.propertyDescriptor.description}}</div>
+
+                  <div ng-if="property.selected == true" class="fade">
+                    <ng-form name="innerForm">
+
+                      <div ng-if="property.propertyDescriptor.allowableValues != null">
+                        <md-input-container md-no-float class="">
+                          <label>Default Value</label>
+                          <md-select ng-model="property.value" name="property"
+                                     placeholder="Default Value">
+                            <md-option
+                                ng-repeat="allowableValue in property.propertyDescriptor.allowableValues  | orderBy:'value' track by allowableValue.value"
+                                value="{{allowableValue.value}}">
+                              {{allowableValue.displayName}}
+                            </md-option>
+                          </md-select>
+                        </md-input-container>
+                      </div>
+
+
+                      <div ng-if="property.propertyDescriptor.allowableValues == null && property.selected == true">
+
+
+                        <md-input-container style="margin-left:-2px" class="push-top-md push-bottom-none">
+                          <label>Default Value (Supports Expressions)</label>
+                          <input name="propertyInput"
+                                 placeholder="Enter a string or ${expression}" mentio
+                                 type="text"
+                                 mentio-id="property.mentioId"
+                                 mentio-typed-text="typedTerm"
+                                 ng-model="property.value"
+                                 size="100"
+                                 ng-required="!property.userEditable && property.propertyDescriptor.required"
+                                 ng-change="vm.changedPropertyInput(property)"
+                                 ng-keydown="vm.keydownPropertyInput(property)"
+                                 ng-init="property.changed=false"/>
+                        </md-input-container>
+
+                        <mentio-menu style="display:none;"
+                                     mentio-for="property.mentioId"
+                                     mentio-trigger-char="'$'"
+                                     mentio-items="vm.expressionProperties"
+                                     mentio-template-url="js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html"
+                                     mentio-search="vm.searchExpressionProperties(term)"
+                                     mentio-select="vm.getExpressionPropertyTextRaw(item)"></mentio-menu>
+
+                        <div class="hint" thinkbig-derived-expression ng-model="property.value"
+                             style="margin-bottom:10px;"></div>
+
+                        <div ng-if="vm.allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
+                          <md-input-container md-no-float class=" layout-margin-top-minus-7">
+                            <div layout="row">
+                              <div style="background-color:#0288d126" class="tc-accent layout-padding-left-4 layout-padding-right-4">
+                                <ng-md-icon icon="info" class="tc-accent" size="20"></ng-md-icon>
+                                NiFi template has a different value: <b>{{
+                                property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
+                              </div>
+                              <div class="layout-padding-left-4">
+                                <ng-md-icon icon="replay" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="tc-accent cursor-pointer md-ink-ripple"></ng-md-icon>
+                                <md-tooltip>Accept value from NiFi template [{{property.registrationChangeInfo.valueFromNewerNiFiTemplate}}] to replace current value of [{{ property.value }}]
+                                </md-tooltip>
+                              </div>
                             </div>
-                            <div layout="row" style="padding-left:30px;">
-                                <md-input-container style="height:30px;margin-bottom:5px;"
-                                                    class="md-block">
-                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                        <md-checkbox aria-label="Select" ng-model="property.selected" ng-click="vm.updateSize()"></md-checkbox>
-                                    </div>
-                                </md-input-container>
-                                <div class="register-template-property md-padding" layout="column" layout-fill>
-                                    <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
-                                    <span class="hint" ng-if="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</span>
-                                    <span class="hint" ng-show="property.propertyDescriptor.required">This is a NiFi required field.  You need to either allow the user to input data, or supply a default value.</span>
-                                    <div class="hint">{{property.propertyDescriptor.description}}</div>
-
-                                    <div ng-if="property.selected == true" style="padding-top:10px;" class="fade">
-                                        <ng-form name="innerForm">
-
-                                            <div ng-if="property.propertyDescriptor.allowableValues != null">
-                                                <md-input-container md-no-float class="md-block">
-                                                    <label>Default Value</label>
-                                                    <md-select ng-model="property.value" name="property"
-                                                               placeholder="Default Value">
-                                                        <md-option
-                                                                ng-repeat="allowableValue in property.propertyDescriptor.allowableValues  | orderBy:'value' track by allowableValue.value"
-                                                                value="{{allowableValue.value}}">
-                                                            {{allowableValue.displayName}}
-                                                        </md-option>
-                                                    </md-select>
-                                                </md-input-container>
-                                            </div>
-
-
-                                            <div ng-if="property.propertyDescriptor.allowableValues == null && property.selected == true">
-
-
-                                                <md-input-container style="height:30px;margin-bottom:5px;" class="md-block">
-                                                    <label>Default Value (Supports Expressions)</label>
-                                                    <input name="propertyInput"
-                                                           placeholder="Enter a string or ${expression})" mentio
-                                                           type="text"
-                                                           mentio-id="property.mentioId"
-                                                           mentio-typed-text="typedTerm"
-                                                           ng-model="property.value"
-                                                           size="100"
-                                                           ng-required="!property.userEditable && property.propertyDescriptor.required"
-                                                           ng-change="vm.changedPropertyInput(property)"
-                                                           ng-keydown="vm.keydownPropertyInput(property)"
-                                                    ng-init="property.changed=false"/>
-                                                </md-input-container>
-
-                                                <mentio-menu style="display:none;"
-                                                             mentio-for="property.mentioId"
-                                                             mentio-trigger-char="'$'"
-                                                             mentio-items="vm.expressionProperties"
-                                                             mentio-template-url="js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html"
-                                                             mentio-search="vm.searchExpressionProperties(term)"
-                                                             mentio-select="vm.getExpressionPropertyTextRaw(item)"></mentio-menu>
-
-                                                <div class="hint" thinkbig-derived-expression ng-model="property.value"
-                                                     style="margin-bottom:10px;"></div>
-
-                                                <div ng-if="vm.allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
-                                                    <md-input-container md-no-float class="md-block layout-margin-top-minus-7">
-                                                        <div layout="row">
-                                                        <div style="color:#0288d1; background-color:#0288d126" class="layout-padding-left-4 layout-padding-right-4">
-                                                            <ng-md-icon icon="info" style="fill:#0288d1" size="20"></ng-md-icon>NiFi template has a different value: <b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
-                                                        </div>
-                                                        <div class="layout-padding-left-4">
-                                                            <ng-md-icon icon="replay" style="fill:#0288d1" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple"></ng-md-icon>
-                                                            <md-tooltip>Accept value from NiFi template [{{property.registrationChangeInfo.valueFromNewerNiFiTemplate}}] to replace current value of [{{ property.value }}]</md-tooltip>
-                                                        </div>
-                                                        </div>
-                                                    </md-input-container>
-                                                </div>
-
-                                            </div>
-
-                                            <div layout="row" layout-align="start-center">
-
-                                                <md-input-container style="height:30px;margin-bottom:5px;"
-                                                                    class="md-block" ng-if="property.value == null || property.value == ''">
-                                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                        <md-checkbox aria-label="Set as empty string"
-                                                                     ng-checked="property.value == ''"
-                                                                     ng-click="vm.toggleSetAsEmptyString(property)">
-                                                            Set as empty string
-                                                        </md-checkbox>
-                                                    </div>
-                                                </md-input-container>
-                                                <md-input-container style="height:30px;margin-bottom:5px;padding-left:10px;"
-                                                                    class="md-block">
-                                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                        <md-checkbox aria-label="User can supply input"
-                                                                     ng-model="property.userEditable">
-                                                          Allow user input
-                                                        </md-checkbox>
-                                                    </div>
-                                                </md-input-container>
-                                                <md-input-container
-                                                        style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                        class="md-block" ng-if="property.userEditable">
-                                                    <label>Render as</label>
-                                                    <md-select ng-model="property.renderType" name="renderType" ng-change="vm.onRenderTypeChange(property)"
-                                                               placeholder="Render Input As...">
-                                                        <md-option
-                                                                ng-repeat="renderType in property.renderTypes  | orderBy:'label' track by renderType.type"
-                                                                value="{{renderType.type}}">
-                                                            {{renderType.label}}
-                                                        </md-option>
-                                                    </md-select>
-                                                </md-input-container>
-                                              <md-input-container
-                                                  style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                  class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                <label>True Value</label>
-                                                <input name="property"
-                                                       placeholder="true"
-                                                       type="text"
-                                                       ng-model="property.renderOptions['trueValue']" size="20"/>
-                                                </md-input-container>
-
-                                              <md-input-container
-                                                  style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                  class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                <label>False Value</label>
-                                                <input name="property"
-                                                       placeholder="false"
-                                                       type="text"
-                                                       ng-model="property.renderOptions['falseValue']" size="20"/>
-                                              </md-input-container>
-
-                                              <div style="padding-left:10px;">
-                                                <md-chips md-on-add="vm.customSelectOptionChanged(property)" md-on-remove="vm.customSelectOptionChanged(property)" placeholder="Add Select Options"
-                                                          ng-model="property.selectOptions"
-                                                          ng-if="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
-                                                </md-chips>
-                                              </div>
-                                                <div>
-                                                    <md-input-container style="height:30px;margin-bottom:5px;"
-                                                                        class="md-block">
-                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                            <md-checkbox aria-label="Sensitive"
-                                                                         ng-model="property.sensitive"
-                                                                         ng-disabled="property.propertyDescriptor.sensitive">
-                                                                Sensitive
-                                                            </md-checkbox>
-                                                        </div>
-                                                    </md-input-container>
-                                                </div>
-                                                <div ng-if="property.userEditable">
-                                                    <md-input-container style="height:30px;margin-bottom:5px;"
-                                                                        class="md-block">
-                                                        <div class="md-checkbox-div-top" ng-repeat="v in [0]">
-                                                            <md-checkbox aria-label="Required"
-                                                                         ng-model="property.required"
-                                                                         ng-disabled="property.propertyDescriptor.required">
-                                                                Required
-                                                            </md-checkbox>
-                                                        </div>
-                                                    </md-input-container>
-                                                </div>
-                                            </div>
-
-                                        </ng-form>
-
-                                    </div>
-
-
-                                </div>
-
-                            </div>
-                            <md-divider ng-if="!$last"></md-divider>
+                          </md-input-container>
                         </div>
 
+                      </div>
 
-                    </md-virtual-repeat-container>
+                      <div layout="row" layout-align="start-center" class="pull-top-md pull-bottom-sm">
+
+                        <md-input-container class="push-none push-right">
+                          <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                            <md-checkbox aria-label="User can supply input"
+                                         ng-model="property.userEditable">
+                              Allow user input
+                            </md-checkbox>
+                          </div>
+                        </md-input-container>
+
+                        <md-input-container class="push-none push-right">
+                          <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                            <md-checkbox aria-label="Sensitive"
+                                         ng-model="property.sensitive"
+                                         ng-disabled="property.propertyDescriptor.sensitive">
+                              Sensitive
+                            </md-checkbox>
+                          </div>
+                        </md-input-container>
 
 
-                    <thinkbig-step-buttons can-continue="vm.isValid && vm.propertiesForm.$valid"
-                                           step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
-                </ng-form>
+                        <md-input-container class="push-none" ngi-if="property.userEditable">
+                          <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                            <md-checkbox aria-label="Required"
+                                         ng-model="property.required"
+                                         ng-disabled="property.propertyDescriptor.required">
+                              Required
+                            </md-checkbox>
+                          </div>
+                        </md-input-container>
+                      </div>
 
-            </md-content>
+                      <div layout="row" layout-align="start-center" class="push-top-none pull-bottom-sm">
+                        <md-input-container
+                            class="pull-bottom-sm push-right" ng-if="property.userEditable">
+                          <label>Render as</label>
+                          <md-select ng-model="property.renderType" name="renderType" ng-change="vm.onRenderTypeChange(property)"
+                                     placeholder="Render Input As...">
+                            <md-option
+                                ng-repeat="renderType in property.renderTypes  | orderBy:'label' track by renderType.type"
+                                value="{{renderType.type}}">
+                              {{renderType.label}}
+                            </md-option>
+                          </md-select>
+                        </md-input-container>
 
-        </body-section>
+                        <md-chips md-on-add="vm.customSelectOptionChanged(property)" md-on-remove="vm.customSelectOptionChanged(property)" placeholder="Options"
+                                  ng-model="property.selectOptions"
+                                  ng-if="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
+                        </md-chips>
+                        <md-tooltip>Enter each value followed by (enter)</md-tooltip>
 
-    </card-layout>
+                        <md-input-container class="push-right" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
+                          <label>True Value</label>
+                          <input name="property"
+                                 placeholder="true"
+                                 type="text"
+                                 ng-model="property.renderOptions['trueValue']" size="20"/>
+                        </md-input-container>
 
-    <card-layout offsetleftfromprevious top="8" card-css="layout-fill"
-                 id="property-legend-{{::vm.processorPropertiesFieldName}}"
-                 style="max-width:250px;width:250px;min-width:250px;" flex="initial">
-        <header-section>
-            <div class="card-title">Filter</div>
-            <div class="hint">Showing {{vm.allProperties.length}} properties</div>
-        </header-section>
+                        <md-input-container
+                            class="push-right" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
+                          <label>False Value</label>
+                          <input name="property"
+                                 placeholder="false"
+                                 type="text"
+                                 ng-model="property.renderOptions['falseValue']" size="20"/>
+                        </md-input-container>
+                      </div>
 
-        <body-section style="padding-left:25px;">
-            <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()" style="margin-left:-9px">
-                Show only selected
-            </md-checkbox>
-            <md-subheader class="md-primary left-aligned layout-padding-left">Jump to a group</md-subheader>
+                    </ng-form>
 
-            <md-virtual-repeat-container md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
-                     layout-align="start start" layout="column" md-item-size="30">
+                  </div>
 
-                <div md-virtual-repeat="processor in vm.processors " >
-                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left" >
-                    {{processor.name}}
-                    </md-button>
-                    <md-divider ng-if="!$last"></md-divider>
+
                 </div>
-            </md-virtual-repeat-container>
 
-        </body-section>
+              </div>
+              <md-divider ng-if="!$last"></md-divider>
+            </div>
 
-    </card-layout>
+
+          </md-virtual-repeat-container>
+
+
+          <thinkbig-step-buttons can-continue="vm.isValid && vm.propertiesForm.$valid"
+                                 step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+        </ng-form>
+
+      </md-content>
+
+    </body-section>
+
+  </card-layout>
+
+  <card-layout offsetleftfromprevious top="8" card-css="layout-fill"
+               id="property-legend-{{::vm.processorPropertiesFieldName}}"
+               style="max-width:250px;width:250px;min-width:250px;" flex="initial">
+    <header-section>
+      <div class="card-title">Filter</div>
+      <div class="hint">Showing {{vm.allProperties.length}} properties</div>
+    </header-section>
+
+    <body-section style="padding-left:25px;">
+      <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()" style="margin-left:-9px">
+        Show only selected
+      </md-checkbox>
+      <md-subheader class="md-primary left-aligned layout-padding-left">Jump to a group</md-subheader>
+
+      <md-virtual-repeat-container md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
+                                   layout-align="start start" layout="column" md-item-size="30">
+
+        <div md-virtual-repeat="processor in vm.processors ">
+          <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left">
+            {{processor.name}}
+          </md-button>
+          <md-divider ng-if="!$last"></md-divider>
+        </div>
+      </md-virtual-repeat-container>
+
+    </body-section>
+
+  </card-layout>
 </div>

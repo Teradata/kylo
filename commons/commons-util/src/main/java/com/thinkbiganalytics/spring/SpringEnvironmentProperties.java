@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spring;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,8 +36,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 /**
- * Helper class to get Environment Properties
- * reference for RefreshScope: http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_refresh_scope
+ * Helper class to get Environment Properties reference for RefreshScope: http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_refresh_scope
  */
 @RefreshScope
 public class SpringEnvironmentProperties {
@@ -68,7 +67,7 @@ public class SpringEnvironmentProperties {
                 Map<String, Object> properties = m.subMap(key, key + Character.MAX_VALUE);
                 Map<String, Object> decryptedProperties = new HashMap<>();
                 if (properties != null && !properties.isEmpty()) {
-                    for(String k : properties.keySet()){
+                    for (String k : properties.keySet()) {
                         decryptedProperties.put(k, env.getProperty(k));
                     }
                 }
@@ -115,7 +114,7 @@ public class SpringEnvironmentProperties {
                     }
                     //decrypt
                     Map<String, Object> decryptedMap = new HashMap();
-                    for(String k : map.keySet()){
+                    for (String k : map.keySet()) {
                         decryptedMap.put(k, env.getProperty(k));
                     }
 

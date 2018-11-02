@@ -41,7 +41,7 @@ export class RemoteFilesComponent extends BrowserComponent {
     }
 
     getSortByColumnName() {
-        return this.columns[1].name;
+        return this.columns[2].name;
     }
 
     getStateName(): string {
@@ -163,7 +163,7 @@ export class RemoteFilesComponent extends BrowserComponent {
     }
 
     private static isAzure(url: URL) {
-        return url.protocol === "wasb:";
+        return url.protocol === "wasb:" || url.protocol === "wasbs:";
     }
 
 }

@@ -33,6 +33,7 @@ public class FeedMetadataSearchResultData extends AbstractSearchResultData {
     private String feedCategoryId;
     private List<String> feedTags;
     private String userProperties;
+    private String feedId;
 
     public FeedMetadataSearchResultData() {
         final String ICON = "linear_scale";
@@ -88,5 +89,13 @@ public class FeedMetadataSearchResultData extends AbstractSearchResultData {
 
     public void setUserProperties(String userProperties) {
         this.userProperties = userProperties;
+    }
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
     }
 }

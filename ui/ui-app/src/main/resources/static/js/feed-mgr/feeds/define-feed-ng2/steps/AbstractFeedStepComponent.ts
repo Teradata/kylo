@@ -203,10 +203,17 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * When a feed edit is cancelled, reset the forms
      * @param {Feed} feed
      */
-    protected cancelFeedEdit() {
+    protected cancelFeedEdit(markAsReadOnly: boolean = false, openSideNav:boolean = true) {
         //get the old feed
-        this.defineFeedService.markFeedAsReadonly();
+        if (markAsReadOnly) {
+             this.defineFeedService.markFeedAsReadonly();
+         }
         this.feed = this.defineFeedService.getFeed();
+        if(openSideNav){
+            this.defineFeedService.sideNavStateChanged({opened:true})
+        }
+        this.goToSetupGuideSummary();
+
     }
 
 
@@ -244,7 +251,13 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         }
         else if (updates && updates instanceof Observable) {
             updates.subscribe((response: any) => {
-                saveCall();
+                if((response != undefined && typeof response == "boolean" && response == false)) {
+                    //skip since response is false
+                    this.resolveLoading();
+                }
+                else {
+                    saveCall();
+                }
             })
         }
         else {
@@ -258,6 +271,8 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * public method called from the step-card.component
      */
     onCancelEdit() {
+        this.cancelFeedEdit();
+        /*
         //warn if there are pending changes
         if ((this.subscribingToFormChanges && this.step.isDirty()) || !this.subscribingToFormChanges) {
             this.dialogService.openConfirm({
@@ -278,6 +293,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
         else {
             this.cancelFeedEdit();
         }
+        */
     }
 
     /**

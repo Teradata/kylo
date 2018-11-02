@@ -13,6 +13,7 @@ import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
 import {SparkDataSet} from "../../model/spark-data-set.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
+import {DataSource} from "../../catalog/api/models/datasource";
 
 export class PageSpec {
     firstRow: number;
@@ -58,6 +59,11 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * List of required data source ids.
      */
     protected datasources_: UserDatasource[];
+
+    /**
+     * list of the catalog datasources used for sql mode
+     */
+    protected catalogDataSources_ : DataSource[]
 
     /**
      * The page of the dataset to display
@@ -674,6 +680,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
 
     setScript(script: string): void {
         this.datasources_ = null;
+        this.catalogDataSources_ = null;
         this.redo_ = [];
         this.source_ = script;
         this.states_ = [this.newState()];
@@ -696,8 +703,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Sets the query and datasources.
      */
-    setQuery(query: string | object, datasources: UserDatasource[] = [], pageSpec: PageSpec = null): void {
+    setQuery(query: string | object, datasources: UserDatasource[] = [], catalogDataSources:[] = [], pageSpec: PageSpec = null): void {
         this.datasources_ = (datasources.length > 0) ? datasources : null;
+        this.catalogDataSources_ = catalogDataSources.length >0 ? catalogDataSources : null;
         this.redo_ = [];
         this.source_ = this.parseQuery(query);
         this.states_ = [this.newState()];

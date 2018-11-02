@@ -25,7 +25,7 @@
             <nvd3 options="vm.chartOptions" data="vm.indicator.chartData" api="vm.chartApi" config="vm.chartConfig"></nvd3>
             <div layout="row" layout-align="space-between end" class="kpi-health-count-container" >
             <span layout="column" ng-click="vm.openDetailsDialog('HEALTHY')" style="cursor: pointer;">
-                <span class="kpi-health-count" ng-class="{'healthy':vm.indicator.counts.upCount >0}">{{vm.indicator.counts.upCount}}</span>
+                <span class="kpi-health-count" ng-class="{'tc-positive':vm.indicator.counts.upCount >0}">{{vm.indicator.counts.upCount}}</span>
                 <span class="md-caption kpi-health-label">{{"Healthy" | translate}}</span>
             </span>
             <span layout="column" ng-click="vm.openDetailsDialog('UNHEALTHY')" style="cursor: pointer;">
@@ -34,7 +34,8 @@
             </span>
             </div>
         </div>
-        <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"
+                                                                                                                              class="md-accent"></md-progress-circular>
         </div>
 
     </md-card-content>

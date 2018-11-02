@@ -44,7 +44,7 @@
       <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
         <div layout="column">
           <span style="padding-top:30px;">&nbsp;</span>
-          <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+          <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
         </div>
 
       </div>
@@ -131,13 +131,13 @@
     <div flex layout="row" layout-align="start end">
       <span flex></span>
       <span flex="20" ng-if="vm.showProcessorChartLoading">
-          <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+          <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
         </span>
     </div>
     <nvd3 flex options="vm.processorChartOptions" data="vm.processorChartData" api="vm.processorChartApi" config="{deepWatchOptions:true}"></nvd3>
     </div>
   </div>
-  <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+  <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60" class="md-accent"></md-progress-circular>
 
 
 

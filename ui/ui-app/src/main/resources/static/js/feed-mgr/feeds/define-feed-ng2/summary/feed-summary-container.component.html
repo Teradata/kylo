@@ -13,7 +13,7 @@
         <ng-template let-link let-last="last" ngFor [ngForOf]="summaryLinks" >
           <a mat-list-item (click)="selectLink(link)"  [ngClass]="{'selected-step': link.selected}">
             <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
-            <div mat-line style="margin-left:-8px">{{link.label | translate}}</div>
+            <div mat-line style="margin-left:-16px">{{link.label | translate}}</div>
             <span></span>
           </a>
         </ng-template>
@@ -25,7 +25,7 @@
           <ng-template let-link let-last="last" ngFor [ngForOf]="staticFeedLinks">
             <a mat-list-item (click)="selectLink(link)"  [ngClass]="{'selected-step': link.selected, 'disabled-step': additionalLinksDisabled, 'pointer':!additionalLinksDisabled}">
               <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
-              <div mat-line style="margin-left:-8px">{{link.label | translate}}</div>
+              <div mat-line style="margin-left:-16px">{{link.label | translate}}</div>
               <span></span>
             </a>
             <!--<mat-divider *ngIf="!last"></mat-divider>-->

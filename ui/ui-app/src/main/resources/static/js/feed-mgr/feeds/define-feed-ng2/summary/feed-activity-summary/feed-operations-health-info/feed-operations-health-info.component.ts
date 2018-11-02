@@ -56,8 +56,6 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     startingFeed: boolean;
 
-    accessControl: FeedAccessControl = FeedAccessControl.NO_ACCESS;
-
     uploadFileAllowed: boolean;
 
     exportFeedUrl: string;
@@ -77,7 +75,6 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.exportFeedUrl = this.restUrlService.ADMIN_EXPORT_FEED_URL + "/" + this.feed.id;
-        this.accessControl = this.feed.accessControl;
         this.getFeedHealth();
         this.refreshInterval = setInterval(this.getFeedHealth.bind(this), this.refreshTime)
         this.initMenu();
@@ -96,7 +93,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     }
 
     uploadFile() {
-        if (this.accessControl.allowStart) {
+        if (this.feed.accessControl.allowStart) {
             let config = {data: new FeedUploadFileDialogComponentData(this.feed.id), width: "500px"};
             this._dialogService.open(FeedUploadFileDialogComponent, config);
         }
@@ -111,7 +108,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
 
     enableFeed() {
-        if (this.accessControl.allowEdit) {
+        if (this.feed.accessControl.allowEdit) {
             this.feedStateChanging = true;
             this.opsManagerFeedService.enableFeed(this.feed.id).subscribe((feedSummary: FeedSummary) => {
                 this.feed.state = feedSummary.state;
@@ -129,7 +126,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     }
 
     disableFeed() {
-        if (this.accessControl.allowEdit) {
+        if (this.feed.accessControl.allowEdit) {
             this.feedStateChanging = true;
             this.opsManagerFeedService.disableFeed(this.feed.id).subscribe((feedSummary: FeedSummary) => {
                 this.feed.state = feedSummary.state;
@@ -147,7 +144,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     }
 
     startFeed() {
-        if (this.accessControl.allowStart) {
+        if (this.feed.accessControl.allowStart) {
             if (!this.startingFeed) {
                 this.startingFeed = true;
 

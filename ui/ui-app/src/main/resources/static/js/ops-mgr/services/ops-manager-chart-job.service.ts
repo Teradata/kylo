@@ -10,7 +10,7 @@ export class OpsManagerChartJobService {
     toChartData(jobStatusCountResponse: any) {
         return this.nvd3ChartService.toLineChartData(jobStatusCountResponse,
             [{ label: 'status', value: 'count' }], 'date',
-            (status : any) => {IconUtil.colorForJobStatus(status)});
+            (status : any) => { return IconUtil.colorForJobStatus(status)});
     }
 
     shouldManualUpdate(chart: any) {

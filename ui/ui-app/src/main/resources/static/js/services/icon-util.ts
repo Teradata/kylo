@@ -14,6 +14,7 @@ export default class IconUtil {
                 data.icon = 'mood';
                 data.style = 'healthy';
                 data.color = "#009933";
+                data.class = "tc-positive";
                 data.text = "HEALTHY"
                 break;
             case "UNHEALTHY":
@@ -92,7 +93,7 @@ export default class IconUtil {
             case "RUNNING_JOB_ACTIVITY":
                 data.icon = "directions_run";
                 data.style = "running-job-activity";
-                data.color = "#FD9B28";
+                data.color = "#00b2b1"; //teal color
                 break;
             case "RUNNING":
             case "EXECUTING":
@@ -100,7 +101,7 @@ export default class IconUtil {
             case "STARTING":
                 data.icon = "directions_run";
                 data.style = "success";
-                data.color = "#009933";
+                data.color = "#00b2b1";  //teal color
                 break;
             case "STOPPING":
                 data.icon = "pan_tool";

@@ -23,7 +23,6 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
  */
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
-import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -81,14 +80,15 @@ public class ConnectorController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Path("{id}")
-    public Response getConnector(@PathParam("id") final String connectorId) {
+    public Response getConnector(@PathParam("id") final String connectorId,
+                                 @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(connectorId);
         
         return metadataService.read(() -> {
             com.thinkbiganalytics.metadata.api.catalog.Connector.ID connId = connectorProvider.resolveId(connectorId);
             
             return connectorProvider.find(connId)
-                .map(modelTransform.connectorToRestModel())
+                .map(modelTransform.connectorToRestModel(true, encryptCredentials))
                 .map(conn -> Response.ok(log.exit(conn)).build())
                 .orElseThrow(() -> {
                     log.debug("Connector not found: {}", connectorId);

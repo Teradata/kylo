@@ -16,11 +16,9 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {FeedNifiPropertiesComponent} from "../feed-details/feed-nifi-properties.component";
-import {ShowCatalogCanceledEvent} from "./define-feed-step-source-sample.component";
 import {SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
 import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {FormGroupUtil} from "../../../../../services/form-group-util";
-import {DefineFeedSourceSampleService} from "./define-feed-source-sample.service";
 
 
 
@@ -52,8 +50,7 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
                 feedLoadingService: FeedLoadingService,
                 feedSideNavService: FeedSideNavService,
                 private previewSchemaService: PreviewSchemaService,
-                private catalogService: CatalogService,
-                private defineFeedSourceSampleService:DefineFeedSourceSampleService) {
+                private catalogService: CatalogService) {
         super(defineFeedService, stateService, feedLoadingService, dialogService, feedSideNavService);
         this.sourceForm = new FormGroup({});
         this.sourcePropertiesForm = new FormGroup({})
@@ -81,24 +78,23 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     }
 
-    /**
-     * Should the skip header row option be shown?
-     * @returns {boolean}
-     */
-    allowSkipHeaderOption(): boolean {
-        return true;
-    }
 
     destroy() {
 
     }
+    public isFormValid(){
+        let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
+        const inputFormValid= (this.feedPropertyNiFiComponent.inputProcessor && this.feedPropertyNiFiComponent.inputProcessor.form.valid);
+        return inputControl.valid && inputFormValid
+    }
 
     public applyUpdatesToFeed(): (Observable<any> | boolean | null) {
-        let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
-        if(inputControl.invalid){
+        //ensure the selected input and respective form is valid before saving
+
+        if(!this.isFormValid()){
             this.step.validator.hasFormErrors = true;
             //show the errors
-            inputControl.markAsTouched()
+            FormGroupUtil.touchFormArrayControls(this.feedPropertyNiFiComponent.inputProcessor.form);
             return false;
         }
         else {
@@ -121,9 +117,9 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
 
     cancelFeedEdit(){
         //reassign the propertiesInitialized flag when canceling edit
-        let propertiesInitialized = this.feed.propertiesInitialized;
+       // let propertiesInitialized = this.feed.propertiesInitialized;
         super.cancelFeedEdit();
-        this.feed.propertiesInitialized = propertiesInitialized;
+       // this.feed.propertiesInitialized = propertiesInitialized;
 
     }
 

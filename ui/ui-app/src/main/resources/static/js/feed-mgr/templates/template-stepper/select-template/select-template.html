@@ -114,7 +114,7 @@
         Loading Template ...
       </div>
       <div layout="column" class="layout-padding-top" ng-if="!vm.model.loading">
-        <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
+        <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
         <div layout="column" class="layout-padding-top-bottom">
                 <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state != 'ENABLED'}">
                     <ng-md-icon icon="{{vm.model.stateIcon}}" size="20" ng-if="vm.model.state != 'NOT REGISTERED'"></ng-md-icon> {{vm.model.state}}</span>

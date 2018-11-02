@@ -5,6 +5,8 @@ import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, SqlDialect, VisualQuery
 import {QueryParser} from "../../wrangler/query-parser";
 import {SparkConstants} from "./spark-constants";
 import {StringUtils} from "../../../../common/utils/StringUtils";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
+import {DataSource} from "../../../catalog/api/models/datasource";
 
 /** Name of the DatasourceProvider variable */
 const DATASOURCE_PROVIDER = "datasourceProvider";
@@ -31,17 +33,45 @@ export class SparkQueryParser extends QueryParser {
      * @returns the Spark script
      * @throws {Error} if there are too many data sources
      */
-    protected fromSql(sql: string, datasources: UserDatasource[]): string {
-        if (datasources != null && datasources.length !== 1) {
-            throw new Error("Not valid datasources: " + datasources);
-        } else if( datasources != null && datasources.length >0 && datasources[0].id === SparkConstants.USER_FILE_DATASOURCE) {
-            return "";
-        } else if (datasources == null || datasources.length === 0 || datasources[0].id === SparkConstants.HIVE_DATASOURCE) {
-                return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
+    protected fromSql(sql: string, datasources: UserDatasource[], catalogDataSources?:DataSource[]): string {
+            if(catalogDataSources){
+                return this.fromCatalogDataSourceSql(sql,catalogDataSources);
+            }
+            else {
+                return this.fromUserDatasourceSql(sql,datasources);
+            }
+    }
+
+    protected fromUserDatasourceSql(sql: string, datasources: UserDatasource[]): string {
+
+                if (datasources != null && datasources.length !== 1) {
+                    throw new Error("Not valid datasources: " + datasources);
+                } else if (datasources != null && datasources.length > 0 && datasources[0].id === SparkConstants.USER_FILE_DATASOURCE) {
+                    return "";
+                } else if (datasources == null || datasources.length === 0 || datasources[0].id === SparkConstants.HIVE_DATASOURCE) {
+                    return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
+                } else {
+                    let subquery = "(" + sql + ") AS KYLO_SPARK_QUERY";
+                    return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = " + DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(subquery) + "\", \""
+                        + datasources[0].id + "\", sqlContext)\n";
+                }
+        }
+
+
+    private fromCatalogDataSourceSql(sql: string, catalogDataSources?: DataSource[]): string {
+        let hiveDataSource: DataSource = null;
+        if(catalogDataSources) {
+            hiveDataSource = catalogDataSources.find(ds => ds.connector.pluginId == "hive");
+        }
+        if (catalogDataSources != null && catalogDataSources.length !== 1) {
+            //only allowed if using 1 datasource
+            throw new Error("Not valid datasources: " + catalogDataSources);
+        } else if (catalogDataSources == null || (hiveDataSource != null && hiveDataSource != undefined && catalogDataSources[0].id === hiveDataSource.id)) {
+            return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
         } else {
             let subquery = "(" + sql + ") AS KYLO_SPARK_QUERY";
-            return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = " + DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(subquery) + "\", \""
-                + datasources[0].id + "\", sqlContext)\n";
+            return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = " + DATASOURCE_PROVIDER + ".getTableFromCatalogDataSource(\"" + StringUtils.escapeScala(subquery) + "\", \""
+                + catalogDataSources[0].id + "\", sqlContext)\n";
         }
     }
 
@@ -85,7 +115,7 @@ export class SparkQueryParser extends QueryParser {
             script += "val " + alias + " = ";
             //TODO for A2A release change this logic to use table.dataset first
             //This check here will use hive sqlContext instead of the kyloCatalog for Hive data sources
-            if (typeof table.datasourceId === "string" && table.datasourceId.toLowerCase() !== SparkConstants.HIVE_DATASOURCE.toLowerCase() ) {
+            if (table.dataset != undefined || (typeof table.datasourceId === "string" && table.datasourceId.toLowerCase() !== SparkConstants.HIVE_DATASOURCE.toLowerCase() )) {
                 if(table.dataset != undefined && !table.datasetMatchesUserDataSource ) {
                     script += DATASET_PROVIDER +".read(\""+table.dataset.id+"\")";
                 }else {

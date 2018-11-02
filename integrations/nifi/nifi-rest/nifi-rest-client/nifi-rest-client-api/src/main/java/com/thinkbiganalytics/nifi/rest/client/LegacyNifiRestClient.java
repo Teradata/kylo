@@ -206,39 +206,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     }
 
     public void markConnectionPortsAsRunning(ProcessGroupDTO entity) {
-        //1 startAll
-        try {
-            startAll(entity.getId(), entity.getParentGroupId());
-        } catch (NifiClientRuntimeException e) {
-            log.error("Error trying to mark connection ports Running for {}", entity.getName());
-        }
-
-        Set<PortDTO> ports = null;
-        try {
-            ports = getPortsForProcessGroup(entity.getParentGroupId());
-        } catch (NifiClientRuntimeException e) {
-            log.error("Error getPortsForProcessGroup {}", entity.getName());
-        }
-        if (ports != null && !ports.isEmpty()) {
-            for (PortDTO port : ports) {
-                port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
-                    try {
-                        startInputPort(entity.getParentGroupId(), port.getId());
-                    } catch (NifiClientRuntimeException e) {
-                        log.error("Error starting Input Port {} for process group {}", port.getName(), entity.getName());
-                    }
-                } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
-                    try {
-                        startOutputPort(entity.getParentGroupId(), port.getId());
-                    } catch (NifiClientRuntimeException e) {
-                        log.error("Error starting Output Port {} for process group {}", port.getName(), entity.getName());
-                    }
-                }
-            }
-
-        }
-
+        startProcessGroupAndParentInputPorts(entity);
     }
 
     public void startProcessGroupAndParentInputPorts(ProcessGroupDTO entity) {
@@ -259,24 +227,56 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
             Map<String,PortDTO> portsById = ports.stream().collect(Collectors.toMap(port -> port.getId(), port->port));
             ProcessGroupFlowDTO flow = getNiFiRestClient().processGroups().flow(entity.getParentGroupId());
             if(flow != null) {
-                List<PortDTO> matchingParentGroupPorts = flow.getFlow().getConnections().stream()
+                Set<PortDTO> matchingPorts = new HashSet<>();
+                flow.getFlow().getConnections().stream()
                     .map(connectionEntity -> connectionEntity.getComponent())
-                    .filter(connectionDTO -> connectionDTO.getDestination().getGroupId().equalsIgnoreCase(entity.getId()))
-                    .filter(connectionDTO -> portsById.containsKey(connectionDTO.getSource().getId()))
-                    .map(connectionDTO -> portsById.get(connectionDTO.getSource().getId()))
-                    .collect(Collectors.toList());
+                    .forEach(connectionDTO -> {
+                        //map input ports
+                        if(connectionDTO.getDestination().getGroupId().equalsIgnoreCase(entity.getId()) && portsById.containsKey(connectionDTO.getSource().getId()) ){
+                           matchingPorts.add(portsById.get(connectionDTO.getSource().getId()));
+                        }
+                        //map output ports
+                        if(connectionDTO.getSource().getGroupId().equalsIgnoreCase(entity.getId()) && portsById.containsKey(connectionDTO.getDestination().getId())) {
+                            matchingPorts.add( portsById.get(connectionDTO.getDestination().getId()));
+                        }
 
-                for (PortDTO port : matchingParentGroupPorts) {
+                    });
+
+
+                for (PortDTO port : matchingPorts) {
                     port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
                     if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
                         try {
-                            startInputPort(entity.getParentGroupId(), port.getId());
+                            if(port.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())){
+                                PortDTO stoppedPort = stopInputPort(entity.getParentGroupId(), port.getId());
+                                if(stoppedPort.getValidationErrors() != null && !stoppedPort.getValidationErrors().isEmpty()) {
+                                    startInputPort(entity.getParentGroupId(), port.getId());
+                                }
+                                else {
+                                    String validationErrors = stoppedPort.getValidationErrors() != null ? ("Validation Errors: "+stoppedPort.getValidationErrors().stream().collect(Collectors.joining(","))) : "";
+                                    log.warn("Unable to start input port ["+port.getId()+"] with name: ["+ port.getName()+"] within process group: ["+port.getParentGroupId()+"]. "+validationErrors);
+                                }
+                            }else {
+                                startInputPort(entity.getParentGroupId(), port.getId());
+                            }
                         } catch (NifiClientRuntimeException e) {
                             log.error("Error starting Input Port {} for process group {}", port.getName(), entity.getName());
                         }
                     } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
                         try {
-                            startOutputPort(entity.getParentGroupId(), port.getId());
+                            if(port.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())){
+                                PortDTO stoppedPort = stopOutputPort(entity.getParentGroupId(), port.getId());
+                                if(stoppedPort.getValidationErrors() != null && !stoppedPort.getValidationErrors().isEmpty()) {
+                                    startOutputPort(entity.getParentGroupId(), port.getId());
+                                }
+                                else {
+                                    String validationErrors = stoppedPort.getValidationErrors() != null ? ("Validation Errors: "+stoppedPort.getValidationErrors().stream().collect(Collectors.joining(","))) : "";
+                                    log.warn("Unable to start output port ["+port.getId()+"] with name: ["+ port.getName()+"] within process group: ["+port.getParentGroupId()+"]. "+validationErrors);
+                                }
+                            }
+                            else {
+                                startOutputPort(entity.getParentGroupId(), port.getId());
+                            }
                         } catch (NifiClientRuntimeException e) {
                             log.error("Error starting Output Port {} for process group {}", port.getName(), entity.getName());
                         }

@@ -107,6 +107,11 @@ export class CatalogService {
         return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
     }
 
+    createDataSetWithTitle(dataSet: SparkDataSet): Observable<SparkDataSet> {
+        const body = CloneUtil.deepCopy(dataSet);
+        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+    }
+
 
     /**
      * Gets the schema for the specified table.
@@ -120,7 +125,7 @@ export class CatalogService {
         const self = this;
         let params = new HttpParams();
         params = params.append('schema', schema);
-        return this.http.post<DatasetTable>("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
+        return <Observable<DatasetTable>> this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
     }
 
 
@@ -143,7 +148,6 @@ export class CatalogService {
                     return {catalog:catalog,schema: schema, tableName:tableName, fullName: fullName, fullNameLower: fullName.toLowerCase()};
                 });
                 if(filter &&  filter != undefined && (typeof filter == 'string' ) && filter != ""){
-                    console.log("FILTER ",filter)
                     let lowercaseQuery = filter.toLowerCase();
                     return list.filter((table:any) => {
                         return table.fullNameLower.indexOf(lowercaseQuery) !== -1;

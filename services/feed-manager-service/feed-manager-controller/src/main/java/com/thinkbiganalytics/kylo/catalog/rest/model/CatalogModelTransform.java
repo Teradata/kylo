@@ -68,10 +68,10 @@ public class CatalogModelTransform {
     }
 
     public Function<com.thinkbiganalytics.metadata.api.catalog.Connector, Connector> connectorToRestModel() {
-        return connectorToRestModel(true);
+        return connectorToRestModel(true, true);
     }
 
-    public Function<com.thinkbiganalytics.metadata.api.catalog.Connector, Connector> connectorToRestModel(final boolean includeTemplate) {
+    public Function<com.thinkbiganalytics.metadata.api.catalog.Connector, Connector> connectorToRestModel(final boolean includeTemplate, final boolean encryptedCredentials) {
         return (domain) -> {
             final com.thinkbiganalytics.kylo.catalog.rest.model.Connector model = new com.thinkbiganalytics.kylo.catalog.rest.model.Connector();
             model.setId(domain.getId().toString());
@@ -83,29 +83,48 @@ public class CatalogModelTransform {
 //            securityTransform.applyAccessControl(domain, model);
 
             if (includeTemplate) {
-                model.setTemplate(sparkParamsToRestModel(domain.getPluginId()).apply(domain.getSparkParameters()));
+                model.setTemplate(sparkParamsToRestModel(domain.getPluginId(), encryptedCredentials).apply(domain.getSparkParameters()));
             }
 
             return model;
         };
     }
+    
+    public com.thinkbiganalytics.kylo.catalog.rest.model.DataSet decryptOptions(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
+        DataSource dataSource = decryptOptions(dataSet.getDataSource());
+        dataSet.setDataSource(dataSource);
+        return dataSet;
+    }
+    
+    public DataSource decryptOptions(DataSource dataSource) {
+        DataSetTemplate template = decryptOptions(dataSource.getTemplate());
+        dataSource.setTemplate(template);
+        return dataSource;
+    }
+    
+    public DataSetTemplate decryptOptions(DataSetTemplate template) {
+        template.getOptions().entrySet().stream()
+            .filter(entry -> encryptionService.isEncrypted(entry.getValue()))
+            .forEach(entry -> template.getOptions().put(entry.getKey(), encryptionService.decrypt(entry.getValue())));
+        return template;
+    }
 
-    private Function<DataSetSparkParameters, DataSetTemplate> sparkParamsToRestModel(String connectorPuginId) {
+    private Function<DataSetSparkParameters, DataSetTemplate> sparkParamsToRestModel(String connectorPuginId, final boolean encryptedCredentials) {
         return (domain) -> {
             return pluginManager.getPlugin(connectorPuginId)
-                .map(plugin -> sparkParamsToRestModel(plugin).apply(domain))
+                .map(plugin -> sparkParamsToRestModel(plugin, encryptedCredentials).apply(domain))
                 .orElseThrow(() -> new IllegalArgumentException("No connector plugin with ID: " + connectorPuginId));
         };
     }
 
-    private Function<DataSetSparkParameters, DataSetTemplate> sparkParamsToRestModel(ConnectorPlugin plugin) {
+    private Function<DataSetSparkParameters, DataSetTemplate> sparkParamsToRestModel(ConnectorPlugin plugin, final boolean encryptedCredentials) {
         return (domain) -> {
             DefaultDataSetTemplate model = new DefaultDataSetTemplate();
             model.setFormat(domain.getFormat());
             model.setPaths(domain.getPaths());
             model.setFiles(domain.getFiles());
             model.setJars(domain.getJars());
-            model.setOptions(decryptSensitiveOptions(plugin, domain.getOptions()));
+            model.setOptions(encryptedCredentials == true ? domain.getOptions() : decryptSensitiveOptions(plugin, domain.getOptions()));
             return model;
         };
     }
@@ -207,15 +226,19 @@ public class CatalogModelTransform {
         updateSparkParameters(model.getConnector().getPluginId(), model.getTemplate(), domain.getSparkParameters());
         return domain;
     }
-
+    
     public Function<DataSet, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSetToRestModel() {
+        return dataSetToRestModel(true);
+    }
+
+    public Function<DataSet, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSetToRestModel(final boolean encryptedCredentials) {
         return (domain) -> {
             com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model = new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet();
             model.setId(domain.getId().toString());
-            model.setDataSource(dataSourceToRestModel().apply(domain.getDataSource()));
+            model.setDataSource(dataSourceToRestModel(true,encryptedCredentials).apply(domain.getDataSource()));
             model.setTitle(domain.getTitle());
             // TODO: add description
-            DataSetTemplate template = sparkParamsToRestModel(domain.getDataSource().getConnector().getPluginId()).apply(domain.getSparkParameters());
+            DataSetTemplate template = sparkParamsToRestModel(domain.getDataSource().getConnector().getPluginId(), encryptedCredentials).apply(domain.getSparkParameters());
             model.setFormat(template.getFormat());
             model.setOptions(template.getOptions());
             model.setPaths(template.getPaths());
@@ -225,20 +248,20 @@ public class CatalogModelTransform {
     }
 
     public Function<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> dataSourceToRestModel() {
-        return dataSourceToRestModel(true);
+        return dataSourceToRestModel(true, true);
     }
 
-    public Function<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> dataSourceToRestModel(final boolean includeTemplate) {
+    public Function<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> dataSourceToRestModel(final boolean includeTemplate, final boolean encryptedCredentials) {
         return (domain) -> {
             DataSource model = new DataSource();
             model.setId(domain.getId().toString());
             model.setTitle(domain.getTitle());
             model.setNifiControllerServiceId(domain.getNifiControllerServiceId());
-            model.setConnector(connectorToRestModel(includeTemplate).apply(domain.getConnector()));
+            model.setConnector(connectorToRestModel(includeTemplate, encryptedCredentials).apply(domain.getConnector()));
             securityTransform.applyAccessControl(domain, model);
 
             if (includeTemplate) {
-                model.setTemplate(sparkParamsToRestModel(domain.getConnector().getPluginId()).apply(domain.getSparkParameters()));
+                model.setTemplate(sparkParamsToRestModel(domain.getConnector().getPluginId(), encryptedCredentials).apply(domain.getSparkParameters()));
             }
 
             return model;
@@ -248,8 +271,8 @@ public class CatalogModelTransform {
     /**
      * @return a domain to REST model converter for use by a Page
      */
-    public Converter<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> convertDataSourceToRestModel(final boolean includeTemplate) {
-        return (domain) -> dataSourceToRestModel(includeTemplate).apply(domain);
+    public Converter<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> convertDataSourceToRestModel(final boolean includeTemplate, final boolean encryptedCredentials) {
+        return (domain) -> dataSourceToRestModel(includeTemplate, encryptedCredentials).apply(domain);
     }
 
     private String generateDescription(DataSource dataSource) {

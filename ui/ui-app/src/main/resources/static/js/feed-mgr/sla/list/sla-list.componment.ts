@@ -1,13 +1,14 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
 import {StateService} from "@uirouter/angular";
-import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from '../../../../../model/feed/feed-constants';
-import {Sla} from '../sla.componment';
-import {Feed, FeedState} from '../../../../../model/feed/feed.model';
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from '../../model/feed/feed-constants';
+import {Sla} from '../model/sla.model';
+import {Feed, FeedState} from '../../model/feed/feed.model';
 import {SlaDetailsComponent} from '../details/sla-details.componment';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
-import {FeedLoadingService} from '../../../services/feed-loading-service';
-import AccessConstants from '../../../../../../constants/AccessConstants';
-import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
+import AccessConstants from '../../../constants/AccessConstants';
+import {KyloIcons} from "../../../kylo-utils/kylo-icons";
+import {SlaService} from "../../services/sla.service";
+import {error} from "ng-packagr/lib/util/log";
 
 @Component({
     selector: "sla-list",
@@ -18,21 +19,24 @@ export class SlaListComponent implements OnInit {
 
     private static feedLoader: string = "SlaDetailsComponent.feedLoader";
 
-    @Input() stateParams:any;
+    @Input()
+    stateParams:any;
+
+    @Input("feed")
+    feedModel: Feed;
 
     private feedId: string;
     private slaService: any;
     private accessControlService: any;
-    loading = false;
+    loading = true;
     serviceLevelAgreements: Sla[] = [];
     allowCreate = false;
     stateDisabled = FeedState.DISABLED;
-    feedModel: Feed;
+
 
     public kyloIcons_Links_sla = KyloIcons.Links.sla;
 
-    constructor(private $$angularInjector: Injector, private state: StateService, private loadingService: TdLoadingService, private feedLoadingService: FeedLoadingService) {
-        this.slaService = $$angularInjector.get("SlaService");
+    constructor(private $$angularInjector: Injector, private state: StateService, private loadingService: TdLoadingService, private slaService:SlaService) {
         this.accessControlService = $$angularInjector.get("AccessControlService");
         this.createLoader(SlaListComponent.feedLoader);
 
@@ -46,8 +50,13 @@ export class SlaListComponent implements OnInit {
 
     ngOnInit() {
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
-        this.loadFeedSlas(this.feedId);
-        this.loadFeed(this.feedId);
+        if(this.feedModel) {
+            this.loadFeedSlas(this.feedId);
+        }
+        else {
+            this.loadSlas();
+        }
+      //  this.loadFeed(this.feedId);
     }
 
     private createLoader(name: string) {
@@ -58,7 +67,7 @@ export class SlaListComponent implements OnInit {
             color: 'accent',
         });
     }
-
+/*
     private loadFeed(feedId:string):void {
         this.loadingService.register(SlaListComponent.feedLoader);
 
@@ -70,22 +79,31 @@ export class SlaListComponent implements OnInit {
             console.log('error loading feed for id ' + feedId);
         });
     }
+    */
 
     loadFeedSlas(feedId: string) {
+        this.loading = true;
         this.slaService.getFeedSlas(feedId).then((response: any) => {
-            if (response.data && response.data != undefined && response.data.length > 0) {
-                this.serviceLevelAgreements = response.data;
-            }
+                this.serviceLevelAgreements = response;
+                this.loading = false;
+        }, error => this.loading = false);
+    }
+
+    loadSlas() {
+        this.loading = true;
+        console.log('load all slas', this)
+        this.slaService.getAllSlas().then((response: any) => {
+            this.serviceLevelAgreements = response;
             this.loading = false;
-        });
+        }, error => this.loading = false);
     }
 
     editExistingSla(sla: Sla): void {
-        this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.edit", {slaId: sla.id});
+        this.state.go("^.edit", {slaId: sla.id});
     }
 
     createNewSla(): void {
-        this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.new");
+        this.state.go("^.new");
     }
 }
 

@@ -1,14 +1,12 @@
-import {Component, OnInit, ViewChild} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {TemplateMetadata, TemplateRepository} from "../services/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {StateService} from "@uirouter/angular";
-import {MatPaginator} from "@angular/material/paginator";
-import {MatSort} from "@angular/material/sort";
-import {MatTableDataSource} from "@angular/material/table";
-import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
 import {MatDialog} from "@angular/material/dialog";
 import {TemplateUpdatesDialog} from "../dialog/template-updates-dialog";
+import {IPageChangeEvent} from "@covalent/core";
+import {MatTableDataSource} from '@angular/material/table';
 
 /**
  * List templates from repository ready for installation.
@@ -28,13 +26,11 @@ export class ListTemplatesComponent implements OnInit {
     loading:boolean = true;
     selectedTemplate: TemplateMetadata;
     errorMsg: string = "";
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
-
     /**
      * List of available templates
      */
     templates: TemplateMetadata[] = [];
+    filteredList: TemplateMetadata[] = [];
     repositories: TemplateRepository[] = [];
     selectedRepository: TemplateRepository;
 
@@ -43,8 +39,6 @@ export class ListTemplatesComponent implements OnInit {
     length = undefined;
 
     public ngOnInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
         this.init();
     }
 
@@ -65,7 +59,8 @@ export class ListTemplatesComponent implements OnInit {
         this.templateService.getTemplatesInRepository(this.selectedRepository).subscribe(
             (data: TemplateMetadata[]) => {
                 this.templates = data;
-                this.dataSource.data = data;
+                this.filteredList = data;
+                this.search();
                 this.loading = false;
             },
             (error: any) => {
@@ -77,6 +72,30 @@ export class ListTemplatesComponent implements OnInit {
                 this.loading = false;
             }
         );
+    }
+
+    direction: string = "";
+    icon: string = "";
+    sortData(event: any) {
+
+        const isAsc = this.direction === 'asc' || this.direction === "";
+        if(isAsc){
+            this.direction = 'desc';
+            this.icon = "keyboard_arrow_up";
+        } else{
+            this.direction = 'asc';
+            this.icon = "keyboard_arrow_down";
+        }
+        this.templates = this.templates.sort((a, b) => {
+            return this.compare(a.templateName, b.templateName, isAsc);
+        });
+        this.search();
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    private compare(a: number | string, b: number | string, isAsc: boolean) {
+        return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
     }
 
     /*
@@ -101,16 +120,29 @@ export class ListTemplatesComponent implements OnInit {
         this.state.go("import-template", param);
     }
 
-    pageSize: number = 50;
+    pageSize: number = 10;
     currentPage: number = 1;
-    searchTerm: string = '';
+    fromRow: number = 1;
+    filteredTotal = 0;
+    searchTerm = '';
 
-    search(filter: string): void {
-        this.dataSource.filter = filter.trim().toLowerCase();
+    search(): void {
+        // this.dataSource.filter = filter.trim().toLowerCase();
+        let newData = this.dataTableService.filterData(this.templates, this.searchTerm, true, []);
+        this.filteredTotal = newData.length;
+        newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
+        this.filteredList = newData;
+    }
+
+    page(pagingEvent: IPageChangeEvent): void {
+        this.fromRow = pagingEvent.fromRow;
+        this.currentPage = pagingEvent.page;
+        this.pageSize = pagingEvent.pageSize;
+        this.search();
     }
 
     viewUpdates(template: TemplateMetadata): void {
-
+        console.log(template.updates);
         this.dialog.open(TemplateUpdatesDialog, {
             data: {updates: template.updates},
             width: '40%'

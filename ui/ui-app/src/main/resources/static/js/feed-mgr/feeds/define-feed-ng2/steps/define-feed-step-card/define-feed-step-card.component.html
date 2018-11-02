@@ -31,7 +31,7 @@
     </mat-card-header>
     <mat-card-content>
       <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
-        <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+        <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
         <h2>Required step needed</h2>
         <h3>This step requires {{disabledDependsUponStep.name}} to be completed first</h3>
         <button mat-raised-button color="accent" (click)="goToDependsUponStep()">Go to {{disabledDependsUponStep.name}}</button>

@@ -20,16 +20,16 @@
         <!-- upload widget -->
 
         <div fxLayout="column" fxFlex="50" fxLayoutAlign="start">
-          <file-upload (filesChange)="onFilesChange($event)" [files]="feedFile" placeholder="select or drop feed archive (zip) file" *ngIf="!uploadInProgress"
+          <file-upload (filesChange)="onFilesChange($event)" [files]="feedFile" placeholder="{{'views.import_feed.SelectOrDropFeedArchiveZipFile' | translate}}" *ngIf="!uploadInProgress"
                        [renderSubmitButton]="false"></file-upload>
-          <div class="mat-title" *ngIf="uploadInProgress">Uploading feed ...</div>
+          <div class="mat-title" *ngIf="uploadInProgress">{{"views.import_feed.UploadingFeedThreeDots" | translate}}</div>
         </div>
 
         <form [formGroup]="formGroup">
 
           <div fxLayout="column">
             <div fxFlex="50" class="pad-bottom">
-              <category-autocomplete placeholder="Change the category" hint="Optionally import this feed into a different category" [required]="false" [renderClearButton]="true" #categoryAutoComplete
+              <category-autocomplete placeholder="Change the category" hint="{{'views.import_feed.OptionallyImportFeedInADifferentCategory' | translate}}" [required]="false" [renderClearButton]="true" #categoryAutoComplete
                                      (categorySelected)="onCategorySelected($event)"></category-autocomplete>
             </div>
             <!-- validation messages -->
@@ -91,7 +91,7 @@
                 </div>
               </div>
             </div>
-            <div class="mat-title" *ngIf="requiredPropertyCount >0"> You have {{requiredPropertyCount}} required properties that need updating</div>
+            <div class="mat-title" *ngIf="requiredPropertyCount >0" translate [translateParams]="{propertyCount: requiredPropertyCount}"> views.import_feed.YouHaveNRequiredPropertiesForUpdating </div>
 
             <!-- Feed properties required -->
             <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
@@ -137,7 +137,7 @@
                       [disabled]="(uploadInProgress || formGroup.invalid || feedFile == undefined)">
                 {{"views.import_feed.Import_Feed_btn" | translate}}
               </button>
-              <mat-progress-bar fxFlex mode="determinate" [value]="uploadProgress" *ngIf="uploadInProgress"></mat-progress-bar>
+              <mat-progress-bar fxFlex mode="determinate" [value]="uploadProgress" *ngIf="uploadInProgress" class="accent"></mat-progress-bar>
             </div>
           </div>
         </form>
@@ -180,7 +180,7 @@
 
             <mat-list class="padding-left" *ngFor="let errorKey of getErrorMapKeys()">
               <mat-list-item *ngFor="let error of errorMap[errorKey]; let $last=last ">
-                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">Processor: {{error.processorName}}</h4>
+                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">{{views.import_feed.Processor}} {{error.processorName}}</h4>
                 <div class="warn">{{error.message}}</div>
                 <mat-divider *ngIf="!$last"></mat-divider>
               </mat-list-item>
@@ -229,22 +229,21 @@
 
 </ng-template>
 
-
+<!--
 <ng-template #importDataSourcesOptionPropertiesInputTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">
 
-  <!-- Data source properties required -->
   <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
     <form [formGroup]="getNestedFormGroup(importOption)">
       <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
 
       <mat-list class="pull-left">
-        <mat-list-item *ngFor="let prop of importOption.properties">
+        <mat-list-item *ngFor="let prop of importOption.filter">
           <div matLine *ngIf="displayComponentName">Data Source: {{prop.componentName}}</div>
           <div matLine>
 
             <mat-form-field>
               <mat-select placeholder="Select new data source" [formControlName]="prop.propertyKey">
-                <mat-option [value]="datasource.id" *ngFor="let datasource of availableDatasources">{{datasource.name}}</mat-option>
+                <mat-option [value]="datasource.id" *ngFor="let datasource of catalogDataSources">{{datasource.name}}</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -253,22 +252,25 @@
     </form>
   </div>
 </ng-template>
+-->
 
 
 <ng-template #datasetPropertiesTemplate let-importOption>
   <div *ngIf="importOption.properties && importOption.properties.length >0" fxFlex fxLayout="column">
     <form [formGroup]="getNestedFormGroup(importOption)">
-      <div class="mat-title"> {{"views.import_feed.dataset-required" | translate}}</div>
-      <div class="subheading-1">{{"views.import_feed.choose-datasets-message" | translate}}</div>
 
-      <ng-container *ngFor="let prop of importOption.properties">
+      <ng-container *ngFor="let prop of findDatasetPropertiesFilter(importOption); let first=first">
+        <!-- if the property is for a table then show the dataset button -->
+        <div class="mat-title" *ngIf="first"> {{"views.import_feed.dataset-required" | translate}}</div>
+        <div class="subheading-1"  *ngIf="first">{{"views.import_feed.choose-datasets-message" | translate}}</div>
+
         <div fxLayout="row">
           <mat-list class="pull-left">
             <mat-list-item>
               <mat-icon mat-list-icon color="warn" *ngIf="!prop.valid">warning</mat-icon>
               <mat-icon mat-list-icon color="primary" *ngIf="prop.valid">check</mat-icon>
-              <div matLine>DataSet: {{prop.displayName}}</div>
-              <div matLine class="tc-grey-500">Data Source: {{prop.componentName}}</div>
+              <div matLine>{{"views.import_feed.dataset" | translate}}:{{prop.displayName}}</div>
+              <div matLine class="tc-grey-500">{{"views.import_feed.data_source" | translate}}: {{prop.componentName}}</div>
               <!--  <div matLine>DataSet Id:{{prop.componentId}}</div> -->
               <input type="hidden" [formControlName]="prop.propertyKey" required>
             </mat-list-item>
@@ -276,6 +278,23 @@
           <div fxLayoutAlign="center center">
             <button mat-raised-button color="accent" (click)="updateDataSet(prop, importOption)">{{"views.import_feed.update-dataset" | translate}}</button>
           </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngFor="let prop of findDataSourcePropertiesFilter(importOption); let first=first">
+        <div class="mat-title" *ngIf="first"> {{"views.import_feed.datasource-required" | translate}}</div>
+        <div class="subheading-1"  *ngIf="first">{{"views.import_feed.choose-datasource-message" | translate}}</div>
+        <div fxLayout="row">
+          <mat-list class="pull-left">
+            <mat-list-item>
+              <div matLine>{{"views.import_feed.data_source" | translate}}: {{prop.componentName}}</div>
+              <mat-form-field class="pad-left">
+                <mat-select placeholder="Select a source" [formControlName]="prop.propertyKey" required>
+                  <mat-option [value]="datasource.id" *ngFor="let datasource of catalogDataSources">{{datasource.title}}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </mat-list-item>
+          </mat-list>
         </div>
       </ng-container>
     </form>

@@ -2,8 +2,9 @@ import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {TemplateMetadata, TemplateRepository} from "./model";
-import {catchError} from "rxjs/operators";
+import {catchError, filter, mergeMap, take} from "rxjs/operators";
 import 'rxjs/add/observable/throw';
+import {from} from "rxjs/observable/from";
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -17,15 +18,19 @@ export class TemplateService {
     constructor(private http: HttpClient) {
     }
 
-    getTemplates(): Observable<any> {
-        return this.http.get("/proxy/v1/repository/templates")
-            .map((response) => {
-                return response;
-            }).pipe(catchError((error) => Observable.throw(error.error)));
+    getTemplates(): Observable<TemplateMetadata> {
+
+        return this.getRepositories().pipe(
+            mergeMap(repos => from(repos)),
+            mergeMap(r => this.getTemplatesInRepository(r)),
+            mergeMap(templates => from(templates)),
+            filter(template => template.updateAvailable),
+            take(1))
+            .catch(err => Observable.throw(err));
     }
 
     getTemplatesInRepository(repository: TemplateRepository): Observable<any> {
-        return this.http.get("/proxy/v1/repository/templates/"+repository.type+"/"+repository.name)
+        return this.http.get("/proxy/v1/repository/"+repository.type+"/"+repository.name+"/templates")
             .map((response) => {
                 return response;
             }).pipe(catchError((error) => Observable.throw(error.error)));
@@ -48,7 +53,8 @@ export class TemplateService {
 
     downloadTemplate(template: TemplateMetadata): Observable<Object> {
         return this.http
-            .get("/proxy/v1/repository/templates/download/"+ template.repository.type+ "/" +template.repository.name+ "/"+ template.fileName
+            .get("/proxy/v1/repository/"+ template.repository.type+ "/" +template.repository.name+
+                "/"+ template.fileName +"/templates/download/"
                 , {responseType: "blob"});
     }
 

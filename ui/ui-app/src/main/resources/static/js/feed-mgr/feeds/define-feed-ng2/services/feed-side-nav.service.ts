@@ -58,7 +58,7 @@ export class FeedSideNavService {
 
     summaryLinkDeployedSetupGuideLink = FeedLink.newStaticLink(SETUP_REVIEW_LINK, "setup-guide",KyloIcons.Links.setupGuide, {"loadMode":LoadMode.DEPLOYED});
 
-    feedActivityLink = FeedLink.newStaticLink(FEED_ACTIVITY_LINK, "feed-activity","pages");
+    feedActivityLink = FeedLink.newStaticLink(FEED_ACTIVITY_LINK, "feed-activity","dashboard");
 
 
 

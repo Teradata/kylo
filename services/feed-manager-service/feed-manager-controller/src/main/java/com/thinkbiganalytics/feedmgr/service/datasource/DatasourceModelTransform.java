@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,6 +57,20 @@ import javax.annotation.Nonnull;
 public class DatasourceModelTransform {
 
     private static final Logger log = LoggerFactory.getLogger(DatasourceModelTransform.class);
+    
+    private static final Map<String, String> DATA_SET_SRC_TYPES;
+    static {
+        Map<String, String> map = new HashMap<>();
+        map.put("jdbc", "DatabaseDatasource");
+        map.put("hive", "HiveDatasource");
+        map.put("file-upload", "DirectoryDatasource");
+        map.put("hdfs", "DirectoryDatasource");
+        map.put("local-file-system", "DirectoryDatasource");
+        map.put("amazon-s3", "S3Datasource");
+        map.put("azure-data-lake", "DatabaseDatasource");
+        map.put("azure-storage", "DirectoryDatasource");
+        DATA_SET_SRC_TYPES = Collections.unmodifiableMap(map);
+    }
 
     /**
      * Level of detail to include when transforming objects.
@@ -131,25 +146,12 @@ public class DatasourceModelTransform {
      * @throws IllegalArgumentException if the domain object cannot be converted
      */
     public Datasource toDatasource(@Nonnull final DataSet domainDataSet, @Nonnull final Level level) {
-        DataSource domainSrc = domainDataSet.getDataSource();
-        Connector domainConn = domainSrc.getConnector();
         DataSetSparkParameters params = domainDataSet.getEffectiveSparkParameters();
-        UserDatasource ds;
-        
-        if (params.getFormat().equalsIgnoreCase("jdbc")) {
-            JdbcDatasource jdbc = new JdbcDatasource();
-            jdbc.setControllerServiceId(domainSrc.getNifiControllerServiceId());
-            jdbc.setDatabaseDriverClassName(params.getOptions().get("driver"));
-            jdbc.setDatabaseConnectionUrl(params.getOptions().get("url"));
-            ds = jdbc;
-        } else {
-            ds = new UserDatasource();
-        }
+        DerivedDatasource ds = new DerivedDatasource();
         
         ds.setId(domainDataSet.getId().toString());
-        ds.setType(domainConn.getPluginId());
-        ds.setIcon(domainConn.getIcon());
-        ds.setIconColor(domainConn.getIconColor());
+        ds.setName(domainDataSet.getTitle());
+        ds.setDatasourceType(DATA_SET_SRC_TYPES.getOrDefault(params.getFormat(), "DatabaseDatasource"));
         
         return ds;
     }

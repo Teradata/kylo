@@ -20,7 +20,7 @@
 <div layout="column" class="layout-padding-left" style="padding-top:10px;" >
     <div >
         <div layout="row" layout-align="start stretch">
-            <ng-md-icon icon="check" style="fill:#009933;margin-left: -9px;" ng-if="$ctrl.showVerticalCheck == true"></ng-md-icon>
+            <ng-md-icon icon="check" style="fill:#009933;margin-left: -9px;margin-top:0px" ng-if="$ctrl.showVerticalCheck == true"></ng-md-icon>
             <span class="md-subhead layout-padding-left"  >{{$ctrl.sectionTitle}}</span>
             <span flex></span>
             <md-button class="icon-btn md-icon-button md-primary" ng-click="$ctrl.edit($event)" ng-if="$ctrl.allowEdit ==true && !$ctrl.editable">
@@ -34,21 +34,21 @@
         <div class="vertical-step-border">
             <div ng-if="!$ctrl.editable" class="md-padding">
             <div ng-transclude="readonly" >
-                REadonly SEction
+                Read-only Section
 
             </div>
             </div>
             <div ng-if="$ctrl.editable == true" class="md-padding">
             <form name="{{$ctrl.formName}}">
                 <div ng-transclude="editable" >
-                    Editable SEction
+                    Editable Section
 
                 </div>
                 <div layout="row" layout-align="end center">
                     <md-button ng-click="$ctrl.delete($event)" ng-disabled="$ctrl.allowDelete == false" ng-if="$ctrl.onDelete !== undefined && $ctrl.isDeleteVisible == true">{{"views.vertical-section-layout-template.Delete" | translate}}</md-button>
                     <span flex></span>
                     <md-button ng-click="$ctrl.cancel($event)">{{"views.vertical-section-layout-template.Cancel" | translate}}</md-button>
-                    <md-button class="md-primary md-raised" ng-click="$ctrl.save($event)"
+                    <md-button class="md-accent md-raised" ng-click="$ctrl.save($event)"
                                ng-disabled="$ctrl.isValid == false || ($ctrl.theForm != undefined && $ctrl.theForm.$invalid != undefined && $ctrl.theForm.$invalid == true)">{{"views.vertical-section-layout-template.Save" | translate}}
                     </md-button>
                 </div>

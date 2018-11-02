@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 
@@ -137,7 +138,7 @@ public interface FeedManagerFeedService {
      * @param versionId
      * @return
      */
-    EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent);
+    DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent);
 
     /**
      * @param feedId

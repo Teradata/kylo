@@ -9,9 +9,9 @@ package com.thinkbiganalytics.json;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -72,7 +72,7 @@ public class ObjectMapperSerializer {
         try {
             json = getMapper().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            log.error("Error serializing object ",e);
+            log.error("Error serializing object ", e);
             throw new RuntimeException("Error serializing object", e);
         }
         return json;
@@ -90,26 +90,24 @@ public class ObjectMapperSerializer {
         try {
             return getMapper().readValue(json, clazz);
         } catch (IOException e) {
-            log.error("Error de-serializing object for class {} ",clazz,e);
+            log.error("Error de-serializing object for class {} ", clazz, e);
             throw new RuntimeException("error de-serializing object", e);
         }
     }
 
     /**
-     * Deserialize JSON with a specific type.
-     * Example
-     *  List<MyPojo> list = ObjectMapperSerializer.deserialize(json,//new TypeReference<List<MyPojo>>(){});
+     * Deserialize JSON with a specific type. Example List<MyPojo> list = ObjectMapperSerializer.deserialize(json,//new TypeReference<List<MyPojo>>(){});
      *
-     * @param json  the JSON string representing the object
+     * @param json          the JSON string representing the object
      * @param typeReference the type of class to return
-     * @param <T> the object type to return
+     * @param <T>           the object type to return
      * @return the deserialized object converted from JSON
      */
-    public static <T> T deserialize(String json, TypeReference<T> typeReference){
+    public static <T> T deserialize(String json, TypeReference<T> typeReference) {
         try {
             return getMapper().readValue(json, typeReference);
         } catch (IOException e) {
-            log.error("Error de-serializing object with TypeReference {} ",typeReference,e);
+            log.error("Error de-serializing object with TypeReference {} ", typeReference, e);
             throw new RuntimeException("error de-serializing object", e);
         }
 

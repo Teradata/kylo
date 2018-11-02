@@ -17,6 +17,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatRadioModule} from "@angular/material/radio";
 import {MatSelectModule} from "@angular/material/select";
 import {MatSidenavModule} from "@angular/material/sidenav";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {MatStepperModule} from "@angular/material/stepper";
 import {MatTabsModule} from "@angular/material/tabs";
 import {MatToolbarModule} from "@angular/material/toolbar";
@@ -26,14 +27,18 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentLayoutModule} from "@covalent/core/layout";
 import {CovalentLoadingModule} from "@covalent/core/loading";
+import {CovalentMessageModule} from "@covalent/core/message";
 import {CovalentVirtualScrollModule} from "@covalent/core/virtual-scroll";
 import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 import {CodemirrorModule} from "ng2-codemirror";
 import {NvD3Module} from "ng2-nvd3";
+import {DndListModule} from "ngx-drag-and-drop-lists";
 import {ILazyLoad} from "ocLazyLoad";
+import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
 
 import {KyloCommonModule} from "../../common/common.module";
+import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import {DynamicFormModule} from "../shared/dynamic-form/dynamic-form.module";
 import {FieldPoliciesModule} from "../shared/field-policies-angular2/field-policies.module";
@@ -45,10 +50,17 @@ import {FlowChartModule} from "./build-query/flow-chart/flow-chart.module";
 import {UploadSampleFileComponent} from "./build-query/upload-sample-file.component";
 import {VisualQuerySaveService} from "./services/save.service";
 import {SparkQueryEngine} from "./services/spark/spark-query-engine";
+import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
 import {SaveOptionsComponent} from "./store/save-options.component";
 import {VisualQueryStoreComponent} from "./store/store.component";
 import {AnalyzeColumnDialog} from "./transform-data/main-dialogs/analyze-column-dialog";
 import {ColumnAnalysisController, HistogramController} from "./transform-data/main-dialogs/column-analysis";
+import {QuickCleanDialog} from "./transform-data/main-dialogs/quick-clean-dialog";
+import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/main-dialogs/quick-column-components";
+import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
+import {SampleDialog} from "./transform-data/main-dialogs/sample-dialog";
+import {SchemaLayoutDialog} from "./transform-data/main-dialogs/schema-layout-dialog";
+import VisualQueryProfileStatsController from "./transform-data/main-dialogs/VisualQueryProfileStats";
 import {WranglerDataService} from "./transform-data/services/wrangler-data.service";
 import {WranglerTableService} from "./transform-data/services/wrangler-table.service";
 import {TransformDataComponent} from "./transform-data/transform-data.component";
@@ -57,19 +69,8 @@ import {VisualQueryTable} from "./transform-data/visual-query-table/visual-query
 import {VisualQueryControlDirective} from "./visual-query-control.directive";
 import {visualQueryStates} from "./visual-query-states";
 import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
-import {WranglerModule} from "./wrangler/core/wrangler.module";
-import {VisualQueryProfileStatsController} from "./transform-data/main-dialogs/VisualQueryProfileStats";
-import {ConnectionErrorValidatorDirective} from "./store/connection-error-validator.directive";
-import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
-import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/main-dialogs/quick-column-components";
-import {SchemaLayoutDialog} from "./transform-data/main-dialogs/schema-layout-dialog";
-import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
-import {DndListModule} from "ngx-drag-and-drop-lists";
-import {QuickCleanDialog} from "./transform-data/main-dialogs/quick-clean-dialog";
-import {SampleDialog} from "./transform-data/main-dialogs/sample-dialog";
-import {CovalentMessageModule} from "@covalent/core/message";
 import "./visual-query.component.scss";
-import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
+import {WranglerModule} from "./wrangler/core/wrangler.module";
 
 
 @NgModule({
@@ -115,8 +116,8 @@ import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
         VisualQueryStepperComponent
     ],
     imports: [
+        CatalogDatasetPreviewModule,
         CodemirrorModule,
-        KyloCodeMirrorModule,
         CommonModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
@@ -131,6 +132,7 @@ import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
         FlexLayoutModule,
         FlowChartModule,
         FormsModule,
+        KyloCodeMirrorModule,
         KyloCommonModule,
         KyloFeedManagerModule,
         MatAutocompleteModule,
@@ -148,6 +150,7 @@ import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
         MatRadioModule,
         MatSelectModule,
         MatSidenavModule,
+        MatSnackBarModule,
         MatStepperModule,
         MatTabsModule,
         MatToolbarModule,
@@ -156,7 +159,6 @@ import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
         PropertyListModule,
         ReactiveFormsModule,
         SqlEditorModule,
-        CatalogDatasetPreviewModule,
         TranslateModule.forChild(),
         WranglerModule
     ],
@@ -171,8 +173,7 @@ import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
 export class VisualQueryModule {
     constructor(@Inject("$ocLazyLoad") $ocLazyLoad: ILazyLoad) {
         $ocLazyLoad.load({
-            files: [
-            ]
+            files: []
         });
     }
 }

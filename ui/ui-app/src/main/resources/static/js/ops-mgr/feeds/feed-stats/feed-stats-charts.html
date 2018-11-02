@@ -173,10 +173,10 @@
             <md-card-content flex="100" style="width: 100%; padding: 0">
               <div flex layout="row" layout-align="start end">
                 <span flex ng-if="vm.feedTimeChartLoading">
-                  <md-progress-linear ng-disabled="false" md-mode="indeterminate"></md-progress-linear>
+                  <md-progress-linear class="md-accent" ng-disabled="false" md-mode="indeterminate"></md-progress-linear>
                 </span>
                 <span flex ng-if="!vm.feedTimeChartLoading">
-                  <md-progress-linear ng-disabled="true" md-mode="indeterminate"></md-progress-linear>
+                  <md-progress-linear class="md-accent" ng-disabled="true" md-mode="indeterminate"></md-progress-linear>
                 </span>
               </div>
               <div layout="row" layout-align="space-between center">
@@ -235,7 +235,7 @@
 
                 <md-list-item>
                   <div layout="column" class="item-column md-list-item-text ">
-                        <span class="item-title" ng-class="{'healthy':vm.feed.displayStatus == 'COMPLETED' || vm.feed.displayStatus =='RUNNING'}">
+                        <span class="item-title" ng-class="{'tc-positive':vm.feed.displayStatus == 'COMPLETED' || vm.feed.displayStatus =='RUNNING'}">
                          {{vm.feed.displayStatus}}</span>
                     <span class="column-title column-title-bottom">{{"views.feed-stats-charts.Status" | translate}}</span>
                   </div>
@@ -322,6 +322,6 @@
 
   </div>
   <div ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">
-    <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+    <md-progress-circular md-mode="indeterminate" md-diameter="60" class="md-accent"></md-progress-circular>
   </div>
 </div>

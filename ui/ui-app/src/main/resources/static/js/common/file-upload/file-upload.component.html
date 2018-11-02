@@ -28,6 +28,7 @@
     <div *ngIf="renderSubmitButton" fxLayout="row" fxLayoutAlign="end center">
         <span fxFlex></span>
         <span>
+            <button mat-button class="text-upper" (click)="onCancel.emit()">Cancel</button>
             <button mat-raised-button color="accent" [disabled]="uploadButtonDisabled()"
                     class="text-upper" #submitButton (click)="submitFiles()">Submit</button>
           </span>

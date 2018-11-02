@@ -12,27 +12,27 @@
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'" [disabled]="!accessControl.allowEdit" (click)="disableFeed()">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'" [disabled]="!feed.accessControl.allowEdit" (click)="disableFeed()">
           <mat-icon>{{kyloIcons.Feed.Actions.disable}}</mat-icon>
           <span >Disable</span>
         </button>
-        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'" [disabled]="!accessControl.allowEdit"  (click)="enableFeed()">
+        <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'" [disabled]="!feed.accessControl.allowEdit"  (click)="enableFeed()">
           <mat-icon>{{kyloIcons.Feed.Actions.enable}}</mat-icon>
           <span >Enable</span>
         </button>
-        <button mat-menu-item [disabled]="startingFeed || !accessControl.allowStart"  (click)="startFeed()">
+        <button mat-menu-item [disabled]="startingFeed || !feed.accessControl.allowStart"  (click)="startFeed()">
           <mat-icon>{{kyloIcons.Feed.Actions.startNow}}</mat-icon>
           <span >Start Now</span>
         </button>
-        <button mat-menu-item *ngIf="accessControl.allowAdmin && feed.state == 'DISABLED'" (click)="onDelete()">
+        <button mat-menu-item *ngIf="feed.accessControl.allowAdmin && feed.state == 'DISABLED'" (click)="onDelete()">
           <mat-icon>{{kyloIcons.Feed.Actions.delete}}</mat-icon>
           <span>{{"FeedDefinition.Actions.DeleteFeed" | translate}}</span>
         </button>
-        <button mat-menu-item [disabled]="!accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed"  (click)="uploadFile()">
+        <button mat-menu-item [disabled]="!feed.accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed"  (click)="uploadFile()">
           <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>
           <span>Upload File</span>
         </button>
-        <a href="{{exportFeedUrl}}" mat-menu-item download [disabled]="!accessControl.allowExport">
+        <a href="{{exportFeedUrl}}" mat-menu-item download [disabled]="!feed.accessControl.allowExport">
           <mat-icon>{{kyloIcons.Feed.Actions.export}}</mat-icon>
           <span>Export</span>
         </a>
@@ -47,7 +47,7 @@
         <mat-icon mat-list-icon [ngClass]="kyloIcons.getFeedStateColor(feed.state)">{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
         <h4 mat-line *ngIf="!feedStateChanging" [ngClass]="kyloIcons.getFeedStateColor(feed.state)"> {{feed.state}}</h4>
         <h4 mat-line *ngIf="feedStateChanging">
-          <mat-spinner mode="indeterminate" diameter="20"></mat-spinner>
+          <mat-spinner mode="indeterminate" diameter="20" color="accent"></mat-spinner>
         </h4>
         <p mat-line >State</p>
       </mat-list-item>

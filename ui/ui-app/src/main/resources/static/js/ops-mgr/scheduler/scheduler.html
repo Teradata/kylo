@@ -22,21 +22,22 @@
                 <header-section style="white-space:nowrap" transclude-to="head" class="card-title">
                   <div>Tasks</div>
                   <div layout="row" class="layout-padding-top-bottom" layout-align="space-between-center" flex>
-                    <div class="card-sub-header" flex>Internal Kylo tasks</div>
+                    <div class="card-sub-header" flex>Schedule for internal maintenance and management tasks</div>
                   </div>
                 </header-section>
 
                 <body-section>
                   <div ng-repeat="group in vm.jobGroups | orderBy:'name'">
-                    <div class="md-title layout-padding-left primary-color-1">{{group.name}}</div>
-                    <md-list flex layout-fill transclude-to="body" class="list-item-table">
+                    <!-- <div class="md-title layout-padding-left primary-color-1">{{group.name}}</div> -->
+                    <md-list flex layout-fill transclude-to="body" class="list-item-table push-top">
                       <md-list-item  ng-repeat="job in group.jobs | orderBy:'jobName'" layout="row">
 
                         <div flex="35" layout="column" class="item-column md-list-item-text ">
                                      <span class="item-title">
                                        {{job.jobName}}
                                      </span>
-                          <span ng-class="{'healthy': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'warn':job.state == 'PAUSED', 'error':job.state == 'UNKNOWN'}" class="column-title-bottom">
+                          <span ng-class="{'tc-positive': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'tc-warn':job.state == 'PAUSED', 'tc-negative':job.state == 'UNKNOWN'}"
+                                class="column-title-bottom">
                                          <ng-md-icon icon="{{job.stateIcon}}" size="20" options='{"rotation": "clock"}' >
                                          </ng-md-icon>   {{job.state}}
                                     </span>
@@ -96,7 +97,7 @@
                     <md-list class="list-item-table" layout="column">
                         <md-list-item >
                             <div class="item-column md-list-item-text " layout-align="space-between start" layout="column">
-                                    <span ng-class="{'healthy': vm.schedulerDetails.status == 'RUNNING', 'warn':vm.schedulerDetails.status == 'PAUSED'}">
+                                    <span ng-class="{'tc-positive': vm.schedulerDetails.status == 'RUNNING', 'tc-warn':vm.schedulerDetails.status == 'PAUSED'}">
                                          <ng-md-icon icon="{{vm.schedulerDetails.statusIcon}}" size="20" options='{"rotation": "clock"}'>
                                          </ng-md-icon>   {{vm.schedulerDetails.status}}
                                     </span>

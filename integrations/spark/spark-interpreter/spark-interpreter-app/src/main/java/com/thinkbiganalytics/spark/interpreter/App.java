@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProvider;
@@ -113,13 +114,21 @@ public class App {
         final List<Datasource> datasources;
         final String env = System.getenv("DATASOURCES");
 
+        final List<DataSource> catalogDataSources;
+        final String catalogDatasourcesEnv = System.getenv("CATALOG_DATASOURCES");
+
         if (env != null) {
             datasources = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
         } else {
             datasources = Collections.emptyList();
         }
+        if (catalogDatasourcesEnv != null) {
+            catalogDataSources = new ObjectMapper().readValue(catalogDatasourcesEnv, TypeFactory.defaultInstance().constructCollectionType(List.class, DataSource.class));
+        } else {
+            catalogDataSources = Collections.emptyList();
+        }
 
-        return datasourceProviderFactory.getDatasourceProvider(datasources);
+        return datasourceProviderFactory.getDatasourceProvider(datasources, catalogDataSources);
     }
 
     @Bean

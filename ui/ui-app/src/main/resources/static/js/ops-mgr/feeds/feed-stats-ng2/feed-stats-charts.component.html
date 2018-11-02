@@ -131,10 +131,10 @@
             <mat-card-content fxFlex="100" style="width: 100%; padding: 0">
               <div flex fxLayout="row" fxLayoutAlign="start end">
                 <span flex *ngIf="feedTimeChartLoading">
-                  <mat-progress-bar [mode]="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar [mode]="indeterminate" class="accent"></mat-progress-bar>
                 </span>
                 <span flex *ngIf="!feedTimeChartLoading">
-                  <mat-progress-bar [mode]="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar [mode]="indeterminate" class="accent"></mat-progress-bar>
                 </span>
               </div>
 
@@ -178,6 +178,6 @@
 
   </div>
   <div *ngIf="!dataLoaded" class="kpi-loading" fxLayoutAlign="center center" fxLayout="column">
-    <mat-spinner mode="indeterminate" diameter="60"></mat-spinner>
+    <mat-spinner mode="indeterminate" diameter="60" color="accent"></mat-spinner>
   </div>
 </div>

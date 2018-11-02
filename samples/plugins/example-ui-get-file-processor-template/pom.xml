@@ -80,15 +80,6 @@
           </configuration>
         </execution>
         <execution>
-          <id>npm link</id>
-          <goals>
-            <goal>npm</goal>
-          </goals>
-          <configuration>
-            <arguments>link @kylo/feed</arguments>
-          </configuration>
-        </execution>
-        <execution>
           <id>npm install</id>
           <goals>
             <goal>npm</goal>

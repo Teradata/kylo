@@ -61,11 +61,11 @@
   <div *ngIf="properties.length ==0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
     <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
     <h2>No properties are defined</h2>
-    <button mat-raised-button color="accent" (click)="addProperty()">Add Property</button>
+    <button mat-raised-button (click)="addProperty()">New Property</button>
   </div>
 
   <div class="pad-top">
-  <button mat-raised-button color="accent" (click)="addProperty()" *ngIf="properties.length > 0">Add Property</button>
+  <button mat-raised-button (click)="addProperty()" *ngIf="properties.length > 0">New Property</button>
   </div>
 
 

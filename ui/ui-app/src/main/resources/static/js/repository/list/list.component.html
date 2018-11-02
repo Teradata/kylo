@@ -1,80 +1,87 @@
-<div fxLayout="row" class="centered">
+<div fxLayout="row" class="centered layout-padding">
   <mat-card fxFlex="65%">
     <div fxLayout="column" fxLayoutAlign="space-evenly start">
-      <div style="white-space: nowrap; margin: 20px 0 20px 20px;" class="card-title" fxFlex="80">Search Feeds and Templates</div>
-      <div fxLayout="row" style="width: 100%;" fxLayoutAlign="space-around center">
+      <div fxLayout="row" style="width: 100%; padding-top: 20px" fxLayoutAlign="space-around center">
+        <div class="card-title push-md">Repository</div>
         <mat-form-field fxFlex="20">
-          <mat-select placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates()">
+          <mat-select [disabled]="loading" placeholder="Select Repository" [(ngModel)]="selectedRepository" (selectionChange)="loadTemplates($event)">
             <mat-option *ngFor="let repository of repositories" [value]="repository">
               {{repository.name}}
             </mat-option>
           </mat-select>
         </mat-form-field>
-        <mat-form-field fxFlex="70" class="search-form">
-          <input placeholder="Filter" matInput (keyup)="search($event.target.value)"/>
+        <mat-form-field fxFlex="50" class="search-form">
+          <input placeholder="Filter" [disabled]="loading" matInput [(ngModel)]="searchTerm" (keyup)="search()"/>
         </mat-form-field>
+        <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item style="cursor: default;">
+            <span>Sort Options</span>
+          </button>
+          <button mat-menu-item (click)="sortData($event)">
+                <span fxLayout="row">
+                  <span fxFlex>Template Name</span>
+                  <span fxFlex="10"><mat-icon *ngIf="icon !== ''">{{icon}}</mat-icon></span>
+                </span>
+          </button>
+        </mat-menu>
       </div>
+      <mat-progress-bar mode="indeterminate" *ngIf="loading" color="accent"></mat-progress-bar>
     </div>
-    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-    <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="center center">
+    <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="start start">
       <br>
-      <span>No Templates or Feeds available in repository.</span>
+      <span class="push-left-md tc-grey-600">No items found</span>
       <br>
       <span *ngIf="errorMsg !== ''" class="tc-red-700">{{errorMsg}}<br></span>
     </div>
-    <mat-table *ngIf="!loading && templates.length !== 0" [dataSource]="dataSource" matSort class="mat-elevation-z8">
-
-      <ng-container matColumnDef="templateName">
-        <mat-header-cell *matHeaderCellDef mat-sort-header><span style="padding-left: 50px;"> Template </span></mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <div flex="60" fxLayout="column" class="item-column md-list-item-text">
-            <div fxLayout="row">
-              <span style="white-space: nowrap" title="{{element.templateName}}">{{element.templateName | truncate:50}}</span>
-              <span fxFlex="5"></span>
-              <span *ngIf="element.updateAvailable"
-                    style="white-space: nowrap; cursor: pointer;"
-                    >
-                <!--<ng-md-icon icon="update" size="20" style="fill:#F08C38"></ng-md-icon>View Updates-->
-                <mat-chip-list>
-                  <mat-chip color="accent"
-                            selected
-                            style="cursor: pointer; height: 3px; font-size: 10px;"
-                            (click)="viewUpdates(element)">View Updates</mat-chip>
-                </mat-chip-list>
-              </span>
+    <ng-container *ngIf="!loading && filteredList.length !== 0" >
+      <mat-list>
+        <mat-list-item *ngFor="let element of filteredList" style="height: 80px;">
+          <div fxLayout="row" fxLayoutAlign="space-evenly center" fxFlex="100">
+            <div fxFlex="70" fxLayout="column" class="item-column md-list-item-text">
+              <div fxLayout="row" fxLayoutAlign="start center">
+                <span class="item-title" title="{{element.templateName}}">{{element.templateName}}</span>
+                <span fxFlex="5"></span>
+                <span *ngIf="element.updates.length > 0" style="white-space: nowrap; cursor: pointer;">
+                    <mat-chip-list>
+                      <mat-chip color="accent"
+                                selected
+                                style="cursor: pointer; height: 3px; font-size: 10px;"
+                                (click)="viewUpdates(element)">View Updates</mat-chip>
+                    </mat-chip-list>
+                  </span>
+              </div>
+              <div title="{{element.description}}" class="column-title column-title-bottom">
+                {{element.description}}
+              </div>
             </div>
-            <div title="{{element.description}}" class="column-title column-title-bottom">
-              {{element.description | truncate:50}}
+            <div fxFlex="30" fxLayoutAlign="end" style="min-width:150px">
+              <button mat-button color="primary" (click)="downloadTemplate(element)">
+                <mat-icon  size="20" color="accent">file_download</mat-icon>
+                <span class="md-body-2">Download</span>
+              </button>
+              <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
+                <mat-icon  size="20" color="accent">done</mat-icon>
+                <span class="md-body-2">Import</span>
+              </button>
+              <button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">
+                <mat-icon size="20" color="accent">import_export</mat-icon>
+                <span class="md-body-2">Import</span>
+              </button>
             </div>
           </div>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          <div fxLayout="row" fxLayoutAlign="end center">
-            <button mat-button color="primary" (click)="downloadTemplate(element)">
-              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Download</span>
-            </button>
-
-            <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
-              <ng-md-icon icon="done" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Import</span>
-            </button>
-
-            <button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">
-              <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">Import</span>
-            </button>
-          </div>
-        </mat-cell>
-      </ng-container>
-
-      <mat-header-row *matHeaderRowDef="['templateName', 'actions']"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: ['templateName', 'actions']"></mat-row>
-    </mat-table>
-    <mat-paginator #paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 20, 50, 100]"></mat-paginator>
-  </mat-card>
+          <mat-divider></mat-divider>
+        </mat-list-item>
+      </mat-list>
+      <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+        <span hide-xs>Rows per page:</span>
+        <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+          <mat-option *ngFor="let size of [5, 10, 50, 100]" [value]="size">
+            {{size}}
+          </mat-option>
+        </mat-select>
+        {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+      </td-paging-bar>
+    </ng-container>
+</mat-card>
 </div>

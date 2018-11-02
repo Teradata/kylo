@@ -23,6 +23,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportPropertyBuilder;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.LegacyDatasource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,15 @@ import java.util.stream.Collectors;
 public class FeedImportDatasourceUtil {
 
     private static final Logger log = LoggerFactory.getLogger(FeedImportDatasourceUtil.class);
+
+    /**
+     * key that will help the importer decide to show datasets
+     */
+    public static final String LEGACY_TABLE_DATA_SOURCE_KEY = "legacyTableDataSource";
+    /**
+     * key that will help the importer decide to show catalog datasources
+     */
+    public static final String LEGACY_QUERY_DATA_SOURCE_KEY = "legacyQueryDataSource";
 
     public static void replaceMap(Map<String,Object> map, String lookFor, String replace) {
         for(String key :map.keySet()) {
@@ -88,7 +98,7 @@ public class FeedImportDatasourceUtil {
 
     public static void replaceChartModelReferences(FeedMetadata metadata, Map<String,String>replacements){
 
-        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())) {
+        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript()) && metadata.getDataTransformation().getChartViewModel() != null && replacements != null && replacements.size() >0) {
 
             List<Map<String, Object>> nodes = (List<Map<String, Object>>) metadata.getDataTransformation().getChartViewModel().get("nodes");
             if (nodes != null) {
@@ -103,7 +113,7 @@ public class FeedImportDatasourceUtil {
 
     public static void fixDatasetMatchesUserDataSource(FeedMetadata metadata, String datasourceId, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet){
 
-        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())) {
+        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript()) && metadata.getDataTransformation().getChartViewModel() != null) {
 
             List<Map<String, Object>> nodes = (List<Map<String, Object>>) metadata.getDataTransformation().getChartViewModel().get("nodes");
             if (nodes != null) {
@@ -130,9 +140,38 @@ public class FeedImportDatasourceUtil {
             metadata.setSourceDataSets(new ArrayList<>());
         }
         metadata.getSourceDataSets().add(dataSet);
-        //remove the datasource id
+        //remove the legacy user datasource id
         metadata.getDataTransformation().getDatasourceIds().remove(datasourceId);
         FeedImportDatasourceUtil.fixDatasetMatchesUserDataSource(metadata, datasourceId, dataSet);
+    }
+
+    public static void replaceLegacyQueryDataSourceScript(FeedMetadata metadata, String datasourceId, DataSource dataSource){
+
+
+        if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript())) {
+            String script = metadata.getDataTransformation().getDataTransformScript();
+            Pattern pattern = Pattern.compile("datasourceProvider.getTableFromDatasource\\((.*) AS KYLO_SPARK_QUERY\", \""+datasourceId+"\", sqlContext\\)");
+            Matcher matcher = pattern.matcher(script);
+            StringBuffer sb = new StringBuffer();
+            while (matcher.find()) {
+                String query = matcher.group(1).replaceAll("\"", "");
+                String catalogDataSourceId = dataSource.getId();
+                matcher.appendReplacement(sb,matcher.group(0).replaceFirst(datasourceId,catalogDataSourceId));
+            }
+            matcher.appendTail(sb);
+            metadata.getDataTransformation().setDataTransformScript(sb.toString());
+            //remove the legacy user datasource id
+            metadata.getDataTransformation().getDatasourceIds().remove(datasourceId);
+
+            //populate the new Catalog Datasource ids
+            if(metadata.getDataTransformation().getCatalogDataSourceIds() == null){
+                metadata.getDataTransformation().setCatalogDataSourceIds(new ArrayList<>());
+            }
+            if(!metadata.getDataTransformation().getCatalogDataSourceIds().contains(dataSource.getId())){
+                metadata.getDataTransformation().getCatalogDataSourceIds().add(dataSource.getId());
+                metadata.getDataTransformation().updateDataSourceIdsString();
+            }
+        }
     }
 
 
@@ -150,9 +189,17 @@ public class FeedImportDatasourceUtil {
             StringBuffer sb = new StringBuffer();
             // check all occurance
             while (matcher.find()) {
-                String table = matcher.group(1).replaceAll("\"", "");
+                String tableOrQuery = matcher.group(1).replaceAll("\"", "");
                 String datasourceId = matcher.group(2).replaceAll("\"", "");
-                map.computeIfAbsent(datasourceId, dsId -> new ArrayList<LegacyDatasource>()).add(new LegacyDatasource(table, datasourceId));
+                LegacyDatasource legacyDatasource = null;
+                if(tableOrQuery.contains("KYLO_SPARK_QUERY")){
+                    tableOrQuery = tableOrQuery.replaceAll("AS KYLO_SPARK_QUERY","");
+                    legacyDatasource = LegacyDatasource.newQueryDatasource(tableOrQuery,datasourceId);
+                }
+                else {
+                    legacyDatasource = LegacyDatasource.newTableDatasource(tableOrQuery,datasourceId);
+                }
+                map.computeIfAbsent(datasourceId, dsId -> new ArrayList<LegacyDatasource>()).add(legacyDatasource);
             }
         }
         return map;
@@ -173,18 +220,30 @@ public class FeedImportDatasourceUtil {
             .collect(Collectors.toMap(ds->ds.getId(), ds1->ds1));
 
        return  providedDatasources.stream()
-            .filter(datasource -> !availableDatasources.contains(datasource.getId()))
+            .filter(datasource -> (availableDatasources == null || !availableDatasources.contains(datasource.getId())))
             .flatMap(datasource -> legacyDatasources.get(datasource.getId()).stream())
             .map(legacyDataSource -> {
                 Datasource legacySource = providedDatasourcesMap.get(legacyDataSource.getDatasourceId());
-                return ImportPropertyBuilder.anImportProperty()
-                    .withComponentName(legacySource.getName())
-                    .withDisplayName(legacyDataSource.getTable())
-                    .withComponentId(legacyDataSource.getKey())
-                    .withPropertyKey(legacyDataSource.getKey().replace(".","-").replace(" ","_"))
-                    .putAdditionalProperty("table",legacyDataSource.getTable())
-                    .putAdditionalProperty("datasourceId",legacyDataSource.getDatasourceId())
-                    .putAdditionalProperty("legacyDataSource","true").build();
+                if(legacyDataSource.isDataSet()) {
+                    return ImportPropertyBuilder.anImportProperty()
+                        .withComponentName(legacySource.getName())
+                        .withDisplayName(legacyDataSource.getTable())
+                        .withComponentId(legacyDataSource.getKey())
+                        .withPropertyKey(legacyDataSource.getKey().replace(".", "-").replace(" ", "_"))
+                        .putAdditionalProperty("table", legacyDataSource.getTable())
+                        .putAdditionalProperty("datasourceId", legacyDataSource.getDatasourceId())
+                        .putAdditionalProperty(LEGACY_TABLE_DATA_SOURCE_KEY, "true").build();
+                }
+                else {
+                    return ImportPropertyBuilder.anImportProperty()
+                        .withComponentName(legacySource.getName())
+                        .withDisplayName(legacyDataSource.getQuery())
+                        .withComponentId(legacyDataSource.getKey())
+                        .withPropertyKey(legacyDataSource.getKey().replace(".", "-").replace(" ", "_"))
+                        .putAdditionalProperty("query", legacyDataSource.getQuery())
+                        .putAdditionalProperty("datasourceId", legacyDataSource.getDatasourceId())
+                        .putAdditionalProperty(LEGACY_QUERY_DATA_SOURCE_KEY, "true").build();
+                }
             })
             .collect(Collectors.toList());
 

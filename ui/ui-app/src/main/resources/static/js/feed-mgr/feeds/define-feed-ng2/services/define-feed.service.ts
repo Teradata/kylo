@@ -1,4 +1,4 @@
-import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpParams, HttpErrorResponse} from "@angular/common/http";
 import {Injectable, Injector, ViewContainerRef} from "@angular/core";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -42,6 +42,8 @@ import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "
 import {FeedAccessControlService} from "../services/feed-access-control.service";
 import {FeedStepBuilderUtil} from "./feed-step-builder-util";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
+import {DeployEntityVersionResponse} from "../../../model/deploy-entity-response.model";
+import {FeedNifiErrorUtil} from "../../../services/feed-nifi-error-util";
 
 
 export class FeedEditStateChangeEvent{
@@ -280,8 +282,9 @@ export class DefineFeedService {
     }
 
     draftVersionExists(feedId:string):Observable<string> {
+        const headers = new HttpHeaders({'Content-Type':'text/plain; charset=utf-8'});
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft/exists";
-        return <Observable<string>>this.http.get(url,{responseType:'text'});
+        return <Observable<string>>this.http.get(url,{headers:headers,responseType:'text'});
     }
 
     /**
@@ -683,7 +686,7 @@ export class DefineFeedService {
         return savedFeedObservable$
     }
 
-    deployFeed(feed:Feed) :Observable<EntityVersion|any> {
+    deployFeed(feed:Feed) :Observable<DeployEntityVersionResponse|any> {
         feed.validate(false)
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
             let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
@@ -696,11 +699,21 @@ export class DefineFeedService {
            // this._loadingService.register("processingFeed")
 
            return this.http.post(url,null,{ params:params,headers:headers})
-               .map((version:EntityVersion) => {
+               .map((version:DeployEntityVersionResponse) => {
                // this._loadingService.resolve("processingFeed")
                 this.openSnackBar("Deployed feed v."+version.name,5000)
                    return version;
-            }).catch((error1:any,caught:Observable<any>) => {
+            }).catch((error1:HttpErrorResponse,caught:Observable<any>) => {
+                if(error1.error){
+
+                    let content = error1.error as DeployEntityVersionResponse;
+                    content.httpStatus = error1.status;
+                    content.httpStatusText = error1.statusText;
+                    //fill the entity.errors object
+                    FeedNifiErrorUtil.parseDeployNiFiFeedErrors(content);
+
+                }
+                console.log(error1, caught);
                 this._dialogService.openAlert({
                     title:"Error deploying feed",
                     message:"There was an error deploying the feed "+error1
@@ -717,7 +730,7 @@ export class DefineFeedService {
 
     revertDraft(feed: Feed): void {
         feed.validate(false);
-        if (feed.isDraft() && feed.isValid && feed.isComplete()) {
+        if (feed.isDraft()) {
             this._translateService.get("FeedDefinition.Dialogs.RemoveDraft").pipe(
                 concatMap(text => {
                     return this._dialogService.openConfirm({
@@ -743,7 +756,7 @@ export class DefineFeedService {
             ).subscribe(
                 (version: EntityVersion) => {
                     this.openSnackBar("Removed draft "+version.id, 5000);
-                    this.stateService.go("feed-definition.summary", {feedId: version.entity.id});
+                    this.stateService.go("feed-definition.summary.setup-guide", {feedId: feed.id});
                 },
                 error => {
                     console.log(error);
@@ -803,9 +816,11 @@ export class DefineFeedService {
             let mergedSteps:Step[] = defaultSteps.map(step => {
                 if(savedStepMap[step.systemName]){
                     step.update(savedStepMap[step.systemName]);
-                    if(hasBeenDeployed){
-                        step.visited = true;
-                    }
+                }
+                if(hasBeenDeployed){
+                    step.visited = true;
+                    step.saved = true;
+                    step.complete = true;
                 }
                 return step;
             });

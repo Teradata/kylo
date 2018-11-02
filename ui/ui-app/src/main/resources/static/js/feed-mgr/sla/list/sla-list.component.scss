@@ -16,3 +16,7 @@
 .sla-row {
   height: 65px;
 }
+
+:host ::ng-deep #content.sla-list {
+  padding:0px !important;
+}

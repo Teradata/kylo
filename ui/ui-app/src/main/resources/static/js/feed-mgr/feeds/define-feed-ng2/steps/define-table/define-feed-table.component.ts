@@ -7,7 +7,7 @@ import {TableColumnDefinition} from "../../../../model/TableColumnDefinition";
 import {TableFieldPartition} from "../../../../model/TableFieldPartition";
 import {TableFieldPolicy} from "../../../../model/TableFieldPolicy";
 import {HttpClient} from "@angular/common/http";
-import {DefineFeedService} from "../../services/define-feed.service";
+import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
 import {TableCreateMethod} from "../../../../model/feed/feed-table";
 import {FeedTableColumnDefinitionValidation} from "../../../../model/feed/feed-table-column-definition-validation";
@@ -44,10 +44,10 @@ import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {FeedServiceTypes} from "../../../../services/FeedServiceTypes";
 import {PreviewDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-data-set";
-import {ShowCatalogCanceledEvent} from "../source-sample/define-feed-step-source-sample.component";
+import {ShowCatalogCanceledEvent} from "./source-sample/define-feed-step-source-sample.component";
 import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
-import {DefineFeedSourceSampleService} from "../source-sample/define-feed-source-sample.service";
+import {DefineFeedSourceSampleService} from "./source-sample/define-feed-source-sample.service";
 import {CatalogService} from "../../../../catalog/api/services/catalog.service";
 const moduleName = require('../../../define-feed/module-name');
 
@@ -181,6 +181,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     showSourceSample:boolean = true;
 
+    catalogBrowserOpen:boolean = false;
+
 
 
     @ViewChild('virtualScroll')
@@ -287,11 +289,21 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
         this.subscribeToFormDirtyCheck(this.targetFormatOptionsForm);
 
-        if(this.feed.isDataTransformation()){
+        if(this.feed.isDataTransformation() || (this.feed.hasBeenDeployed() && this.feed.sampleDataSet == undefined)){
             this.showSourceSample = false;
         }
     }
 
+    feedStateChange(event: FeedEditStateChangeEvent) {
+        super.feedStateChange(event);
+        if (this.feed.readonly || this.tablePermissions.tableLocked) {
+            this.targetFormatOptionsForm.get("targetFormat").disable();
+            this.targetFormatOptionsForm.get("compressionFormat").disable();
+        } else {
+            this.targetFormatOptionsForm.get("targetFormat").enable();
+            this.targetFormatOptionsForm.get("compressionFormat").enable();
+        }
+    }
 
     protected feedEdit(feed:Feed){
         this.ensureTableFields();
@@ -386,6 +398,23 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.feedTableColumnDefinitionValidation.partitionNamesUnique();
         this.tableFormControls.removePartitionFieldFormControls(partitions[0]);
     };
+
+    /**
+     * Should the skip header row option be shown?
+     * @returns {boolean}
+     */
+    allowSkipHeaderOption(): boolean {
+        return true;
+        /*
+        if(this.feed && this.feed.sampleDataSet && this.feed.sampleDataSet.preview && this.feed.sampleDataSet.preview instanceof  PreviewFileDataSet) {
+            return (<PreviewFileDataSet> this.feed.sampleDataSet.preview).schemaParser.allowSkipHeader;
+        }
+        else {
+            return false;
+        }
+        */
+    }
+
 
     onIndexCheckAllChange() : boolean {
         this.indexCheckAll.toggleAll();
@@ -795,6 +824,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         return field._id;
     }
 
+    onShowCatalogChange($event:boolean){
+        this.catalogBrowserOpen = $event;
+    }
 
 
 
@@ -853,11 +885,15 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.ensureTableFields();
             this.ensurePartitionData();
             this.showSourceSampleCatalog = false;
+            this.catalogBrowserOpen = false;
             if(this.virtualScroll) {
                this.virtualScroll.refresh();
             }
             this.feedLoadingService.resolveLoading();
             this.cd.reattach();
+            this.cd.markForCheck();
+            this.cd.detectChanges();
+            console.log('_update controls ',this)
         }
 
 
@@ -910,10 +946,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
 
-
-
-
-
+    protected applyUpdatesToFeed(): Observable<any> | boolean | null {
+       if(this.catalogBrowserOpen){
+           return  this.dialogService.openConfirm(
+               {title:"Pending source sample changes",
+                   message:"There are pending changes in the source sample that have not been applied to the target.  Are you sure you want to save without applying these changes?  ",
+                   acceptButton: "Abandon changes",
+                   cancelButton: "Cancel and review"
+               }).afterClosed();
+       }
+       return true;
+    }
 }
 @Pipe({name: 'filterPartitionFormula'})
 export class FilterPartitionFormulaPipe implements PipeTransform{

@@ -18,7 +18,7 @@
   #L%
   -->
 <div>
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading" class="md-accent"></md-progress-linear>
     <card-layout header-css="filter-header" class="centered" ng-if="!vm.loading">
         <header-section>
             <tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" filter-model="vm.filter"

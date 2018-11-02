@@ -1,5 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit, ViewChild} from "@angular/core";
-import {ImportComponentType, ImportComponentOption, ImportService, ImportProperty} from "../../../services/ImportComponentOptionTypes";
+import {ImportComponentType, ImportComponentOption, ImportService, ImportPropertyFilter, ImportProperty} from "../../../services/ImportComponentOptionTypes";
 import {FileUpload} from "../../../../services/FileUploadService";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {HttpClient} from "@angular/common/http";
@@ -21,6 +21,12 @@ import {DatasourcesService} from "../../../services/DatasourcesService";
 import {DatasourcesServiceStatic} from "../../../visual-query/wrangler";
 import {KyloRouterService} from "../../../../services/kylo-router.service";
 import {StringUtils} from "../../../../common/utils/StringUtils";
+import {map} from "rxjs/operators";
+import {DataSource} from "../../../catalog/api/models/datasource";
+import {Observable} from "rxjs/Observable";
+import Templates from "../../../services/TemplateTypes";
+import {take} from "rxjs/operator/take";
+
 @Component({
     selector: "import-feed",
     templateUrl: "./import-feed.component.html"
@@ -134,6 +140,8 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
      */
     availableDatasources: any = [];
 
+    catalogDataSources:DataSource[];
+
     /**
      * The parent form group for validation checks prior to import
      */
@@ -208,6 +216,53 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
             .then((datasources: any) => {
                 this.availableDatasources = datasources;
             });
+
+        this.fetchCatalogDataSources();
+    }
+
+    public findDatasetPropertiesFilter(importOption:ImportComponentOption): ImportProperty[]{
+        if(importOption.properties == undefined){
+            return [];
+        }
+        return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties &&
+            Object.keys(property.additionalProperties).indexOf("legacyTableDataSource") >=0 &&
+            (property.additionalProperties["legacyTableDataSource"] == "true" ||property.additionalProperties["legacyTableDataSource"] == true));
+    }
+
+    public findDataSourcePropertiesFilter(importOption:ImportComponentOption): ImportProperty[]{
+        if(importOption.properties == undefined){
+            return [];
+        }
+        return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties &&
+            Object.keys(property.additionalProperties).indexOf("legacyQueryDataSource") >=0 &&
+            (property.additionalProperties["legacyQueryDataSource"] == "true" ||property.additionalProperties["legacyQueryDataSource"] == true));
+    }
+
+    /**
+     * is the supplied option one for defining a Catalog DataSet?
+     * @param {ImportComponentOption} importOption
+     * @return {boolean}
+     */
+    private isDataSetOption(importOption:ImportComponentOption):boolean {
+        return  importOption.importComponent == ImportComponentType.USER_DATA_SETS || (importOption.importComponent == ImportComponentType.USER_DATASOURCES && this.findDatasetPropertiesFilter(importOption).length >0);
+    }
+
+
+    private fetchCatalogDataSources() :Observable<DataSource[]>{
+         this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"]).subscribe(datasources => {
+                this.catalogDataSources = []
+                if(datasources && datasources.length >0){
+                    this.catalogDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
+                        return ds.title;
+                    }).sortBy((ds:DataSource) =>{
+                        return ds.connector.pluginId;
+                    }).value()
+                }
+                else {
+                    this.catalogDataSources = [];
+                }
+            });
+
     }
 
     private initImportOptions(){
@@ -332,15 +387,20 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         Object.keys(this.importComponentOptions).forEach(key => {
            let option = this.importComponentOptions[key];
            //skip over datasets since those are added/updated with the dialog
-           if(option && option.importComponent != ImportComponentType.USER_DATA_SETS && option.importComponent != ImportComponentType.USER_DATASOURCES  && option.properties){
+           if(option && option.importComponent != ImportComponentType.USER_DATA_SETS && option.properties){
                let nestedForm = this.formGroup.get(this.nestedFormGroupControlName(option));
                if(nestedForm) {
                    option.properties.forEach(prop => {
-                        let control = nestedForm.get(prop.propertyKey);
-                        if(control){
-                            prop.propertyValue = control.value;
-                            console.log('SET THE PROPERTY VALUE ',prop,prop.propertyValue)
-                        }
+                       //if not dataset option then set the value.  Datasets are set via the dialog callback
+                       if(!this.isDataSetOption(option) ) {
+                           let control = nestedForm.get(prop.propertyKey);
+                           if(control){
+                               prop.propertyValue = control.value;
+                               console.log('SET THE PROPERTY VALUE ',prop,prop.propertyValue)
+                           }
+                       }
+
+
                    });
                }
            }
@@ -658,7 +718,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 let dataSet =preview.toSparkDataSet();
                 this.catalogService.createDataSet(dataSet).subscribe((ds:SparkDataSet) => {
                     //find or create dataset then
-                    console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet)
+                    console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet, ds)
                     let valid = true;
                     let schemaNeeded = "";
                     //validate schema
@@ -666,7 +726,6 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                         if(importProperty.additionalProperties["schema"]){
                             const importSchema = importProperty.additionalProperties["schema"];
                             let previewSchema = preview.schema.map(col => col.name+" "+col.dataType).join(",");
-                            console.log("DOES import ",importSchema+" match "+previewSchema);
                             if(importSchema != previewSchema){
                                 valid = false
                                 schemaNeeded = importSchema;

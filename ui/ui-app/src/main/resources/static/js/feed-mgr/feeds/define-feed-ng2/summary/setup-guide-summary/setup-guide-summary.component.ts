@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit, ViewContainerRef} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
@@ -46,7 +46,8 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
         return SetupGuideSummaryComponent.LINK_NAME;
     }
 
-    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService, private _dialogService:TdDialogService) {
+    constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService:FeedSideNavService, private _dialogService:TdDialogService,
+                private _viewContainerRef: ViewContainerRef) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
        this.feedSavedSubscription = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this))
      }
@@ -102,6 +103,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
 
         if(this.feed.accessControl.allowEdit){
             let config ={data:new DeployFeedDialogComponentData(this.feed), width:"600px"};
+            config.viewContainerRef = this._viewContainerRef;
             this._dialogService.open(DeployFeedDialogComponent,config);
         }
 

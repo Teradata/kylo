@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
@@ -255,6 +256,15 @@ public class ExecuteSparkJob extends BaseProcessor {
         .addValidator(createUuidListValidator())
         .expressionLanguageSupported(true)
         .build();
+
+    public static final PropertyDescriptor CATALOG_DATASOURCES = new PropertyDescriptor.Builder()
+        .name("Catalog Data Sources")
+        .description("A comma-separated list of data source ids to include in the environment for Spark.")
+        .required(false)
+        .addValidator(createUuidListValidator())
+        .expressionLanguageSupported(true)
+        .build();
+
     public static final PropertyDescriptor DATASETS = new PropertyDescriptor.Builder()
         .name("Data Sets")
         .description("A comma-separated list of data set ids to include in the environment for Spark.")
@@ -365,6 +375,7 @@ public class ExecuteSparkJob extends BaseProcessor {
         list.add(YARN_QUEUE);
         list.add(SPARK_CONFS);
         list.add(EXTRA_SPARK_FILES);
+        list.add(CATALOG_DATASOURCES);
         list.add(DATASETS);
         list.add(METADATA_SERVICE);
     }
@@ -384,6 +395,8 @@ public class ExecuteSparkJob extends BaseProcessor {
     protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(@Nonnull final String propertyDescriptorName) {
         if (DATASOURCES.getName().equals(propertyDescriptorName)) {
             return DATASOURCES;
+        } else if (CATALOG_DATASOURCES.getName().equalsIgnoreCase(propertyDescriptorName)){
+            return CATALOG_DATASOURCES;
         } else {
             return super.getSupportedDynamicPropertyDescriptor(propertyDescriptorName);
         }
@@ -425,6 +438,7 @@ public class ExecuteSparkJob extends BaseProcessor {
             String extraFiles = context.getProperty(EXTRA_SPARK_FILES).evaluateAttributeExpressions(flowFile).getValue();
             Integer sparkProcessTimeout = context.getProperty(PROCESS_TIMEOUT).evaluateAttributeExpressions(flowFile).asTimePeriod(TimeUnit.SECONDS).intValue();
             String datasourceIds = context.getProperty(DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
+            String catalogDataSourceIds = context.getProperty(CATALOG_DATASOURCES).evaluateAttributeExpressions(flowFile).getValue();
             String dataSetIds = context.getProperty(DATASETS).evaluateAttributeExpressions(flowFile).getValue();
             MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
 
@@ -467,7 +481,7 @@ public class ExecuteSparkJob extends BaseProcessor {
             String sparkHome = context.getProperty(SPARK_HOME).evaluateAttributeExpressions(flowFile).getValue();
 
             // Build environment
-            final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, dataSetIds, metadataService, extraJarPaths);
+            final Map<String, String> env = getDatasources(session, flowFile, PROVENANCE_JOB_STATUS_KEY, datasourceIds, dataSetIds, catalogDataSourceIds, metadataService, extraJarPaths);
             if (env == null) {
                 return;
             }
@@ -560,7 +574,7 @@ public class ExecuteSparkJob extends BaseProcessor {
         return prop.isSet() && StringUtils.isNoneBlank(prop.getValue()) ? prop.evaluateAttributeExpressions(flowFile).getValue() : "";
     }
 
-    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, String dataSetIds,
+    private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, String dataSetIds,String catalogDataSourceIds,
                                                MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
         final Map<String, String> env = new HashMap<>();
         final Set<String> resolvedDatasources = new HashSet<>();
@@ -573,7 +587,16 @@ public class ExecuteSparkJob extends BaseProcessor {
             for (final String id : dataSetIds.split(",")) {
                 dataSets.append((dataSets.length() == 0) ? '[' : ',');
 
-                final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet = provider.getDataSet(id);
+                final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet;
+                try {
+                    dataSet = provider.getDataSet(id, false);
+                } catch (final Exception e) {
+                    getLog().error("Unable to access data set: {}: {}", new Object[]{id, e}, e);
+                    session.penalize(flowFile);
+                    session.transfer(flowFile);
+                    return null;
+                }
+
                 if (dataSet.isPresent()) {
                     if (dataSet.get().getJars() != null) {
                         extraJarPaths.addAll(dataSet.get().getJars());
@@ -613,7 +636,15 @@ public class ExecuteSparkJob extends BaseProcessor {
                 if (!resolvedDatasources.contains(id)) {
                     datasources.append((datasources.length() == 0) ? '[' : ',');
 
-                    final Optional<Datasource> datasource = provider.getDatasource(id);
+                    final Optional<Datasource> datasource;
+                    try {
+                        datasource = provider.getDatasource(id);
+                    } catch (final Exception e) {
+                        getLog().error("Unable to access data source: {}: {}", new Object[]{id, e}, e);
+                        session.penalize(flowFile);
+                        session.transfer(flowFile);
+                        return null;
+                    }
                     if (datasource.isPresent()) {
                         if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
                             final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
@@ -633,6 +664,44 @@ public class ExecuteSparkJob extends BaseProcessor {
             if (datasources.length() != 0) {
                 datasources.append(']');
                 env.put("DATASOURCES", datasources.toString());
+            }
+        }
+
+        if (StringUtils.isNotBlank(catalogDataSourceIds)) {
+            final StringBuilder datasources = new StringBuilder(10240);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final MetadataProvider provider = metadataService.getProvider();
+
+            for (final String id : catalogDataSourceIds.split(",")) {
+                if (!resolvedDatasources.contains(id)) {
+                    datasources.append((datasources.length() == 0) ? '[' : ',');
+
+                    final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSource> optionalDataSource = provider.getCatalogDataSource(id);
+                    if (optionalDataSource.isPresent()) {
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource =optionalDataSource.get();
+                        if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
+                            extraJarPaths.addAll(dataSource.getTemplate().getJars());
+                        }
+                        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getJars() != null) {
+                            extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
+                        }
+                        resolvedDatasources.add(dataSource.getId());
+
+                        datasources.append(objectMapper.writeValueAsString(dataSource));
+                        getLog().info("Adding CatalogDataSource {} ", new Object[] {dataSource.getId()});
+
+                    } else {
+                        getLog().error("Required catalog datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
+                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data catalog source: " + id);
+                        session.transfer(flowFile, REL_FAILURE);
+                        return null;
+                    }
+                }
+            }
+
+            if (datasources.length() != 0) {
+                datasources.append(']');
+                env.put("CATALOG_DATASOURCES", datasources.toString());
             }
         }
 

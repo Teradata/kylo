@@ -6,21 +6,14 @@
         <mat-card-title>Source</mat-card-title>
         <mat-card-subtitle>Specify source options</mat-card-subtitle>
       </mat-card-header>
-      <mat-card-content>
+      <mat-card-content class="pull-top-sm">
         <form [formGroup]="sourcePropertiesForm">
           <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step" [formGroup]="sourcePropertiesForm" mode="INPUT"  ></feed-nifi-properties>
         </form>
-
-
-        <div fxLayout="column">
-          <h3 mat-subheader translate class="property-heading">views.define-feed-general-info.AdditionalFeedOptions</h3>
-          <mat-checkbox [(ngModel)]="feed.options.skipHeader" [disabled]="feed.readonly" [ngModelOptions]="{standalone: true}">{{"views.feed-data-policies.Shr" | translate}}</mat-checkbox>
-        </div>
-
       </mat-card-content>
       <mat-card-actions *ngIf="!feed.readonly">
         <button mat-button (click)="onCancelEdit()">Cancel</button>
-        <button mat-raised-button color="accent" (click)="onSave()">Save</button>
+        <button mat-raised-button color="accent" (click)="onSave()" [disabled]="!isFormValid()">Save</button>
       </mat-card-actions>
     </mat-card>
     <!--

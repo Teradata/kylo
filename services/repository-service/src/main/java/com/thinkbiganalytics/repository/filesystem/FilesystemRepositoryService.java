@@ -29,11 +29,13 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -67,6 +69,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -449,8 +452,11 @@ public class FilesystemRepositoryService implements RepositoryService {
             TemplateMetadata metadata = null;
             try {
                 metadata = mapper.readValue(path.toFile(), TemplateMetadata.class);
+                Principal[] principals = new Principal[1];
+                principals[0] = MetadataAccess.SERVICE;
 
-                RegisteredTemplate foundTemplate = registeredTemplateService.findRegisteredTemplateByName(change.getDescription());
+                RegisteredTemplate foundTemplate = registeredTemplateService
+                        .findRegisteredTemplateByName(change.getDescription(), TemplateModelTransform.TEMPLATE_TRANSFORMATION_TYPE.WITH_FEED_NAMES, principals);
 
                 if (StringUtils.equals(metadata.getTemplateName(), foundTemplate.getTemplateName())) {
                     metadata.setLastModified(foundTemplate.getUpdateDate().getTime());

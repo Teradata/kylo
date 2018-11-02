@@ -48,6 +48,9 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
     @Nonnull
     private final Map<String, Datasource> datasources;
 
+    @Nonnull
+    private final Map<String, DataSource> catalogDataSources;
+
     private final Map<String,String> legacyDatasourceCatalogDataSetId;
 
 
@@ -59,11 +62,16 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
      *
      * @param datasources the data sources
      */
-    public AbstractDatasourceProvider(@Nonnull final Collection<Datasource> datasources) {
+    public AbstractDatasourceProvider(@Nonnull final Collection<Datasource> datasources, final Collection<DataSource> catalogDataSources) {
         this.datasources = new HashMap<>(datasources.size());
+        this.catalogDataSources = new HashMap<>(catalogDataSources.size());
         legacyDatasourceCatalogDataSetId = new HashMap<>();
         for (final Datasource datasource : datasources) {
             this.datasources.put(datasource.getId(), datasource);
+        }
+
+        for(final DataSource catalogDataSource:catalogDataSources){
+            this.catalogDataSources.putIfAbsent(catalogDataSource.getId(),catalogDataSource);
         }
     }
 
@@ -75,6 +83,16 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
             return datasource;
         } else {
             throw new IllegalArgumentException("Datasource does not exist: " + id);
+        }
+    }
+
+    @Nonnull
+    public DataSource findCatalogDataSourceById(@Nonnull final String id) {
+        final DataSource datasource = catalogDataSources.get(id);
+        if (datasource != null) {
+            return datasource;
+        } else {
+            throw new IllegalArgumentException("DataSource does not exist: " + id);
         }
     }
 
@@ -119,6 +137,12 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
         } else {
             throw new IllegalArgumentException("Datasource does not provide tables: " + datasource);
         }
+    }
+
+    @Nonnull
+    @Override
+    public final T getTableFromCatalogDataSource(@Nonnull final String table, @Nonnull final String catalogDataSourceId, @Nonnull final SQLContext sqlContext) {
+        return getTableFromCatalogDataSource(table,findCatalogDataSourceById(catalogDataSourceId),sqlContext);
     }
 
     /**

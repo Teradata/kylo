@@ -42,7 +42,13 @@ export class CategoriesController {
         );
 
         $scope.getIconColorStyle = (color: any) => {
-            return { 'fill': color };
+            let fillColor = (!color || color == '' ? '#90CAF9' : color);
+            return { 'fill': fillColor };
+        };
+
+        $scope.getColorStyle = (color: any) => {
+            let fillColor = (!color || color == '' ? '#90CAF9' : color);
+            return { 'background-color': fillColor };
         };
 
         // Register Add button

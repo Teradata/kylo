@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -32,6 +33,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.service.feed.DeployFeedException;
 import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -335,7 +337,7 @@ public interface MetadataService {
      * @param includeContent indicates whether the feed content should be included in the version
      * @return the current state of feed versions; including which is version is deployed
      */
-    EntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent);
+    DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) throws DeployFeedException;
     
     /**
      * Creates a new version from the current draft version of a feed.  If the feed does not

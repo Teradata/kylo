@@ -37,8 +37,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 public class FileResourceService {
@@ -88,12 +86,12 @@ public class FileResourceService {
             Resource[] resources = loadResources(pattern);
             if (resources != null) {
                 List<String> list = new ArrayList<>();
-                for(Resource resource : Lists.newArrayList(resources)) {
-                    if(resource != null) {
-                       String resourceString = resourceAsString(resource);
-                       if(StringUtils.isNotBlank(resourceString)){
-                           list.add(resourceString);
-                       }
+                for (Resource resource : Lists.newArrayList(resources)) {
+                    if (resource != null) {
+                        String resourceString = resourceAsString(resource);
+                        if (StringUtils.isNotBlank(resourceString)) {
+                            list.add(resourceString);
+                        }
                     }
                 }
                 return list;
@@ -105,16 +103,15 @@ public class FileResourceService {
     }
 
 
-    public void loadResources(String pattern,LoadResourceCallback callback ) {
+    public void loadResources(String pattern, LoadResourceCallback callback) {
         try {
             Resource[] resources = loadResources(pattern);
             if (resources != null) {
-                for(Resource resource : Lists.newArrayList(resources)) {
+                for (Resource resource : Lists.newArrayList(resources)) {
                     try {
                         callback.execute(resource);
-                    }
-                    catch (Exception e){
-                        log.error("Unable to load resource ",resource.getFilename(),e);
+                    } catch (Exception e) {
+                        log.error("Unable to load resource ", resource.getFilename(), e);
                     }
                 }
             }

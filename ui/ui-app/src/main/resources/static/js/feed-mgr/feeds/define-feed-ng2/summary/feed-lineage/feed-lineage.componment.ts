@@ -79,12 +79,12 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                     roundness: 0,
                     "forceDirection": "horizontal"
                 },
-                font: {align: 'horizontal'}
+                font: {align: 'horizontal',size:12,face:'arial'}
             },
             layout: {
                 hierarchical: {
                     direction: "LR",
-                    nodeSpacing: 200,
+                    nodeSpacing: 350,
                     sortMethod: 'directed'
                 }
             },
@@ -93,7 +93,9 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
             nodes: {
                 shape: 'box',
                 font: {
-                    align: 'center'
+                    align: 'center',
+                    size: 12, // px
+                    face: 'arial'
                 }
             },
             groups: {
@@ -106,12 +108,16 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
                 datasource: {
                     shape: 'box',
                     font: {
-                        align: 'center'
+                        align: 'center',
+                        size: 12,
+                        face: 'arial'
                     }
                 }
             },
             interaction: {
-                hover: true, navigationButtons: true,
+                hover: true,
+                navigationButtons: true,
+                dragNodes:true,
                 keyboard: true
             }
         };
@@ -141,6 +147,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     panelOpenState = false;
 
     onSelect(item: any) {
+        console.log("onSelect!!");
         if (item && item.nodes && item.nodes[0]) {
             this.changed = true;
             var firstItem = item.nodes[0];
@@ -168,24 +175,6 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         }
     }
 
-    stabilizationIterationsDone() {
-        // this.options.physics.enabled = false;
-        this.options = {
-            physics: {enabled: false, stabilization: false},
-            interaction: {dragNodes: true},
-            layout: {
-                hierarchical: {
-                    enabled: false
-                }
-            }
-        };
-
-    }
-
-    stabilized() {
-        this.stabilizationIterationsDone();
-    }
-
     init() {
         this.getFeedLineage();
     }
@@ -193,7 +182,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     getFeedLineage() {
         this.http.get(this.restUrlService.FEED_LINEAGE_URL(this.feedId)).subscribe((response: any) => {
             this.feedLineage = response;
-            this.redraw();
+            this._draw();
             this.loading = false;
         });
     }
@@ -204,11 +193,14 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     networkView(value: string) {
         this.graphMode = value;
-        this.redraw();
+        if (!this.loading) {
+            this.redraw();
+        }
         //this.options = {physics: {enabled: false, stabilization: true}};
     }
 
     redraw() {
+        console.log("redraw");
         if (this.isDetailedGraph()) {
             this.onDetailedView();
         }

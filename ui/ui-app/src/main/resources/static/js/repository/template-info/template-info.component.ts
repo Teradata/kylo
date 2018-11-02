@@ -1,8 +1,10 @@
-import {Component, Injector, OnInit} from "@angular/core";
-import {StateService} from "@uirouter/angular";
-import {AccessControlService} from "../../services/AccessControlService";
-import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
+import {Component, Inject, OnInit} from "@angular/core";
 import {MatDialog} from "@angular/material/dialog";
+import {StateService} from "@uirouter/angular";
+
+import {AccessControlService} from "../../services/AccessControlService";
+import {StateService as KyloStateService} from "../../services/StateService";
+import {TemplatePublishDialog} from "../dialog/template-publish-dialog";
 
 @Component({
     selector: "template-info",
@@ -16,13 +18,14 @@ export class TemplateInfoComponent implements OnInit {
     loading: boolean = true;
     allowEdit: boolean = false;
     allowExport: boolean = false;
-    registerTemplateService: any;
     enabling: boolean = false;
     disabling: boolean = false;
 
-    constructor(private $$angularInjector: Injector, private state: StateService, private dialog: MatDialog) {
-        this.registerTemplateService = $$angularInjector.get("RegisterTemplateService");
-        let accessControlService = $$angularInjector.get("AccessControlService");
+    constructor(@Inject("RegisterTemplateService") private registerTemplateService: any,
+                @Inject("AccessControlService") private accessControlService: AccessControlService,
+                @Inject("StateService") private kyloStateService: KyloStateService,
+                private state: StateService,
+                private dialog: MatDialog) {
         accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
                 this.allowEdit = accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
@@ -34,12 +37,17 @@ export class TemplateInfoComponent implements OnInit {
 
     ngOnInit(): void {
         this.templateId = this.state.params.registeredTemplateId;
-        this.registerTemplateService.loadTemplateWithProperties(this.templateId, this.nifiTemplateId).then((response: any) => {
-            this.template = response.data;
-            this.loading = false;
-        }, (err: any) => {
-            console.log("Error retrieving template", err);
-        });
+        if (this.templateId == null) {
+            console.error("Error retrieving template: " + this.templateId);
+            this.kyloStateService.TemplateStates().navigateToRegisteredTemplates();
+        } else {
+            this.registerTemplateService.loadTemplateWithProperties(this.templateId, this.nifiTemplateId).then((response: any) => {
+                this.template = response.data;
+                this.loading = false;
+            }, (err: any) => {
+                console.log("Error retrieving template", err);
+            });
+        }
     }
 
     disableTemplate(): void {

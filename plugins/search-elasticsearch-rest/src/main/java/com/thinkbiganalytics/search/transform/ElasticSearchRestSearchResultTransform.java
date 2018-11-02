@@ -207,6 +207,7 @@ public class ElasticSearchRestSearchResultTransform {
         final String TBA_CATEGORY = "tba:category";
         final String TBA_TAGS = "tba:tags";
         final String USR_PROPERTIES = "usr:properties";
+        final String META_FEED_ID = "meta:feedId";
 
         final String TBA_SYSTEM_NAME_NEW_DESCRIPTION = "System name (Kylo)";
         final String JCR_TITLE_NEW_DESCRIPTION = "Title";
@@ -214,11 +215,18 @@ public class ElasticSearchRestSearchResultTransform {
         final String TBA_CATEGORY_NEW_DESCRIPTION = "Category";
         final String TBA_TAGS_NEW_DESCRIPTION = "Tags";
         final String USR_PROPERTIES_NEW_DESCRIPTION = "User properties";
+        final String META_FEED_ID_NEW_DESCRIPTION = "Feed ID";
 
         final String SPACE_STRING = " ";
 
         FeedMetadataSearchResultData feedMetadataSearchResultData = new FeedMetadataSearchResultData();
         List<Pair> highlightsList = new ArrayList<>();
+
+        if (!elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(META_FEED_ID, EMPTY_STRING).equals(EMPTY_STRING)) {
+            feedMetadataSearchResultData.setFeedId(
+                elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(META_FEED_ID, EMPTY_STRING).toString()
+            );
+        }
 
         if (!elasticSearchRestSearchHit.findValueForKeyInSourceWithDefault(TBA_SYSTEM_NAME, EMPTY_STRING).equals(EMPTY_STRING)) {
             feedMetadataSearchResultData.setFeedSystemName(
@@ -262,6 +270,10 @@ public class ElasticSearchRestSearchResultTransform {
             Boolean includeHighlight = false;
 
             switch (key) {
+                case META_FEED_ID:
+                    key = META_FEED_ID_NEW_DESCRIPTION;
+                    includeHighlight = true;
+                    break;
                 case JCR_TITLE:
                     key = JCR_TITLE_NEW_DESCRIPTION;
                     includeHighlight = true;

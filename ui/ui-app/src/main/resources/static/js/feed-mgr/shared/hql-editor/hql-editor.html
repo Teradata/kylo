@@ -21,7 +21,7 @@
 
     <div ng-if="vm.loadingHiveSchemas">
         <span class="hint">{{"views.hql-editor.Iad" | translate}}</span>
-        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
       </div>
       <div id="hqlEditorContainer">
         <span class="md-input-label">{{"views.hql-editor.EQ" | translate}}</span>
@@ -58,7 +58,7 @@
       </md-select>
     </md-input-container>
   </div>
-  <md-progress-linear md-mode="indeterminate" ng-if="vm.executingQuery"></md-progress-linear>
+  <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.executingQuery"></md-progress-linear>
   <div class="browse-results">
     <div id="{{vm.tableId}}"
          flex

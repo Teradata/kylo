@@ -18,19 +18,19 @@
   #L%
   -->
 <md-card layout-align="center center" >
-    <span class="card-title kip-header">{{"Job Activity" | translate}}</span>
-    <span class="md-caption kpi-subtitle "style="padding-bottom:10px">{{"Currently Running Jobs" | translate}}</span>
+    <span class="card-title kpi-header">{{"Job Activity" | translate}}</span>
+    <span class="md-caption kpi-subtitle md-push-bottom-sm">{{"Currently Running Jobs" | translate}}</span>
     <md-card-content layout="column" layout-align="center center" class="kpi-content">
         <div ng-if="vm.dataLoaded">
             <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi" ></nvd3>
             <div layout="row" layout-align="center center" flex  style="width:100%" >
                <span layout="column" ng-click="vm.chartClick()" style="cursor: pointer;">
-                <span class="md-title" ng-class="{'healthy':vm.running >0}">{{vm.running}}</span>
+                <span class="md-title" ng-class="{'tc-positive':vm.running >0}">{{vm.running}}</span>
                 <span class="md-caption kpi-health-label">{{"Running" | translate}}</span>
             </span>
             </div>
         </div>
-      <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+      <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60" class="md-accent"></md-progress-circular>
         </div>
     </md-card-content>
 </md-card>
