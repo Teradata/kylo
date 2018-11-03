@@ -138,6 +138,29 @@ public class JpaNifiFeedStats implements NifiFeedStats {
         isStream = stream;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JpaNifiFeedStats)) {
+            return false;
+        }
+
+        JpaNifiFeedStats that = (JpaNifiFeedStats) o;
+
+        if (feedName != null ? !feedName.equals(that.feedName) : that.feedName != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return feedName != null ? feedName.hashCode() : 0;
+    }
+
     @Embeddable
     public static class OpsManagerFeedId extends BaseJpaId implements Serializable, OpsManagerFeed.ID {
 
