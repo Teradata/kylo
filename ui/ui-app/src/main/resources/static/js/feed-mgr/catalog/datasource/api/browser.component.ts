@@ -249,6 +249,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.initSelectedDescendantCounts();
         //mark the last selected path for this datasource.id in the selection service
         this.selectionService.setLastPath(this.datasource.id, this.params)
+        this.hi
     }
 
     private initNodes(): void {

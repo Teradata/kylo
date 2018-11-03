@@ -899,7 +899,7 @@
                 "ACCEPT": "Delete",
                 "CANCEL": "Cancel",
                 "MESSAGE": "Are you sure you want to delete this data source?",
-                "TITLE": "Delete connector"
+                "TITLE": "Delete Data Source"
             },
             "EMPTY": {
                 "CATALOG_TEXT": "Create a new data source from the catalog page",

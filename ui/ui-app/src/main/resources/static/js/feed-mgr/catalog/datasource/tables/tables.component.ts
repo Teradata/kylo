@@ -18,6 +18,7 @@ export class TablesComponent extends BrowserComponent {
 
     init(): void {
         this.initData();
+        this.showHideInternalOption = (this.datasource.template.format === 'hive');
     }
 
     /**
