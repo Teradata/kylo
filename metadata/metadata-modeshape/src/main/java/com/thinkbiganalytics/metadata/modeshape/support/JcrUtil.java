@@ -94,34 +94,38 @@ public class JcrUtil {
     }
     
     /**
-     * Generates a name from some arbitrary text that is both a valid JCR node name
-     * and is consistent with other "system names".  Generally, it substitutes any sequence of
-     * invalid node name characters and all white space with with an underscore, and then URL 
-     * encodes the result.
+     * Generates a lower-case name from some arbitrary text that is both a valid JCR node name
+     * and is consistent with other "system names".
+     * 
      * @param text
-     * @return
+     * @return a system name
      */
-    public static String toSystemName(String text) {
-        try {
-            return URLEncoder.encode(text.replaceAll("\\s+", "_").replaceAll("[\\[\\]/*|:]", "_"), ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("The text could not be converted into a system name: " + text, e);
-        }
+    public static String toSystemName(final String text) {
+        return toSystemName(text, false);
     }
     
     /**
      * Generates a name from some arbitrary text that is both a valid JCR node name
-     * and is consistent with other "system names".  Generally, it substitutes any sequence of
-     * invalid node name characters and all white space with with an underscore, and then URL 
-     * encodes the result.  If case sensitive it set to false then the result will be
-     * lower case.
-     * 
-     * @param text
+     * and is consistent with other "system names".  The input is converted by the following: 
+     * <ol>  
+     * <li> Convert to lower case if not case sensitive  
+     * <li> Trims the text  
+     * <li> Substitutes any sequence of white space with with a single underscore 
+     * <li> Replaces any '*' with a '^' (JCR reserved but the URLEncodor won't encode it)   
+     * <li> URL encodes the result   
+     * <li> Substitutes any '%' with a '-' in the encoding  
+     * </ol> 
+     * @param text the input text
      * @param caseSensitive indicates whether the result should retain case (true) or be lower case
-     * @return
+     * @return a system name
      */
-    public static String toSystemName(String text, boolean caseSensitive) {
-        return caseSensitive ? toSystemName(text) : toSystemName(text.toLowerCase());
+    public static String toSystemName(final String text, final boolean caseSensitive) {
+        try {
+            String startText = caseSensitive ? text : text.toLowerCase();
+            return URLEncoder.encode(startText.trim().replaceAll("\\s+", "_").replace('*', '^'), "UTF-8").replace('%', '-');
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("The text could not be converted into a system name: " + text, e);
+        }
     }
 
     /**
