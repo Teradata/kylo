@@ -14,6 +14,8 @@ import {RestUrlService} from "../../../../../services/RestUrlService";
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
 import {RequestOptions, ResponseContentType} from "@angular/http";
+import {NotificationService} from "../../../../../../services/notification.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -48,7 +50,8 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
                 @Inject("BroadcastService") private broadcastService: BroadcastService,
                 private _dialogService: TdDialogService,
                 private defineFeedService: DefineFeedService,
-                @Inject("RestUrlService") restUrlService: RestUrlService) {
+                @Inject("RestUrlService") restUrlService: RestUrlService,
+                private snackBar:MatSnackBar) {
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
         this.restUrlService = restUrlService;
     }
@@ -62,6 +65,8 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     uploadFileAllowed: boolean;
 
     exportFeedUrl: string;
+
+    exportInProgress:boolean= false;
 
     restUrlService: RestUrlService;
 
@@ -104,13 +109,20 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     exportFeed() {
         //todo start progress
+        this.exportInProgress = true;
+            this.snackBar.open("Exporting the feed", null, {
+                duration: 3000,
+            });
         this.http.get(this.exportFeedUrl,  {responseType:"arraybuffer"})
-            .catch(errorResponse => Observable.throw(errorResponse.json()))
+            .catch(errorResponse => {
+                this.exportInProgress = false;
+                return Observable.throw(errorResponse)
+            } )
             .map((response) => {
                 return response;
             }).subscribe(data => this.getZipFile(data)),
-            error => console.log("Error downloading the file."),
-            () => console.log('Completed file download.');
+            error => this._dialogService.openAlert({title:"Export Feed Error", message:"There was an error exporting the feed"})
+
 
     }
 
@@ -124,9 +136,13 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
         var url= window.URL.createObjectURL(blob);
 
         a.href = url;
-        a.download = this.feed.systemFeedName+".zip";
+        a.download = this.feed.systemFeedName+".feed.zip";
         a.click();
         window.URL.revokeObjectURL(url);
+            this.exportInProgress = false;
+            this.snackBar.open("Feed export complete", null, {
+                duration: 3000,
+            });
 
     }
 

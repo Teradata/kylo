@@ -32,9 +32,10 @@
           <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>
           <span>Upload File</span>
         </button>
-        <button mat-menu-item download [disabled]="!feed.accessControl.allowExport" (click)="exportFeed()">
+        <button mat-menu-item download [disabled]="!feed.accessControl.allowExport || exportInProgress" (click)="exportFeed()">
           <mat-icon>{{kyloIcons.Feed.Actions.export}}</mat-icon>
-          <span>Export</span>
+          <span *ngIf="!exportInProgress">Export</span>
+          <span *ngIf="exportInProgress">Exporting</span>
         </button>
       </mat-menu>
     </div>
