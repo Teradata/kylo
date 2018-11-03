@@ -33,7 +33,7 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrUserDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.project.JcrProject;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
@@ -119,6 +119,7 @@ public class JcrRoleMembershipProvider implements RoleMembershipProvider {
         map.put(JcrFeedTemplate.NODE_TYPE, JcrFeedTemplate.class);
         map.put(JcrCategory.NODE_TYPE, JcrCategory.class);
         map.put(JcrFeed.NODE_TYPE, JcrFeed.class);
+        map.put(JcrUserDatasource.NODE_TYPE, JcrUserDatasource.class);
         map.put(JcrProject.NODE_TYPE, JcrProject.class);
         map.put(JcrConnector.NODE_TYPE, JcrConnector.class);
         map.put(JcrDataSource.NODE_TYPE, JcrDataSource.class);
@@ -133,7 +134,7 @@ public class JcrRoleMembershipProvider implements RoleMembershipProvider {
                 if (NODE_TYPES_MAP.containsKey(node.getPrimaryNodeType().getName())) {
                     return NODE_TYPES_MAP.get(node.getPrimaryNodeType().getName());
                 } else {
-                    return JcrDatasource.class;
+                    throw new MetadataRepositoryException("Unrecognized type of access controlled entity: " + node.getPrimaryNodeType());
                 }
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to determine type of node: " + node, e);
