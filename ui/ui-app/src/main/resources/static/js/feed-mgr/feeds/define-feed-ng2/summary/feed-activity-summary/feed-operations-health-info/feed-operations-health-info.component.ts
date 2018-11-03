@@ -143,6 +143,10 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
         }
     }
 
+    exportFeed() {
+
+    }
+
     startFeed() {
         if (this.feed.accessControl.allowStart) {
             if (!this.startingFeed) {
@@ -161,7 +165,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
                     this.startingFeed = false;
                     if (response.status == RestResponseStatusType.SUCCESS) {
                         let msg = response.message ? response.message : "Feed started";
-                        this.opsManagerFeedService.openSnackBar('Riaz'+msg, 5000)
+                        this.opsManagerFeedService.openSnackBar(msg, 5000)
                     }
                     else {
                         error(response.message)

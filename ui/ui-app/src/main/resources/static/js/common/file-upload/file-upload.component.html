@@ -25,7 +25,7 @@
             <span class="text-upper accent-color">Browse...</span>
         </td-file-input>
     </div>
-    <div *ngIf="renderSubmitButton" fxLayout="row" fxLayoutAlign="end center">
+    <div *ngIf="renderSubmitButton" fxLayout="row" fxLayoutAlign="end center" class="push-top">
         <span fxFlex></span>
         <span>
             <button mat-button class="text-upper" (click)="onCancel.emit()">Cancel</button>

@@ -59,8 +59,8 @@ export class FileUploadComponent implements OnChanges{
        this.filesChange.emit(event);
    }
 
-   getInputValue(): any {
-       return this.files instanceof FileList ? (this.files.length + ' files') : this.files.name
-   }
+    getInputValue(): any {
+        return this.files ? (this.files instanceof FileList ? (this.files.length + ' files') : this.files.name) : null;
+    }
 
 }
