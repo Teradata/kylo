@@ -133,6 +133,9 @@ export class PreviewDataSet {
         sparkDataSet.schema = this.schema;
         sparkDataSet.preview = this;
         sparkDataSet.previewPath = this.getPreviewItemPath();
+        if(this.dataSource && this.dataSource.connector && this.dataSource.connector.pluginId == "file-upload"){
+            sparkDataSet.isUpload = true;
+        }
         return sparkDataSet;
     }
 

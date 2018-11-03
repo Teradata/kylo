@@ -20,6 +20,7 @@ export class SparkDataSet {
     public preview?: PreviewDataSet;
     public previewPath?: string;
     public previewLoading?: boolean;
+    public isUpload:boolean = false;
 
     public constructor(init?: Partial<SparkDataSet>) {
         this.initialize();

@@ -599,7 +599,7 @@ export class DefineFeedService {
 
         // Ensure data sets are uploaded with no title. Titles must be unique if set.
         if (body.sourceDataSets) {
-            body.sourceDataSets.forEach(dataSet => dataSet.title = null);
+            body.sourceDataSets.filter(ds=> ds.isUpload == true).forEach(dataSet => dataSet.title = null);
         }
 
         //push the steps into the new uiState object on the feed to persist the step status
