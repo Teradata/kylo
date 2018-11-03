@@ -1083,6 +1083,8 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
             }
 
             if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                dto = new ControllerServiceDTO();
+                dto.setId(entity.getId());
                 dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
                 entity = client.controllerServices().update(dto);
             }
