@@ -170,7 +170,7 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
     }
 
     private String generateSystemName(String title) {
-        return title.replaceAll("\\s+", "_").toLowerCase();
+        return JcrUtil.toSystemName(title);
     }
 
     @Override

@@ -133,7 +133,7 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
     }
 
     private String generateSystemName(String title) {
-        return title.replaceAll("\\s+", "_").toLowerCase();
+        return JcrUtil.toSystemName(title);
     }
 
 }
