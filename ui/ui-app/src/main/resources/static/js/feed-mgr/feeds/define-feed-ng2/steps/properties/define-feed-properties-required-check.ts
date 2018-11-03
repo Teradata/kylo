@@ -12,7 +12,7 @@ export class DefineFeedPropertiesRequiredCheck extends FeedStepRequiredCheck {
     isRequired(feed:Feed, step:Step):boolean {
 
         if(feed && feed.userProperties) {
-            return feed.userProperties.find((prop:UserProperty) => prop.required == true) != undefined;
+            return feed.userProperties.find((prop:UserProperty) => prop.required == true && prop.locked == true) != undefined;
         }
         else {
             return step.required;

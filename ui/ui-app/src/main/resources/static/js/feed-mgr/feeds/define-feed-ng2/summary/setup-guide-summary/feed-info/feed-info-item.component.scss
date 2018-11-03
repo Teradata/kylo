@@ -1,5 +1,5 @@
 .info-item-text {
-  font-size: 14px;
+  font-size: 12px;
   padding-left: 16px;
 }
 
@@ -23,12 +23,12 @@
   font-size: 20px;
 }
 .info-item-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight:400;
 }
 
 .info-item-description {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   color: rgba(0, 0, 0, 0.38);
   padding-top: 0px;
@@ -44,4 +44,8 @@
 .info-item {
   min-height: 60px;
 
+}
+
+:host ::ng-deep mat-list.no-padding .mat-list-item .mat-list-item-content{
+  padding:0px !important;
 }

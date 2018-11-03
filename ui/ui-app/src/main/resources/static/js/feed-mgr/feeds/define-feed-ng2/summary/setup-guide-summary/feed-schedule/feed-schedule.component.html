@@ -25,7 +25,6 @@
     </div>
   </div>
 
-  <!-- TODO: Add feed versioning for preconditions-->
   <div *ngIf="isTriggerDriven()">
     <div fxLayout="column">
       <div class="md-subhead">Run Preconditions</div>
@@ -106,32 +105,25 @@
   </div>
 
   <div *ngIf="isTriggerDriven()">
-    <div layout="column">
-      <div class="md-subhead">Run Preconditions</div>
+    <div fxLayout="column">
+      <div>Run Preconditions</div>
       <div class="hint">Specify execution dependencies</div>
     </div>
-    <div layout="column" layout-align="start start" class="pad-top-sm pad-bottom-sm">
-      <div *ngIf="feed.schedule.preconditions != null && feed.schedule.preconditions.length > 0" fxFlexFill>
-        <mat-list>
-          <mat-list-item *ngFor="let rule of feed.schedule.preconditions; let index = index; let first = first; let last = last" fxFlexFill class="pad-top-sm pad-bottom-sm">
-            <div fxLayout="row" fxFlex>
-              <div fxLayout="column" fxFlex="75" class="md-list-item-text">
-                <span>{{rule.propertyValuesDisplayString}}</span>
-                <span class="hint">{{rule.name}}</span>
-              </div>
-              <span class="md-secondary">
-                <button mat-button (click)="showPreconditionDialog(index)">
-                  <ng-md-icon icon="edit"></ng-md-icon>
+    <div class="pad-bottom">
+      <ng-container *ngIf="preconditions.length > 0">
+        <mat-list dense class="no-padding pad-right">
+          <mat-list-item  *ngFor="let rule of preconditions; let index = index; let first = first; let last = last" >
+            <h3 matLine class="text-truncate" [matTooltip]="rule.propertyValuesDisplayString">{{rule.propertyValuesDisplayString}}</h3>
+            <p matLine>{{rule.name}}</p>
+             <button mat-icon-button (click)="showPreconditionDialog(index)">
+                  <mat-icon matListIcon color="accent">edit</mat-icon>
                 </button>
-              </span>
-            </div>
           </mat-list-item>
-          <mat-divider *ngIf="!last"></mat-divider>
         </mat-list>
-      </div>
-      <button mat-button color="primary" (click)="showPreconditionDialog()">
-        ADD PRECONDITION
+      </ng-container>
+      <input type="hidden" formControlName="preconditions"></div>
+      <button mat-button color="accent" (click)="showPreconditionDialog()">
+        Add Precondition
       </button>
-    </div>
   </div>
 </ng-container>

@@ -59,31 +59,31 @@ export class FeedStepBuilderUtil {
 
      defineTableFeedSteps() :Step[] {
 
-        return this.add(this.propertiesStep())
-            .add(this.permissionStep())
-            .add(this.sourceStep())
+        return this.add(this.sourceStep())
             .add(this.targetStep())
             .add(this.feedDetailsStep())
+            .add(this.propertiesStep())
+            .add(this.permissionStep())
             .build();
     }
 
      dataTransformationSteps() :Step[] {
 
-         return this.add(this.propertiesStep())
-             .add(this.permissionStep())
-             .add(this.sourceStep())
+         return this.add(this.sourceStep())
              .add(this.wranglerStep())
              .add(this.targetStep())
              .add(this.feedDetailsStep())
+             .add(this.propertiesStep())
+             .add(this.permissionStep())
              .build()
     }
 
 
      simpleFeedSteps() :Step[] {
          return this.add(this.sourceStep())
+             .add(this.feedDetailsStep())
              .add(this.propertiesStep())
              .add(this.permissionStep())
-             .add(this.feedDetailsStep())
              .build()
     }
 

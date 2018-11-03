@@ -411,15 +411,16 @@
           <mat-card-title translate="">views.define-feed-general-info.AdditionalFeedOptions</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div fxLayout="column" *ngIf="allowSkipHeaderOption()" class="pad-bottom">
+          <div fxLayout="column" class="pad-bottom">
             <mat-checkbox [(ngModel)]="feed.options.skipHeader" [disabled]="feed.readonly" [ngModelOptions]="{standalone: true}" >{{"views.feed-data-policies.Shr" | translate}}</mat-checkbox>
           </div>
 
-          <div>
+          <div fxLayout="row">
               <mat-form-field class="mat-form-field-width" fxFlex>
-                <textarea matInput placeholder="Raw Storage Format"  [ngModelOptions]="{standalone: true}" [(ngModel)]="feed.table.feedFormat" [disabled]="feed.readonly"></textarea>
+                <textarea #storageFormat matInput placeholder="Raw Storage Format" [disabled]="true"  [ngModelOptions]="{standalone: true}" [(ngModel)]="feed.table.feedFormat" [disabled]="feed.readonly"></textarea>
                 <mat-hint>Specify the storage format clause for feed Hive table</mat-hint>
               </mat-form-field>
+            <button mat-icon-button (click)="storageFormat.disabled = false"><mat-icon color="accent">edit</mat-icon></button>
           </div>
         </mat-card-content>
       </mat-card>

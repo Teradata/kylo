@@ -255,7 +255,7 @@ export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
             if (property.selectableValues.length > 0) {
                 items = property.selectableValues;
             }
-            formGroupBuilder.chips().update(configBuilder).setModelValueProperty("values").setItems(items)
+            formGroupBuilder.chips().update(configBuilder).setModelValueProperty("values").setItems(items).setValue(property.values).setStacked(true);
             added = true
         }
         else if (this.isCheckbox(property)) {

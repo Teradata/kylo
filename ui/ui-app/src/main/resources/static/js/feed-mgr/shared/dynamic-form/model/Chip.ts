@@ -1,18 +1,21 @@
 import {FieldConfig} from "./FieldConfig";
-import * as angular from 'angular';
+import * as _ from "underscore"
 
 export class Chip extends FieldConfig<string> {
     static CONTROL_TYPE = "chips"
     controlType = Chip.CONTROL_TYPE;
     items:any[] = [];
+    stacked:boolean = false;
     constructor(options: {} = {}) {
         super(options);
         this.items = options['items'];
-        if(options['values'] !== undefined){
+        if(options['values'] !== undefined && _.isArray(options['values'])){
             this.selectedItems = options['values'].map((item:any) => {
                 return item.label;
             });
+            this.filteredItems = this.selectedItems;
         }
+        this.stacked = options['stacked'] || false;
     }
 
     disabled: boolean = false;
@@ -30,7 +33,7 @@ export class Chip extends FieldConfig<string> {
     filterItems(value: string): void {
         this.filteredItems = this.items.filter((item: any) => {
             if (value) {
-                return angular.lowercase(item.value).indexOf(value.toLowerCase()) > -1;
+                return item.value && (item.value as string).toLowerCase().indexOf(value.toLowerCase()) > -1;
             } else {
                 return false;
             }

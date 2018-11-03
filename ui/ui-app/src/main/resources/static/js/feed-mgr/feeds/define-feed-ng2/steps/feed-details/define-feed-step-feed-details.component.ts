@@ -55,11 +55,11 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
     @ViewChild("feedNifiPropertiesComponent")
     feedPropertyNiFiComponent:FeedNifiPropertiesComponent
 
-    private loading: boolean;
+    private loading: boolean = true;
 
     public form :FormGroup;
 
-    public displayEditActions:boolean = true;
+    public displayEditActions:boolean = false;
 
     public noPropertiesExist:boolean = false;
 
@@ -68,6 +68,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
                   dialogService: TdDialogService, feedSideNavService:FeedSideNavService) {
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.form = new FormGroup({});
+
 
     }
 
@@ -101,6 +102,13 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
             //re validate
             this.step.validate(this.feed);
             this.defineFeedService.updateStepState(this.feed, this.step);
+        }
+    }
+
+    onNiFiPropertiesFormUpdated(){
+        if(this.loading){
+            this.loading = false;
+            this.displayEditActions = true;
         }
     }
 

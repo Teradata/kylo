@@ -67,8 +67,16 @@ export class CloneUtil {
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
     
-    static shallowCopy<T>(obj:T) : T {
-        return Object.assign({},obj);
+    static shallowCopy<T>(obj:T) : any {
+        if (obj instanceof Array) {
+           let newObj = [];
+            obj.forEach((item:any,i:number) => newObj[i] = CloneUtil.shallowCopy(obj[i]));
+            return newObj;
+        }
+        else {
+            return Object.assign({}, obj);
+
+        }
     }
 
     static deepCopy<T>(obj: T, objectTracker?:CloneObjectTracker): T {

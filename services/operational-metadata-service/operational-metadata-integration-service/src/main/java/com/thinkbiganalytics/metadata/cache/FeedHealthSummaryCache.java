@@ -289,7 +289,7 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
 
             Map<String, FeedSummary> latestFeeds = new HashMap<>();
             //NOTE it could also populate the last job execution time since the above query gets a union of the running jobs along with the latest finished jobs by feed
-            list.stream()
+            list.stream().filter(f -> ((FeedSummary) f).getFeedType().equals(OpsManagerFeed.FeedType.FEED))
                 .sorted(byRunningStatus.thenComparing(byStartTime)).forEach(f -> {
                 String feedId = f.getFeedId().toString();
                 if (!latestFeeds.containsKey(feedId)) {
@@ -298,7 +298,7 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
             });
             //add in initial feeds
             List<? extends OpsManagerFeed> allFeeds = opsManagerFeedProvider.findAllWithoutAcl();
-            allFeeds.stream().filter(f -> !latestFeeds.containsKey(f.getId().toString())).forEach(f -> {
+            allFeeds.stream().filter(f -> !latestFeeds.containsKey(f.getId().toString()) && ((OpsManagerFeed) f).getFeedType().equals(OpsManagerFeed.FeedType.FEED)).forEach(f -> {
                                                                                         JpaFeedSummary s = new JpaFeedSummary();
                                                                                         s.setStream(f.isStream());
                                                                                         s.setFeedId(UUID.fromString(f.getId().toString()));

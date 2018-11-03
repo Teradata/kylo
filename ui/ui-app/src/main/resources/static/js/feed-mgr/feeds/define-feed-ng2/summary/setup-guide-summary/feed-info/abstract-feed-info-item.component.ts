@@ -19,6 +19,8 @@ export abstract class AbstractFeedInfoItemComponent {
 
     readonlySchedule: string = '';
 
+    valid:boolean = true;
+
     formGroup: FormGroup;
 
     protected constructor(protected defineFeedService: DefineFeedService, protected feedItemInfoService: FeedItemInfoService, private feedLoadingService: FeedLoadingService) {

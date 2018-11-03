@@ -1,10 +1,11 @@
-import {Component, Inject, Injector} from "@angular/core";
+import {Component, EventEmitter, Inject, Injector, Output} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Feed} from "../../model/feed/feed.model";
 import {FormGroup} from "@angular/forms";
 import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
 import * as angular from 'angular';
 import * as _ from "underscore";
+import {CloneUtil} from "../../../common/utils/clone-util";
 
 enum EditMode { NEW=1, EDIT=2 }
 
@@ -27,18 +28,27 @@ export class FeedPreconditionDialogComponent{
     title: string;
     private edit: boolean = false;
 
+    originalPreconditions :any[];
+
+    @Output()
+    preconditionsChange = new EventEmitter<any[]>();
+
     constructor(public dialogRef: MatDialogRef<FeedPreconditionDialogComponent>,
                 private policyInputFormService :PolicyInputFormService,
                 private injector: Injector,
                 @Inject(MAT_DIALOG_DATA) public data: any){
         this.feed = data.feed;
+
+
+        let preconditions = data.preconditions || this.feed.schedule.preconditions;
         this.editIndex = data.itemIndex;
         this.edit = this.editIndex !== undefined && this.editIndex !== null;
         this.title = "Add precondition";
 
         let feedService = injector.get("FeedService");
         let feed = this.policyInputFormService.currentFeedValue(this.feed);
-        this.preconditions = this.feed.schedule['preconditions'];
+        this.originalPreconditions = CloneUtil.shallowCopy(preconditions);
+        this.preconditions =  CloneUtil.shallowCopy(preconditions);
 
         feedService.getPossibleFeedPreconditions().then((response:any) => {
             this.options = this.policyInputFormService.groupPolicyOptions(response.data, feed);
@@ -46,12 +56,9 @@ export class FeedPreconditionDialogComponent{
                 this.title = "Edit precondition";
                 this.editMode = EditMode.EDIT;
                 this.editPrecondition = this.preconditions[this.editIndex];
-                let properties = angular.copy(this.editPrecondition.properties);
                 this.ruleTypesAvailable();
-                this.onRuleTypeChange('');
-                this.editPrecondition.groups[0].properties = properties;
+                this.onRuleTypeChange(this.editPrecondition);
             }
-
 
         });
         this.preconditionForm.statusChanges.debounceTime(10).subscribe(status => {
@@ -70,7 +77,7 @@ export class FeedPreconditionDialogComponent{
 
     cancel() {
         this.cancelEdit();
-        this.dialogRef.close();
+        this.dialogRef.close(this.originalPreconditions);
     }
 
     /**
@@ -93,7 +100,7 @@ export class FeedPreconditionDialogComponent{
 
             this.buildDisplayString();
             this.pendingEdits = true;
-            this.feed.schedule['preconditions'] = this.preconditions;
+
             this.cancelEdit();
         }
     }
@@ -126,7 +133,7 @@ export class FeedPreconditionDialogComponent{
     }
 
     private validateForm(){
-        return true;
+       return true;
     }
 
     deletePrecondition($index?: number) {
@@ -137,13 +144,15 @@ export class FeedPreconditionDialogComponent{
         if (this.preconditions != null && $index != null) {
             this.preconditions.splice($index, 1);
         }
+        console.log("deleted precondition ",$index, this.preconditions)
         this.pendingEdits = true;
+        this.preconditionsChange.emit(this.preconditions)
         this.cancelEdit();
-        this.close('deleted');
+        this.close();
     }
 
-    close(msg?: string) {
-        this.dialogRef.close(msg);
+    close() {
+        this.dialogRef.close(this.preconditions);
     }
 
     /**
@@ -156,7 +165,8 @@ export class FeedPreconditionDialogComponent{
 
     done() {
         this.addPrecondition();
-        this.close('done');
+        this.preconditionsChange.emit(this.preconditions)
+        this.close();
     }
 
     ruleTypesAvailable() {
@@ -176,6 +186,10 @@ export class FeedPreconditionDialogComponent{
             var rule = angular.copy(this.ruleType);
             rule.groups = this.policyInputFormService.groupProperties(rule);
             this.policyInputFormService.updatePropertyIndex(rule);
+
+            if(selectedValue){
+                rule.groups = this.policyInputFormService.groupProperties(selectedValue);
+            }
             //make all rules editable
             rule.editable = true;
             this.editPrecondition = rule;

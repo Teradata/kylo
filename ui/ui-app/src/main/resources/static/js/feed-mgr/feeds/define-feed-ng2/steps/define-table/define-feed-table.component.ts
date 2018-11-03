@@ -399,23 +399,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tableFormControls.removePartitionFieldFormControls(partitions[0]);
     };
 
-    /**
-     * Should the skip header row option be shown?
-     * @returns {boolean}
-     */
-    allowSkipHeaderOption(): boolean {
-        return true;
-        /*
-        if(this.feed && this.feed.sampleDataSet && this.feed.sampleDataSet.preview && this.feed.sampleDataSet.preview instanceof  PreviewFileDataSet) {
-            return (<PreviewFileDataSet> this.feed.sampleDataSet.preview).schemaParser.allowSkipHeader;
-        }
-        else {
-            return false;
-        }
-        */
-    }
-
-
     onIndexCheckAllChange() : boolean {
         this.indexCheckAll.toggleAll();
         let checked = this.indexCheckAll.isChecked;

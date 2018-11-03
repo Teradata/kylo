@@ -17,7 +17,7 @@ import {TableColumn} from "./model/table-view-model";
           (sortChange)="sort($event)"
           [style.height.px]="325" class="dataset-simple-table">      
       </td-data-table>   
-    <div  *ngIf="filteredData.length !== 0" fxLayout="row" fxLayoutAlign="center center">
+    <div  *ngIf="filteredData.length == 0" fxLayout="row" fxLayoutAlign="center center">
       <h3>No results to display.</h3>
     </div>`
 })
