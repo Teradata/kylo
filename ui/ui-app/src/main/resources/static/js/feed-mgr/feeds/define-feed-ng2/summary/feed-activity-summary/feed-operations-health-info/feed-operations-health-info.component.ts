@@ -110,7 +110,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     exportFeed() {
         //todo start progress
         this.exportInProgress = true;
-            this.snackBar.open("Exporting the feed", null, {
+            this.snackBar.open("Feed export is processing. Notification will appear when complete.", null, {
                 duration: 3000,
             });
         this.http.get(this.exportFeedUrl,  {responseType:"arraybuffer"})
@@ -188,10 +188,6 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
                 })
             });
         }
-    }
-
-    exportFeed() {
-
     }
 
     startFeed() {
