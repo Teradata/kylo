@@ -11,6 +11,9 @@ import {Feed, FeedAccessControl} from "../../../../../model/feed/feed.model";
 import {DefineFeedService} from "../../../services/define-feed.service";
 import {FeedUploadFileDialogComponent, FeedUploadFileDialogComponentData} from "../feed-upload-file-dialog/feed-upload-file-dialog.component";
 import {RestUrlService} from "../../../../../services/RestUrlService";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs/Observable";
+import {RequestOptions, ResponseContentType} from "@angular/http";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -41,7 +44,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     refreshTime: number = 5000;
 
-    constructor(private opsManagerFeedService: OpsManagerFeedService,
+    constructor(private http:HttpClient,private opsManagerFeedService: OpsManagerFeedService,
                 @Inject("BroadcastService") private broadcastService: BroadcastService,
                 private _dialogService: TdDialogService,
                 private defineFeedService: DefineFeedService,
@@ -97,6 +100,34 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
             let config = {data: new FeedUploadFileDialogComponentData(this.feed.id), width: "500px"};
             this._dialogService.open(FeedUploadFileDialogComponent, config);
         }
+    }
+
+    exportFeed() {
+        //todo start progress
+        this.http.get(this.exportFeedUrl,  {responseType:"arraybuffer"})
+            .catch(errorResponse => Observable.throw(errorResponse.json()))
+            .map((response) => {
+                return response;
+            }).subscribe(data => this.getZipFile(data)),
+            error => console.log("Error downloading the file."),
+            () => console.log('Completed file download.');
+
+    }
+
+    getZipFile(data: any){
+        var a: any = document.createElement("a");
+        document.body.appendChild(a);
+
+        a.style = "display: none";
+        var blob = new Blob([data], { type: 'application/zip' });
+
+        var url= window.URL.createObjectURL(blob);
+
+        a.href = url;
+        a.download = this.feed.systemFeedName+".zip";
+        a.click();
+        window.URL.revokeObjectURL(url);
+
     }
 
     initMenu() {
