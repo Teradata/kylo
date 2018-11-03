@@ -504,13 +504,21 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
                         .map(version -> feedModelTransform.domainToFeedVersion(version))
                         .map(version -> {
-                            removeDataSources((FeedMetadata) version.getEntity());
+                            FeedMetadata feedMetadata = (FeedMetadata) version.getEntity();
+                            removeDataSources(feedMetadata);
+                            feedMetadata = registeredTemplateService.mergeTemplatePropertiesWithFeed(feedMetadata);
+                            removeUneditableProperties(feedMetadata);
+                            version.setEntity(feedMetadata);
                             return version;
                         });
                     Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
                         .map(version -> feedModelTransform.domainToFeedVersion(version))
                         .map(version -> {
-                            removeDataSources((FeedMetadata) version.getEntity());
+                            FeedMetadata feedMetadata = (FeedMetadata) version.getEntity();
+                            removeDataSources(feedMetadata);
+                            feedMetadata = registeredTemplateService.mergeTemplatePropertiesWithFeed(feedMetadata);
+                            removeUneditableProperties(feedMetadata);
+                            version.setEntity(feedMetadata);
                             return version;
                         });
 
@@ -1809,5 +1817,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (feed != null && feed.getSourceDataSets() != null) {
             feed.getSourceDataSets().forEach(dataSet -> dataSet.setDataSource(null));
         }
+    }
+
+    /**
+     * Remove properties that are not user editable from feed metadata
+     */
+    private void removeUneditableProperties(FeedMetadata feedMetadata){
+        List<NifiProperty> editableProperties = feedMetadata.getProperties().stream()
+                                                    .filter(property -> property.isUserEditable())
+                                                    .collect(Collectors.toList());
+        feedMetadata.setProperties(editableProperties);
     }
 }

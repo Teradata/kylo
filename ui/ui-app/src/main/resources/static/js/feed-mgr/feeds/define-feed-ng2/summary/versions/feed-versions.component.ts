@@ -39,6 +39,7 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
     leftVersion: any;
     rightVersion: any;
     loading: any;
+    leftFeed: any;
     rightFeed: any;
     userProperties: any[];
     isClustered: boolean = true;
@@ -46,6 +47,7 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
     toolTipPosition: string = 'left';
     securityGroupsEnabled: boolean = false;
     fieldNameMap: any;
+    propertiesMap: any[];
 
     availableDomainTypes: Array<DomainType> = [];
 
@@ -97,16 +99,15 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
     changeRightVersion(version: any) {
         this.rightVersion = version;
         this.loading = true;
+        this.propertiesMap = [];
 
-        let processorPropertiesObservable = this.populateFeedProperties(this.feed);
         let diffObservable = fromPromise(this.feedService.diffFeedVersions(this.feed.id, this.rightVersion.id, this.leftVersion.id));
-        let versionedFeedObservable = fromPromise(this.feedService.getFeedVersion(this.feed.id, this.rightVersion.id));
         let nifiClusterStatusObservable = this.http.get(this.restUrlService.NIFI_STATUS);
         let securityGroupsEnabledObservable = this.http.get(this.restUrlService.HADOOP_AUTHORIZATATION_BASE_URL + "/enabled");
         let domainTypesObservable = fromPromise(this.domainTypesService.findAll());
 
-        forkJoin([processorPropertiesObservable, diffObservable, versionedFeedObservable, nifiClusterStatusObservable, securityGroupsEnabledObservable, domainTypesObservable])
-            .subscribe(([processorPropertiesResult, diffResult, versionedFeedResult, nifiClusterStatusResult, securityGroupsEnabledResult, domainTypesResult]) => {
+        forkJoin([diffObservable, nifiClusterStatusObservable, securityGroupsEnabledObservable, domainTypesObservable])
+            .subscribe(([diffResult, nifiClusterStatusResult, securityGroupsEnabledResult, domainTypesResult]) => {
 
                 this.availableDomainTypes = domainTypesResult;
                 domainTypesResult.forEach((domainType: any) => {
@@ -115,18 +116,6 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
                         domainType.field.precisionScale = null;
                     }
                 });
-
-                //processorPropertiesResult is an updated feed response
-                if (processorPropertiesResult == undefined) {
-                    console.log("Empty response obtained, was expecting updated feed!");
-                } else {
-                    this.feed.properties = processorPropertiesResult.properties;
-                    this.feed.inputProcessors = processorPropertiesResult.inputProcessors;
-                    this.feed.nonInputProcessors = processorPropertiesResult.nonInputProcessors;
-                    this.feed.registeredTemplate = processorPropertiesResult.registeredTemplate;
-                    this.feedNifiPropertiesService.setupFeedProperties(this.feed, this.feed.registeredTemplate, 'edit');
-
-                }
 
                 if (!_.isUndefined(securityGroupsEnabledResult)
                     && !_.isUndefined(securityGroupsEnabledResult.data)
@@ -142,7 +131,10 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
                     this.feedService.versionFeedModelDiff[patch.path] = patch;
                 });
 
-                this.rightFeed = versionedFeedResult.entity;
+                this.leftFeed = diffResult.fromVersion.entity;
+                this.rightFeed = diffResult.toVersion.entity;
+                this.populatePropertiesMap();
+
                 this.feedService.versionFeedModel = this.rightFeed;
                 this.feedService.versionFeedModel.version = this.rightVersion;
 
@@ -205,7 +197,7 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
                 });
 
                 this.loading = false;
-            }, (([processorPropertiesError, diffError, versionedFeedError, nifiClusterStatusError, securityGroupsEnabledError, domainTypesError]) => {
+            }, (([diffError, nifiClusterStatusError, securityGroupsEnabledError, domainTypesError]) => {
                 console.log("Error obtaining feed version differences");
                 this.loading = false;
             }));
@@ -256,18 +248,8 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
     }
 
 
-    populateFeedProperties(feed: Feed) {
-        let feedCopy = feed.copy(false);
-        delete feedCopy.steps;
-        return this.http.post<Feed>(RestUrlConstants.MERGE_FEED_WITH_TEMPLATE(this.feed.id), feedCopy, {headers: {'Content-Type': 'application/json; charset=UTF-8'}});
-    }
-
-    addStringsAsInts(numStr1: string, numStr2: string): number {
-        return parseInt(numStr1) + parseInt(numStr2);
-    }
-
     mergeStrategyDisplayName(feed: any): any {
-        return feed.table.targetMergeStrategy;
+        return this.leftFeed.table.targetMergeStrategy;
     }
 
     populateFieldNameMap() {
@@ -297,5 +279,60 @@ export class FeedVersionsComponent extends AbstractLoadFeedComponent implements 
             return this.feedService.versionFeedModel.table.fieldPolicies[policyIndex];
         }
         return '';
+    }
+
+    getInputProperties(inputProcessorName: any, inputProcessorType: any) {
+        return this.propertiesMap.filter(p => ((p.processorName == inputProcessorName) && (p.processorType == inputProcessorType)));
+    }
+
+    getNonInputProperties(inputProcessorName: any, inputProcessorType: any) {
+        return this.propertiesMap.filter(p => ((p.processorName != inputProcessorName) || (p.processorType != inputProcessorType)));
+    }
+
+    populatePropertiesMap() {
+        _.each(this.leftFeed.properties, (property: any) => {
+            let item: any = {};
+            item.nameKey = property.nameKey;
+            item.key = property.key;
+            item.processorName = property.processorName;
+            item.processorType = property.processorType;
+            item.processGroupName = property.processGroupName;
+            item.sensitive = property.sensitive;
+            item.leftValue = property.value;
+            item.rightValue = null;
+            this.propertiesMap.push(item);
+        });
+
+        _.each(this.rightFeed.properties, (property: any) => {
+            let existingItem:any = this.propertiesMap.find(item => item.nameKey == property.nameKey);
+            if (existingItem == null) {
+                let item: any = {};
+                item.nameKey = property.nameKey;
+                item.key = property.key;
+                item.processorName = property.processorName;
+                item.processorType = property.processorType;
+                item.processGroupName = property.processGroupName;
+                item.sensitive = property.sensitive;
+                item.leftValue = null;
+                item.rightValue = property.value;
+                this.propertiesMap.push(item);
+            } else {
+                existingItem.rightValue = property.value;
+            }
+        });
+
+        _.each(this.propertiesMap, (propertyMapItem) => {
+           if (((propertyMapItem.leftValue == null) && (propertyMapItem.rightValue == null)) || (propertyMapItem.leftValue == propertyMapItem.rightValue)) {
+               propertyMapItem.op = "no-change";
+           } else if (((propertyMapItem.leftValue == null) || (propertyMapItem.leftValue == ""))
+               && ((propertyMapItem.rightValue != null) || (propertyMapItem.rightValue != ""))) {
+               propertyMapItem.op = "remove";
+           } else if (((propertyMapItem.leftValue != null) || (propertyMapItem.leftValue != ""))
+               && ((propertyMapItem.rightValue == null) || (propertyMapItem.rightValue == ""))) {
+               propertyMapItem.op = "add";
+           } else if ((propertyMapItem.leftValue != propertyMapItem.rightValue)) {
+               propertyMapItem.op = "replace";
+           }
+        });
     }
 }
