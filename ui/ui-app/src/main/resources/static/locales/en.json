@@ -90,7 +90,7 @@
     "views.define-feed-general-info.AFeedWith": "A feed with this name already exists.",
     "views.define-feed-general-info.DuplicateFeedForCategory": "A feed with system name [{{feedSystemName}}] already exists in category [{{categorySystemName}}]",
     "views.define-feed-general-info.FeedOptions": "Feed Options",
-    "views.define-feed-general-info.AdditionalFeedOptions": "Additional feed options",
+    "views.define-feed-general-info.AdditionalFeedOptions": "Feed Options",
     "views.step-buttons.Continue-btn": "Continue to Step",
     "views.step-buttons.Cancel-btn": "Cancel",
     "views.step-buttons.Previous-btn": "Previous Step",
