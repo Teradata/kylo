@@ -632,7 +632,7 @@ public class FeedModelTransform {
                                                                              fromVer.getComment(), 
                                                                              fromVer.getEntityId());
             
-            return new EntityVersionDifference(fromNoContent, toVer, diff);
+            return new EntityVersionDifference(fromVer, toVer, diff);
         } catch (IOException e) {
             throw new ModelTransformException("Failed to generate entity difference between entity versions " + fromVer.getId() + " and " + toVer.getId());
         }
