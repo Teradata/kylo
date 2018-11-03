@@ -843,6 +843,9 @@ export class Feed  implements KyloObject{
             let table = previewDataSet instanceof  PreviewHiveDataSet || previewDataSet instanceof PreviewJdbcDataSet;
             if(sampleFile) {
                 this.table.method = "SAMPLE_FILE";
+                if(!(previewDataSet as PreviewFileDataSet).schemaParser.allowSkipHeader) {
+                    this.options.skipHeader = false
+                }
             }
             else  if(table) {
                 this.table.method = "EXISTING_TABLE";
