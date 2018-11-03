@@ -1,7 +1,7 @@
 <define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="true"  (cancelEdit)="onCancelEdit()" (saved)="onSave()" [displayEditActions]="displayEditActions">
   <feed-step-readonly-content>
     <form [formGroup]="form">
-      <feed-nifi-properties [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="feed.readonly"  (processorsChange)="onProcessorsChange($event)"></feed-nifi-properties>
+      <feed-nifi-properties [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="feed.readonly"  (processorsChange)="onProcessorsChange($event)" (updatedFormControls)="onNiFiPropertiesFormUpdated($event)" ></feed-nifi-properties>
     </form>
 
     <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
@@ -13,7 +13,7 @@
   </feed-step-readonly-content>
   <feed-step-edit-content>
     <form [formGroup]="form">
-      <feed-nifi-properties #feedNifiPropertiesComponent [formGroup]="form" [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="!feed.readonly" (processorsChange)="onProcessorsChange($event)" ></feed-nifi-properties>
+      <feed-nifi-properties #feedNifiPropertiesComponent [formGroup]="form" [feed]="feed" [step]="step"  mode="ADDITIONAL" *ngIf="!feed.readonly" (processorsChange)="onProcessorsChange($event)" (updatedFormControls)="onNiFiPropertiesFormUpdated($event)" ></feed-nifi-properties>
     </form>
     <div *ngIf="noPropertiesExist" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
       <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
