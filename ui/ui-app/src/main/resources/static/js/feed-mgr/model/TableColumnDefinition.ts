@@ -189,6 +189,7 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
             this.dataTypeDisplay = this.getDataTypeDisplay();
             this.addHistoryItem();
         }
+        this.replaceNameSpaces();
     }
 
     deleteColumn() {
