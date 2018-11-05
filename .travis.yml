@@ -28,10 +28,9 @@ script:
         -Dsonar.github.repository=${TRAVIS_REPO_SLUG} \
         -Dsonar.github.oauth=${GITHUB_TOKEN} \
         -Dsonar.host.url=https://sonarqube.com/ \
-        2>&1 \
-      | grep ^\\[
+        2>&1
     else
-      mvn clean install -B -V 2>&1 | grep ^\\[
+      mvn clean install -B -V 2>&1
     fi
 
 # Cache .m2 directory for next run
