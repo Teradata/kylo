@@ -1,0 +1,133 @@
+<td-layout-nav color="none">
+<div td-toolbar-content  >
+  <div translate>Sla.EmailTemplates.Title</div>
+  <span fxFlex="100%"></span>
+  </div>
+<div fxLayout="row" fxLayoutAlign="center start">
+  <form #form="ngForm" *ngIf="template != null">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title translate>Sla.EmailTemplates.TemplateTitle</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+
+
+      <div *ngIf="availableSlaActions.length ==0" class="pad-bottom" fxLayout="column">
+        <div fxLayout="row" fxLayoutAlign="start start">
+            <span>
+              <ng-md-icon icon="warning" class="warn"></ng-md-icon>
+            </span>
+          <span class="pad-left mat-title" translate>Sla.EmailTemplates.NoTemplateWarning</span>
+        </div>
+        <span class="hint" translate>Sla.EmailTemplates.NoTemplateWarningHint</span>
+      </div>
+
+      <ng-container *ngIf="template">
+
+
+        <div *ngIf="template != null" fxLayout="column">
+          <mat-form-field>
+            <input matInput #templateName  name="name" [(ngModel)]="template.name" placeholder="Name" required>
+            <mat-error *ngIf="templateName.invalid" translate>Sla.EmailTemplates.NameRequired</mat-error>
+          </mat-form-field>
+
+          <mat-form-field>
+            <input matInput #templateSubject  name="subject" [(ngModel)]="template.subject" placeholder="Email subject" required>
+            <mat-error *ngIf="templateSubject.invalid" translate>Sla.EmailTemplates.SubjectRequired</mat-error>
+            <mat-hint translate>Sla.EmailTemplates.SubjectHint</mat-hint>
+          </mat-form-field>
+
+          <div class="push-top">
+            <span translate>Sla.EmailTemplates.TemplateBody</span>
+          </div>
+          <codemirror [config]="codemirrorOptions" [(ngModel)]="template.template" [ngModelOptions]="{standalone: true}"  class="pad-top"></codemirror>
+
+        </div>
+
+        <div fxLayout="row" fxLayoutAlign="space-between start"  class="pad-top">
+
+          <div fxLayout="column">
+            <mat-checkbox  [(ngModel)]="template.enabled"  [ngModelOptions]="{standalone: true}" labelPosition="before">{{'Sla.EmailTemplates.Active' | translate}}
+            </mat-checkbox>
+            <mat-hint translate>Sla.EmailTemplates.EnabledHint</mat-hint>
+          </div>
+          <button  mat-raised-button color="accent" (click)="exampleTemplate()" *ngIf="template.template.length ==0">{{'Sla.EmailTemplates.LoadExample' | translate}}</button>
+        </div>
+
+        <div fxLayout="column" fxLayoutAlign="start" class="pad-top-sm pad-bottom">
+        <mat-checkbox [(ngModel)]="template.default"  [ngModelOptions]="{standalone: true}" labelPosition="before" >{{'Sla.EmailTemplates.DefaultTemplate' |translate}}
+        </mat-checkbox>
+        <mat-hint translate>Sla.EmailTemplates.DefaultHint</mat-hint>
+        </div>
+
+        <mat-divider></mat-divider>
+        <div fxLayout="row" class="pad-top">
+
+          <div fxLayout="column" fxLayoutAlign="start start"  fxFlex="50">
+            <h4 class="mat-subheading-1" translate>Sla.EmailTemplates.PreviewTitle</h4>
+            <p class="hint pull-top"translate>Sla.EmailTemplates.PreviewTitleHint</p>
+            <div>
+              <button matTooltip="{{'Sla.EmailTemplates.PreviewTooltip' | translate}}" color="accent" mat-button (click)="validate()">
+                <mat-icon>preview</mat-icon>
+                {{'Sla.EmailTemplates.Preview' | translate}}</button>
+              <span fxFlex></span>
+            </div>
+          </div>
+
+          <div fxLayout="column" fxLayoutAlign="start start"  fxFlex="50">
+            <h4 class="mat-subheading-1" translate>Sla.EmailTemplates.TestEmailTitle</h4>
+            <p class="hint pull-top" translate >Sla.EmailTemplates.TestEmailTitleHint</p>
+
+            <div fxLayout="row" fxLayoutAlign="start start">
+              <mat-form-field>
+                <input matInput #testEmailAddress required  [ngModelOptions]="{standalone: true}" [(ngModel)]="emailAddress" placeholder="Test email address"  type="email">
+              </mat-form-field>
+              <button mat-button (click)="sendTestEmail()" color="accent" [disabled]="!allowEdit || (emailAddress == null || emailAddress == '')">
+                <mat-icon>email</mat-icon>
+                {{'Sla.EmailTemplates.SendTest' | translate}}</button>
+            </div>
+
+          </div>
+
+
+        </div>
+      </ng-container>
+    <mat-divider></mat-divider>
+    </mat-card-content>
+    <mat-card-actions>
+      <div fxLayoutAlign="start" fxLayout="row" fxFlex>
+      <button mat-button (click)="cancel()">{{'Sla.EmailTemplates.Cancel' | translate}}</button>
+      <span fxFlex></span>
+      <button mat-raised-button (click)="saveTemplate()" color="accent" [disabled]="!allowEdit || form == undefined || (form.invalid)">{{'Sla.EmailTemplates.Save' | translate}}</button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+  </form>
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title translate>Sla.EmailTemplates.TemplateVariables</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-list dense>
+        <mat-list-item *ngFor="let item of templateVariables; let last=last">
+          <h4 matLine>{{item.item}}</h4>
+          <p matLine>{{item.desc}}</p>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </mat-list>
+
+      <div class="mat-subheading-1" translate>Sla.EmailTemplates.RelatedSlas</div>
+      <mat-list-item *ngFor="let item of relatedSlas; let last=last" (click)="navigateToSla(item.slaId)">
+        <h4 matLine>{{item.name}}</h4>
+        <p matLine>{{item.description}}</p>
+      </mat-list-item>
+      <div *ngIf="relatedSlas.length ==0">
+        <span translate>Sla.EmailTemplates.NoRelatedSlas</span>
+      </div>
+
+    </mat-card-content>
+  </mat-card>
+</div>
+
+</td-layout-nav>

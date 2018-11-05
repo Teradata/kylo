@@ -337,7 +337,7 @@ export default class SideNav implements ng.IComponentController {
         links.push({sref: "registered-templates",type:'link', icon: "layers", text: this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
         links.push({sref: "users",type:'link', icon: "account_box", text: this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS});
         links.push({sref: "groups",type:'link', icon: "group", text: this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
-        links.push({sref: "sla-email-templates",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE});
+        links.push({sref: "sla-email-template",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE});
         links.push({sref: "repository", type: "link", icon: "local_grocery_store", text: this.$filter('translate')('views.main.repository'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
         this.addExtensionLinks(this.MENU_KEY.ADMIN, links);
             let menu = ({type:'toggle', 

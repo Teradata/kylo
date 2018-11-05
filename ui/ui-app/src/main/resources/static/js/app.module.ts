@@ -99,6 +99,11 @@ const translateConfig: TranslateModuleConfig = {
                     name: 'sla.**',
                     url: '/sla',
                     loadChildren: './feed-mgr/sla/sla.module#SlaRouterModule'
+                },
+                {
+                    name: 'sla-email-template.**',
+                    url: '/sla-email-template',
+                    loadChildren: './feed-mgr/sla/email-template/sla-email-template.module#SlaEmailTemplatesRouterModule'
                 }
             ]
         }),
