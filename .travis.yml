@@ -11,6 +11,7 @@ sudo: required
 env:
   global:
   - MAVEN_SKIP_RC=true
+  - NODE_OPTIONS="--max-old-space-size=4096"
 
 addons:
   apt:
@@ -20,6 +21,7 @@ addons:
 install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
 script:
   - |
+    set -o pipefail
     if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ -n "${GITHUB_TOKEN:-}" ]; then
       mvn clean install sonar:sonar -B -V \
         -Dsonar.exclusions=**/SparkInterpreterBuilder211.java \
@@ -28,9 +30,10 @@ script:
         -Dsonar.github.repository=${TRAVIS_REPO_SLUG} \
         -Dsonar.github.oauth=${GITHUB_TOKEN} \
         -Dsonar.host.url=https://sonarqube.com/ \
-        2>&1
+        2>&1 \
+      | grep ^\\[
     else
-      mvn clean install -B -V 2>&1
+      mvn clean install -B -V 2>&1 | grep ^\\[
     fi
 
 # Cache .m2 directory for next run
