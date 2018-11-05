@@ -299,6 +299,7 @@ const webpackConfig = (env) => {
                 deleteOriginalAssets: false //false, otherwise resources are not found even though gzipped resources with the same name exist
             }),
             new UglifyJSPlugin({
+                exclude: /\.min\.js$/, //only available in v2.0+
                 cache: path.resolve(__dirname, './target/cache/uglifyjs-plugin'),
                 parallel: require('os').cpus().length,
                 sourceMap: false,
