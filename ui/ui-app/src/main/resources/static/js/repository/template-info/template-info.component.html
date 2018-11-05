@@ -61,21 +61,21 @@
       <mat-divider inset="false"></mat-divider>
       <mat-card-actions>
         <div fxLayout="row" fxLayoutAlign="end center">
-          <button mat-button color="primary" *ngIf="allowEdit" (click)="editTemplate()">
+          <button mat-button color="primary" class="text-upper" *ngIf="allowEdit" (click)="editTemplate()">
             <ng-md-icon icon="edit" size="20" class="tc-accent"></ng-md-icon>
-            <span class="md-body-2">Edit</span>
+            <span>Edit</span>
           </button>
-          <button mat-button color="primary" *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">
-            <ng-md-icon icon="check_circle" size="20" style="fill:rgb(0,178,177)"></ng-md-icon>
-            <span class="md-body-2">Enable</span>
+          <button mat-button color="primary"  class="text-upper"  *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">
+            <ng-md-icon icon="check_circle" size="20"></ng-md-icon>
+            <span>Enable</span>
           </button>
-          <button mat-button color="primary" *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">
-            <ng-md-icon icon="block" size="20" style="fill:rgb(0,178,177)"></ng-md-icon>
-            <span class="md-body-2">Disable</span>
+          <button mat-button color="primary"  class="text-upper"  *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">
+            <ng-md-icon icon="block" size="20"></ng-md-icon>
+            <span>Disable</span>
           </button>
-          <button mat-button color="primary" *ngIf="allowExport" (click)="confirmPublish()">
-            <ng-md-icon icon="publish" size="20" style="fill:rgb(0,178,177)"></ng-md-icon>
-            <span class="md-body-2">Publish</span>
+          <button mat-button color="primary" class="text-upper"   *ngIf="allowExport" (click)="confirmPublish()">
+            <ng-md-icon icon="publish" size="20" ></ng-md-icon>
+            <span>Publish</span>
           </button>
         </div>
       </mat-card-actions>
