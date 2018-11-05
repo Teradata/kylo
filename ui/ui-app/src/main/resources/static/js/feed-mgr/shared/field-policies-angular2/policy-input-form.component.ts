@@ -4,7 +4,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {FieldConfig} from "../dynamic-form/model/FieldConfig";
 import {InputType} from "../dynamic-form/model/InputText";
 import {DynamicFormService} from "../dynamic-form/services/dynamic-form.service";
-import {FieldPolicyProperty} from "../../model/field-policy";
+import {FieldPolicyProperty, FieldPolicySelectableValue} from "../../model/field-policy";
 import {DynamicFormFieldGroupBuilder} from "../dynamic-form/services/dynamic-form-field-group-builder";
 import {DynamicFormBuilder} from "../dynamic-form/services/dynamic-form-builder";
 import {FieldGroup, Layout} from "../dynamic-form/model/FieldGroup";
@@ -233,6 +233,10 @@ export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
             if (property.selectableValues.length > 0) {
                 builder.setOptions(property.selectableValues)
                 //TODO know when to change the model propertyValue to 'values' on multi select
+                //if the valud doesnt exist in the selectable values, null it out
+                if(property.value && property.selectableValues.find((p:FieldPolicySelectableValue)=> p.value == property.value) == undefined){
+                   builder.setValue(null)
+                }
             }
             else if (property.values && property.values.length > 0) {
                 builder.setOptionsArray((<any[]>property.values))
@@ -245,6 +249,10 @@ export class PolicyInputFormComponent implements OnInit, OnChanges, OnDestroy {
                 builder.setOptions(property.selectableValues)
                 //TODO know when to change the model propertyValue to 'values' on multi select
                 // fieldConfigOptions.modelValueProperty = 'values';
+                //if the valud doesnt exist in the selectable values, null it out
+                if(property.value && property.selectableValues.find((p:FieldPolicySelectableValue)=> p.value == property.value) == undefined){
+                    builder.setValue(null)
+                }
             }
             else if (property.values && property.values.length > 0) {
                 builder.setOptionsArray((<any[]>property.values))
