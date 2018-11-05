@@ -50,15 +50,17 @@
                   </div>
                 </md-input-container>
                 <div class="register-template-property md-padding" layout="column" layout-fill>
+                  <!--
                   <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
-                  <span class="hint" ng-if="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</span>
-                  <span class="hint" ng-show="property.propertyDescriptor.required">This is a NiFi required field.  You need to either allow the user to input data, or supply a default value.</span>
+                  <span class="hint" ng-if="property.propertyDescriptor.sensitive">This is a sensitive property</span>
+                  <span class="hint" ng-show="property.propertyDescriptor.required">This is a required field.  Either allow user to input data or supply a default value.</span>
+                  -->
                   <div class="hint">{{property.propertyDescriptor.description}}</div>
 
                   <div ng-if="property.selected == true" class="fade">
                     <ng-form name="innerForm">
 
-                      <div ng-if="property.propertyDescriptor.allowableValues != null">
+                      <div ng-if="property.propertyDescriptor.allowableValues != null" >
                         <md-input-container md-no-float class="">
                           <label>Default Value</label>
                           <md-select ng-model="property.value" name="property"
@@ -73,7 +75,7 @@
                       </div>
 
 
-                      <div ng-if="property.propertyDescriptor.allowableValues == null && property.selected == true">
+                      <div ng-if="property.propertyDescriptor.allowableValues == null && property.selected == true" layout="row">
 
 
                         <md-input-container style="margin-left:-2px" class="push-top-md push-bottom-none">
@@ -102,17 +104,27 @@
                         <div class="hint" thinkbig-derived-expression ng-model="property.value"
                              style="margin-bottom:10px;"></div>
 
-                        <div ng-if="vm.allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
-                          <md-input-container md-no-float class=" layout-margin-top-minus-7">
+                        <md-input-container class="push-none push-left push-right" style="white-space: nowrap;" ng-if="property.value == null || property.value == ''">
+                          <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                            <md-checkbox aria-label="Set empty"
+                                         ng-checked="property.value == ''"
+                                         ng-click="vm.toggleSetAsEmptyString(property)">
+                              Set empty
+                            </md-checkbox>
+                          </div>
+                        </md-input-container>
+
+                        <div ng-if="vm.allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" style="white-space: nowrap;">
+                          <md-input-container md-no-float>
                             <div layout="row">
-                              <div style="background-color:#0288d126" class="tc-accent layout-padding-left-4 layout-padding-right-4">
+                              <div style="background-color:#0288d126" class="tc-accent">
                                 <ng-md-icon icon="info" class="tc-accent" size="20"></ng-md-icon>
-                                NiFi template has a different value: <b>{{
+                                Template has a different value: <b>{{
                                 property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
                               </div>
-                              <div class="layout-padding-left-4">
+                              <div>
                                 <ng-md-icon icon="replay" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="tc-accent cursor-pointer md-ink-ripple"></ng-md-icon>
-                                <md-tooltip>Accept value from NiFi template [{{property.registrationChangeInfo.valueFromNewerNiFiTemplate}}] to replace current value of [{{ property.value }}]
+                                <md-tooltip>Accept value from template [{{property.registrationChangeInfo.valueFromNewerNiFiTemplate}}] to replace current value of [{{ property.value }}]
                                 </md-tooltip>
                               </div>
                             </div>
@@ -122,6 +134,7 @@
                       </div>
 
                       <div layout="row" layout-align="start-center" class="pull-top-md pull-bottom-sm">
+
 
                         <md-input-container class="push-none push-right">
                           <div class="md-checkbox-div-top" ng-repeat="v in [0]">

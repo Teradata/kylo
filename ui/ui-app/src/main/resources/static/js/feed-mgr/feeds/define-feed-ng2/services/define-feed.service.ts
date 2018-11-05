@@ -351,7 +351,7 @@ export class DefineFeedService {
 
     public deleteFeed(viewContainerRef?:ViewContainerRef){
         this._dialogService.openConfirm({
-            message: 'Are you sure want to delete feed '+this.feed.feedName+'?',
+            message: 'Delete '+this.feed.feedName+' and all associated data?',
             disableClose: true,
             viewContainerRef: viewContainerRef, //OPTIONAL
             title: 'Confirm Delete', //OPTIONAL, hides if not provided
