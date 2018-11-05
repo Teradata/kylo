@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -74,7 +75,9 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
     @Override
     public KyloVersion getCurrentVersion() {
-        List<JpaKyloVersion> versions = kyloVersionRepository.findAll(SORT_ORDER);
+        List<JpaKyloVersion> versions = kyloVersionRepository.findAll().stream()
+            .sorted((v1, v2) -> v2.compareTo(v1)) // descending
+            .collect(Collectors.toList());
         if (versions != null && !versions.isEmpty()) {
             return versions.get(0);
         }
