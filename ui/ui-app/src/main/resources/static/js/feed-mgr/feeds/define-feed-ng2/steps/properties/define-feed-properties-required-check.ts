@@ -17,6 +17,5 @@ export class DefineFeedPropertiesRequiredCheck extends FeedStepRequiredCheck {
         else {
             return step.required;
         }
-
     }
 }

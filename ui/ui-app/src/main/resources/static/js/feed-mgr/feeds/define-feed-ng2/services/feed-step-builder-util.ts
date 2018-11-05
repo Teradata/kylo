@@ -44,7 +44,7 @@ export class FeedStepBuilderUtil {
 
     targetStep():StepBuilder {
         let name =  this._translateService.instant("FeedDefinition.Steps.Target.Name")
-        return  new StepBuilder().setIcon("table_chart").setName(name).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_FEED_SOURCE).addDependsUpon(FeedStepConstants.STEP_WRANGLER).setSref("feed-table").setRequired(true).setValidator(new DefineFeedTableValidator());
+        return  new StepBuilder().setIcon("table_chart").setName(name).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_WRANGLER).setSref("feed-table").setRequired(true).setValidator(new DefineFeedTableValidator());
     }
 
     sourceStep(required:boolean = true):StepBuilder {
