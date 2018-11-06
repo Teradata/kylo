@@ -82,11 +82,13 @@ export class FeedNifiPropertiesService {
             feed.inputProcessor = feed.inputProcessors[0];
         }
 
-        feed.properties.forEach(property => {
-            //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
-            NifiFeedPropertyUtil.initSensitivePropertyForEditing(property);
-            NifiFeedPropertyUtil.updateDisplayValue(property);
-        })
+        if (feed.properties) {
+            feed.properties.forEach(property => {
+                //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
+                NifiFeedPropertyUtil.initSensitivePropertyForEditing(property);
+                NifiFeedPropertyUtil.updateDisplayValue(property);
+            });
+        }
         console.log('feed.inputProcessors',feed.inputProcessors,'feed',feed)
 
 
