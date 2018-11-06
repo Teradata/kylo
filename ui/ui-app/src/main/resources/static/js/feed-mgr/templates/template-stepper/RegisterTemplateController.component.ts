@@ -76,7 +76,7 @@ export class RegisterTemplateController {
         
     }
     
-    cancelStepper = () => {
+    cancelStepper () {
         this.registerTemplateService.resetModel();
         this.stateService.go("registered-templates");
     }

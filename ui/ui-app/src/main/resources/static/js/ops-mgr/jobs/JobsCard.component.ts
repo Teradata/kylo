@@ -414,13 +414,13 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
     }
 
-    onChangeLinks = (page: any) => {
+    onChangeLinks (page: any) {
         this.loaded = false;
         this.TabService.getActiveTab(this.pageName).currentPage = page;
         this.loadJobs(true);
     }
 
-    onPaginationChange = (pagingEvent: IPageChangeEvent) => {
+    onPaginationChange (pagingEvent: IPageChangeEvent) {
 
         if(this.page != pagingEvent.page) {
             this.page = pagingEvent.page;
@@ -434,7 +434,7 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
     }
 
-    onSearchTable = (searchTerm: string) => {
+    onSearchTable (searchTerm: string) {
         this.filterJob = searchTerm;
         this.loadJobs(true);
     }

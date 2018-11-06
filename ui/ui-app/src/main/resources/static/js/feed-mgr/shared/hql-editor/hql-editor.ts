@@ -80,10 +80,10 @@ export class HqlEditorController {
        
         //constructor ends here
     };
-    codemirrorLoaded =  (_editor: any) => {
+    codemirrorLoaded (_editor: any) {
         this.editor = _editor;
     };
-    init = () => {
+    init () {
         // getTable();
         if (this.defaultSchemaName == undefined) {
             this.defaultSchemaName = null;
@@ -123,14 +123,14 @@ export class HqlEditorController {
         this.editor.setValue(this.sql);
         this.editor.focus();
     };
-    quote = (expression: any) => {
+    quote (expression: any) {
         if (this.datasource.isHive) {
             return "`" + expression + "`";
         } else {
             return expression;
         }
     }
-    query = () => {
+    query () {
         this.executingQuery = true;
         var successFn = (tableData: any) =>{
             var result = this.queryResults = this.HiveService.transformQueryResultsToUiGridModel(tableData);
@@ -152,7 +152,7 @@ export class HqlEditorController {
         }
         return promise.then(successFn, errorFn);
     };
-    fullscreen = () => {
+    fullscreen () {
         this.$mdDialog.show({
             controller: 'HqlFullScreenEditorController',
             controllerAs: 'vm',
@@ -175,7 +175,7 @@ export class HqlEditorController {
 
         });
     };
-    browseTable = () => {
+    browseTable () {
         this.executingQuery = true;
         return this.HiveService.browseTable(this.browseDatabaseName, this.browseTableName, null)
                .then((tableData: any) =>{

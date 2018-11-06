@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from 'underscore';
 import AccessControlService from "../../../services/AccessControlService";
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
@@ -55,7 +54,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
        * @param {Array.<ActionState>} actions the list of actions
        * @param {Array.<Action>} target the destination
        */
-    addAllowed = (actions: any[], target: any[]) => {
+    addAllowed (actions: any[], target: any[]) {
         _.each(actions, (action) => {
             if (action.$$allowed) {
                 var copy = _.pick(action, "description", "systemName", "title");
@@ -74,7 +73,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
      * @param {number} level the indent level, starting at 0
      * @param {ActionState|null} parent the parent action
      */
-    addAction = (action: any, level: any, parent: any) => {
+    addAction (action: any, level: any, parent: any) {
         var state = _.pick(action, "description", "systemName", "title");
         state.$$allowed = false;
         state.$$level = level;
@@ -155,7 +154,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
      * Toggles the allowed state of the specified action.
      * @param {ActionState} action the action
      */
-    toggle = (action: any) => {
+    toggle (action: any) {
         if (ObjectUtils.isUndefined(this.readOnly) || !this.readOnly) {
             this.setAllowed(action, !action.$$allowed);
 

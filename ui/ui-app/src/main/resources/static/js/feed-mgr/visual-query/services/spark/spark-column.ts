@@ -1,6 +1,5 @@
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import * as moment from "moment";
-import * as angular from 'angular';
 import * as _ from "underscore";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
@@ -12,6 +11,7 @@ import {DataType} from "../../wrangler/api/column";
 import {DateFormatType, DateFormatUnit, DialogService} from "../../wrangler/api/services/dialog.service";
 import {ColumnController} from "../../wrangler/column-controller";
 import {ColumnDelegate, DataCategory} from "../../wrangler/column-delegate";
+import { ObjectUtils } from "../../../../common/utils/object-utils";
 
 /**
  * Data types supported by Spark and Hive.
@@ -139,7 +139,7 @@ export class SparkColumnDelegate extends ColumnDelegate {
     applyFilters(header:any,filters:any[],table:any){
         //filter out any filters that dont have anything
         let validFilters =_.filter(filters,(filter) => {
-            return (angular.isDefined(filter.term)&& filter.term != '')
+            return (ObjectUtils.isDefined(filter.term)&& filter.term != '')
         });
 
         _.each(validFilters,(filter,i)=> {

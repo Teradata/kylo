@@ -174,7 +174,7 @@ export class FeedDetailsController {
 
         this.init();
     };
-    init = () => {
+    init (){
         this.feedId = this.$transition$.params().feedId;
 
         this.exportFeedUrl = this.RestUrlService.ADMIN_EXPORT_FEED_URL + "/" + this.feedId
@@ -183,14 +183,14 @@ export class FeedDetailsController {
         this.nifiRunningCheck();
     };
 
-    cloneFeed = () => {
+    cloneFeed () {
         this.StateService.FeedManager().Feed().navigateToCloneFeed(this.model.feedName);
     }
 
     /**
      * Displays a confirmation dialog for deleting the feed.
      */
-    confirmDeleteFeed = () => {
+    confirmDeleteFeed () {
         if (this.allowAdmin) {
             // Verify there are no dependent feeds
             if (angular.isArray(this.model.usedByFeeds) && this.model.usedByFeeds.length > 0) {
@@ -230,7 +230,7 @@ export class FeedDetailsController {
     /**
      * Permanently deletes this feed.
      */
-    deleteFeed = () => {
+    deleteFeed () {
         // Update model state
         this.model.state = "DELETED";
 
@@ -262,13 +262,13 @@ export class FeedDetailsController {
         this.$http.delete(this.RestUrlService.GET_FEEDS_URL + "/" + this.feedId).then(successFn, errorFn);
     };
 
-    feedNavigationLink = (link: any) => {
+    feedNavigationLink (link:any) {
         var feedId = this.feedId;
         var feedName = this.model.systemCategoryName + "." + this.model.systemFeedName;
         this.$state.go(link.sref, { feedId: feedId, feedName: feedName, model: this.model });
     }
 
-    showFeedUploadDialog = () => {
+    showFeedUploadDialog () {
         this.$mdDialog.show({
             controller: 'FeedUploadFileDialogController',
             escapeToClose: false,
@@ -285,7 +285,7 @@ export class FeedDetailsController {
         });
     }
 
-    showAccessControlDialog = () => {
+    showAccessControlDialog () {
 
         var onCancel = () => {
 
@@ -299,7 +299,7 @@ export class FeedDetailsController {
     }
 
 
-    openFeedMenu = ($mdOpenMenu: any, ev: any) =>{
+    openFeedMenu ($mdOpenMenu: any, ev: any) {
         $mdOpenMenu(ev);
     };
 
@@ -307,7 +307,7 @@ export class FeedDetailsController {
     /**
      * Enables this feed.
      */
-    enableFeed = () => {
+    enableFeed () {
         if (!this.enabling && this.allowEdit) {
             this.enabling = true;
             this.$http.post(this.RestUrlService.ENABLE_FEED_URL(this.feedId)).then( (response: any) => {
@@ -331,7 +331,7 @@ export class FeedDetailsController {
     /**
      * Disables this feed.
      */
-    disableFeed = () => {
+    disableFeed () {
         if (!this.disabling && this.allowEdit) {
             this.disabling = true;
             this.$http.post(this.RestUrlService.DISABLE_FEED_URL(this.feedId)).then((response: any) => {
@@ -355,7 +355,7 @@ export class FeedDetailsController {
     /**
      * Starts this feed.
      */
-    startFeed = () => {
+    startFeed () {
         if (!this.startingFeed && this.allowStart) {
             this.startingFeed = true;
             this.$http.post(this.RestUrlService.START_FEED_URL(this.feedId)).then((response: any) => {
@@ -388,7 +388,7 @@ export class FeedDetailsController {
         }
     };
 
-    mergeTemplateProperties = (feed: any) => {
+    mergeTemplateProperties (feed: any) {
         var successFn = (response: any) => {
             return response;
         }
@@ -413,7 +413,7 @@ export class FeedDetailsController {
      *
      * An error is displayed if the user does not have permissions to access categories.
      */
-    onCategoryClick = () => {
+    onCategoryClick () {
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
                 if (this.accessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
@@ -431,16 +431,16 @@ export class FeedDetailsController {
             });
     };
 
-    onTableClick = () => {
+    onTableClick () {
         this.StateService.FeedManager().Table().navigateToTable(this.DatasourcesService.getHiveDatasource().id, this.model.category.systemName, this.model.table.tableSchema.name);
     }
 
-    addSla = () => {
+    addSla () {
         this.selectedTabIndex = SLA_INDEX;
         this.newSla = true;
     }
 
-    updateMenuOptions = () => {
+    updateMenuOptions () {
         this.uploadAllowed = false;
         var model = this.model;
         if (model && model.inputProcessor && model.inputProcessor.allProperties.length > 0) {
@@ -453,7 +453,7 @@ export class FeedDetailsController {
         }
     }
 
-    loadFeed = (tabIndex: any) => {
+    loadFeed (tabIndex: any) {
         this.errorLoadingFeed = false;
         this.loadingFeedData = true;
         this.model.loaded = false;
@@ -566,7 +566,7 @@ export class FeedDetailsController {
         return promise;
     }
 
-    nifiRunningCheck = () => {
+    nifiRunningCheck () {
         var promise = this.$http.get(this.RestUrlService.IS_NIFI_RUNNING_URL);
         promise.then((response: any) => {
             this.isNiFiRunning = response.data;
@@ -575,29 +575,29 @@ export class FeedDetailsController {
         });
     }
 
-    gotoFeedStats = (ev: any) => {
+    gotoFeedStats (ev:any) {
         ev.preventDefault();
         ev.stopPropagation();
         var feedName = this.model.systemCategoryName + "." + this.model.systemFeedName;
         this.StateService.OpsManager().Feed().navigateToFeedStats(feedName);
     };
 
-    gotoFeedDetails = (ev: any) => {
+    gotoFeedDetails (ev: any) {
         ev.preventDefault();
         ev.stopPropagation();
         var feedName = this.model.systemCategoryName + "." + this.model.systemFeedName;
         this.StateService.OpsManager().Feed().navigateToFeedDetails(feedName);
     };
 
-    shouldIndexingOptionsBeDisabled = () => {
+    shouldIndexingOptionsBeDisabled () {
         return ((this.model.historyReindexingStatus === 'IN_PROGRESS') || (this.model.historyReindexingStatus === 'DIRTY'));
     };
 
-    shouldIndexingOptionsBeEnabled = () => {
+    shouldIndexingOptionsBeEnabled () {
         return !this.shouldIndexingOptionsBeDisabled();
     };
 
-    findAndReplaceString = (str: any, findStr: any, replacementStr: any) => {
+    findAndReplaceString (str: any, findStr: any, replacementStr: any) {
         var i = 0;
         if (angular.isUndefined(str) || angular.isUndefined(findStr)) {
             return '';

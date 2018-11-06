@@ -3,9 +3,7 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Feed} from "../../model/feed/feed.model";
 import {FormGroup} from "@angular/forms";
 import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
-import * as angular from 'angular';
 import * as _ from "underscore";
-import { ObjectUtils } from "../../../common/utils/object-utils";
 import { CloneUtil } from "../../../common/utils/clone-util";
 
 interface ViewText {

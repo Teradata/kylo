@@ -83,18 +83,18 @@ export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView 
     } // end of constructor
     
     //Tab Functions
-    onTabSelected=(tab: any)=>{
+    onTabSelected (tab: any) {
         this.loaded = false;
         this.tabService.selectedTab(this.pageName, this.tabs[tab]);
         return this.loadAssessments(true);
     };
 
-    assessmentDetails= (event: any)=> {
+    assessmentDetails (event: any) {
             this.StateService.OpsManager().Sla().navigateToServiceLevelAssessment(event.row.id);
     }
 
     //Load Jobs
-    loadAssessments= (force: any) =>{
+    loadAssessments (force: any) {
         if (force || !this.refreshing) {
 
             if (force) {
@@ -175,13 +175,13 @@ export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView 
         this.loaded = true;
     }
 
-    onChangeLinks = (page: any) => {
+    onChangeLinks (page: any) {
         this.loaded = false;
         this.tabService.getActiveTab(this.pageName).currentPage = page;
         this.loadAssessments(true);
     }
 
-    onPaginationChange = (pagingEvent: IPageChangeEvent) => {
+    onPaginationChange (pagingEvent: IPageChangeEvent) {
         if(this.page != pagingEvent.page) {
             this.page = pagingEvent.page;
             this.onChangeLinks(pagingEvent.page);
@@ -193,12 +193,12 @@ export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView 
         }
     }
 
-    onSearchTable = (searchTerm: string) => {
+    onSearchTable (searchTerm: string) {
         this.filterSLA = searchTerm;
         this.loadAssessments(true);
     }
 
-    onSortChange = (sortEvent: ITdDataTableSortChangeEvent) => {
+    onSortChange (sortEvent: ITdDataTableSortChangeEvent) {
         this.loaded = false;
         this.sortSLA = sortEvent.name;
         if(sortEvent.order == TdDataTableSortingOrder.Descending) {

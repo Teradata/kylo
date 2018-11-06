@@ -29,10 +29,7 @@ import {TranslateModule} from "@ngx-translate/core";
 import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
-import { UIRouterModule } from "@uirouter/angular";
-
 import {KyloFeedManagerModule} from "../feed-mgr.module";
-import {CommonModule} from "@angular/common";
 import * as angular from "angular";
 import { CovalentSearchModule } from "@covalent/core/search";
 import {CovalentDataTableModule} from "@covalent/core/data-table";

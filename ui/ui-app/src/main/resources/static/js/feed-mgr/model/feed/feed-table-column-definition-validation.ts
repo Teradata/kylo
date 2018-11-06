@@ -1,10 +1,7 @@
 import {TableColumnDefinition} from "../TableColumnDefinition";
 import {TableFieldPartition} from "../TableFieldPartition";
 import {ArrayUtils} from "../utils";
-import {Subject} from "rxjs/Subject";
-import {Observable} from "rxjs/Observable";
 import {Feed} from "./feed.model";
-import * as angular from 'angular';
 import * as _ from "underscore";
 
 

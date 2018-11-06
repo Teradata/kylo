@@ -119,7 +119,7 @@ export default class GroupDetailsComponent {
     /**
      * Deletes the current user.
      */
-    onDelete = () => {
+    onDelete () {
 
         var name = (ObjectUtils.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
         this.UserService.deleteGroup(this.stateService.params.groupId)

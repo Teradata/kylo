@@ -1,4 +1,4 @@
-import { Component, Input, Inject, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component } from '@angular/core';
 import * as _ from "underscore";
 import CategoriesService from '../services/CategoriesService';
 import AccessControlService from '../../services/AccessControlService';

@@ -56,7 +56,7 @@ export class FeedAdditionalPropertiesController {
             return {name: chip}
         };
 
-        onEdit = ()=> {
+        onEdit () {
             // Determine tags value
             var tags = angular.copy(this.FeedService.editFeedModel.tags);
             if (tags == undefined || tags == null) {
@@ -76,11 +76,11 @@ export class FeedAdditionalPropertiesController {
         };
         
         
-        onCancel = function() {
+        onCancel () {
             // do nothing
         };
 
-        onSave = (ev:any) => {
+        onSave (ev:any) {
             //save changes to the model
             this.FeedService.showFeedSavingDialog(ev, this.$filter('translate')('views.feed-additional-properties.Saving'), this.model.feedName);
             var copy = angular.copy(this.FeedService.editFeedModel);

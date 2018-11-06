@@ -134,7 +134,7 @@ export class FeedCreationErrorService {
         hasErrors () {
             return this.feedError.hasErrors;
         }
-        showErrorDialog= () =>{
+        showErrorDialog () {
 
             let dialogRef = this.dialog.open(FeedErrorDialogController, {
                 data: {feedError: this.feedError},

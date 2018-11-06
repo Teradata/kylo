@@ -123,7 +123,7 @@ export default class OverviewComponent {
      * Attempt to align the data time with refresh interval to provide better user realtime refresh
      * Experimental
      */
-    checkAndAlignDataWithRefreshInterval= ()=>{
+    checkAndAlignDataWithRefreshInterval () {
         var dataTime = this.response.data.time;
         var diff = Math.abs(dataTime - this.start);
 
@@ -156,7 +156,7 @@ export default class OverviewComponent {
         }
     }
 
-    setDashboardRefreshInterval=()=> {
+    setDashboardRefreshInterval () {
         this.interval = setInterval( ()=> {
             var start = new Date().getTime();
             if (!this.OpsManagerDashboardService.isFetchingDashboard()) {

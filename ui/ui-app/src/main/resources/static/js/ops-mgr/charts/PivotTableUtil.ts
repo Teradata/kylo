@@ -2,7 +2,7 @@ class PivotTableUtilClass{
     constructor(){   
     }
 
-    camelCaseToWords =  (str: any)=> {
+    camelCaseToWords (str: any) {
         return str.match(/^[a-z]+|[A-Z][a-z]*/g).map( (x: any)=> {
             return x[0].toUpperCase() + x.substr(1).toLowerCase();
         }).join(' ');

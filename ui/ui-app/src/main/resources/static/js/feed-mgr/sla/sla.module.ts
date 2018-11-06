@@ -16,8 +16,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 
-import {BrowserModule} from "@angular/platform-browser";
-
 import { CovalentCommonModule } from '@covalent/core/common';
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
@@ -34,10 +32,6 @@ import {KyloCommonModule} from "../../common/common.module";
 import { UIRouterModule } from "@uirouter/angular";
 import {slaStates} from "./sla.states";
 
-import CategoriesService from "../services/CategoriesService";
-import { RestUrlService } from "../services/RestUrlService";
-import { FeedSecurityGroups } from "../services/FeedSecurityGroups";
-import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
 import ServiceLevelAgreementInit from "./ServiceLevelAgreementInit.component";
 import ServiceLevelAgreements from "./service-level-agreements.component";
 import ServiceLevelAgreementController from "./service-level-agreement.component";

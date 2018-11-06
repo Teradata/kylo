@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
-import { Component, Inject, ViewContainerRef } from '@angular/core';
+import { Component } from '@angular/core';
 import CategoriesService from '../../services/CategoriesService';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { MatSnackBar } from '@angular/material/snack-bar';

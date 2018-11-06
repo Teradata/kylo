@@ -14,11 +14,11 @@
  * @property {string} regexPattern - regular expression pattern for matching sample values
  * @property {string} title a human-readable title
  */
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { HttpClient } from '@angular/common/http';
 import { RestUrlService } from './RestUrlService';
 import { Injectable } from '@angular/core';
+import { ObjectUtils } from "../../common/utils/object-utils";
 
 /**
  * Defines the domain type (zip, phone, credit card) of a column.
@@ -85,15 +85,15 @@ export interface DomainType {
          * Gets the specified RegExp.
          */
     function getRegExp(pattern: any, flags: any) {
-            var safeFlags = angular.isString(flags) ? flags : "";
-            return (angular.isString(pattern) && pattern.length > 0) ? new RegExp(pattern, safeFlags) : null;
+            var safeFlags = ObjectUtils.isString(flags) ? flags : "";
+            return (ObjectUtils.isString(pattern) && pattern.length > 0) ? new RegExp(pattern, safeFlags) : null;
         }
 
         /**
          * Gets the specified domain type's regular expression for matching field names.
          */
     function getFieldNameRegExp(domainType: any){
-            if (angular.isUndefined(domainType.$fieldNameRegexp)) {
+            if (ObjectUtils.isUndefined(domainType.$fieldNameRegexp)) {
                 domainType.$fieldNameRegexp = getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
             }
             return domainType.$fieldNameRegexp;
@@ -103,7 +103,7 @@ export interface DomainType {
          * Gets the specified domain type's regular expression for matching sample values.
          */
     function getSampleDataRegExp(domainType: any){
-            if (angular.isUndefined(domainType.$regexp)) {
+            if (ObjectUtils.isUndefined(domainType.$regexp)) {
                 domainType.$regexp = getRegExp(domainType.regexPattern, domainType.regexFlags);
             }
             return domainType.$regexp;
@@ -147,7 +147,7 @@ export class DomainTypesService {
                 // Remove empty values
                 var valueArray: any;
                 if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
-                    var source = angular.isArray(columnDef.sampleValues) ? columnDef.sampleValues : [columnDef.sampleValues];
+                    var source = Array.isArray(columnDef.sampleValues) ? columnDef.sampleValues : [columnDef.sampleValues];
                     valueArray = source.filter((value: any)=> {
                         return value != null && value.toString().trim().length > 0;
                     });
@@ -181,7 +181,7 @@ export class DomainTypesService {
 
                     return (match === true);
                 });
-                return angular.isObject(matchingDomainType) ? matchingDomainType : null;
+                return ObjectUtils.isObject(matchingDomainType) ? matchingDomainType : null;
             }
 
             /**

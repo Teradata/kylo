@@ -9,6 +9,7 @@ import { KyloCommonModule } from "../../common/common.module";
 import { KyloServicesModule } from "../../services/services.module";
 import { CommonModule } from "@angular/common";
 import { FlexLayoutModule } from "@angular/flex-layout";
+import { SharedModule } from "../shared/shared.modules";
 
 @NgModule({
     declarations:[
@@ -19,6 +20,7 @@ import { FlexLayoutModule } from "@angular/flex-layout";
     ],
     imports:[
         CommonModule,
+        SharedModule,
         FlexLayoutModule,
         MatProgressBarModule,
         MatCardModule,

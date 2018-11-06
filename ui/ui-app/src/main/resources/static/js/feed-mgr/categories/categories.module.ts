@@ -17,8 +17,6 @@ import {MatCardModule} from '@angular/material/card';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 
-import {BrowserModule} from "@angular/platform-browser";
-
 import { CovalentCommonModule } from '@covalent/core/common';
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
@@ -42,7 +40,6 @@ import { UIRouterModule } from "@uirouter/angular";
 import {categoriesStates} from "./categories.states";
 
 import {KyloFeedManagerModule} from "../feed-mgr.module";
-import {CommonModule} from "@angular/common";
 import * as angular from "angular";
 import { CovalentSearchModule } from "@covalent/core/search";
 import {CovalentDataTableModule} from "@covalent/core/data-table";

@@ -1,6 +1,5 @@
 import {HttpClient} from "@angular/common/http";
 import {Injector} from "@angular/core";
-import * as angular from "angular";
 import {Program} from "estree";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/fromPromise";
@@ -34,6 +33,7 @@ import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
 import {PageSpec} from "../../wrangler/query-engine";
+import { ObjectUtils } from "../../../../common/utils/object-utils";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -157,7 +157,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             } else {
                 dataType = col.dataType;
             }
-            var name = angular.isDefined(col.displayName) ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
+            var name = ObjectUtils.isDefined(col.displayName) ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
 
             const colDef = {name: name, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []} as SchemaField;
             if (dataType === 'decimal') {
@@ -479,11 +479,11 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 return (column.hiveColumnLabel === "processing_dttm");
             });
 
-            if (angular.isDefined(invalid)) {
+            if (ObjectUtils.isDefined(invalid)) {
                 state.rows = [];
                 state.columns = [];
                 deferred.error("Column name '" + invalid.hiveColumnLabel + "' is not supported. Please choose a different name.");
-            } else if (angular.isDefined(reserved)) {
+            } else if (ObjectUtils.isDefined(reserved)) {
                 state.rows = [];
                 state.columns = [];
                 deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
@@ -512,7 +512,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             // Respond with error message
             let message;
 
-            if (angular.isString(response.data.message)) {
+            if (ObjectUtils.isString(response.data.message)) {
                 message = self.decodeError(response.data.message);
                 message = (message.length <= 1024) ? message : message.substr(0, 1021) + "...";
             } else {
@@ -560,7 +560,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 });
 
                 state.fieldPolicies = state.columns.map(column => {
-                    var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                    var name = ObjectUtils.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
                     if (policyMap[name]) {
                         return policyMap[name];
                     } else {

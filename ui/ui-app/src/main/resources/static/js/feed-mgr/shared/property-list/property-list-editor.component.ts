@@ -1,11 +1,7 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { Component, Input, SimpleChanges, Output, EventEmitter } from '@angular/core';
-import { Subject } from 'rxjs/Subject';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
-const moduleName = require('feed-mgr/module-name');
-
 /**
  * A user-defined property (or business metadata) on a category or feed.
  *
@@ -57,7 +53,7 @@ export class PropertyListEditorComponent {
     /**
      * Adds a new user-defined property.
      */
-    addProperty = () => {
+    addProperty () {
         this.propertyList.push({ description: null, displayName: null, locked: false, order: this.propertyList.length, required: true, systemName: "", value: "", $error: {} });
         this.onPropertyChange();
         this.modelChange.emit(this.propertyList);
@@ -66,7 +62,7 @@ export class PropertyListEditorComponent {
     /**
      * Updates the property list with changes to the model.
      */
-    onModelChange = () => {
+    onModelChange () {
         if (!_.isEqual(this.model, this.lastModel)) {
             // Convert model to properties
             this.propertyList = [];
@@ -99,7 +95,7 @@ export class PropertyListEditorComponent {
     /**
      * Updates the model with changes to the property list.
      */
-    onPropertyChange = () => {
+    onPropertyChange () {
         // Convert properties to model
         var hasError: any = false;
         var keys: any = {};
@@ -134,7 +130,7 @@ export class PropertyListEditorComponent {
      *
      * @param {number} index the index of the property to delete
      */
-    removeProperty = (index: any) => {
+    removeProperty (index: any) {
         this.propertyList.splice(index, 1);
         this.onPropertyChange();
         this.modelChange.emit(this.propertyList);

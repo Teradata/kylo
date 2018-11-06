@@ -4,7 +4,6 @@ import {ArrayUtils} from "../utils";
 import {Subject} from "rxjs/Subject";
 import {Observable} from "rxjs/Observable";
 import {Feed} from "./feed.model";
-import * as angular from 'angular';
 import * as _ from "underscore";
 
 export interface TableCreateMethod {
@@ -150,7 +149,7 @@ export class TableForm {
         for (var key in errors) {
             if (errors.hasOwnProperty(key)) {
                 var errorFields = errors[key];
-                angular.forEach(errorFields, (errorField: any) => {
+                _.forEach(errorFields, (errorField: any) => {
                     errorField.$setTouched();
                 });
             }

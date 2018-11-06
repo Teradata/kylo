@@ -1,10 +1,7 @@
-import * as angular from "angular";
 import * as _ from "underscore";
-import {DomainType} from "../services/DomainTypesService";
-import {Common} from "../../common/CommonTypes";
-import {ColumnDefinitionValidationError, TableColumnDefinition} from "./TableColumnDefinition";
+import {TableColumnDefinition} from "./TableColumnDefinition";
 import {KyloObject} from "../../common/common.model";
-import {TableFieldPolicy} from "./TableFieldPolicy";
+import { ObjectUtils } from "../../common/utils/object-utils";
 
 export class TableFieldPartition  implements KyloObject {
 
@@ -76,14 +73,14 @@ export class TableFieldPartition  implements KyloObject {
      * Sync the sourceField and sourceDataType with this assigned column
      */
     syncSource() {
-        if (angular.isDefined(this.columnDef)) {
+        if (ObjectUtils.isDefined(this.columnDef)) {
             this.sourceDataType = this.columnDef.derivedDataType;
             this.sourceField = this.columnDef.name;
         }
     }
 
     updateFieldName() {
-        if(angular.isUndefined(this.formula)){
+        if(ObjectUtils.isUndefined(this.formula)){
             this.formula = 'val';
         }
         if (this.formula != 'val') {

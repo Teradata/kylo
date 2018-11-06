@@ -1,33 +1,31 @@
-import * as angular from "angular";
 import { Directive, Input, ElementRef, SimpleChanges, Inject } from '@angular/core';
 import "pascalprecht.translate";
-import { TranslateService } from "@ngx-translate/core";
 import { ObjectUtils } from "../utils/object-utils";
 
 @Directive({
     selector: '[kylo-timer]'
-  })
+})
 export class KyloTimerDirective {
 
-      @Input() startTime: any;
-      @Input() truncatedFormat: any;
-      @Input() addAgoSuffix: any;
+    @Input() startTime: any;
+    @Input() truncatedFormat: any;
+    @Input() addAgoSuffix: any;
 
-      refreshTime: any;
-      time: any;
-      previousDisplayStr: any;
-      interval: any;
+    refreshTime: any;
+    time: any;
+    previousDisplayStr: any;
+    interval: any;
 
-      clearInterval(): void {
+    clearInterval(): void {
         clearInterval(this.interval);
         this.interval = null;
-      }
+    }
 
-      ngOnDestroy(): void {
+    ngOnDestroy(): void {
         this.clearInterval();
-      }
+    }
 
-      update = () => {
+    update () {
         this.time += this.refreshTime;
         //format it
         this.format();
@@ -35,8 +33,8 @@ export class KyloTimerDirective {
 
     format(): void {
         var ms = this.time;
-        var displayStr = DateTimeUtils(this.$injector.get("$filter")('translate')).formatMillisAsText(ms,this.truncatedFormat,false);
-        if(this.addAgoSuffix) {
+        var displayStr = DateTimeUtils(this.$injector.get("$filter")('translate')).formatMillisAsText(ms, this.truncatedFormat, false);
+        if (this.addAgoSuffix) {
             displayStr += " ago";
         }
 
@@ -62,17 +60,17 @@ export class KyloTimerDirective {
 
         this.time = this.startTime;
         this.previousDisplayStr = '';
-        
+
         this.format();
-        
+
         if (this.refreshTime == undefined) {
             this.refreshTime = 1000;
         }
-        
-        this.interval = setInterval(this.update, this.refreshTime);
+
+        this.interval = setInterval(() => {this.update()}, this.refreshTime);
 
     }
-    constructor(private elRef: ElementRef, 
-                @Inject("$injector") private $injector: any) {}
+    constructor(private elRef: ElementRef,
+        @Inject("$injector") private $injector: any) { }
 }
 

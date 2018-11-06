@@ -1,5 +1,3 @@
-import * as angular from 'angular';
-/*import 'rxjs/add/operator/toPromise';*/
 import { RequestOptions, Response} from '@angular/http';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -13,17 +11,6 @@ export default class UserService {
     options: RequestOptions;
 
     constructor(private http: HttpClient, private commonRestUrlService: CommonRestUrlService, private userGroupService: UserGroupService) {
-    }
-
-    private extractData(res: Response) {
-        let body = res.json();
-        return body || {};
-    }
-
-
-    private handleError(error: any): Promise<any> {
-        //  console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
     }
 
     /**

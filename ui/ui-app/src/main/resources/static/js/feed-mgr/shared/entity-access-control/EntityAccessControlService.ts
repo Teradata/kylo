@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessConstants from '../../../constants/AccessConstants';
 import AccessControlService from '../../../services/AccessControlService';
@@ -46,14 +45,14 @@ export class EntityAccessControlService extends AccessConstants{
         }
     }
     // may be called by plugins
-    addRoleAssignment = (type: any, urlFunc: any) => {
+    addRoleAssignment (type: any, urlFunc: any) {
         this.roleUrlsMap[type] = urlFunc;
     }
     /**
          * Ensure the entity's roleMemberships.members are pushed back into the proper entity.roleMemberships.users and entity.roleMemberships.groups
          * @param entity the entity to save
          */
-    updateRoleMembershipsForSave = (roleMemberships: any) => {
+    updateRoleMembershipsForSave (roleMemberships: any) {
 
         if (roleMemberships) {
             _.each(roleMemberships, (roleMembership: any) => {
@@ -86,7 +85,7 @@ export class EntityAccessControlService extends AccessConstants{
     /**
          * Merges all possible roles for this entity, with the assigned roles/memberships
          */
-    mergeRoleAssignments = (entity: any, membershipType: any, entityRoleMemberships: any) => {
+    mergeRoleAssignments (entity: any, membershipType: any, entityRoleMemberships: any) {
         var deferred = this.$injector.get("$q").defer();
         var existingModelRoleAssignments = {};
         this.queryForRoleAssignments(entity, membershipType).then((response: any) => {
@@ -156,7 +155,7 @@ export class EntityAccessControlService extends AccessConstants{
          * @returns {Array}
          */
     //$scope.entity.roleMemberships
-    toRoleMembershipChange = (roleMemberships: any) => {
+    toRoleMembershipChange (roleMemberships: any) {
         var roleMembershipChanges: any = [];
         _.each(roleMemberships, (roleMembership: any) => {
             var users = _.chain(roleMembership.members).filter((member) => {
@@ -180,7 +179,7 @@ export class EntityAccessControlService extends AccessConstants{
          * Save the Role Changes for this entity
          * @param $event
          */
-    saveRoleMemberships = (entityType: any, entityId: any, roleMemberships: any, callbackFn?: any) => {
+    saveRoleMemberships (entityType: any, entityId: any, roleMemberships: any, callbackFn?: any) {
         var defer = this.$injector.get("$q").defer();
         var url = '';
         if (entityType === 'feed') {
@@ -221,6 +220,4 @@ export class EntityAccessControlService extends AccessConstants{
         });
         return defer.promise;
     }
-
-
 }

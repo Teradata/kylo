@@ -66,14 +66,14 @@ export class DomainTypesComponent {
     /**
  * Navigates to the domain type details page for the specified domain type.
  */
-    editDomainType = (domainType: any) => {
+    editDomainType (domainType: any) {
         this.StateService.FeedManager().DomainType().navigateToDomainTypeDetails(domainType.id);
     };
 
     /**
      * Gets a list of all field policies for the specified domain type.
      */
-    getAllFieldPolicies = (domainType: any) => {
+    getAllFieldPolicies (domainType: any) {
         var rules = this.FeedFieldPolicyRuleService.getAllPolicyRules(domainType.fieldPolicy);
         return (rules.length > 0) ? rules.map(_.property("name")).join(", ") : "No rules";
     };
@@ -81,7 +81,7 @@ export class DomainTypesComponent {
     /**
      * Indicates if the specified domain type has any field policies.
      */
-    hasFieldPolicies = (domainType: any) => {
+    hasFieldPolicies (domainType: any) {
         return (domainType.fieldPolicy.standardization.length > 0 || domainType.fieldPolicy.validation.length > 0);
     };
 

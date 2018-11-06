@@ -96,17 +96,17 @@ export class RegisterProcessorPropertiesController implements OnInit {
                 private uiComponentsService: UiComponentsService,
                 private _dataTableService: TdDataTableService) {}
 
-    searchExpressionProperties = (term: any) => {
+    searchExpressionProperties (term: any) {
          return this.expressionProperties = this.availableExpressionProperties.filter((property: any) => {
             return (property.key.toUpperCase().indexOf(term.toUpperCase()) >= 0);
         });
     };
 
-    getExpressionPropertyTextRaw = (item: any) => {
+    getExpressionPropertyTextRaw (item: any) {
         return '${' + item.key + '}';
     };
 
-    inputProcessorSelectionInvalid = () => {
+    inputProcessorSelectionInvalid () {
         var selectedList = _.filter(this.model.inputProcessors, (processor: any) => {
             return processor.selected;
         });
@@ -121,7 +121,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
 
     }
 
-    minProcessorItems = () => {
+    minProcessorItems () {
         var windowHeight = $(window).height();
         var newHeight = windowHeight - 450;
         var processorHeight = 48;
@@ -129,12 +129,12 @@ export class RegisterProcessorPropertiesController implements OnInit {
         return minItems;
     }
 
-    scrollToProcessor = (processor: any) => {
+    scrollToProcessor (processor: any) {
         var topIndex = processor.topIndex;
         this.topIndex = topIndex;
     }
 
-    transformPropertiesToArray = () => {
+    transformPropertiesToArray () {
         var propertiesKey = this.processorPropertiesFieldName + "Properties";
         var processorsKey = this.processorPropertiesFieldName + "Processors";
         this.allProperties = _.filter(this.model[propertiesKey], (prop: any) => { return prop.hidden == undefined || prop.hidden == false });
@@ -162,7 +162,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
 
     }
 
-    showSelected = () => {
+    showSelected () {
         var selectedProperties: any = [];
         _.forEach(this.allProperties, (property: any) => {
             if (property.selected) {
@@ -176,21 +176,21 @@ export class RegisterProcessorPropertiesController implements OnInit {
         this.processors = propertiesAndProcessors.processors;
     }
 
-    onShowOnlySelected = () => {
+    onShowOnlySelected () {
         this.transformPropertiesToArray();
     }
 
-    changedPropertyInput = (property: any) => {
+    changedPropertyInput (property: any) {
         property.changed = true;
     }
 
-    keydownPropertyInput = (property: any) => {
+    keydownPropertyInput (property: any) {
         if (!property.changed && property.sensitive) {
             property.value = "";
         }
     }
 
-    onRenderTypeChange = (property: any) => {
+    onRenderTypeChange (property: any) {
         if (property.renderType == 'select' && (property.propertyDescriptor.allowableValues == undefined || property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0)) {
             if (property.selectOptions == undefined) {
                 property.selectOptions = [];
@@ -215,13 +215,13 @@ export class RegisterProcessorPropertiesController implements OnInit {
         }
     }
 
-    customSelectOptionChanged = (property: any) => {
+    customSelectOptionChanged (property: any) {
         var str = JSON.stringify(property.selectOptions);
         property.renderOptions['selectOptions'] = str;
 
     }
 
-    initializeRenderTypes = () => {
+    initializeRenderTypes () {
         _.each(this.registerTemplatePropertyService.codemirrorTypes, (label: any, type: any) => {
             this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
         });

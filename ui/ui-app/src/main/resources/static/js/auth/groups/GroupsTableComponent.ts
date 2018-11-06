@@ -48,7 +48,7 @@ export default class GroupsTableComponent extends BaseFilteredPaginatedTableView
      * @param group the group
      * @returns {string} the title
      */
-    getTitle = function(group: any) {
+    getTitle (group: any) {
         return (ObjectUtils.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
     };
      /**

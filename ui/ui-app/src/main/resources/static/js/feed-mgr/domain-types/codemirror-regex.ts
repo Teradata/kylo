@@ -1,5 +1,4 @@
 
-import * as angular from 'angular';
 import * as _ from "underscore";
 import "../../codemirror-require/module";
 declare const CodeMirror: any;

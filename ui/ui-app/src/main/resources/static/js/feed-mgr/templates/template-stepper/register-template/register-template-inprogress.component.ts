@@ -16,7 +16,7 @@ export class RegisterTemplateInprogressDialog {
     constructor(@Inject(MAT_DIALOG_DATA) private data: any,
                 private dialogRef: MatDialogRef<RegisterTemplateInprogressDialog>) {}
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 }

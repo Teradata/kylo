@@ -1,8 +1,6 @@
 import * as angular from 'angular';
 const d3 = require('d3');
 import * as _ from "underscore";
-import * as moment from "moment";
-
 
 import {moduleName} from "../../module-name";
 
@@ -191,7 +189,7 @@ export class ProfileStatsController {
          * @param {string} metricType the metric type
          * @returns {string} the metric value
          */
-    findStat = (rows: any, metricType: any) => {
+    findStat (rows: any, metricType: any) {
         var row = _.find(rows, (row) => {
             return row[this.columns.metricType] === metricType;
         });
@@ -205,7 +203,7 @@ export class ProfileStatsController {
      * @param {string} metricType the metric type
      * @returns {number} the metric value
      */
-    findNumericStat = (rows: any, metricType: any) => {
+    findNumericStat (rows: any, metricType: any) {
         var stat = this.findStat(rows, metricType);
         return stat === "" ? 0 : Number(stat);
     };
@@ -217,7 +215,7 @@ export class ProfileStatsController {
      * @param {Array.<string>} columns the list of column system names
      * @param {Array.<displayColumns>} displayColumns the list of column display names
      */
-    formatRow = (row: any, columns: any, displayColumns: any) => {
+    formatRow (row: any, columns: any, displayColumns: any) {
         // Determine metric type
         var index = _.indexOf(displayColumns, this.columns.metricType);
         var metricType = row[columns[index]];
@@ -242,7 +240,7 @@ export class ProfileStatsController {
     /**
      * Returns the class indicating an active column selection.
      */
-    getClass = (item: any) => {
+    getClass (item: any) {
         return (item[this.columns.columnName] === this.selectedRow.columnName) ? "md-raised" : "";
     };
 
@@ -252,7 +250,7 @@ export class ProfileStatsController {
      * @param {Object} column the column
      * @returns {boolean} true if the column should be displayed, or false otherwise
      */
-    hasProfile = (column: any) => {
+    hasProfile (column: any) {
         return (!this.showOnlyProfiled || column.isProfiled);
     };
 
@@ -262,7 +260,7 @@ export class ProfileStatsController {
      * @param {Object} item the column
      * @returns {boolean} true if the column has profile statistics, or false otherwise
      */
-    isProfiled = (item: any) => {
+    isProfiled (item: any){
         if (_.isUndefined(item.isProfiled)) {
             var filtered = _.filter(this.data.rows, (row) => {
                 return row[this.columns.columnName] === item[this.columns.columnName];
@@ -278,7 +276,7 @@ export class ProfileStatsController {
     /**
      * Updates the profile data with changes to the model.
      */
-    onModelChange = () => {
+    onModelChange () {
         // Determine column names
         if (angular.isArray(this.model) && this.model.length > 0) {
             if (angular.isDefined(this.model[0].columnName)) {
@@ -339,7 +337,7 @@ export class ProfileStatsController {
      *
      * @returns {Array.<Object>} the graph data
      */
-    percData = () => {
+    percData () {
         var values = [];
 
         values.push({ label: "Nulls", value: this.findNumericStat(this.filtered, 'PERC_NULL_VALUES') });
@@ -354,7 +352,7 @@ export class ProfileStatsController {
      *
      * @param {Object} row the selected row
      */
-    selectColumn = (row: any) => {
+    selectColumn (row: any) {
         this.selectedRow.prevProfile = this.selectedRow.profile;
         this.selectedRow.columnName = row[this.columns.columnName];
     };
@@ -362,7 +360,7 @@ export class ProfileStatsController {
     /**
      * Sets the selected column data based on the selected row.
      */
-    selectColumnData = () => {
+    selectColumnData () {
         this.filtered = _.filter(this.data.rows, (row) => {
             return row[this.columns.columnName] === this.selectedRow.columnName;
         });
@@ -371,7 +369,7 @@ export class ProfileStatsController {
     /**
      * Sets the values for the Numeric Stats table.
      */
-    selectNumericValues = () => {
+    selectNumericValues () {
         var values: any = [];
         this.numericvalues = values;
 
@@ -391,7 +389,7 @@ export class ProfileStatsController {
      *
      * @param {Object} row the row to select
      */
-    selectRow = (row: any) => {
+    selectRow (row: any) {
         this.selectColumn(row);
         this.selectColumnData();
         this.selectType();
@@ -407,7 +405,7 @@ export class ProfileStatsController {
      * @param event
      * @param {Object} row the row to be selected
      */
-    selectRowAndUpdateCharts = (event: any, row: any) => {
+    selectRowAndUpdateCharts (event: any, row: any) {
         //called when user selects the column
         this.selectRow(row);
         this.updateCharts();
@@ -416,7 +414,7 @@ export class ProfileStatsController {
     /**
      * Sets the values for the String Stats table.
      */
-    selectStringValues = () => {
+    selectStringValues () {
         var vals: any = [];
         this.stringvalues = vals;
         if (this.selectedRow.profile === "String") {
@@ -432,7 +430,7 @@ export class ProfileStatsController {
     /**
      * Sets the values for the Time Stats table.
      */
-    selectTimeValues = () => {
+    selectTimeValues () {
         var timeVals: any = [];
         this.timevalues = timeVals;
         if (this.selectedRow.profile === "Time") {
@@ -444,7 +442,7 @@ export class ProfileStatsController {
     /**
      * Sets the values for the Top Values table.
      */
-    selectTopValues = () => {
+    selectTopValues () {
         var topN = this.findStat(this.filtered, 'TOP_N_VALUES');
         var topVals: any = [];
         if (_.isUndefined(topN)) {
@@ -466,7 +464,7 @@ export class ProfileStatsController {
     /**
      * Determines the type of the selected column.
      */
-    selectType = () => {
+    selectType () {
         var type = this.findStat(this.filtered, 'COLUMN_DATATYPE');
         if (_.isUndefined(type)) {
             type = "UnknownType";
@@ -489,7 +487,7 @@ export class ProfileStatsController {
      *
      * @returns {Array.<Object>} the graph data
      */
-    summaryData = () => {
+    summaryData () {
         var nulls = this.findNumericStat(this.filtered, 'NULL_COUNT');
         var empty = this.findNumericStat(this.filtered, 'EMPTY_COUNT');
         var unique = this.findNumericStat(this.filtered, 'UNIQUE_COUNT');
@@ -518,7 +516,7 @@ export class ProfileStatsController {
     /**
      * Updates the Summary and Relative Statistics charts.
      */
-    updateCharts = () => {
+    updateCharts () {
         if (angular.isDefined(this.summaryApi.update)) {
             this.summaryApi.update();
         }

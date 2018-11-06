@@ -1,4 +1,3 @@
-import * as angular from 'angular';
 import * as _ from "underscore";
 import { DomainType } from "./DomainTypesService";
 import { Common } from "../../common/CommonTypes";
@@ -16,6 +15,7 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dial
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {FeedConstants} from "./FeedConstants";
+import { CloneUtil } from "../../common/utils/clone-util";
 
 /**
  * A cache of the controllerservice Id to its display name.
@@ -168,7 +168,7 @@ export class FeedService {
     };
     cloneFeed() {
         //copy the feed
-        this.createFeedModel = angular.copy(this.editFeedModel);
+        this.createFeedModel = CloneUtil.deepCopy(this.editFeedModel);
         this.createFeedModel.id = null;
         this.createFeedModel.cloned = true;
         this.createFeedModel.clonedFrom = this.createFeedModel.feedName;
@@ -449,7 +449,7 @@ export class FeedService {
      */
     prepareModelForSave(model: any) {
         var properties: any[] = [];
-        var copy = angular.copy(model);
+        var copy = CloneUtil.deepCopy(model);
 
         if (copy.inputProcessor != null) {
             copy.inputProcessor.properties.forEach((property: any) => {
@@ -499,8 +499,8 @@ export class FeedService {
             copy.table.tableSchema.fields.forEach((columnDef: any, idx: any) => {
                 var policy = copy.table.fieldPolicies[idx];
                 var policy = model.table.fieldPolicies[idx];
-                var sourceField = angular.copy(columnDef);
-                var feedField = angular.copy(columnDef);
+                var sourceField = CloneUtil.deepCopy(columnDef);
+                var feedField = CloneUtil.deepCopy(columnDef);
 
                 sourceField.name = columnDef.origName;
                 sourceField.derivedDataType = columnDef.origDataType;
@@ -904,7 +904,7 @@ export class FeedService {
         policy.domainTypeId = domainType.id;
 
         if (domainType.field !== null && typeof domainType.field === 'object') {
-            field.tags = angular.copy(domainType.field.tags);
+            field.tags = CloneUtil.deepCopy(domainType.field.tags);
             if (typeof domainType.field.name === 'string' && domainType.field.name.length > 0) {
                 field.name = domainType.field.name;
             }
@@ -916,8 +916,8 @@ export class FeedService {
         }
 
         if (domainType.fieldPolicy !== null && typeof domainType.fieldPolicy === 'object') {
-            policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
-            policy.validation = angular.copy(domainType.fieldPolicy.validation);
+            policy.standardization = CloneUtil.deepCopy(domainType.fieldPolicy.standardization);
+            policy.validation = CloneUtil.deepCopy(domainType.fieldPolicy.validation);
         }
     }
     /**
@@ -929,7 +929,7 @@ export class FeedService {
         return this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
     }
 
-    diffCollectionOperation = (path: any) => {
+    diffCollectionOperation (path: any) {
         const self = this;
         if (this.versionFeedModelDiff) {
             if (this.versionFeedModelDiff[path]) {
@@ -947,7 +947,7 @@ export class FeedService {
         return 'no-change';
     }
 
-    joinVersionOperations = (op1: any, op2: any) => {
+    joinVersionOperations (op1: any, op2: any) {
         const opLevels = { 'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2 };
         if (opLevels[op1] === opLevels[op2] && op1 !== 'no-change') {
             return 'replace';
@@ -955,7 +955,7 @@ export class FeedService {
         return opLevels[op1] > opLevels[op2] ? op1 : op2;
     }
 
-    resetVersionFeedModel = () => {
+    resetVersionFeedModel () {
         this.versionFeedModel = {};
         this.versionFeedModelDiff = {};
     }
@@ -1024,11 +1024,11 @@ export class FeedSavingDialogController {
     constructor(private dialogRef: MatDialogRef<FeedSavingDialogController>,
         @Inject(MAT_DIALOG_DATA) private data: any) { }
 
-    hide = () => {
+    hide () {
         this.dialogRef.close();
     };
 
-    cancel = () => {
+    cancel() {
         this.dialogRef.close();
     };
 }

@@ -96,41 +96,14 @@ export default class UserDetailsComponent {
         private _viewContainerRef: ViewContainerRef,
         private snackBar: MatSnackBar
     ) {
-
-        //     $scope.$watch(
-        //         () => {return this.$error},
-        //         () => {
-        //             this.isValid = _.reduce(this.$error, 
-        //                 (memo, value) => {
-        //                 return memo && !value;
-        //             }, true);
-        //         },
-        //         true
-        // );
-
-        // Update $error.missingGroup when the edit model changes
-        // $scope.$watch(
-        //         () => {return this.editModel.groups},
-        //         () => {this.$error.missingGroup = (ObjectUtils.isUndefined(this.editModel.groups) || this.editModel.groups.length === 0)},
-        //         true
-        // );
-
-        // Update $error when the system name changes
-        // $scope.$watch(
-        //         () => {return this.editModel.systemName},
-        //         () => {
-        //             this.$error.duplicateUser = (ObjectUtils.isString(this.editModel.systemName) && this.userMap[this.editModel.systemName]);
-        //             this.$error.missingUser = (!ObjectUtils.isString(this.editModel.systemName) || this.editModel.systemName.length === 0);
-        //         }
-        // );
         this.onLoad();
-    }
+      }
     /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
          *
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
      */
-    canDelete = () => {
+    canDelete () {
         return (this.model.systemName !== null);
     };
     /**
@@ -139,7 +112,7 @@ export default class UserDetailsComponent {
         * @param group the group
         * @returns {string} the group title substring
     */
-    findGroupSearchText = (group: any) => {
+    findGroupSearchText (group: any) {
         var safeQuery = this.groupSearchText.toLocaleUpperCase();
         if (ObjectUtils.isString(this.groupMap[group].title)) {
             var titleIndex = this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery);
@@ -150,19 +123,19 @@ export default class UserDetailsComponent {
         }
     };
 
-    isUserNameEmpty = () => {
+    isUserNameEmpty () {
        return !ObjectUtils.isString(this.editModel.systemName) || this.editModel.systemName.length === 0;
     }
 
-    isUserNameDuplicate = () => {
+    isUserNameDuplicate () {
         return ObjectUtils.isString(this.editModel.systemName) && this.userMap[this.editModel.systemName];
     }
 
-    isMissingGroup = () => {
+    isMissingGroup () {
         return ObjectUtils.isUndefined(this.editModel.groups) || this.editModel.groups.length === 0;
     }
 
-    isFormValid = () => {
+    isFormValid () {
         return !this.isUserNameDuplicate() && !this.isUserNameEmpty() && !this.isMissingGroup() && (this.editModel.email === null || this.editModel.email === "" || !this.emailFormControl.hasError('email'));
     }
 
@@ -172,7 +145,7 @@ export default class UserDetailsComponent {
      * @param group the group
      * @returns {string} the group title
      */
-    getGroupTitle = (group: any) => {
+    getGroupTitle (group: any) {
         if (ObjectUtils.isDefined(this.groupMap[group]) && ObjectUtils.isString(this.groupMap[group].title)) {
             return this.groupMap[group].title;
         } else {
@@ -185,7 +158,7 @@ export default class UserDetailsComponent {
      *
      * @returns {Array.<string>} the group titles for this user
      */
-    getGroupTitles = () => {
+    getGroupTitles () {
         return _.map(this.model.groups, this.getGroupTitle);
     };
 
@@ -283,7 +256,7 @@ export default class UserDetailsComponent {
     /**
      * Saves the current user.
      */
-    onSave = () => {
+    onSave () {
         var model = CloneUtil.deepCopy(this.editModel);
         this.UserService.saveUser(model)
             .then(() => {
@@ -293,14 +266,14 @@ export default class UserDetailsComponent {
             });
     };
 
-    addGroup = ($event : any)  => {
+    addGroup ($event : any) {
         var groupName = $event.option.value;
         var groupsArray = this.editModel.groups;
         groupsArray.push(groupName);
         this.editModel.groups = groupsArray;
     }
 
-    removeGroup = (value : string ) => {
+    removeGroup (value : string ) {
         this.editModel.groups = this.editModel.groups.filter((group : any) => {
             return group !== value;
         });
@@ -313,7 +286,7 @@ export default class UserDetailsComponent {
      * @param {string} query the query string
      * @returns {Array.<string>} the list of matching groups
      */
-    queryGroups = (query: any) => {
+    queryGroups (query: any) {
         var safeQuery = query.toLocaleUpperCase();
         return this.groupList
             // Filter groups that are already selected

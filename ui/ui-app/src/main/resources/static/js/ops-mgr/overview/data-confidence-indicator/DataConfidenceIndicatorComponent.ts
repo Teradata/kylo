@@ -85,19 +85,19 @@ export class DataConfidenceIndicatorComponent {
 
         };
             
-        onHealthyClick = ()=>{
+        onHealthyClick () {
             if(this.dataMap.Healthy.count >0){
                 this.openDetailsDialog('Healthy');
             }
         }
 
-        onUnhealthyClick = ()=>{
+        onUnhealthyClick () {
             if(this.dataMap.Unhealthy.count >0){
                 this.openDetailsDialog('Unhealthy');
             }
         }
 
-        updateChart = ()=>{
+        updateChart () {
             this.chartData.forEach((row: any,i: any)=>{
                 row.value = this.dataMap[row.key].count;
             });
@@ -109,12 +109,12 @@ export class DataConfidenceIndicatorComponent {
             }
         }
 
-        initializePieChart= function() {
+        initializePieChart () {
             this.chartData.push({key: "Healthy", value: 0})
             this.chartData.push({key: "Unhealthy", value: 0})
         }
 
-        getDataConfidenceSummary =  ()=> {
+        getDataConfidenceSummary () {
             if (this.refreshing == false) {
                 this.refreshing = true;
                     var data = this.OpsManagerDashboardService.dashboard.dataConfidenceSummary;

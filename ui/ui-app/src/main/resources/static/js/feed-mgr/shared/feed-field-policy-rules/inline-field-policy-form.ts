@@ -60,11 +60,11 @@ class InlineFieldPolicyFormController {
     constructor(private FieldPolicyRuleOptionsFactory: any, private PolicyInputFormService: any) {
 
     }
-    validateForm = () => {
+    validateForm () {
         var validForm = this.PolicyInputFormService.validateForm(this.policyForm, this.field.properties, false);
         return validForm;
     }
-    onRuleTypeChange =  () => {
+    onRuleTypeChange () {
         this.expandAdvancedOptions = false;
         this.showAdvancedOptions = false;
         if (this.ruleType != null) {
@@ -84,7 +84,7 @@ class InlineFieldPolicyFormController {
             this.field = null;
         }
     }
-    toggleAdvancedOptions = () => {
+    toggleAdvancedOptions () {
         this.expandAdvancedOptions = !this.expandAdvancedOptions;
     }
     findRuleType(ruleName: any) {

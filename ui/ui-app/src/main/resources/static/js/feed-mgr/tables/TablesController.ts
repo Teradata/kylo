@@ -68,7 +68,7 @@ export class TablesController {
         this.getDatasource(this.datasourceId).then();
 
     };
-    successFn = (response: any) => {
+    successFn (response: any) {
         var _tables = response.hive.data;
         var feedNames = response.feedNames.data;
         if (_tables) {
@@ -86,27 +86,27 @@ export class TablesController {
         var deferred = this.$q.defer();
         deferred.resolve();
     };
-    errorFn = (err: any) => {
+    errorFn (err: any) {
         this.loading = false;
         //TODO @Greg There was no deferred variable available in this scope.
         var deferred = this.$q.defer();
         deferred.reject(err);
     };
-    onViewTypeChange = (viewType: any) => {
+    onViewTypeChange (viewType: any) {
         this.paginationDataService.viewType(this.pageName, this.viewType);
     };
 
-    onOrderChange = (order: any) => {
+    onOrderChange (order: any) {
         this.paginationDataService.sort(this.pageName, order);
         this.tableOptionsService.setSortOption(this.pageName, order);
     };
 
-    onPaginationChange = (page: any, limit: any) => {
+    onPaginationChange (page: any, limit: any) {
         this.paginationDataService.currentPage(this.pageName, null, page);
         this.currentPage = page;
     };
 
-    onClickTable = (table: any) => {
+    onClickTable (table: any) {
         this.stateService.FeedManager().Table().navigateToTable(this.datasource.id, this.schema, table.tableName);
     };
 
@@ -114,14 +114,14 @@ export class TablesController {
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedTableOption = (option: any) => {
+    selectedTableOption (option: any) {
         var sortString = this.tableOptionsService.toSortString(option);
         var savedSort = this.paginationDataService.sort(this.pageName, sortString);
         var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
         this.tableOptionsService.setSortOption(this.pageName, sortString);
     };
 
-    selectedAdditionalOption = (option: any) => {
+    selectedAdditionalOption (option: any) {
         this.$http.get(this.RestUrlService.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache").then(this.init);
     };
 
@@ -129,23 +129,23 @@ export class TablesController {
      * Build the possible Sorting Options
      * @returns {*[]}
      */
-    loadSortOptions = () => {
+    loadSortOptions () {
         var options = { 'Table': 'tableName' };
         var sortOptions = this.tableOptionsService.newSortOptions(this.pageName, options, 'tableName', 'asc');
         this.tableOptionsService.initializeSortOption(this.pageName);
         return sortOptions;
     }
 
-    endsWithReservedWord = (t: any) => {
+    endsWithReservedWord (t: any) {
         return this.Utils.endsWith(t.tableName, "_valid") || this.Utils.endsWith(t.tableName, "_invalid") || this.Utils.endsWith(t.tableName, "_profile") || this.Utils.endsWith(t.tableName, "_feed");
     }
 
-    isKnownFeedTable = (feedNames: any, schema: any) => {
+    isKnownFeedTable (feedNames: any, schema: any) {
         return _.find(feedNames, (feedName: any) => {
             return feedName.startsWith(schema + ".");
         }) !== undefined;
     }
-    getNonHiveTables = () =>{
+    getNonHiveTables () {
         var deferred = this.$q.defer();
 
         var limit = this.paginationDataService.rowsPerPage(this.pageName);
@@ -164,7 +164,7 @@ export class TablesController {
         return deferred.promise;
     }
 
-    getHiveTables = () => {
+    getHiveTables () {
         var deferred = this.$q.defer();
 
         var promises = {
@@ -176,7 +176,7 @@ export class TablesController {
         return deferred.promise;
     }
 
-    init = () => {
+    init () {
         this.tables = [];
         if (this.datasource.isHive) {
             this.getHiveTables();
@@ -185,7 +185,7 @@ export class TablesController {
         }
     }
 
-    getDatasource = (datasourceId: any) => {
+    getDatasource (datasourceId: any) {
         this.loading = true;
         var successFn = (response: any) => {
             this.datasource = response;

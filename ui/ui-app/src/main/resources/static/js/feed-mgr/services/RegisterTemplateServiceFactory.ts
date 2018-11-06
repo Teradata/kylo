@@ -1,7 +1,6 @@
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 import {TdDialogService} from "@covalent/core/dialogs";
-import * as angular from 'angular';
 import 'pascalprecht.translate';
 import {Subject} from 'rxjs/Subject';
 import * as _ from "underscore";
@@ -11,8 +10,6 @@ import AccessControlService from '../../services/AccessControlService';
 import {EmptyTemplate, ExtendedTemplate, SaveAbleTemplate} from '../model/template-models';
 import {EntityAccessControlService} from '../shared/entity-access-control/EntityAccessControlService';
 import {DefaultFeedPropertyService} from './DefaultFeedPropertyService';
-import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
-import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
 import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
 import {RegisteredTemplateService} from "./RegisterTemplateService";
 import {RestUrlService} from './RestUrlService';
@@ -503,7 +500,8 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             var additionalProperties: any = [];
             var inputProcessors = [];
             var additionalProcessors = [];
-            angular.forEach(properties, (property: Property, i:any) => {
+            Object.keys(properties).forEach((i :any )=> {
+                let property = properties[i];
                 if (property.processor == undefined) {
                     property.processor = {
                         processorId: property.processorId,
