@@ -8,7 +8,7 @@
     <span fxFlex></span>
   </mat-card-header>
   <mat-card-content>
-    <mat-list role="list">
+    <mat-list role="list" dense>
       <mat-divider *ngIf="requiredSteps.length >0"></mat-divider>
       <h3 mat-subheader *ngIf="requiredSteps.length >0">Required</h3>
       <mat-divider *ngIf="requiredSteps.length >0"></mat-divider>
@@ -34,12 +34,12 @@
 
 <ng-template #setupStepSummary let-step let-$last="$last">
   <mat-list-item (click)="onStepSelected(step)" [ngClass]="{'disabled-step':step.disabled}" class="overview-step">
-    <mat-icon mat-list-icon color="green" *ngIf="step.complete">check_circle</mat-icon>
-    <mat-icon mat-list-icon color="accent" *ngIf="!step.complete && step.icon">{{step.icon}}</mat-icon>
-    <h4 mat-line [ngClass]="{'completed-step':step.complete}">
+    <mat-icon matListAvatar color="green" *ngIf="step.complete">check_circle</mat-icon>
+    <mat-icon matListAvatar color="accent" *ngIf="!step.complete && step.icon">{{step.icon}}</mat-icon>
+    <h3 matLine [ngClass]="{'completed-step':step.complete}">
       {{step.name}}
-    </h4>
-    <p mat-line [ngClass]="{'completed-step':step.complete}"> {{step.description}}</p>
+    </h3>
+    <p matLine [ngClass]="{'completed-step':step.complete}"> {{step.description}}</p>
     <span></span>
     <mat-icon color="accent">keyboard_arrow_right</mat-icon>
   </mat-list-item>
