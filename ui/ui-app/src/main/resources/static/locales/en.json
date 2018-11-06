@@ -933,7 +933,11 @@
              "Description":"Required settings for this feed"
             },
             "Properties": {
-                "Name":"Properties"
+                "Name":"Properties",
+                "CustomProperties":"Custom Properties",
+                "MetadataIndexing":"Metadata Indexing",
+                "IndexSchemaAndMetadata":"Index schema and metadata",
+                "IndexSchemaAndMetadataHint":"Index metadata and schema for the feed in a search engine."
             },
             "Permissions":{
                 "Name":"Permissions"

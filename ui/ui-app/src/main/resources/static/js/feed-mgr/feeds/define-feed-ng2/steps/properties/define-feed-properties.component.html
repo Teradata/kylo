@@ -2,6 +2,7 @@
 
   <feed-step-readonly-content>
     <div fxLayout="column" *ngIf="feed.readonly">
+      <metadata-indexing [editable]="false" [allowIndexing]="feed.allowIndexing"></metadata-indexing>
       <!-- feed properties -->
       <property-list [editable]="false" [properties]="feed.userProperties"></property-list>
 
@@ -11,6 +12,7 @@
 
   <feed-step-edit-content>
    <form [formGroup]="formGroup" *ngIf="!feed.readonly">
+     <metadata-indexing [editable]="true" [parentFormGroup]="formGroup" [(allowIndexing)]="feed.allowIndexing" (allowIndexingChange)="onAllowIndexingChange($event)"></metadata-indexing>
      <!-- feed properties -->
      <property-list #propertyList  [editable]="true" [parentFormGroup]="formGroup" [(properties)]="feed.userProperties" (propertiesChange)="onPropertiesChanged($event)"></property-list>
 
