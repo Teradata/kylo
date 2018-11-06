@@ -11,6 +11,7 @@ import {FeedSummary} from "../../../../model/feed/feed-summary.model";
 import {FeedJobActivityComponent} from "./feed-job-activity/feed-job-activity.component";
 import {JobsListComponent} from "../../../../../ops-mgr/jobs/jobs-list/jobs-list.component";
 import {Feed} from "../../../../model/feed/feed.model";
+import {FeedOperationsSummary} from "../../../../model/feed/feed-operations-summary.model";
 
 @Component({
     selector: "feed-activity-summary",
@@ -52,7 +53,7 @@ export class FeedActivitySummaryComponent extends AbstractLoadFeedComponent  {
 
 
 
-    onFeedHealthRefreshed(feedSummary:FeedSummary){
+    onFeedHealthRefreshed(feedSummary:FeedOperationsSummary){
         if(this.feedJobActivity){
             this.feedJobActivity.updateCharts();
         }

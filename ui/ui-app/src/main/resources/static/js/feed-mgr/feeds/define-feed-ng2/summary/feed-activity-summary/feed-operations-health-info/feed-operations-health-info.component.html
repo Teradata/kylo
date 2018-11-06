@@ -56,7 +56,7 @@
 
     <mat-list-item *ngIf="feedHealthAvailable && !feed.isStream">
       <mat-icon matListAvatar>{{kyloIcons.getBatchFeedRunStatusIcon(feedHealth)}}</mat-icon>
-      <h4 mat-line [ngClass]="kyloIcons.getBatchFeedRunStatusColor(feed.state)"> {{feedHealth.state}}</h4>
+      <h4 mat-line [ngClass]="kyloIcons.getBatchFeedRunStatusColor(feedHealth)"> {{feedHealth.state}}</h4>
       <p mat-line>Run Status</p>
     </mat-list-item>
     <mat-divider></mat-divider>
@@ -81,7 +81,7 @@
     </mat-list-item>
     <mat-divider></mat-divider>
 
-    <mat-list-item *ngIf="feedHealthAvailable && !feed.isStream">
+    <mat-list-item *ngIf="feedHealthAvailable && !feed.isStream && feedHealth.state != 'RUNNING'">
       <mat-icon matListAvatar>{{kyloIcons.Feed.runTime}}</mat-icon>
       <h4 mat-line> {{feedHealth.runTimeString}}</h4>
       <p mat-line><span translate>views.feeds.feed-details.LRT</span></p>

@@ -1,4 +1,4 @@
-import {FeedState} from "./feed.model";
+import {FeedOperationsState, FeedState} from "./feed.model";
 
 /**
  * light weight summary about the feed
@@ -21,6 +21,8 @@ export class FeedSummary {
     templateName:string;
     templateId:string;
     healthText?:string;
+    running?:boolean;
+    operationsState:FeedOperationsState
 
 
     public constructor(init?: Partial<FeedSummary>) {

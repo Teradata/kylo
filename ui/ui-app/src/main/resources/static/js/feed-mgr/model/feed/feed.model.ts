@@ -58,6 +58,10 @@ export enum FeedState {
     NEW = "NEW", ENABLED = "ENABLED", DISABLED = "DISABLED"
 }
 
+export enum FeedOperationsState {
+    RUNNING = "RUNNING", WAITING = "WAITING"
+}
+
 
 export enum FeedTemplateType {
     DEFINE_TABLE = "DEFINE_TABLE", DATA_TRANSFORMATION = "DATA_TRANSFORMATION", SIMPLE_FEED = "SIMPLE_FEED"
