@@ -1441,3 +1441,8 @@ accordion-menu .mat-list-item-content {
 .searchBar .mat-input-infix.mat-form-field-infix {
   padding: 0;
 }
+
+.regexCodeMirror .CodeMirror {
+  height: auto;
+  border: 0px;
+}
