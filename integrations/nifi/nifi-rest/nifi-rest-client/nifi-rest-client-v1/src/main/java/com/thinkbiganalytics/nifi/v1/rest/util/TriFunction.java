@@ -1,10 +1,10 @@
-package com.thinkbiganalytics.nifi.rest.client;
+package com.thinkbiganalytics.nifi.v1.rest.util;
 
 /*-
  * #%L
- * thinkbig-nifi-rest-common-api
+ * kylo-nifi-rest-client-v1
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,24 +20,18 @@ package com.thinkbiganalytics.nifi.rest.client;
  * #L%
  */
 
-/**
- * Thrown to indicate that the connection to NiFi failed.
- */
-public class NifiConnectionException extends NifiClientRuntimeException {
+import java.util.Objects;
+import java.util.function.Function;
 
-    public NifiConnectionException() {
-        super();
-    }
+@FunctionalInterface
+public interface TriFunction<P1, P2, P3, R> {
 
-    public NifiConnectionException(String message) {
-        super(message);
-    }
+    R apply(P1 p1, P2 p2, P3 p3);
 
-    public NifiConnectionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public NifiConnectionException(Throwable cause) {
-        super(cause);
+    default <V> TriFunction<P1, P2, P3, V> andThen(
+        Function<? super R, ? extends V> after) {
+        Objects.requireNonNull(after);
+        return (P1 p1, P2 p2, P3 p3) -> after.apply(apply(p1, p2, p3));
     }
 }
+
