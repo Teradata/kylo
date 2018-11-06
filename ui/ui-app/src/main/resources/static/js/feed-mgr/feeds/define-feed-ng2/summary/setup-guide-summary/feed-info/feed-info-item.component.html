@@ -1,5 +1,5 @@
 <mat-list-item *ngIf="!editing">
-  <mat-icon matListAvatar color="accent" >{{icon}}</mat-icon>
+  <mat-icon matListAvatar >{{icon}}</mat-icon>
   <h3 matLine *ngIf="!customReadonlyLayout">{{name}}</h3>
   <p matLine *ngIf="!customReadonlyLayout">{{description}}</p>
   <ng-content select=".readonly-content" *ngIf="customReadonlyLayout && !readonlyList"></ng-content>
