@@ -334,7 +334,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     /**
      * Adding a new Column to the schema
-     * This is called both when the user clicks the "Add Field" button or when the sample file is uploaded
+     * This is called both when the user clicks the "Add Field"
      * If adding from the UI the {@code columnDef} will be null, otherwise it will be the parsed ColumnDef from the sample file
      * @param columnDef
      */
@@ -769,6 +769,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 if ($.inArray(columnDef.derivedDataType, this.availableDefinitionDataTypes) == -1) {
                     this.availableDefinitionDataTypes.push(columnDef.derivedDataType);
                 }
+                columnDef.replaceNameSpaces();
                 columnDef.initFeedColumn()
                 //add the form control
                 this.tableFormControls.addTableFieldFormControl(columnDef,false);
