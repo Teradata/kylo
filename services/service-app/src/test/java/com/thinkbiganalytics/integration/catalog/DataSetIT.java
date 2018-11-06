@@ -31,6 +31,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -47,6 +48,7 @@ public class DataSetIT extends IntegrationTestBase {
     /**
      * Verify uploading files.
      */
+    @Ignore  // TODO create local-files data source
     @Test
     public void testUpload() {
         // Create a data set

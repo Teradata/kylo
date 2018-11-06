@@ -56,20 +56,6 @@ public class DataSourceIT extends IntegrationTestBase {
     String azureAccountKey;
 
     /**
-     * Verify retrieving a single data source.
-     */
-    @Test
-    public void testFind() {
-        final DataSource dataSource = given(DataSourceController.BASE)
-            .when().get("hive")
-            .then().statusCode(200)
-            .extract().as(DataSource.class);
-        Assert.assertEquals("hive", dataSource.getId());
-        Assert.assertEquals("Hive", dataSource.getTitle());
-        Assert.assertEquals("hive", dataSource.getConnector().getId());
-    }
-
-    /**
      * Verifying retrieving all data sources.
      */
     @Test
@@ -93,7 +79,7 @@ public class DataSourceIT extends IntegrationTestBase {
         final Matcher<DataSource> isHive = new CustomMatcher<DataSource>("is hive data source") {
             @Override
             public boolean matches(final Object item) {
-                return (item instanceof DataSource && "hive".equals(((DataSource) item).getId()) && "Hive".equals(((DataSource) item).getTitle()));
+                return (item instanceof DataSource && "Hive".equals(((DataSource) item).getTitle()));
             }
         };
         final Matcher<DataSource> isJdbc = new CustomMatcher<DataSource>("is jdbc data source") {
