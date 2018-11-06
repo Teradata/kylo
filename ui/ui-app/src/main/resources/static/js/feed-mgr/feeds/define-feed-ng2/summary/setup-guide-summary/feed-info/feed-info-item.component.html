@@ -1,4 +1,4 @@
-<mat-list-item>
+<mat-list-item *ngIf="!editing">
   <mat-icon matListAvatar color="accent" >{{icon}}</mat-icon>
   <h3 matLine *ngIf="!customReadonlyLayout">{{name}}</h3>
   <p matLine *ngIf="!customReadonlyLayout">{{description}}</p>
@@ -14,10 +14,15 @@
     <mat-icon ngClass="tc-grey-600">edit</mat-icon>
   </button>
 </mat-list-item>
-<div *ngIf="editing" fxLayout="column" class="info-item-edit">
+<div *ngIf="editing" class="pad-sm">
+  <div class="mat-subheading-2 pull-bottom-none">Edit {{description}}</div>
+  <mat-divider></mat-divider>
+  <div class="pad">
   <ng-content #content></ng-content>
-  <div fxLayout="row" class="info-item-action-buttons">
+  </div>
+  <mat-divider></mat-divider>
+  <div fxLayout="row" class="pad-sm">
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="isSaveDisabled">Save</button>
     <button mat-button (click)="onCancel()">Cancel</button>
-    <button mat-button color="primary" (click)="onSave()" [disabled]="isSaveDisabled">Save</button>
   </div>
 </div>
