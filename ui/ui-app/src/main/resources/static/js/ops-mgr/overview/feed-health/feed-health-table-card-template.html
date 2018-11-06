@@ -27,7 +27,7 @@
     <md-tabs flex md-selected="vm.tabMetadata.selectedIndex"
              md-align-tabs="top" layout-fill md-dynamic-height>
 
-      <md-tab ng-repeat="tab in vm.tabs"
+      <md-tab ng-repeat="tab in vm.tabs"©
               ng-disabled="tab.disabled"
               md-on-select="vm.onTabSelected(tab)" flex
       >
@@ -37,62 +37,70 @@
           <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
               <md-progress-linear class="md-accent" md-mode="indeterminate" ng-show="vm.showProgress"></md-progress-linear>
             <md-list flex layout-fill class="list-item-table">
-              <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
-                            pagination-id="tab.title" ng-click="vm.feedDetails($event,feed)">
+              <md-list-item class="" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
+                            pagination-id="tab.title" ng-click="vm.feedDetails($event,feed)" style="height:75px">
+                <div layout="row" layout-fill>
+                    <div layout="column" class="pad push-top push-left push-right">
+                                                          <span ng-class="{'tc-positive':feed.healthText == 'HEALTHY','tc-negative':feed.healthText == 'UNHEALTHY'}">
+                                           <ng-md-icon icon="{{feed.icon}}" size="28" hide-xs style="height: inherit">
+                                           </ng-md-icon>
+                                                          </span>
 
-                <div layout="column" layout-fill>
-                  <div class="item-column md-list-item-text item-column-title"
-                       layout-fill flex>
-                           <span class="item-title" title="{{feed.feed}}">
+                    </div>
+                  <div layout="column" layout-fill>
+                    <div class="item-column md-list-item-text item-column-title" style="margin-bottom:-4px;padding-bottom:0px"
+                         layout-fill flex>
+                           <span class="item-title-normal" title="{{feed.feed}}">
                               {{feed.displayName === undefined ? feed.feed : feed.displayName.value}}
                             </span>
-                  </div>
-                  <div layout="row" layout-fill class="overview-row">
-                    <div flex="20" layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
+                    </div>
+                    <div layout="row" layout-fill class="pull-top-sm">
+                      <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
                                     <span ng-class="{'tc-positive':feed.healthText == 'HEALTHY','tc-negative':feed.healthText == 'UNHEALTHY'}">
-                                           <ng-md-icon icon="{{feed.icon}}" size="20" hide-xs style="height: inherit">
-                                           </ng-md-icon>
                                       {{feed.healthText | translate}}
                                     </span>
-                      <span class="column-title column-title-bottom">
+                        <span class="column-title column-title-bottom pull-top-sm">
                                {{"views.dashboard.feed-health" | translate}}
                                    </span>
-                    </div>
-                    <div flex="20" layout="column" class="item-column md-list-item-text " ng-if="feed.stream">
+                      </div>
+                      <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="feed.stream">
                                    <span class="accent-color" ng-if="feed.stream">
                                            <ng-md-icon icon="tune" size="20" hide-xs style="height: inherit">
                                            </ng-md-icon>
                                      STREAM
                                     </span>
-                                  <span ng-if="feed.stream" class="column-title column-title-bottom">{{feed.runningCount | number}} running</span>
-                    </div>
-                    <div flex="20" layout="column" class="item-column md-list-item-text " >
+                        <span ng-if="feed.stream" class="column-title column-title-bottom  pull-top-sm">{{feed.runningCount | number}} running</span>
+                      </div>
+                      <div flex="20" layout="column" class="item-column md-list-item-text " >
 
-                                   <span class="item-title-small {{feed.statusStyle}}">
+                                   <span class="item-title-normal {{feed.statusStyle}}">
                                      {{feed.displayStatus | translate}}</span>
-                      <span class="column-title column-title-bottom">
+                        <span class="column-title column-title-bottom  pull-top-sm">
                                      {{"views.dashboard.status" | translate}}
                                    </span>
-                    </div>
+                      </div>
 
 
-                    <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="((!feed.stream  || (feed.stream && !feed.running)))">
-                                   <span class="item-title" ng-if="feed.lastStatus != 'UNKNOWN'">
+                      <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="((!feed.stream  || (feed.stream && !feed.running)))">
+                                   <span class="item-title-normal" ng-if="feed.lastStatus != 'UNKNOWN'">
                                       <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></kylo-timer>
                                    </span>
-                                   <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">
+                        <span class="item-title-normal" ng-if="feed.lastStatus == 'UNKNOWN'">
                                     --
                                    </span>
-                      <span class="column-title column-title-bottom">{{"views.dashboard.since" | translate}}</span>
-                    </div>
-                    <div flex hide-xs layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
-                      <span class="item-title" ng-if="feed.lastStatus != 'UNKNOWN'">{{feed.runTimeString}}</span>
-                      <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">--</span>
-                      <span class="column-title column-title-bottom">{{"views.dashboard.lastRunTime" | translate}}</span>
+                        <span class="column-title column-title-bottom  pull-top-sm">{{"views.dashboard.since" | translate}}</span>
+                      </div>
+                      <div flex hide-xs layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
+                        <span class="item-title-normal" ng-if="feed.lastStatus != 'UNKNOWN'">{{feed.runTimeString}}</span>
+                        <span class="item-title-normal" ng-if="feed.lastStatus == 'UNKNOWN'">--</span>
+                        <span class="column-title column-title-bottom  pull-top-sm ">{{"views.dashboard.lastRunTime" | translate}}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <md-divider ng-if="!$last"></md-divider>
+
+
+                <md-divider ng-if="!$last" class="pull-top"></md-divider>
               </md-list-item>
               <md-list-item ng-show="vm.loading == false && vm.total ==0">
                 {{"views.dashboard.noResultsFound" | translate}}
@@ -146,7 +154,7 @@
                   </td>
                   <td md-cell>
                     <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true" ng-if="(feed.lastStatus != 'UNKNOWN' && (!feed.stream || (feed.stream && !feed.running)))"></kylo-timer>
-                    <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'"> -- </span>
+                    <span class="item-title-normal" ng-if="feed.lastStatus == 'UNKNOWN'"> -- </span>
                   </td>
                   <td md-cell>
                     <div ng-if="!feed.stream">

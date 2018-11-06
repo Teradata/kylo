@@ -345,6 +345,11 @@ md-autocomplete.md-default-theme, md-autocomplete {
   width: 400px;
 }
 
+.md-chips {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px !important;
+}
+
 md-list.padding-left md-list-item {
   padding-left: 25px !important;
 }
@@ -785,7 +790,7 @@ card-layout.card-full-width section:first-child {
 }
 
 .item-column {
-  padding: 15px;
+  padding: 16px;
 }
 
 .item-column-title {
@@ -825,8 +830,15 @@ card-layout.card-full-width section:first-child {
   text-overflow: ellipsis;
 }
 
-.item-title-small {
+.item-title-normal {
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-title-small {
+  font-size: 12px;
   font-weight: 500;
   min-height: 20px;
 }
