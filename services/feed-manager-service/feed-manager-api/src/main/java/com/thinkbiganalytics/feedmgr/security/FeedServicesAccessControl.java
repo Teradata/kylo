@@ -90,9 +90,20 @@ public interface FeedServicesAccessControl {
     Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
                                                         "Administer Templates",
                                                         "Allows enabling and disabling feed templates");
+    
+    Action ACCESS_CATALOG = Action.create("accessCatalog",
+                                          "Access Catalog",
+                                          "Allows access to catalog information like connectors, data sources, etc.");
 
+    Action ACCESS_CONNECTORS = ACCESS_CATALOG.subAction("accessConnectors",
+                                                        "Access Connectors",
+                                                        "Allows ability to view connector information");
+    
+    Action ADMIN_CONNECTORS = ACCESS_CONNECTORS.subAction("adminConnectors",
+                                                          "Administer Connectors",
+                                                          "Allows the ability to administer connecters, such as edit details and activate/deactivate them");
 
-    Action ACCESS_DATASOURCES = FEEDS_SUPPORT.subAction("accessDatasources",
+    Action ACCESS_DATASOURCES = ACCESS_CATALOG.subAction("accessDatasources",
                                                         "Access Data Sources",
                                                         "Allows (a) access to data sources (b) viewing tables and schemas from a data source (c) using a data source in transformation feed");
 

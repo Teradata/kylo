@@ -26,6 +26,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -71,6 +72,9 @@ public class ConnectorController extends AbstractCatalogController {
 
     @Inject
     MetadataAccess metadataService;
+    
+    @Inject
+    private AccessController accessController;
 
     @GET
     @ApiOperation("Gets the specified connector")
