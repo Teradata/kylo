@@ -788,11 +788,11 @@ export class Feed  implements KyloObject{
             }
 
             //ensure the source and feed tables match those defined by this feed
-            if (copy.table.sourceTableSchema.fields.length ==0 && sourceFields.length != 0 ) {
+            if (!this.hasBeenDeployed() && sourceFields.length != 0 ) {
                 copy.table.sourceTableSchema.fields = sourceFields;
             }
 
-            if (copy.table.feedTableSchema.fields.length ==0 && feedFields.length != 0 ) {
+            if (!this.hasBeenDeployed() && feedFields.length != 0 ) {
                 copy.table.feedTableSchema.fields = feedFields;
             }
 

@@ -54,6 +54,16 @@ public class DefaultField implements Field {
 
     private boolean createdTracker;
 
+    /**
+     * The original name of the column prior to it getting changed (if at all)
+     */
+    private String origName;
+
+    /**
+     * The original data type of the column prior to it getting changed (if at all)
+     */
+    private String origDataType;
+
     @JsonDeserialize(contentAs = DefaultTag.class)
     private List<Tag> tags;
 
@@ -212,5 +222,22 @@ public class DefaultField implements Field {
      */
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+
+    public String getOrigName() {
+        return origName != null ? origName : this.name;
+    }
+
+    public void setOrigName(String origName) {
+        this.origName = origName;
+    }
+
+    public String getOrigDataType() {
+        return origDataType != null ? origDataType : this.derivedDataType;
+    }
+
+    public void setOrigDataType(String origDataType) {
+        this.origDataType = origDataType;
     }
 }
