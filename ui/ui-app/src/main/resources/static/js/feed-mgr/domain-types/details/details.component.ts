@@ -1,21 +1,27 @@
-import {Input, OnDestroy, OnInit} from "@angular/core";
-import * as angular from "angular";
+import {Input, OnDestroy, OnInit, Component} from "@angular/core";
 import {Subscription} from "rxjs/Subscription";
 
-import {moduleName} from "../module-name";
 import {DomainType} from "../../services/DomainTypesService.d";
 import {DomainTypeDetailsService} from "../services/details.service";
 import AccessControlService from "../../../services/AccessControlService";
+import StateServices from "../../../services/StateService";
+import { DomainTypesService } from "../../services/DomainTypesService";
+import { TdDialogService } from "@covalent/core/dialogs";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { ObjectUtils } from "../../../common/utils/object-utils";
+import { StateService } from "@uirouter/core";
 
 /**
  * Adds or updates domain types.
  */
+@Component({
+    templateUrl: 'js/feed-mgr/domain-types/details/details.component.html'
+})
 export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
 
     /**
      * Domain type model for the read-only view.
      */
-    @Input()
     public model: DomainType;
 
     /**
@@ -37,11 +43,16 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
      * Subscription to save button notifications.
      */
     private saveSubscription: Subscription;
+    loaded: boolean = false;
 
-    static readonly $inject: string[] = ["$mdDialog", "$mdToast", "AccessControlService", "DomainTypeDetailsService", "DomainTypesService", "StateService"];
+    constructor(private accessControlService: AccessControlService,
+                private DomainTypeDetailService: DomainTypeDetailsService, 
+                private DomainTypesService: DomainTypesService, 
+                private StateService: StateServices,
+                private dialog: TdDialogService,
+                private snackBar: MatSnackBar,
+                private transition: StateService) {
 
-    constructor(private $mdDialog: angular.material.IDialogService, private $mdToast: angular.material.IToastService, private accessControlService: AccessControlService,
-                private DomainTypeDetailService: DomainTypeDetailsService, private DomainTypesService: any, private StateService: any) {
         this.cancelSubscription = DomainTypeDetailService.cancelled.subscribe(() => this.onCancel());
         this.deleteSubscription = DomainTypeDetailService.deleted.subscribe(() => this.onDelete());
         this.saveSubscription = DomainTypeDetailService.saved.subscribe(model => this.onSave(model));
@@ -51,17 +62,9 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
      * Indicates if this domain type is newly created.
      */
     get isNew() {
-        return (!angular.isString(this.model.id) || this.model.id.length === 0);
+        return (!ObjectUtils.isString(this.model.id) || this.model.id.length === 0);
     }
-
-    $onDestroy() {
-        this.ngOnDestroy();
-    }
-
-    $onInit() {
-        this.ngOnInit();
-    }
-
+    
     ngOnDestroy(): void {
         this.cancelSubscription.unsubscribe();
         this.deleteSubscription.unsubscribe();
@@ -69,10 +72,20 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
     }
 
     ngOnInit(): void {
+
         // Check for edit access
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
                 this.allowEdit = this.accessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                if (ObjectUtils.isString(this.transition.params.domainTypeId)) {
+                    this.DomainTypesService.findById(this.transition.params.domainTypeId).then((response) => {
+                        this.model = response;
+                        this.loaded = true;
+                    });
+                } else {
+                    this.model = this.DomainTypesService.newDomainType();
+                    this.loaded = true;
+                }
             });
     }
 
@@ -89,31 +102,30 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
      * Deletes the current domain type.
      */
     onDelete() {
-        const confirm = this.$mdDialog.confirm()
-            .title("Delete Domain Type")
-            .textContent("Are you sure you want to delete this domain type? Columns using this domain type will appear to have no domain type.")
-            .ariaLabel("Delete Domain Type")
-            .ok("Please do it!")
-            .cancel("Nope");
-        this.$mdDialog.show(confirm).then(() => {
-            this.DomainTypesService.deleteById(this.model.id)
+
+        this.dialog.openConfirm({
+            message : "Are you sure you want to delete this domain type? Columns using this domain type will appear to have no domain type.",
+            title : "Delete Domain Type",
+            ariaLabel : "Delete Domain Type",
+            acceptButton : "Please do it!",
+            cancelButton: "Nope",
+            disableClose : false
+        }).afterClosed().subscribe((accept: boolean) => {
+            if (accept) {
+                this.DomainTypesService.deleteById(this.model.id).toPromise()
                 .then(() => {
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent("Successfully deleted the domain type " + this.model.title)
-                            .hideDelay(3000)
-                    );
+                    this.snackBar.open('Successfully deleted the domain type' + this.model.title,'OK',{duration : 3000});
                     this.StateService.FeedManager().DomainType().navigateToDomainTypes();
                 }, (err: angular.IHttpResponse<any>) => {
-                    this.$mdDialog.show(
-                        this.$mdDialog.alert()
-                            .clickOutsideToClose(true)
-                            .title("Delete Failed")
-                            .textContent("The domain type " + this.model.title + " could not be deleted. " + err.data.message)
-                            .ariaLabel("Failed to delete domain type")
-                            .ok("Got it!")
-                    );
+                    this.dialog.openAlert({
+                        message : "The domain type " + this.model.title + " could not be deleted. " + err.data.message,
+                        title : "Delete Failed",
+                        ariaLabel : "Failed to delete domain type",
+                        closeButton : "Got it!",
+                        disableClose : false
+                    });
                 });
+            }
         });
     };
 
@@ -125,23 +137,14 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
             .then((newModel: DomainType) => this.model = newModel,
                 (err: angular.IHttpResponse<any>) => {
                     this.DomainTypeDetailService.fail(err.data);
-                    this.$mdDialog.show(
-                        this.$mdDialog.alert()
-                            .clickOutsideToClose(true)
-                            .title("Save Failed")
-                            .textContent("The domain type " + this.model.title + " could not be saved. " + err.data.message)
-                            .ariaLabel("Failed to save domain type")
-                            .ok("Got it!")
-                    );
+                    this.dialog.openAlert({
+                        message : "The domain type " + this.model.title + " could not be saved. " + err.data.message,
+                        title : "Save Failed",
+                        ariaLabel : "Failed to save domain type",
+                        closeButton : "Got it!",
+                        disableClose : false
+                    });
                 });
     };
 }
 
-angular.module(moduleName)
-    .component("domainTypeDetailsComponent", {
-        bindings: {
-            model: "<"
-        },
-        controller: DomainTypeDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/details.component.html"
-    });

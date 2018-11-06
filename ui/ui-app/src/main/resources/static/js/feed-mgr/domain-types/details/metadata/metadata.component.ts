@@ -3,15 +3,27 @@ import * as angular from "angular";
 import {moduleName} from "../../module-name";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
+import { Component, Input } from "@angular/core";
+import { TdDialogService } from "@covalent/core/dialogs";
+import { IconPickerDialog } from "../../../../common/icon-picker-dialog/icon-picker-dialog.component";
+import { FeedTagService } from "../../../services/FeedTagService";
 
 /**
  * Metadata section of the {@link DomainTypeDetailsComponent}.
  */
+@Component({
+    selector:'domain-type-metadata-details',
+    templateUrl: 'js/feed-mgr/domain-types/details/metadata/metadata.component.html'
+})
 export class DomainTypeMetadataDetailsComponent extends AbstractSectionComponent {
 
-    static readonly $inject: string[] = ["$mdDialog", "DomainTypeDetailsService", "FeedTagService"];
+    @Input() allowEdit: any;
+    @Input() model: any;
 
-    constructor(private $mdDialog: angular.material.IDialogService, DomainTypeDetailsService: DomainTypeDetailsService, private FeedTagService: any) {
+    constructor(DomainTypeDetailsService: DomainTypeDetailsService, 
+                private FeedTagService: FeedTagService,
+                private dialog: TdDialogService) {
+
         super(DomainTypeDetailsService);
     }
 
@@ -38,30 +50,17 @@ export class DomainTypeMetadataDetailsComponent extends AbstractSectionComponent
      * Shows the icon picker dialog.
      */
     showIconPicker() {
-        this.$mdDialog.show({
-            controller: "IconPickerDialog",
-            templateUrl: "js/common/icon-picker-dialog/icon-picker-dialog.html",
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: true,
-            locals: {
+        this.dialog.open(IconPickerDialog, {
+            data: {
                 iconModel: this.editModel
-            }
-        }).then((msg: any) => {
+            },
+            panelClass: "full-screen-dialog"
+        }).afterClosed().subscribe((msg: any) => {
             if (msg) {
                 this.editModel.icon = msg.icon;
                 this.editModel.iconColor = msg.color;
             }
         });
+
     }
 }
-
-angular.module(moduleName)
-    .component("domainTypeMetadataDetails", {
-        bindings: {
-            allowEdit: "<",
-            model: "<"
-        },
-        controller: DomainTypeMetadataDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/metadata/metadata.component.html"
-    });

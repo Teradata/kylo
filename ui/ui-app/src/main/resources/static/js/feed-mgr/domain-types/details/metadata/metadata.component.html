@@ -1,38 +1,37 @@
-<form name="$ctrl.form">
-  <vertical-section-layout section-title="Metadata" [on-delete]="$ctrl.onDelete" [allow-delete]="$ctrl.canDelete" [on-save-edit]="$ctrl.onSave" [on-edit]="$ctrl.onEdit" [on-cancel-edit]="$ctrl.onCancel"
-                           [editable]="$ctrl.isEditable" [is-valid]="$ctrl.form.$valid" [allow-edit]="$ctrl.allowEdit">
+<form #myForm name="form">
+  <vertical-section-layout section-title="Metadata" (on-delete)="onDelete()" (allow-delete)="canDelete" (on-save-edit)="onSave()" 
+                          (on-edit)="onEdit()" (on-cancel-edit)="onCancel()"
+                          [editable]="isEditable" [isValid]="myForm.$valid" [allowEdit]="allowEdit">
     <readonly-section>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Name</span>
-        <div flex>{{$ctrl.model.title}}</div>
+        <div flex>{{model.title}}</div>
       </div>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Description</span>
-        <div flex>{{$ctrl.model.description}}</div>
+        <div flex>{{model.description}}</div>
       </div>
       <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
         <span flex="25" class="property-name">Icon</span>
         <div layout="column" style="height:45px">
-          <ng-md-icon icon="{{$ctrl.model.icon}}" ng-style="{'fill':$ctrl.model.iconColor}" style="margin:inherit" size="45"></ng-md-icon>
+          <ng-md-icon icon="{{model.icon}}" [ngStyle]="{'fill':model.iconColor}" style="margin:inherit" size="45"></ng-md-icon>
         </div>
       </div>
     </readonly-section>
     <editable-section>
-      <md-input-container class="md-block">
-        <label>Name</label>
-        <input ng-model="$ctrl.editModel.title" ng-required="true"/>
-      </md-input-container>
+      <mat-form-field class="md-block" style="display: block;">
+        <input matInput name="title" [(ngModel)]="editModel.title" [required]="true" placeholder="Name"/>
+      </mat-form-field>
 
-      <md-input-container class="md-block">
-        <label>Description</label>
-        <input ng-model="$ctrl.editModel.description"/>
-      </md-input-container>
+      <mat-form-field class="md-block" style="display: block;">
+        <input matInput name="description" [(ngModel)]="editModel.description" placeholder="Description"/>
+      </mat-form-field>
 
       <div layout="column" style="margin:18px 0">
         <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
           <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
-          <ng-md-icon icon="{{$ctrl.editModel.icon}}" size="45" style="margin:inherit" ng-style="{'fill':$ctrl.editModel.iconColor}"></ng-md-icon>
-          <md-button class="md-primary" ng-click="$ctrl.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
+          <ng-md-icon icon="{{editModel.icon}}" size="45" style="margin:inherit" [ngStyle]="{'fill':editModel.iconColor}"></ng-md-icon>
+          <button class="md-primary md-button md-kylo-theme md-ink-ripple" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
         </div>
       </div>
     </editable-section>

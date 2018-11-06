@@ -5,10 +5,9 @@ import AccessConstants from "../../../constants/AccessConstants";
 import { Component, ViewContainerRef } from '@angular/core';
 import { StateService } from '@uirouter/core';
 import { TdDialogService } from '@covalent/core/dialogs';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
-
 
 @Component({
     templateUrl: "js/auth/groups/group-details/group-details.html",
@@ -76,15 +75,14 @@ export default class GroupDetailsComponent {
     ngOnInit() { 
         this.onLoad();
     }
+    
     constructor(
         private accessControlService: AccessControlService,
         private UserService: UserService,
         private stateService: StateService,
         private _dialogService: TdDialogService,
         private _viewContainerRef: ViewContainerRef,
-        private snackBar: MatSnackBar) {
-
-    }
+        private snackBar: MatSnackBar) {}
     /**
      * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
      * @param user the user

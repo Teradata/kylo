@@ -237,7 +237,7 @@ export class DomainTypesService {
              *
              * @returns {DomainType} the domain type
              */
-            newDomainType () {
+            newDomainType () : DomainType {
                 return {
                     description: "",
                     field: {
@@ -251,7 +251,9 @@ export class DomainTypesService {
                     iconColor: this.nullVar,
                     regexFlags: "",
                     regexPattern: "",
-                    title: ""
+                    title: "",
+                    fieldNameFlags : "",
+                    fieldNamePattern : ""
                 };
             }
             /**

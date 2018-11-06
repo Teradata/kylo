@@ -9,7 +9,7 @@ import { HttpClient } from "@angular/common/http";
     selector: "icon-picker-dialog",
     templateUrl: "js/common/icon-picker-dialog/icon-picker-dialog.html"
 })
-export class IconPickerDialog implements ng.IComponentController{
+export class IconPickerDialog {
 
     fillStyle: any;
     selectedIconTile: any;

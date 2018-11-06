@@ -1,15 +1,26 @@
 import * as angular from "angular";
 
-import {moduleName} from "../../module-name";
 import {DomainType} from "../../../services/DomainTypesService.d";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
+import { Component, Input } from "@angular/core";
+import {FeedFieldPolicyRuleDialogComponent } from "../../../shared/feed-field-policy-rules/FeedFieldPolicyRuleDialog";
+import {FeedFieldPolicyRuleService} from "../../../shared/feed-field-policy-rules/services/FeedFieldPolicyRuleService";
+import { FeedService } from "../../../services/FeedService";
+import { MatDialog } from "@angular/material/dialog";
+import { FeedTagService } from "../../../services/FeedTagService";
 
 /**
  * Properties section of the {@link DomainTypeDetailsComponent}.
  */
+@Component({
+    selector: 'domain-type-rules-details',
+    templateUrl: 'js/feed-mgr/domain-types/details/rules/rules.component.html'
+})    
 export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
 
+    @Input() allowEdit: any;
+    @Input() model: any;
     /**
      * Standard data types for column definitions
      */
@@ -20,9 +31,14 @@ export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
      */
     tagChips: any = {searchText: null, selectedItem: null};
 
-    static readonly $inject: string[] = ["$mdDialog", "DomainTypeDetailsService", "FeedFieldPolicyRuleService", "FeedService"];
+    tagList : string[] = [];
 
-    constructor(private $mdDialog: angular.material.IDialogService, DomainTypeDetailsService: DomainTypeDetailsService, private FeedFieldPolicyRuleService: any, FeedService: any) {
+
+    constructor(DomainTypeDetailsService: DomainTypeDetailsService, 
+                private FeedFieldPolicyRuleService: FeedFieldPolicyRuleService, 
+                private FeedService: FeedService,
+                private FeedTagService: FeedTagService,
+                private dialog: MatDialog) {
         super(DomainTypeDetailsService);
         this.availableDefinitionDataTypes = FeedService.columnDefinitionDataTypes.slice();
     }
@@ -63,6 +79,7 @@ export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
         if (!angular.isArray(this.editModel.field.tags)) {
             this.editModel.field.tags = [];
         }
+        this.tagList = this.editModel.field.tags.map((tag : any) => { return tag.name});
     }
 
     /**
@@ -79,17 +96,12 @@ export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
      * Shows the dialog for updating field policy rules.
      */
     showFieldRuleDialog(domainType: DomainType) {
-        this.$mdDialog.show({
-            controller: "FeedFieldPolicyRuleDialogController",
-            templateUrl: "js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html",
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: true,
-            locals: {
-                feed: null,
-                field: domainType.fieldPolicy
-            }
-        });
+
+        let dialogRef = this.dialog.open(FeedFieldPolicyRuleDialogComponent, {
+            data: { feed: null,
+                    field: domainType.fieldPolicy },
+            panelClass: "full-screen-dialog"
+          });
     }
 
     /**
@@ -100,14 +112,18 @@ export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
     transformChip = function (chip: string) {
         return angular.isObject(chip) ? chip : {name: chip};
     }
-}
 
-angular.module(moduleName)
-    .component("domainTypeRulesDetails", {
-        bindings: {
-            allowEdit: "<",
-            model: "<"
-        },
-        controller: DomainTypeRulesDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/rules/rules.component.html"
-    });
+    addGroup = ($event : any)  => {
+        let newTag = {"name": ""};
+        newTag.name = $event;
+        this.editModel.field.tags.push(newTag);
+        this.onSave();
+
+    }
+
+    removeGroup = (value : string ) => {
+        this.editModel.field.tags = this.editModel.field.tags.filter((group : any) => {
+            return group.name !== value;
+        });
+    }
+}

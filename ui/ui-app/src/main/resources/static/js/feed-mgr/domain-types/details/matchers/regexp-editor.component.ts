@@ -1,28 +1,31 @@
-import {Output} from "@angular/core";
-import * as angular from "angular";
-import {moduleName} from "../../module-name";
-
+import {Output, Component, Input, ElementRef, SimpleChanges, EventEmitter} from "@angular/core";
+import * as $ from "jquery";
 /**
  * Provides an editor for regular expressions.
  */
+@Component({
+    selector: 'regexp-editor',
+    templateUrl: 'js/feed-mgr/domain-types/details/matchers/regexp-editor.component.html',
+    styleUrls: ['js/feed-mgr/domain-types/details/matchers/regexp-editor.component.scss']
+})
 export class RegExpEditorComponent {
 
     /**
      * Parent input container controller.
      */
-    public container: any;
+    @Input() public container: any;
 
     /**
      * Model controller.
      */
-    public model: angular.INgModelController;
+    @Input() public model: any;
 
     /**
      * Callback for syntax errors.
      */
-    @Output()
-    public onSyntaxError: (args: { error: Error }) => void;
+    @Output() ("on-syntax-error") onSyntaxError: (args: { error: Error }) => void;
 
+    @Output() modelChange: EventEmitter<any> = new EventEmitter<any>();
     /**
      * List of available RegExp flags.
      */
@@ -60,19 +63,23 @@ export class RegExpEditorComponent {
      */
     selectedFlags: { [k: string]: boolean } = {};
 
-    static readonly $inject: string[] = ["$element", "$scope"];
-
-    constructor(private $element: angular.IAugmentedJQuery, private $scope: angular.IScope) {
-        this.isReadonly = ($element.attr("readonly") === "readonly");
+    constructor(private element: ElementRef) {
+        this.isReadonly = (this.element.nativeElement.attributes["readonly"]);
         if (this.isReadonly) {
             this.options.readOnly = "nocursor";
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.model && changes.model.currentValue && !changes.model.firstChange) {
+            this.onRender();
         }
     }
 
     /**
      * Reset container when this component is destroyed.
      */
-    $onDestroy() {
+    ngOnDestroy() {
         if (this.container) {
             this.container.setFocused(false);
             this.container.setHasValue(false);
@@ -83,22 +90,22 @@ export class RegExpEditorComponent {
     /**
      * Register with parent controllers.
      */
-    $onInit() {
+    ngOnInit() {
         // Check for mdInputContainer parent
         if (this.container) {
-            this.container.input = this.$element;
+            this.container.input = this.element.nativeElement;
 
             // Watch for errors
-            this.$scope.$watch(() => {
-                return this.container.isErrorGetter ? this.container.isErrorGetter() : this.model.$invalid;
-            }, isError => {
-                this.container.setInvalid(isError);
-            });
+            // this.$scope.$watch(() => {
+            //     return this.container.isErrorGetter ? this.container.isErrorGetter() : this.model.$invalid;
+            // }, isError => {
+            //     this.container.setInvalid(isError);
+            // });
         }
 
         // Check for ngModel parent
         if (this.model) {
-            this.model.$render = this.onRender.bind(this);
+            this.onRender();
         }
     }
 
@@ -106,10 +113,11 @@ export class RegExpEditorComponent {
      * Update the model when the flags or pattern are changed.
      */
     onChange(newPattern: string = null) {
+        event.stopPropagation();
         if (!this.isReadonly) {
             const pattern = (newPattern !== null) ? newPattern : this.pattern;
             const flags = Object.keys(this.selectedFlags).filter(flag => this.selectedFlags[flag]).join("");
-            this.model.$setViewValue(pattern.length > 0 ? new RegExp(pattern, flags) : null);
+            this.model = pattern.length > 0 ? new RegExp(pattern, flags) : null;
         }
     }
 
@@ -118,7 +126,7 @@ export class RegExpEditorComponent {
      */
     onLoaded(editor: CodeMirror.Editor) {
         // Show as Angular Material input element
-        angular.element(editor.getWrapperElement()).addClass("md-input");
+        $(editor.getWrapperElement()).addClass("md-input");
 
         // Set the width,height of the editor. Code mirror needs an explicit width/height
         editor.setSize("100%", 38);
@@ -177,44 +185,23 @@ export class RegExpEditorComponent {
      */
     onRender() {
         if (this.isReadonly) {
-            this.pattern = this.model.$viewValue ? this.model.$viewValue.toString() : "";
-        } else if (this.model.$viewValue) {
-            this.pattern = this.model.$viewValue.source;
+            this.pattern = this.model ? this.model.toString() : "";
+        } else if (this.model) {
+            this.pattern = this.model.source;
             this.selectedFlags = {};
-            this.model.$viewValue.flags.split("").forEach((flag: string) => this.selectedFlags[flag] = true);
+            this.model.flags.split("").forEach((flag: string) => this.selectedFlags[flag] = true);
         } else {
             this.pattern = "";
             this.selectedFlags = {};
         }
     }
+
+    patternChange(event: any) {
+        if (this.model.source != this.pattern) {
+            let newModel = new RegExp(this.pattern, this.model.fieldNameFlags)
+            this.modelChange.emit(newModel);
+        }
+    }
 }
 
-angular.module(moduleName)
-    .component("regexpEditor", {
-        bindings: {
-            onSyntaxError: "&"
-        },
-        controller: RegExpEditorComponent,
-        require: {
-            container: "^?mdInputContainer",
-            model: "?ngModel"
-        },
-        template: `
-          <div layout="row">
-            <div flex="95" ng-model="$ctrl.pattern" rows="1" ui-codemirror="{onLoad: $ctrl.onLoaded.bind($ctrl)}" ui-codemirror-opts="$ctrl.options"></div>
-            <md-menu flex="5" ng-if="!$ctrl.isReadonly">
-              <md-button class="md-icon-button md-accent" arial-label="Open expression flags menu" ng-click="$mdMenu.open($event)">
-                <ng-md-icon icon="flag"></ng-md-icon>
-              </md-button>
-              <md-menu-content>
-                <md-menu-item ng-repeat="flag in $ctrl.availableFlags">
-                  <md-list-item title="{{flag.description}}">
-                    <md-checkbox ng-model="$ctrl.selectedFlags[flag.flag]" ng-change="$ctrl.onChange()"></md-checkbox>
-                    <p>{{flag.title}}</p>
-                  </md-list-item>
-                </md-menu-item>
-              </md-menu-content>
-            </md-menu>
-          </div>
-        `
-    });
+

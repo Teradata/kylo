@@ -293,34 +293,10 @@ class Route {
             loadChildren: 'ops-mgr/charts/ops-mgr-charts.module#OpsManagerChartsModule'
         });
 
-        $stateProvider.state({
-            name: "domain-types.**",
-            url: "/domain-types",
-            lazyLoad: (transition: any) => {
-                transition.injector().get("$ocLazyLoad")
-                    .load("feed-mgr/domain-types/module")
-                    .then(function (args: any) {
-                        $stateProvider.stateService.go("domain-types", transition.params());
-                        return args;
-                    }, function (err: any) {
-                        console.log("Error loading domain-types.", err);
-                        return err;
-                    });
-            }
-        }).state({
-            name: "domain-type-details.**",
-            url: "/domain-type-details/{domainTypeId}",
-            lazyLoad: (transition: any) => {
-                transition.injector().get("$ocLazyLoad")
-                    .load("feed-mgr/domain-types/module")
-                    .then(function (args: any) {
-                        $stateProvider.stateService.go("domain-type-details", transition.params());
-                        return args;
-                    }, function (err: any) {
-                        console.log("Error loading domain-type-details.", err);
-                        return err;
-                    });
-            }
+        $stateProvider.state({ 
+            name: 'domain-types.**',
+            url: '/domain-types',
+            loadChildren: 'feed-mgr/domain-types/domain-types.module#DomainTypesModule' 
         });
 
         $stateProvider.state({ 

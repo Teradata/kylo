@@ -1,16 +1,23 @@
 
-import * as angular from 'angular';
 import * as _ from "underscore";
-import { moduleName } from "./module-name";
 import AddButtonService from '../../services/AddButtonService';
 import { DomainTypesService } from '../services/DomainTypesService';
+import { Component } from "@angular/core";
+import StateService from "../../services/StateService";
+import { FeedFieldPolicyRuleService } from "../shared/feed-field-policy-rules/services/FeedFieldPolicyRuleService";
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 /**
  * Identifier for this page.
  * @type {string}
  */
 const PAGE_NAME = "domain-types";
-export class DomainTypesController {
+
+@Component({
+    selector:'domain-types-component',
+    templateUrl:'js/feed-mgr/domain-types/domain-types.html'
+})
+export class DomainTypesComponent {
 
     /**
     * List of domain types.
@@ -28,9 +35,6 @@ export class DomainTypesController {
     */
     searchQuery: string = "";
 
-    $onInit() {
-        this.ngOnInit();
-    }
     ngOnInit() {
         // Register Add button
         this.addButtonService.registerAddButton(PAGE_NAME, () => {
@@ -43,22 +47,20 @@ export class DomainTypesController {
                 this.domainTypes = domainTypes;
                 this.loading = false;
             }, () => {
-                this.$mdToast.show(
-                    this.$mdToast.simple()
-                        .textContent("Unable to load domain types.")
-                        .hideDelay(3000)
-                );
+                this.snackBar.open('Unable to load domain types.','OK',{duration : 3000});
             });
     }
 
-    static readonly $inject = ["AddButtonService", "DomainTypesService", "FeedFieldPolicyRuleService", "StateService", "$mdToast"];
     /**
      * Controller for the domain-types page.
      *
      * @constructor
      */
-    constructor(private addButtonService: AddButtonService, private domainTypesService: DomainTypesService, private FeedFieldPolicyRuleService: any,
-        private StateService: any, private $mdToast: angular.material.IToastService) {
+    constructor(private addButtonService: AddButtonService, 
+                private domainTypesService: DomainTypesService, 
+                private FeedFieldPolicyRuleService: FeedFieldPolicyRuleService,
+                private StateService: StateService,
+                private snackBar: MatSnackBar) {
 
     }
     /**
@@ -84,9 +86,4 @@ export class DomainTypesController {
     };
 
 }
-// Register the controller
-angular.module(moduleName).component("domainTypesController", {
-    templateUrl: "js/feed-mgr/domain-types/domain-types.html",
-    controller: DomainTypesController,
-    controllerAs: "vm"
-});
+

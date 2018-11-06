@@ -10,7 +10,6 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatGridListModule} from '@angular/material/grid-list';
 import { CovalentDialogsModule } from '@covalent/core/dialogs';
 
-
 import { FormsModule } from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatCardModule} from '@angular/material/card';
@@ -30,6 +29,7 @@ import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
 import { UIRouterModule } from "@uirouter/angular";
+import {domainTypeStates} from "./domain-types.states";
 
 import {KyloFeedManagerModule} from "../feed-mgr.module";
 import {CommonModule} from "@angular/common";
@@ -37,36 +37,39 @@ import * as angular from "angular";
 import { CovalentSearchModule } from "@covalent/core/search";
 import {CovalentDataTableModule} from "@covalent/core/data-table";
 import { ReactiveFormsModule } from '@angular/forms';
+import { SharedModule } from "../shared/shared.modules";
+import { DomainTypesComponent } from "./DomainTypesController";
+import { DomainTypeDetailsComponent } from "./details/details.component";
+import { DomainTypeRulesDetailsComponent } from "./details/rules/rules.component";
+import { DomainTypeDetailsService } from "./services/details.service";
+import { DomainTypeMetadataDetailsComponent } from "./details/metadata/metadata.component";
+import { RegExpEditorComponent } from "./details/matchers/regexp-editor.component";
 
-import { PropertiesAdminEditorController } from "../shared/properties-admin/properties-admin-editor.component";
-import { PropertiesAdminController } from "../shared/properties-admin/properties-admin.component";
-import { PropertyListComponent } from "../shared/property-list/property-list.component";
-import { PropertyListEditorComponent } from "../shared/property-list/property-list-editor.component";
-import { FeedFieldPolicyRuleService } from "./feed-field-policy-rules/services/FeedFieldPolicyRuleService";
-import { FieldPolicyRuleOptionsFactory } from "./feed-field-policy-rules/services/FieldPolicyRuleOptionsFactory";
-import { FeedFieldPolicyRulesDialogComponent } from "./feed-field-policy-rules/feed-field-policy-rules-dialog.component";
-import { FeedFieldPolicyRuleDialogComponent } from "./feed-field-policy-rules/FeedFieldPolicyRuleDialog";
-import { FieldPolicyOptionsService } from "./field-policies-angular2/field-policy-options.service";
+import {CodemirrorModule} from "ng2-codemirror";
+import { DomainTypeMatchersDetailsComponent } from "./details/matchers/matchers.component";
+import { MatChipsModule } from "@angular/material/chips";
+import { FeedTagService } from "../services/FeedTagService";
+import { CovalentChipsModule } from "@covalent/core/chips";
 
 @NgModule({
     declarations: [
-        PropertiesAdminEditorController,
-        PropertiesAdminController,
-        PropertyListComponent,
-        PropertyListEditorComponent,
-        FeedFieldPolicyRulesDialogComponent,
-        FeedFieldPolicyRuleDialogComponent
-
+        DomainTypesComponent,
+        DomainTypeDetailsComponent,
+        DomainTypeRulesDetailsComponent,
+        DomainTypeMetadataDetailsComponent,
+        RegExpEditorComponent,
+        DomainTypeMatchersDetailsComponent
     ],
     entryComponents: [
-        PropertiesAdminEditorController,
-        PropertiesAdminController,
-        PropertyListComponent,
-        PropertyListEditorComponent,
-        FeedFieldPolicyRulesDialogComponent,
-        FeedFieldPolicyRuleDialogComponent
+        DomainTypesComponent,
+        DomainTypeDetailsComponent,
+        DomainTypeRulesDetailsComponent,
+        DomainTypeMetadataDetailsComponent,
+        RegExpEditorComponent,
+        DomainTypeMatchersDetailsComponent
     ],
     imports: [
+        CodemirrorModule,
         CovalentCommonModule,
         CovalentLoadingModule,
         CovalentMenuModule,
@@ -74,6 +77,7 @@ import { FieldPolicyOptionsService } from "./field-policies-angular2/field-polic
         KyloServicesModule,
         KyloCommonModule,
         KyloFeedManagerModule,
+        SharedModule,
         MatButtonModule,
         MatIconModule,
         MatListModule,
@@ -91,14 +95,15 @@ import { FieldPolicyOptionsService } from "./field-policies-angular2/field-polic
         MatFormFieldModule,
         MatCardModule,
         MatCheckboxModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        MatChipsModule,
+        CovalentChipsModule,
+        UIRouterModule.forChild({states: domainTypeStates})
     ],
-    exports: [PropertiesAdminEditorController, PropertiesAdminController, FeedFieldPolicyRuleDialogComponent,
-                PropertyListComponent, PropertyListEditorComponent, FeedFieldPolicyRulesDialogComponent],
+    exports: [],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [FieldPolicyRuleOptionsFactory, FeedFieldPolicyRuleService, FieldPolicyOptionsService,
+    providers: [ DomainTypeDetailsService, FeedTagService,
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]
 })
-export class SharedModule {
-}
+export class DomainTypesModule {}

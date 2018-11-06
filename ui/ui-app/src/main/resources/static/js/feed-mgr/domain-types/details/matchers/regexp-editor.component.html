@@ -1,0 +1,17 @@
+<div layout="row">
+    <div flex="95" [ngClass]="{'editMode' : !isReadonly}">
+        <codemirror class="regexCodeMirror" name="pattern" rows="1" (change)="patternChange($event)" [(ngModel)]="pattern" (onLoad) = "onLoaded()" [config]="options">
+        </codemirror >
+    </div>
+    <mat-menu #menu="matMenu" flex="5">
+        <mat-list class="md-menu-item" >
+            <mat-list-item *ngFor="let flag of availableFlags" title="{{flag.description}}">
+                <mat-checkbox style="margin-right: 15px" name="selectedFlags" [(ngModel)]="selectedFlags[flag.flag]" (click)="onChange()" (change)="onChange()"></mat-checkbox>
+                <p>{{flag.title}}</p>
+            </mat-list-item>
+        </mat-list>
+    </mat-menu>
+    <button *ngIf="!isReadonly" [matMenuTriggerFor]="menu" class="md-icon-button md-accent md-button md-kylo-theme md-ink-ripple" arial-label="Open expression flags menu">
+        <ng-md-icon icon="flag"></ng-md-icon>
+    </button>
+</div>

@@ -51,11 +51,11 @@ import {MatRadioModule} from "@angular/material/radio";
 import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
 import {CovalentChipsModule} from "@covalent/core/chips";
 import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-policies.module";
-import {PropertyListModule} from "../../shared/property-list/property-list.module";
 import {FeedScheduleComponent} from "./feed-schedule/feed-schedule.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {TranslateModule} from "@ngx-translate/core";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
+import { SharedModule } from "../../shared/shared.modules";
 
 
 @NgModule({
@@ -122,7 +122,7 @@ import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precon
         MatButtonModule,
         MatSnackBarModule,
         MatDialogModule,
-        PropertyListModule,
+        SharedModule,
         TranslateModule,
         UIRouterModule.forChild({states: defineFeedStates})
     ]

@@ -1,5 +1,4 @@
 import {Input, OnDestroy, OnInit} from "@angular/core";
-import * as angular from "angular";
 import {Subscription} from "rxjs/Subscription";
 
 import {DomainType} from "../../services/DomainTypesService.d";
@@ -53,14 +52,6 @@ export abstract class AbstractSectionComponent implements OnDestroy, OnInit {
      */
     get isNew() {
         return (!ObjectUtils.isString(this.model.id) || this.model.id.length === 0);
-    }
-
-    $onDestroy() {
-        this.ngOnDestroy();
-    }
-
-    $onInit() {
-        this.ngOnInit();
     }
 
     ngOnDestroy(): void {

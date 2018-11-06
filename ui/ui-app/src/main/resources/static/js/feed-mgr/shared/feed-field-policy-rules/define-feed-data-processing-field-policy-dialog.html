@@ -17,104 +17,80 @@
   limitations under the License.
   #L%
   -->
-<md-dialog aria-label="Validation Results" ng-cloak>
+<div mat-dialog aria-label="Validation Results">
     <ng-form name="policyForm">
-        <div  class="md-toolbar-tools">
+        <div class="md-toolbar-tools">
             <h4 class="md-title"><span>{{title}} {{"views.define-feed-data-processing-field-policy-dialog.ff" | translate}} {{field.name}}</span></h4>
             <span flex></span>
         </div>
-        <md-dialog-content layout="column" style="min-width:500px;padding-top:0px;" layout-padding>
+        <mat-dialog-content layout="column" style="min-width:500px;padding-top:0px;" layout-padding>
 
-            <div ng-if="policyRules != null && policyRules.length >0 ">
+            <div *ngIf="policyRules != null && policyRules.length >0 ">
                 <span class="hint">{{"views.define-feed-data-processing-field-policy-dialog.Dpuadtr" | translate}}</span>
 
                 <ul dnd-list="policyRules" class="simple-dnd-list">
-                    <li ng-repeat="rule in policyRules"
+                    <li *ngFor="let rule of policyRules; let index=index; let last=last;"
                         dnd-draggable="rule"
-                        dnd-moved="onMovedPolicyRule($index)"
+                        dnd-moved="onMovedPolicyRule(index)"
                         dnd-effect-allowed="move">
                         <div layout="row" layout-align="start">
                             <div layout="column" flex>
-                                <span class="md-list-item-text">{{$index+1}}. {{rule.name}}</span>
+                                <span class="md-list-item-text">{{index+1}}. {{rule.name}}</span>
                                 <span class="md-list-item-text hint">{{rule.type}}</span>
                             </div>
                             <div layout="row">
-                                <md-button class="md-icon-button" ng-click="editPolicy($event,$index,rule)">
+                                <button class="md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="editPolicy($event,index,rule)">
                                     <ng-md-icon icon="edit" style="fill:grey"></ng-md-icon>
-                                </md-button>
-                                  <md-button class="md-icon-button" ng-click="deletePolicyByIndex($index)">
+                                </button>
+                                  <button class="md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="deletePolicyByIndex(index)">
                                       <ng-md-icon icon="delete" style="fill:grey" ></ng-md-icon>
-                                  </md-button>
+                                  </button>
                             </div>
                         </div>
                     </li>
-
                 </ul>
-
-
-<!--
-                <md-list>
-                    <md-list-item ng-repeat="rule in policyRules track by $index">
-                        <div layout="column">
-                            <span class="md-list-item-text">{{$index+1}}. {{rule.name}}</span>
-                            <span class="md-list-item-text hint">{{rule.type}}</span>
-                        </div>
-                        <span class="md-secondary">
-                            <md-button class="md-icon-button" ng-click="editPolicy($event,$index,rule)">
-                                <ng-md-icon icon="edit" ></ng-md-icon>
-                            </md-button>
-                              <md-button class="md-icon-button" ng-click="deletePolicyByIndex($index)">
-                                  <ng-md-icon icon="delete" ></ng-md-icon>
-                              </md-button>
-                        </span>
-
-                        <md-divider></md-divider>
-                    </md-list-item>
-                </md-list>
-                -->
             </div>
-
-            <div class="edit-form" >
-                 <md-progress-linear md-mode="indeterminate" ng-if="loadingPolicies"></md-progress-linear>
+            <div class="edit-form">
+                <mat-progress-bar mode="indeterminate" *ngIf="loadingPolicies"></mat-progress-bar>
 
                 <div class="md-title">{{titleText}}</div>
 
-                <md-radio-group ng-model="selectedOptionType" layout="row" ng-if="optionTypes != null" class="layout-padding-top">
-                    <md-radio-button aria-label="Select option type" ng-repeat="optionType in optionTypes"
-                                     ng-value="optionType.type"
-                                     aria-label="{{optionType.name}}"
-                                     ng-click="onChangedOptionType(optionType.type)">
+                <mat-radio-group name="optionType" [(ngModel)]="selectedOptionType" layout="row" *ngIf="optionTypes != null" class="layout-padding-top">
+                    <mat-radio-button aria-label="Select option type" *ngFor="let optionType of optionTypes"
+                                    value="optionType.type"
+                                    aria-label="{{optionType.name}}"
+                                    (click)="onChangedOptionType(optionType.type)">
                         {{optionType.name}}
-                    </md-radio-button>
-                </md-radio-group>
+                    </mat-radio-button>
+                </mat-radio-group>
 
 
-                <md-input-container class="md-block layout-padding-top-bottom" style="margin-top:0px;">
-                    <label class="md-container-ignore label-small layout-padding-top">{{"views.define-feed-data-processing-field-policy-dialog.SRT" | translate}}</label>
-                    <md-select ng-model="ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="onRuleTypeChange()" aria-label="Rule Type">
-                        <md-option ng-value="opt" ng-repeat="opt in options">{{ opt.name }}</md-option>
-                    </md-select>
-                    <span class="hint">{{editRule.description}}</span>
-                </md-input-container>
+                <div class="md-block layout-padding-top-bottom" style="margin-top:0px;">
+                    <mat-label class="md-container-ignore label-small layout-padding-top">{{"views.define-feed-data-processing-field-policy-dialog.SRT" | translate}}</mat-label>
+                    <mat-select [(ngModel)]="ruleType" (change)="onRuleTypeChange()" aria-label="Rule Type">
+                        <mat-option value="opt" *ngFor="let opt of options">{{ opt.name }}</mat-option>
+                    </mat-select>
+                    <span *ngIf="editRule" class="hint">{{editRule.description}}</span>
+                </div>
                 <thinkbig-policy-input-form the-form="policyForm" rule="editRule" mode="ruleMode" feed="feed"></thinkbig-policy-input-form>
 
                 <div layout="row" layout-align="start stretch" flex>
-                    <md-button ng-if="editRule != null" ng-click="cancelEdit($event)">{{cancelText}}</md-button>
+                    <button style="md-button md-kylo-theme md-ink-ripple" *ngIf="editRule != null" (click)="cancelEdit($event)">{{cancelText}}</button>
                     <span flex></span>
-                    <md-button class="md-primary" ng-if="editRule != null" ng-click="addPolicy($event)" ng-disabled="policyForm.$invalid">{{addText}}</md-button>
+                    <button style="md-primary md-button md-kylo-theme md-ink-ripple" class="md-primary" *ngIf="editRule != null" (click)="addPolicy($event)" [disabled]="policyForm.$invalid">{{addText}}</button>
                 </div>
             </div>
 
-        </md-dialog-content>
-        <md-dialog-actions layout="row" layout-align="start stretch" flex>
+        </mat-dialog-content>
+        <mat-dialog-actions layout="row" layout-align="start stretch" flex>
             <span flex></span>
-            <md-button ng-click="cancel($event)">
+            <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)">
                 {{"views.define-feed-data-processing-field-policy-dialog.Cancel" | translate}}
-            </md-button>
-            <md-button class="md-raised md-primary" ng-click="done($event)" ng-disabled="!pendingEdits || editRule != null || policyForm.$invalid">
+            </button>
+            <button class="md-raised md-primary md-button md-kylo-theme md-ink-ripple" (click)="done($event)" [disabled]="!pendingEdits || editRule != null || policyForm.$invalid">
                 {{"views.define-feed-data-processing-field-policy-dialog.Done" | translate}}
-            </md-button>
-        </md-dialog-actions>
+            </button>
+        </mat-dialog-actions>
     </ng-form>
-</md-dialog>
+</div>
 

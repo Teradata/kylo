@@ -1,12 +1,14 @@
 import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
 
-import {moduleName} from "../module-name";
 import {DomainType} from "../../services/DomainTypesService.d";
+import { Injectable } from "@angular/core";
 
 /**
  * Manages communication between {@link DomainTypeDetailsComponent} and its individual sections.
  */
+
+@Injectable()
 export class DomainTypeDetailsService {
 
     /**
@@ -85,6 +87,3 @@ export class DomainTypeDetailsService {
         return this.saveSubject.next(domainType);
     }
 }
-
-angular.module(moduleName)
-    .service("DomainTypeDetailsService", DomainTypeDetailsService);

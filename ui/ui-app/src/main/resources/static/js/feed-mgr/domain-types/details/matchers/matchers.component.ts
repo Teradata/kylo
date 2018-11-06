@@ -1,11 +1,14 @@
-import * as angular from "angular";
-import {moduleName} from "../../module-name";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
+import { Component, Input } from "@angular/core";
 
 /**
  * Patterns section of the {@link DomainTypeDetailsComponent}.
  */
+@Component({
+    selector: 'domain-type-matchers-details',
+    templateUrl: 'js/feed-mgr/domain-types/details/matchers/matchers.component.html'
+})
 export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent {
 
     /**
@@ -38,8 +41,9 @@ export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent
      */
     sampleDataValue: RegExp;
 
-    static readonly $inject: string[] = ["DomainTypeDetailsService"];
-
+    @Input() allowEdit: any;
+    @Input() model: any;
+    
     constructor(DomainTypeDetailsService: DomainTypeDetailsService) {
         super(DomainTypeDetailsService);
     }
@@ -47,7 +51,7 @@ export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent
     /**
      * Updates the read-only copy when the model changes.
      */
-    $onChanges() {
+    ngOnChanges() {
         this.columnNameValue = this.model.fieldNamePattern ? new RegExp(this.model.fieldNamePattern, this.model.fieldNameFlags) : null;
         this.sampleDataValue = this.model.regexPattern ? new RegExp(this.model.regexPattern, this.model.regexFlags) : null;
     }
@@ -74,13 +78,3 @@ export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent
         });
     }
 }
-
-angular.module(moduleName)
-    .component("domainTypeMatchersDetails", {
-        bindings: {
-            allowEdit: "<",
-            model: "<"
-        },
-        controller: DomainTypeMatchersDetailsComponent,
-        templateUrl: "js/feed-mgr/domain-types/details/matchers/matchers.component.html"
-    });

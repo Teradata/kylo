@@ -1,35 +1,38 @@
 <div>
-  <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-  <div layout="row" layout-align="center start" ng-if="!vm.loading">
+  <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+  <div layout="row" layout-align="center start" *ngIf="!loading">
     <div layout="column" class="layout-max-width">
       <div style="width:100%" class="" layout="row" layout-align="center start">
-        <md-content flex layout="row" class="" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
+        <mat-content flex layout="row" class="" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
           <span style="width:40px;max-width:40px;"></span>
-          <md-input-container class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;margin-bottom:-10px;">
-            <input ng-model="vm.searchQuery" placeholder="Filter Types">
-          </md-input-container>
+          <mat-form-field class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;margin-bottom:-10px;">
+            <input matInput [(ngModel)]="searchQuery" placeholder="Filter Types">
+          </mat-form-field>
           <div style="padding:5px 5px 5px 40px;margin-top:12px;">
             <ng-md-icon icon="more_vert" style="fill:#676767"></ng-md-icon>
           </div>
-        </md-content>
+        </mat-content>
       </div>
     </div>
   </div>
-  <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap ng-if="!vm.loading">
-    <md-card style="width:400px;max-width:400px;max-height:121px;height:121px" ng-repeat="type in vm.domainTypes | orderBy:'title' | filter: vm.searchQuery track by $index" flex="initial"
-             flex-md="initial" flex-sm="50" ng-click="vm.editDomainType(type)">
-      <md-card-title>
-        <md-card-title-text>
+  <!--  | orderBy:'title' | filter: searchQuery track by $index -->
+  <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
+    <mat-card style="width:400px;max-width:400px;max-height:121px;height:121px" *ngFor="let type of domainTypes" flex="initial"
+             flex-md="initial" flex-sm="50" (click)="editDomainType(type)">
+      <mat-card-title style="display: flex; justify-content: space-between; padding-top: 0;">
+        <mat-card-title-text>
           <span style="font-size: 16px;font-weight:400;letter-spacing:.005em;">{{type.title}}</span>
-          <span class="md-subhead category-subheader">{{vm.getAllFieldPolicies(type) | characters:50}}</span>
-        </md-card-title-text>
-        <md-card-title-media>
-          <ng-md-icon icon="{{type.icon}}" size="40" ng-style="{'fill':type.iconColor}" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
-        </md-card-title-media>
-      </md-card-title>
-      <md-card-content>
-        <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{type.description | characters:100}}</div>
-      </md-card-content>
-    </md-card>
+          <span class="md-subhead category-subheader" style="display: flex;font-size: 12px;font-weight: 400;color: rgba(0,0,0,0.54);">
+            {{getAllFieldPolicies(type) | truncate:50}}
+          </span>
+        </mat-card-title-text>
+        <mat-card-title-media>
+          <ng-md-icon icon="{{type.icon}}" size="40" [ngStyle]="{'fill':type.iconColor}" style="margin-right:20px;" class="md-media-xs"></ng-md-icon>
+        </mat-card-title-media>
+      </mat-card-title>
+      <mat-card-content style="padding-top: 0;">
+        <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{type.description | truncate:100}}</div>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>

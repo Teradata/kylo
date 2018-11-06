@@ -1,86 +1,90 @@
-<form name="$ctrl.form">
-  <vertical-section-layout section-title="Properties" [on-save-edit]="$ctrl.onSave" [on-edit]="$ctrl.onEdit" [on-cancel-edit]="$ctrl.onCancel" [editable]="$ctrl.isEditable" [is-valid]="$ctrl.form.$valid"
-                           [allow-edit]="$ctrl.allowEdit">
+<form #myForm name="form">
+  <vertical-section-layout section-title="Properties" (on-save-edit)="onSave()" (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" 
+                            [editable]="isEditable" [isValid]="myForm.$valid" [allowEdit]="allowEdit">
     <readonly-section>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Field Name</span>
-        <div flex>{{$ctrl.model.field.name}}</div>
+        <div flex>{{model.field.name}}</div>
       </div>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Data Type</span>
         <div flex>
-          {{$ctrl.model.field.derivedDataType}}
-          <span ng-if="$ctrl.model.field.derivedDataType == 'decimal' && $ctrl.model.field.precisionScale">({{$ctrl.model.field.precisionScale}})</span>
+          {{model.field.derivedDataType}}
+          <span *ngIf="model.field.derivedDataType == 'decimal' && model.field.precisionScale">({{model.field.precisionScale}})</span>
         </div>
       </div>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Tags</span>
-        <md-chips ng-repeat="tag in $ctrl.model.field.tags">
-          <md-chip><strong>{{tag.name}}</strong></md-chip>
-        </md-chips>
+
+        <mat-chip-list #chipList>
+          <mat-chip *ngFor="let tag of model.field.tags">
+              <mat-chip><strong>{{tag.name}}</strong></mat-chip>
+          </mat-chip>
+        </mat-chip-list>
+
       </div>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Rules</span>
         <div flex>
           <ul class="layout-padding-left-16" style="margin:0">
-            <li ng-repeat="rule in $ctrl.getAllFieldPolicies($ctrl.model)">{{rule.name}}</li>
+            <li *ngFor="let rule of getAllFieldPolicies(model)">{{rule.name}}</li>
           </ul>
         </div>
       </div>
     </readonly-section>
-    <editable-section>
+    <editable-section *ngIf = "editModel.field">
       <p style="margin: 0 0 32px 0;">These properties will be applied to a field when this domain type is selected:</p>
 
-      <md-input-container class="md-block">
-        <label>Field Name</label>
-        <input ng-model="$ctrl.editModel.field.name"/>
-      </md-input-container>
+      <mat-form-field class="md-block" style="margin-bottom: 18px; width:100%">
+        <input matInput name="fieldName" placeholder='Field Name' [(ngModel)]="editModel.field.name"/>
+      </mat-form-field>
 
       <div layout="row" style="margin-top:-18px">
-        <md-input-container flex class="md-block">
-          <md-select ng-model="$ctrl.editModel.field.derivedDataType" placeholder="Data Type" ng-change="$ctrl.onDataTypeChange()">
-            <md-option ng-value=""><em>None</em></md-option>
-            <md-option ng-repeat="dataType in $ctrl.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
+        <div flex class="md-block">
+          <mat-select name="derivedDataType" [(ngModel)]="editModel.field.derivedDataType" placeholder="Data Type" (change)="onDataTypeChange()">
+            <mat-option value=""><em>None</em></mat-option>
+            <mat-option *ngFor="let dataType of availableDefinitionDataTypes" value="{{dataType}}" aria-label="{{dataType}}">
               {{dataType}}
-            </md-option>
-          </md-select>
-          <div ng-messages="$ctrl.domainTypeForm.precisionScale.$error" md-auto-hide="false">
+            </mat-option>
+          </mat-select>
+          <!-- <div ng-messages="domainTypeForm.precisionScale.$error" md-auto-hide="false">
             <div ng-message="pattern">Format expected in form precision, scale (e.g. 10,0)</div>
-          </div>
-        </md-input-container>
-        <md-input-container flex="10" ng-if="$ctrl.editModel.field.derivedDataType == 'decimal'">
-          <label>Precision</label>
-          <input ng-model="$ctrl.editModel.field.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale">
-        </md-input-container>
+          </div> -->
+        </div>
+        <mat-form-field flex="10" *ngIf="editModel.field.derivedDataType == 'decimal'">
+          <mat-label>Precision</mat-label>
+          <input matInput name="precisionScale" [(ngModel)]="editModel.field.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale">
+        </mat-form-field>
       </div>
 
-      <md-input-container class="md-block flex-gt-xs" flex-gt-xs>
-        <label class="label-small md-container-ignore">Tags</label>
-        <md-chips ng-model="$ctrl.editModel.field.tags" md-autocomplete-snap md-transform-chip="$ctrl.transformChip($chip)" md-require-match="false">
-          <md-autocomplete md-selected-item="$ctrl.tagChips.selectedItem" md-search-text="$ctrl.tagChips.searchText" md-items="item in $ctrl.FeedTagService.querySearch($ctrl.tagChips.searchText)"
-                           md-item-text="item.name" placeholder="Add a Tag">
-            <span md-highlight-text="$ctrl.tagChips.searchText">{{item.name}}</span>
-          </md-autocomplete>
-          <md-chip-template>
-                  <span>
-                    <strong>{{$chip.name}}</strong>
-                  </span>
-          </md-chip-template>
-        </md-chips>
-      </md-input-container>
+      <div class="block layout-padding-top-bottom flex-gt-sm">
+          <mat-label class="label-small md-container-ignore">Tags</mat-label>
+
+          <td-chips [chipAddition]="true"
+                  [chipRemoval]="true"
+                  [items]="this.FeedTagService.querySearch(tagChips.searchText)"
+                  [(ngModel)]="tagList"
+                  placeholder="Add a Tag"
+                  [disabled]="false"
+                  (add)="addGroup($event)"
+                  [ngModelOptions]="{standalone: true}"
+                  (remove)="removeGroup($event)">
+          </td-chips>
+
+      </div>
 
       <div layout="column" style="margin:18px 0">
         <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
           <span class="md-input-label" style="font-size: 11px;" flex="25">Rules </span>
-          <div ng-click="$ctrl.showFieldRuleDialog($ctrl.editModel)" style="color:#2D78B1;">
-            <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-              <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
-            </md-button>
+          <div style="color:#2D78B1;">
+            <button class="icon-btn md-button md-kylo-theme md-ink-ripple" style="padding-left:2px;padding-right:2px;">
+              <mat-icon (click)="showFieldRuleDialog(editModel)" style="fill:#2D78B1;">add_circle_outline</mat-icon>
+            </button>
             ADD
           </div>
-          <div ng-if="$ctrl.hasFieldPolicies($ctrl.editModel)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
-            <span ng-if="$ctrl.editModel.fieldPolicy.standardization.length > 0">{{$ctrl.editModel.fieldPolicy.standardization.length}} Standardizers</span>
-            <span ng-if="$ctrl.editModel.fieldPolicy.validation.length > 0">{{$ctrl.editModel.fieldPolicy.validation.length}} Validators</span>
+          <div *ngIf="hasFieldPolicies(editModel)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+            <span *ngIf="editModel.fieldPolicy.standardization.length > 0">{{editModel.fieldPolicy.standardization.length}} Standardizers</span>
+            <span *ngIf="editModel.fieldPolicy.validation.length > 0">{{editModel.fieldPolicy.validation.length}} Validators</span>
           </div>
         </div>
       </div>
