@@ -413,7 +413,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
      * return the list of tables for the selected Service ID
      */
     private queryTablesSearch(query: string): Observable<any[]> {
-        if (this.dbConnectionProperty == null || this.dbConnectionProperty.value == null) {
+        if (this.dbConnectionProperty == null || this.dbConnectionProperty.value == null || this.dbConnectionProperty.value == "") {
             return of([]);
         } else if (this.dbConnectionProperty in this.allTables) {
             return query ? this.allTables[this.dbConnectionProperty].filter(this.createFilterForTable(query)) : [];
@@ -614,11 +614,13 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
     }
 
     private initializeAutoComplete() {
-        const processorTableName = this.model.table.existingTableName;
-        this.tableControl.setValue(processorTableName);
-        if (processorTableName != null) {
-            this.selectedTable = new TableRef(processorTableName);
-            this.tableControl.setValue(this.selectedTable);
+        if (this.dbConnectionProperty != null && this.dbConnectionProperty.value != null && this.dbConnectionProperty.value != "") {
+            const processorTableName = this.model.table.existingTableName;
+            this.tableControl.setValue(processorTableName);
+            if (processorTableName != null) {
+                this.selectedTable = new TableRef(processorTableName);
+                this.tableControl.setValue(this.selectedTable);
+            }
         }
     }
 }
