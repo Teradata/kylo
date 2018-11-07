@@ -100,7 +100,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     fetchFeedHealth(){
         if(this.feedFilter) {
-            this.opsManagerFeedService.getFeedHealth(this.feedFilter).subscribe((response: FeedSummary) => {
+            this.opsManagerFeedService.getFeedHealth(this.feedFilter).subscribe((response: FeedOperationsSummary) => {
                 if (response) {
                     this.feed = response;
                     this.abandonAllDisabled = this.feed.healthText != "UNHEALTHY"
