@@ -80,7 +80,7 @@ public class CatalogModelTransform {
             model.setPluginId(domain.getPluginId());
             model.setIcon(domain.getIcon());
             model.setColor(domain.getIconColor());
-//            securityTransform.applyAccessControl(domain, model);
+            securityTransform.applyAccessControl(domain, model);
 
             if (includeTemplate) {
                 model.setTemplate(sparkParamsToRestModel(domain.getPluginId(), encryptedCredentials).apply(domain.getSparkParameters()));

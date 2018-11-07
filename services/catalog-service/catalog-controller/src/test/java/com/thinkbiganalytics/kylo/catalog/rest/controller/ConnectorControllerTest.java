@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.MockMetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -62,13 +63,16 @@ public class ConnectorControllerTest {
     private TestConnectorPlugin connectorPlugin;
     
     @Spy
+    private SecurityModelTransform securityTransform = Mockito.mock(SecurityModelTransform.class);
+    
+    @Spy
     private ConnectorPluginManager connectorPluginManager = Mockito.mock(ConnectorPluginManager.class);
     
     @Spy
     private MetadataAccess metadataService = new MockMetadataAccess();
     
     @Spy
-    private CatalogModelTransform modelTransform = new CatalogModelTransform(null, this.connectorPluginManager, null);
+    private CatalogModelTransform modelTransform = new CatalogModelTransform(this.securityTransform, this.connectorPluginManager, null);
     
     @InjectMocks
     private ConnectorController controller = new ConnectorController() {
