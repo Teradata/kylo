@@ -1,0 +1,44 @@
+<ng-container *tdLoading="'AdminConnector.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
+<mat-toolbar >
+  <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
+    <div fxLayout="row" fxLayoutAlign="center center" class="cursor-pointer" (click)="goBackToList()"><mat-icon class="push-right">arrow_back</mat-icon>{{connector ? connector.title : "Connector"}}</div>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<mat-card>
+  <mat-card-title fxLayout="row" fxLayoutAlign=" center">
+    <div>
+      <ng-md-icon
+          class="card-title-icon"
+          [icon]="connector.icon ? connector.icon : 'fa-database'"
+          [ngClass]="connector.color ? 'tc-'+connector.color : 'tc-accent'" size="30"></ng-md-icon>
+    </div>
+    <div class="card-title-text">{{connector.title}}</div>
+  </mat-card-title>
+  <mat-card-subtitle>Manage '{{connector.title}}' connector</mat-card-subtitle>
+  <mat-divider></mat-divider>
+
+  <mat-card-content>
+<form>
+  <div fxLayout="column">
+    <entity-access-control-ng2 #entityAccessControl *ngIf="allowAdmin && connector != undefined" [entity]="connector" entityType="connector" [parentForm]="form" [readonly]="false" class="block pad-top">
+    </entity-access-control-ng2>
+    <div *ngIf="!allowAdmin"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+      <ng-md-icon icon="block" size="60" class="push-bottom-sm"></ng-md-icon>
+      <h2>Unauthorized</h2>
+      <p>Sorry. You don't have access to this page</p>
+    </div>
+  </div>
+</form>
+  </mat-card-content>
+
+  <mat-card-actions *ngIf="allowAdmin && connector" >
+    <button mat-button mat-raised-button color="accent" class="text-upper" [disabled]="saving == true"
+            (click)="saveConnector()">Save
+    </button>
+    <button mat-button mat-button class="text-upper" [disabled]="saving == true"
+            (click)="cancel()">Cancel
+    </button>
+  </mat-card-actions>
+</mat-card>
+</ng-container>

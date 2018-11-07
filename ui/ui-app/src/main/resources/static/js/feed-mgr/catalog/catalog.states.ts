@@ -13,6 +13,8 @@ import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-sch
 import {UploadRouterModule} from "./datasource/upload/upload.module";
 import {RemoteFilesRouterModule} from "./datasource/files/remote-files.module";
 import {TablesRouterModule} from "./datasource/tables/tables.module";
+import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
+import {AdminConnectorComponent} from "./connector/admin-connector.component";
 
 export function resolveConnectors(catalog: CatalogService, state: StateService, loading: TdLoadingService) {
     loading.register(ConnectorsComponent.LOADER);
@@ -168,6 +170,32 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ]
     },
+    {
+        name: "catalog.admin-connectors",
+        url: "/admin-connectors",
+        component: AdminConnectorsComponent,
+        resolve: [
+            {
+                token: "connectors",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: resolveConnectors
+            }
+        ]
+    },
+    {
+        name: "catalog.admin-connector",
+        url: "/admin-connector/:connectorId",
+        component: AdminConnectorComponent,
+        resolve: [
+            {
+                token: "connector",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: resolveConnector
+            }
+        ]
+    },
+
+
     {
         name: "catalog.datasource.preview.**",
         url: "/preview",
