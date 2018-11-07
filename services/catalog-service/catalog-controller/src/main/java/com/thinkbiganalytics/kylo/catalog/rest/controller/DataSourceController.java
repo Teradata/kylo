@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
@@ -509,10 +510,9 @@ public class DataSourceController extends AbstractCatalogController {
      * @param tableName the table name
      * @param schema    the schema name, or {@code null} to search all schemas
      * @return the table and field details
-     * @TODO change PATH
      */
     @POST
-    @Path("{id}/tables/{tableName}")
+    @Path("{id}/tables/{tableName}/dataset")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Gets the schema of the specified table.", notes = "Connects to the database specified by the data source.")
     @ApiResponses({
@@ -524,8 +524,10 @@ public class DataSourceController extends AbstractCatalogController {
     public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId, 
                                            @PathParam("tableName") final String tableName, 
                                            @QueryParam("schema") final String schema,
-                                           @QueryParam("encrypt") @DefaultValue("true") final boolean encryptedCredentials) {
+                                           @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         // TODO Verify user has access to data source
+        // Require admin permission if the results should include unencrypted credentials.
+        accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
 
         DataSetWithTableSchema dataSetWithTableSchema = metadataService.commit(() -> {
             // List tables
@@ -533,8 +535,10 @@ public class DataSourceController extends AbstractCatalogController {
             TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
             if (tableSchema != null) {
                 DataSet dataSet = new DataSet();
-                dataSet.setDataSource(dataSource);
-                String fullTableName = tableSchema.getSchemaName() + "." + tableSchema.getName();
+                //assign the datasource to this dataset with encrypted credentials
+                DataSource encryptedSource = findDataSource(dataSourceId, true);
+                dataSet.setDataSource(encryptedSource);
+                String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(),tableSchema.getName());
                 dataSet.setTitle(fullTableName);
 
                 DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
@@ -550,15 +554,14 @@ public class DataSourceController extends AbstractCatalogController {
                 }
                 if ("hive".equalsIgnoreCase(format.toLowerCase())) {
                     paths.add(fullTableName);
-                } else {
-                    options.put("dbtable", fullTableName);
                 }
+                options.put("dbtable", fullTableName);
 
                 dataSet.setFormat(format);
                 dataSet.setPaths(paths);
                 dataSet.setOptions(options);
 
-                DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptedCredentials);
+                DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptCredentials);
                 return new DataSetWithTableSchema(dataSet1, tableSchema);
             } else {
                 if (log.isErrorEnabled()) {
