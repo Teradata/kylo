@@ -10,8 +10,7 @@ import {FormControl, Validators, FormGroupDirective, NgForm} from '@angular/form
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
-
-
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     templateUrl: "js/auth/users/user-details/user-details.html",
@@ -94,7 +93,8 @@ export default class UserDetailsComponent {
         private stateService: StateService,
         private _dialogService: TdDialogService,
         private _viewContainerRef: ViewContainerRef,
-        private snackBar: MatSnackBar
+        private snackBar: MatSnackBar,
+        private translate: TranslateService
     ) {
         this.onLoad();
       }
@@ -179,18 +179,18 @@ export default class UserDetailsComponent {
         var name = (ObjectUtils.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
         this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
             .then(() => {
-                this.snackBar.open("Successfully deleted the group " + name,"OK",{
+                this.snackBar.open(this.translate.instant('views.common.delete.success',{entity:'the user '}) + name,this.translate.instant('views.common.ok'),{
                     duration : 3000
                 });
                     this.stateService.go("users");
             }, () => {
                 this._dialogService.openAlert({
-                    message: "The user " + name + "could not be deleted. ",
+                    message: this.translate.instant('views.common.delete.failure',{entity : 'user'}) + name,
                     viewContainerRef: this._viewContainerRef,
                     width: '300 px',
-                    title: 'Delete Failed',
-                    closeButton: 'Got it!',
-                    ariaLabel: "Failed to delete user",
+                    title: this.translate.instant('views.common.delete.failure.title'),
+                    closeButton: this.translate.instant('views.common.dialog.gotIt'),
+                    ariaLabel: this.translate.instant('views.common.delete.failure',{entity : 'user'}),
                     closeOnNavigation: true,
                     disableClose: false
                 });

@@ -22,7 +22,7 @@
     <mat-card *ngIf="!loading" flex = "70">
         <mat-card-title>
             <mat-toolbar style="background: none;">
-                <div class="card-title">User Details</div>
+                <div class="card-title">{{'AUTH.user.details.title' | translate}}</div>
                 <span flex></span>
                 <mat-icon style="padding-right: 16px" size="30">person</mat-icon>
             </mat-toolbar>
@@ -33,28 +33,28 @@
                                          [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
-                            <span flex="25" class="property-name">Username</span>
+                            <span flex="25" class="property-name">{{'view.login.Username' | translate}}</span>
 
                             <div flex>
                                 {{model.systemName}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
-                            <span flex="25" class="property-name">Display Name</span>
+                            <span flex="25" class="property-name">{{'views.common.DN' | translate}}</span>
 
                             <div flex>
                                 {{model.displayName}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
-                            <span flex="25" class="property-name">Email</span>
+                            <span flex="25" class="property-name">{{'views.common.Email.Address' | translate}}</span>
 
                             <div flex>
                                 {{model.email}}
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
-                            <span flex="25" class="property-name">Status</span>
+                            <span flex="25" class="property-name">{{'views.common.status' | translate}}</span>
 
                             <div class="enabled" flex *ngIf="model.enabled">
                                 <mat-icon  size="20" style="color: #009933; vertical-align: middle">check_circle</mat-icon> Active
@@ -64,7 +64,7 @@
                             </div>
                         </div>
                         <div layout="row" class="layout-padding-top-bottom">
-                            <span flex="25" class="property-name">Groups</span>
+                            <span flex="25" class="property-name">{{'views.main.groups' | translate}}</span>
 
                             <div flex>
                                 {{getGroupTitles().join(', ')}}
@@ -73,13 +73,13 @@
                     </readonly-section>
                     <editable-section *ngIf="enableEdit">
                         <mat-form-field class="block" *ngIf="model.systemName === null">
-                            <mat-label>Username</mat-label>
+                            <mat-label>{{'view.login.Username' | translate}}</mat-label>
                             <input matInput name="username" type="text" [(ngModel)]="editModel.systemName"/>
-                            <mat-error *ngIf="isUserNameEmpty()">A username is required.</mat-error>
-                            <mat-error *ngIf="isUserNameDuplicate()">That username is already in use.</mat-error>
+                            <mat-error *ngIf="isUserNameEmpty()">{{'view.login.Uir' | translate}}</mat-error>
+                            <mat-error *ngIf="isUserNameDuplicate()">{{'user.details.userName.inUse' | translate}}</mat-error>
                         </mat-form-field>
                         <div layout="row" class="layout-padding-top-bottom" *ngIf="model.systemName !== null">
-                            <span flex="25" class="property-name">Username</span>
+                            <span flex="25" class="property-name">{{'view.login.Username' | translate}}</span>
 
                             <div flex>
                                 {{editModel.systemName}}
@@ -87,18 +87,18 @@
                         </div>
  
                         <mat-form-field class="block">
-                            <mat-label>Display Name</mat-label>
+                            <mat-label>{{'view.login.Username' | translate}}</mat-label>
                             <input name="displayName" matInput [(ngModel)]="editModel.displayName"/>
                         </mat-form-field>
 
                         <mat-form-field class="block">
-                            <mat-label>Email Address</mat-label>
+                            <mat-label>{{'views.common.Email.Address' | translate}}</mat-label>
                             <input matInput #emailField [formControl]="emailFormControl" name="email" [(ngModel)]="editModel.email"/>
-                            <mat-error *ngIf="emailField.value !== '' && emailFormControl.hasError('email')">Email address is not valid.</mat-error>
+                            <mat-error *ngIf="emailField.value !== '' && emailFormControl.hasError('email')">{{'views.common.Email.Address.error' | translate}}</mat-error>
                         </mat-form-field>
 
                         <mat-form-field class="block">
-                            <mat-label>Status</mat-label>
+                            <mat-label>{{'views.common.status' | translate}}</mat-label>
                             <mat-select name="status" [(ngModel)]="editModel.enabled">
                                 <mat-option [value]="true">Active</mat-option>
                                 <mat-option [value]="false">Disabled</mat-option>
@@ -106,7 +106,7 @@
                         </mat-form-field>
 
                          <mat-form-field class="block layout-padding-top-bottom flex-gt-sm">
-                            <mat-label class="label-small md-container-ignore">Group</mat-label>
+                            <mat-label class="label-small md-container-ignore">{{'AUTH.group.tile' | translate}}</mat-label>
                             <mat-chip-list name="groupsChips" #chipList [(ngModel)]="editModel.groups">
                                 <mat-chip *ngFor="let value of  editModel.groups" (remove)="removeGroup(value)">
                                    {{getGroupTitle(value)}} <mat-icon matChipRemove>cancel</mat-icon>
@@ -119,7 +119,7 @@
                                     <span >{{ getGroupTitle(group) }}</span>
                                 </mat-option>
                             </mat-autocomplete>
-                            <mat-hint *ngIf="isMissingGroup()" style="color: red">At least one group is required.</mat-hint>
+                            <mat-hint *ngIf="isMissingGroup()" style="color: red">{{'user.details.noGroups.warn' | translate}}</mat-hint>
                         </mat-form-field> 
                     </editable-section>
                 </vertical-section-layout>

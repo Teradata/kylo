@@ -8,6 +8,7 @@ import { TdDialogService } from '@covalent/core/dialogs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     templateUrl: "js/auth/groups/group-details/group-details.html",
@@ -82,7 +83,8 @@ export default class GroupDetailsComponent {
         private stateService: StateService,
         private _dialogService: TdDialogService,
         private _viewContainerRef: ViewContainerRef,
-        private snackBar: MatSnackBar) {}
+        private snackBar: MatSnackBar,
+        private translate: TranslateService) {}
     /**
      * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
      * @param user the user
@@ -124,17 +126,17 @@ export default class GroupDetailsComponent {
         var name = (ObjectUtils.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
         this.UserService.deleteGroup(this.stateService.params.groupId)
             .then(() => {
-                this.snackBar.open("Successfully deleted the group " + name,"OK",{
+                this.snackBar.open(this.translate.instant("views.common.delete.success",{entity:"the group"}) + name,this.translate.instant("views.common.ok"),{
                     duration : 3000
                 });
             }, () => {
                 this._dialogService.openAlert({
-                    message: "The group " + name + "could not be deleted. ",
+                    message: this.translate.instant('views.common.delete.failure',{entity : name}),
                     viewContainerRef: this._viewContainerRef,
                     width: '300 px',
-                    title: 'Delete Failed',
-                    closeButton: 'Got it!',
-                    ariaLabel: "Failed to delete group",
+                    title: this.translate.instant('views.common.delete.failure.title'),
+                    closeButton: this.translate.instant('views.common.dialog.gotIt'),
+                    ariaLabel: this.translate.instant('views.common.delete.failure',{entity:"group"}),
                     closeOnNavigation: true,
                     disableClose: false
                 });
