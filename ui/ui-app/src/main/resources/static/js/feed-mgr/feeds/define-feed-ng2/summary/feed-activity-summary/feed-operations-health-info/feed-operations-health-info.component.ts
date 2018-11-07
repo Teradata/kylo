@@ -45,7 +45,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     refreshInterval: any;
 
-    refreshTime: number = 5000;
+    refreshTime: number = 10000;
 
     constructor(private http:HttpClient,private opsManagerFeedService: OpsManagerFeedService,
                 @Inject("BroadcastService") private broadcastService: BroadcastService,

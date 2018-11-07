@@ -23,13 +23,14 @@
 
     <header-section>
       <div layout="row" layout-align="space-between-center" flex>
-        <div class="card-title" flex>Select Template</div>
+        <div class="card-title" ng-if="vm.isNew" flex>Select Template</div>
+        <div class="card-title" ng-if="!vm.isNew" flex>{{vm.model.templateName}}</div>
         <h2 class="card-sub-header">1 of 5</h2>
       </div>
     </header-section>
 
     <body-section>
-      <md-input-container>
+      <md-input-container ng-if="vm.isNew">
         <label>Template</label>
         <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
           <md-option test="test" ng-repeat="template in vm.templates | orderBy:'name'" value="{{template.id}}">

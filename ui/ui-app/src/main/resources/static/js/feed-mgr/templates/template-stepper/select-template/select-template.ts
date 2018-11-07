@@ -20,6 +20,8 @@ export class RegisterSelectTemplateController {
     registeredTemplateId: any;
     nifiTemplateId: any;
     isValid: any;
+    isNew: boolean;
+
     /**
      * Error message to be displayed if {@code isValid} is false
      * @type {null}
@@ -63,6 +65,7 @@ export class RegisterSelectTemplateController {
         this.model = this.registerTemplateService.model;
 
         this.registeredTemplateId = this.model.id;
+        this.isNew = (this.model.nifiTemplateId == undefined);
         this.nifiTemplateId = this.model.nifiTemplateId;
 
         this.isValid = this.registeredTemplateId !== null;

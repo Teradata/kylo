@@ -224,6 +224,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     //Load Jobs
 
     loadJobs(force?: boolean) {
+
         if (force || !this.refreshing) {
             if (force) {
                 this.activeJobRequests.forEach((canceler: Subscription) => {
@@ -278,7 +279,8 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
                 if (params.get('filter') != '') {
                     params = params.set('filter', params.get('filter') + '');
                 }
-                params = params.set('filter', params.get('filter') + "jobInstance.feed.name==" + this.feedFilter);
+                //params = params.set('filter', params.get('filter') + "jobInstance.feed.name==" + this.feedFilter);
+                params = params.set('filter', params.get('filter') + "jobName==" + this.feedFilter);
             }
             //if the filter doesnt contain an operator, then default it to look for the job name
             if (params.get('filter') != '' && params.get('filter') != null && !this.containsFilterOperator(params.get('filter'))) {

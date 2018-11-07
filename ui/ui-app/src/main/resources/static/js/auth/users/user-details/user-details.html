@@ -18,7 +18,7 @@
   #L%
   -->
 <div>
-    <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.loading || vm.deleting"></md-progress-linear>
     <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
         <header-section>
             <div layout="row" layout-align="center start">
@@ -29,8 +29,9 @@
         </header-section>
         <body-section>
             <form name="userForm">
-                <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                                         editable="vm.isEditable" is-valid="vm.isValid && userForm.$valid" allow-edit="vm.allowAdmin">
+                <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()"
+                                         on-cancel-edit="vm.onCancel()"
+                                         editable="vm.isEditable" is-valid="vm.isValid && userForm.$valid && !vm.deleting" allow-edit="vm.allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Username</span>
