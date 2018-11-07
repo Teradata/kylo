@@ -31,7 +31,7 @@
       <span class="hint">{{vm.metadataMessage}}</span>
       <div layout="row" layout-fill layout-align="space-between center">
         <md-button class="md-primary md-raised" ng-disabled="vm.sql == ''" ng-click="vm.query()" ng-if="vm.allowExecuteQuery">
-          {{"views.hql-editor.ExecuteQ" | translate}}
+          {{"views.common.executeQ" | translate}}
         </md-button>
     <span flex></span>
     <md-button ng-if="vm.allowFullscreen" class="md-raised" ng-click="vm.fullscreen()">

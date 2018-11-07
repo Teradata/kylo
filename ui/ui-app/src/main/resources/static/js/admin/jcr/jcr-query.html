@@ -4,10 +4,10 @@
     <mat-tab id="jcr-query" label="Jcr Query">
         <div layout-padding>
           <div layout="row" layout-align="space-between">
-            <span class="mat-title">Execute Query</span>
+            <span class="mat-title">{{"views.common.executeQ" | translate}}</span>
             <div>
               <mat-input-container *ngIf="previousQueries.length >0">
-                <label>Previous Queries</label>
+                <label>{{"views.common.previousQ" | translate}}</label>
                 <mat-select [(ngModel)]="previousQuery" (change)="changePreviousQuery()" >
                   <mat-option *ngFor="let q of previousQueries">
                     {{q }}
@@ -18,11 +18,12 @@
         </div>
         <codemirror [config]="codemirrorOptions" [(ngModel)]="sql"></codemirror>
         <button mat-button class="md-primary md-raised" [disabled]="loading" (click)="executeQuery()">
-          Execute Query
+          {{"views.common.executeQ" | translate}}
         </button>
         <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
         <div class="browse-results" *ngIf="loading == false ">
-          <span *ngIf="queryTime != null" class="md-subhead">The query returned {{resultSize}} rows and took: {{queryTime }} </span><!--| timeWithMillis -->
+          <span *ngIf="queryTime != null" class="md-subhead"
+                [translate]="'ADMIN.jcrquery.query.return'" [translateParams]="{resultSize : resultSize, queryTime:queryTime}"></span><!--| timeWithMillis -->
           <div *ngIf="!loading && queryExecuted" style="width:100%;height:500px;">
             <td-data-table
                 [data]="tableData"
@@ -33,7 +34,7 @@
           </div>
         </div>
           <div layout="column" *ngIf="explainPlan != null">
-            <div class="md-subhead">Explain Plan</div>
+            <div class="md-subhead">{{"ADMIN.jcrquery.explain.plan" | translate}}</div>
             <div style="white-space: pre-wrap;">{{explainPlan}}</div>
           </div>
         </div>
@@ -41,9 +42,9 @@
     <mat-tab id="jcr-indexes" label="Jcr indexes">
         <div layout="column" layout-padding>
           <div layout="row" layout-align="space-between">
-            <div class="mat-title">{{indexes.length}} Existing Indexes</div>
+            <div class="mat-title">{{indexes.length}} {{"ADMIN.jcrquery.existing.indexes" | translate}}</div>
             <button mat-button class="md-primary md-raised"  (click)="reindex()">
-              Re-index
+              {{"ADMIN.jcrquery.reindex" | translate}}
             </button>
           </div>
         </div>
@@ -73,14 +74,14 @@
 
         <div layout="column">
           <form #indexForm="ngForm" name="indexForm" layout="column">
-          <span class="mat-title">Add a new Index</span>
+          <span class="mat-title">{{"ADMIN.jcrquery.add.index" | translate}}</span>
           <mat-input-container>
-            <label>Index Name</label>
+            <label>{{"ADMIN.jcrquery.index.name" | translate}}</label>
             <input matInput name="indexName" [(ngModel)]="index.indexName" required>
           </mat-input-container>
 
             <mat-input-container>
-              <label>Kind</label>
+              <label>{{"ADMIN.jcrquery.kind" | translate}}</label>
               <mat-select name="indexKind" [(ngModel)]="index.indexKind">
                 <mat-option *ngFor="let kind of indexKinds" ng-value="kind">
                   {{kind}}
@@ -89,17 +90,17 @@
             </mat-input-container>
 
           <mat-input-container>
-            <label>Index Node Type</label>
+            <label>{{"ADMIN.jcrquery.index.node.type" | translate}}</label>
             <input matInput name="nodeType" [(ngModel)]="index.nodeType" required>
           </mat-input-container>
 
           <mat-input-container>
-            <label>Property Name</label>
+            <label>{{"ADMIN.jcrquery.property.name" | translate}}</label>
             <input matInput name="propertyName" [(ngModel)]="index.propertyName" required>
           </mat-input-container>
 
             <mat-input-container>
-              <label>Property Type</label>
+              <label>{{"ADMIN.jcrquery.property.type" | translate}}</label>
               <mat-select name="propertyType" [(ngModel)]="index.propertyType">
                  <mat-option *ngFor="let type of propertyTypes" ng-value="type.value">
                   {{type.name}}
@@ -108,7 +109,7 @@
             </mat-input-container>
             <div flex="50">
               <button mat-button class="md-primary md-raised" [disabled]="loading" (click)="registerIndex() ">
-                Register Index
+                {{"ADMIN.jcrquery.register.index" | translate}}
               </button>
             </div>
           </form>

@@ -3,7 +3,7 @@
   <div fxLayout="column">
 
     <div fxLayout="row">
-      <span class="mat-title"> Is Kylo Clustered</span>
+      <span class="mat-title"> {{"ADMIN.cluster.cluster-test.title" | translate}}</span>
       <div fxFlex class="layout-padding-left">
         <mat-icon *ngIf="isClustered" class="healthy">check_circle</mat-icon>
         <mat-icon *ngIf="!isClustered" class="warn">do_not_disturb</mat-icon>
@@ -18,15 +18,15 @@
             <span>
               <mat-icon icon="warning" class="warn"></mat-icon>
             </span>
-        <span class="mat-subhead layout-padding-left">Warning.  Only 1 member is found in the cluster. </span>
+        <span class="mat-subhead layout-padding-left">{{"ADMIN.cluster.cluster-test.warning" | translate}}</span>
         <span fxFlex> </span>
       </div>
-      <span class="hint">Please ensure your Kylo cluster configuration is configured correctly.</span>
+      <span class="hint">{{"ADMIN.cluster.cluster-test.ensure.request" | translate}}</span>
     </div>
 
     <div fxLayout="column" class="layout-padding-top-bottom">
       <mat-divider></mat-divider>
-      <span class="mat-title layout-padding-top">Cluster Members</span>
+      <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.members" | translate}}</span>
       <div fxLayout="column" ng-repeat="member in members" class="layout-padding-top layout-padding-left">
         {{member}}
       </div>
@@ -35,40 +35,40 @@
     <mat-divider></mat-divider>
 
     <div fxLayout="column">
-      <span class="mat-title layout-padding-top">Send a Message</span>
+      <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.sendMessage" | translate}}</span>
       <div fxLayout="row" class="layout-padding-top layout-padding-left">
         <mat-input-container class="condensed">
-          <label>Send a Message</label>
+          <label>{{"ADMIN.cluster.cluster-test.sendMessage" | translate}}</label>
           <input mat-input [(ngModel)]="simpleMessage" required>
         </mat-input-container>
-        <button mat-button (click)="sendMessage();" color="primary" class="md-raised">Send</button>
+        <button mat-button (click)="sendMessage();" color="primary" class="md-raised">{{"ADMIN.cluster.cluster-test.sendButton" | translate}}</button>
       </div>
     </div>
 
 
     <mat-divider></mat-divider>
     <div fxLayout="column">
-      <span class="mat-title layout-padding-top">Received Messages</span>
+      <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.receivedMessage" | translate}}</span>
       <mat-list layout-fill fxLayout="column" class="list-item-table">
         <mat-list-item ng-repeat="msg in receivedMessages|orderBy:'-dateTime' ">
           <div fxLayout="row" layout-fill>
             <div fxFlex="60" fxLayout="column" class="item-column mat-list-item-text ">
               <span class="item-title">{{msg.message}}</span>
               <span class="column-title column-title-bottom">
-                              Message
+                {{"ADMIN.cluster.cluster-test.messageText" | translate}}
             </span>
             </div>
 
             <div fxLayout="column" fxFlex="20" class="item-column mat-list-item-text ">
               <span class="item-title">{{msg.from}}</span>
               <span class="column-title column-title-bottom">
-                              From
+                {{"ADMIN.cluster.cluster-test.fromText" | translate}}
             </span>
             </div>
             <div fxLayout="column" fxFlex="20" class="item-column mat-list-item-text ">
               <span class="item-title">{{msg.dateTime | date:'HH:mm:ss'}}</span>
               <span class="column-title column-title-bottom">
-                              Date
+                {{"views.common.date" | translate}}
             </span>
             </div>
 
@@ -77,7 +77,7 @@
         </mat-list-item>
         <mat-list-item *ngIf="receivedMessages.length == 0">
           <div style="width:100%" class="item-column">
-            <span class="item-title">No Messages received</span>
+            <span class="item-title">{{"ADMIN.cluster.cluster-test.no.messages.receivedText" | translate}}</span>
           </div>
         </mat-list-item>
       </mat-list>
@@ -85,32 +85,29 @@
   </div>
 
   <div *ngIf="!isClustered" fxLayout="column">
-    <span>Kylo is not clustered.  Please follow the <a href="http://kylo.readthedocs.io/en/latest/how-to-guides/KyloClusterConfiguration.html" target="_blank">Clustering Kylo" documentation</a> and ensure the following items are configured.</span>
-    <span class="hint">The default Kylo installation provides sample configuration files for the items below in the <i>'/opt/kylo/setup/config/kylo-cluster/'</i></span>
+    <span>{{"ADMIN.cluster.cluster-test.not.clustered.part1" | translate}} <a href="http://kylo.readthedocs.io/en/latest/how-to-guides/KyloClusterConfiguration.html" target="_blank">Clustering Kylo documentation</a> {{"ADMIN.cluster.cluster-test.not.clustered.part2" | translate}}</span>
+    <span class="hint">{{"ADMIN.cluster.cluster-test.default.kylo.conf.text" | translate}} <i>'/opt/kylo/setup/config/kylo-cluster/'</i></span>
 
     <ul>
-      <li>Modeshape jgroups configuration</li>
+      <li>{{"ADMIN.cluster.cluster-test.modeshape.jgroups.conf" | translate}}</li>
       <li>
         <ul>
-          <li>Ensure the correct modeshape-jgroups xml exists in the <i>'/kylo-services/conf'</i> and is configured.</li>
-          <li>Ensure the file above is configured and referenced in the metadata-repository.json file.</li>
+          <li [translate]="'ADMIN.cluster.cluster-test.ensure.modeshape.jgroups.part1'" [translateParams]="{fileName:'modeshape-jgroups xml',filePath:'/kylo-services/conf'}"></li>
+          <li [translate]="'ADMIN.cluster.cluster-test.ensure.file.configured'" [translateParams]="{fileName:'metadata-repository.json'}"></li>
         </ul>
       </li>
-      <li>Kylo jgroups configuration</li>
+      <li>{{"ADMIN.cluster.cluster-test.kylo.job.conf.text" | translate}}</li>
       <li>
         <ul>
-          <li>Ensure the kylo-cluster-jgroups-config.xml exists in the <i>'/kylo-services/conf'</i> and is configured.</li>
-          <li>The property in the kylo-services/conf/application.properties exists referring to the file above:<br/>
-            <pre>
-                kylo.cluster.jgroupsConfigFile=kylo-cluster-jgroups-config.xml
-              </pre>
+          <li [translate]="'ADMIN.cluster.cluster-test.ensure.kylo.cluster.conf.part1'" [translateParams]="{fileName:'kylo-cluster-jgroups-config.xml',filePath:'/kylo-services/conf'}"></li>
+          <li [translate]="'ADMIN.cluster.cluster-test.property.kylo.ensure'" [translateParams]="{filePath:'kylo-services/conf/application.properties',fileKey:'kylo.cluster.jgroupsConfigFile=kylo-cluster-jgroups-config.xml'}">
           </li>
         </ul>
       </li>
-      <li>Quartz Scheduler</li>
+      <li>{{"ADMIN.cluster.cluster-test.quartz.scheduler" | translate}}</li>
       <li>
         <ul>
-          <li>Ensure the Quartz Scheduler is configured for cluster mode and the 'quartz.properties' file is in the <i>'/kylo-services/conf'</i></li>
+          <li [translate]="'ADMIN.cluster.cluster-test.quartz.ensure'" [translateParams]="{fileName: 'quartz.properties', filePath: '/kylo-services/conf'}"></li>
         </ul>
       </li>
     </ul>

@@ -6,6 +6,7 @@ import { TdDialogService } from '@covalent/core/dialogs';
 import { ObjectUtils } from '../../common/utils/object-utils';
 import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     templateUrl: "js/admin/jcr/jcr-query.html",
@@ -26,7 +27,8 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
     constructor(private http: HttpClient, 
             private snackBar: MatSnackBar,
             private _tdDialogService : TdDialogService,
-            public _dataTableService: TdDataTableService)
+            public _dataTableService: TdDataTableService,
+            private translate: TranslateService)
             {
                 super(_dataTableService);
             }
@@ -95,12 +97,12 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
         indexKinds: any[] = ["VALUE","ENUMERATED_VALUE","UNIQUE_VALUE","TEXT","NODE_TYPE"]
 
         registerIndex(){
-            this.showDialog("Adding Index", "Adding index. Please wait...");
+            this.showDialog(this.translate.instant('jcrquery.dialog.adding.title'), this.translate.instant('jcrquery.dialog.adding.message'));
             var successFn =(response: any)=> {
                 if (response) {
                     this.hideDialog();
                     this.getIndexes();
-                    this.snackBar.open('Added the index','OK',{duration : 3000});
+                    this.snackBar.open(this.translate.instant("jcrquery.index.add"),this.translate.instant("views.common.ok"),{duration : 3000});
                 }
             }
             var errorFn = (err: any)=> {
@@ -118,7 +120,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
                 var successFn = (response: any)=> {
                     if (response) {
                        this.getIndexes();
-                       this.snackBar.open('Removed the index '+indexName,'OK',{duration : 3000})
+                       this.snackBar.open(this.translate.instant("jcrquery.index.remove")+indexName,this.translate.instant("views.common.ok"),{duration : 3000})
                     }
                 }
                 var errorFn =(err: any)=> {
@@ -148,16 +150,16 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
         }
 
         reindex(){
-                this.showDialog("Reindexing", "Reindexing. Please wait...");
+                this.showDialog(this.translate.instant('jcrquery.dialog.reindexing.title'), this.translate.instant('jcrquery.dialog.reindexing.message'));
                 var successFn = (response: any)=> {
                     this.hideDialog();
                     if (response) {
-                        this.snackBar.open('Successfully reindexed','',{duration : 3000});
+                        this.snackBar.open(this.translate.instant("jcrquery.reindex.success"),this.translate.instant("views.common.ok"),{duration : 3000});
                     }
                 }
                 var errorFn = (err: any)=> {
                     this.hideDialog();
-                    this.snackBar.open('Error reindexing ','',{duration : 3000});
+                    this.snackBar.open(this.translate.instant("jcrquery.reindex.error"),this.translate.instant("views.common.ok"),{duration : 3000});
                 }
 
                 var promise = this.http.post("/proxy/v1/metadata/debug/jcr-index/reindex",{},{headers : this.headers})
@@ -183,7 +185,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
                     this.errorMessage = err.developerMessage;
                 }
                 else {
-                    this.errorMessage = 'Error performing query ';
+                    this.errorMessage = this.translate.instant('jcrquery.error.query.perform');
                 }
             };
             var promise = this.http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}}).toPromise();
@@ -199,7 +201,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
             };
             var errorFn = (err: any)=> {
                 this.indexes = [];
-                this.indexesErrorMessage = 'Error getting indexes '+err
+                this.indexesErrorMessage = this.translate.instant('jcrquery.index.get.error') +err
             };
             var promise = this.http.get('/proxy/v1/metadata/debug/jcr-index').toPromise();
             promise.then(successFn, errorFn);

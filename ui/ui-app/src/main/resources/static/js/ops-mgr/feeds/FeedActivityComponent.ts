@@ -64,7 +64,7 @@ export class FeedActivityComponent implements OnInit {
                 useInteractiveGuideline: true,
                 noData: this.translate.instant('views.views.FeedActivityDirective.noData'),
                 xAxis: {
-                    axisLabel: this.translate.instant('views.FeedActivityDirective.Date'),
+                    axisLabel: this.translate.instant('views.common.date'),
                     showMaxMin: false,
                     tickFormat: (d: any) => {
                         return d3.time.format('%x')(new Date(d))
