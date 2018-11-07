@@ -61,8 +61,8 @@ import "./shared/nifi-property-input/nifi-property-timunit-input";
 import "./shared/policy-input-form/PolicyInputFormService";
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import "./shared/profile-stats/ProfileStats";
-import "./shared/properties-admin/properties-admin";
-import "./shared/property-list/property-list";
+// import "./shared/properties-admin/properties-admin";
+// import "./shared/property-list/property-list";
 import "./visual-query/transform-data/profile-stats/column-analysis";
 
 angular.module(moduleName).service('CategoriesService', downgradeInjectable(CategoriesService));
