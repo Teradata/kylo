@@ -17,25 +17,26 @@
   limitations under the License.
   #L%
   -->
-<div mat-dialog aria-label="Event dialog">
+  <!-- aria-label="{{'OPS-MGR.alerts.event-dialog' | translate}}" -->
+<div mat-dialog >
     <mat-dialog-content layout="column" layout-padding>
-        <h4 class="md-title" style="margin-bottom:0px;">Update Alert Details</h4>
+        <h4 class="md-title" style="margin-bottom:0px;">{{"OPS-MGR.alerts.event-dialog.update-alerts"| translate}}</h4>
         <form name="actionUpdateForm" layout="column">
             <mat-form-field layout="row">
                 <mat-select [(ngModel)]="state" placeholder="State" name="state">
-                    <mat-option [value]="'UNHANDLED'">Unhandled</mat-option>
-                    <mat-option [value]="'IN_PROGRESS'">In Progress</mat-option>
-                    <mat-option [value]="'HANDLED'">Handled</mat-option>
+                    <mat-option [value]="'UNHANDLED'">{{"OPS-MGR.alerts.event-dialog.unhandled"| translate}}</mat-option>
+                    <mat-option [value]="'IN_PROGRESS'">{{"OPS-MGR.alerts.event-dialog.in-progress"| translate}}</mat-option>
+                    <mat-option [value]="'HANDLED'">{{"OPS-MGR.alerts.event-dialog.handled"| translate}}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field layout="row">
-                <mat-label>Comment</mat-label>
+                <mat-label>{{"OPS-MGR.alerts.details-template.comment"| translate}}</mat-label>
                 <input matInput [(ngModel)]="description" name="description" size="50" flex>
             </mat-form-field>
         </form>
     </mat-dialog-content>
     <mat-dialog-actions>
-        <button class="md-button md-kylo-theme md-ink-ripple" (click)="closeDialog()">Cancel</button>
-        <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="saveDialog()" [disabled]="saving">Save</button>
+        <button class="md-button md-kylo-theme md-ink-ripple" (click)="closeDialog()">{{"view.main.cancel" | translate}}</button>
+        <button class="md-primary md-raised md-button md-kylo-theme md-ink-ripple" (click)="saveDialog()" [disabled]="saving">{{"view.main.save" | translate}}</button>
     </mat-dialog-actions>
 </div>

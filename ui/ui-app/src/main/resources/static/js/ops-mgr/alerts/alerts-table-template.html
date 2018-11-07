@@ -26,7 +26,7 @@
             <span flex="5"></span>
             <div style="margin-top:-10px;width: 180px;align-items: center;" layout="row">
                 <div class="md-block condensed flex-gt-sm">
-                    <mat-label class="label-small md-container-ignore">Alert Type</mat-label>
+                    <mat-label class="label-small md-container-ignore">{{"OPS-MGR.alerts.alerts-table-template.alert-type" | translate}}</mat-label>
                     <mat-select [(ngModel)]="filterAlertType" (change)="onFilterAlertTypeChange(filterAlertType)"  class="md-no-underline" style="display:inline">
                         <mat-option *ngFor="let opt of alertTypes;" [value]="opt">
                             {{opt.label}}
@@ -35,7 +35,7 @@
                 </div>
                 
                 <div class="md-block condensed flex-gt-sm">
-                    <mat-label class="label-small md-container-ignore">AlertState</mat-label>
+                    <mat-label class="label-small md-container-ignore">{{"OPS-MGR.alerts.alerts-table-template.alert-state" | translate}}</mat-label>
                     <mat-select [(ngModel)]="filterAlertState" (change)="onFilterAlertStateChange(filterAlertState)"  class="md-no-underline" style="display:inline">
                         <mat-option *ngFor="let opt of alertStates;" [value]="opt">
                             {{opt.label}}
@@ -44,7 +44,7 @@
                 </div>
             </div>
 
-            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" [(ngModel)]="filterTable" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter' | translate}}" [(ngModel)]="filterTable" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
             </td-search-box>
 
             <button md-butto aria-label="Filter Help" class="md-icon-button md-button md-kylo-theme md-ink-ripple filter-help-button" [matMenuTriggerFor]="menu">
@@ -54,7 +54,7 @@
             <mat-menu class="options-menu md-menu-content width-3 md-kylo-theme" #menu>
 
                 <div class="md-menu-item" style="padding: 10px;">
-                        <span md-menu-align-target class="md-subheader md-menu-item-header">Actions</span>
+                        <span md-menu-align-target class="md-subheader md-menu-item-header">{{"OPS-MGR.alerts.alerts-table-template.actions" | translate}}</span>
                         <div class="optionsDialog" (click)="showFilterHelpPanel()">
                             <span style="float:left;padding:6px 8px;">{{menuLabel}}</span>
                         </div>

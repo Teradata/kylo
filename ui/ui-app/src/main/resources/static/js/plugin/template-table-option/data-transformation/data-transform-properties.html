@@ -2,7 +2,7 @@
   <readonly-section>
     <div layout="column">
       <div layout="row" class="feed-property versions-{{vm.diff('/dataTransformation/sql')}}">
-        <span flex="25" class="property-name">Query</span>
+        <span flex="25" class="property-name">{{"PLUGIN.template-table-option.data-transformation.data-transform-properties.query" | translate}}</span>
 
         <div flex>
           {{vm.model.dataTransformation.sql}}
@@ -13,7 +13,7 @@
       </div>
 
       <div flex layout="row" class="feed-property versions-{{vm.diffCollection('/dataTransformation/states')}}">
-        <span flex="25" class="property-name">Data Transformations</span>
+        <span flex="25" class="property-name">{{"PLUGIN.template-table-option.data-transformation.data-transform-properties.data-transformations" | translate}}</span>
 
         <div flex layout="row">
           <md-list flex class="layout-padding-top-bottom">
@@ -38,17 +38,17 @@
   <editable-section>
     <div layout="column">
       <div layout="row" class="layout-padding-top-bottom">
-        <span flex="25" class="property-name">Query</span>
+        <span flex="25" class="property-name">{{"PLUGIN.template-table-option.data-transformation.data-transform-properties.query" | translate}}</span>
       </div>
       <div layout="row">
-        <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()">Edit Query...</md-button>
+        <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()">{{"PLUGIN.template-table-option.data-transformation.data-transform-properties.edit-query" | translate}}</md-button>
       </div>
 
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">Data Transformations</span>
       </div>
       <div layout="row">
-        <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()">Edit Transformations...</md-button>
+        <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()">{{"PLUGIN.template-table-option.data-transformation.data-transform-properties.edit-transformations" | translate}}</md-button>
       </div>
     </div>
   </editable-section>

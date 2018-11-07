@@ -80,7 +80,7 @@ import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
         MatStepperModule,
         FormsModule,
         ReactiveFormsModule,
-        TranslateModule,
+        TranslateModule.forChild(),
         MatFormFieldModule,
         MatCardModule,
         MatCheckboxModule,
