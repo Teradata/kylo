@@ -649,7 +649,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                     }
                 })
             }
-        } else  if(this.model.$catalogDataSourceId != undefined && this.availableCatalogSQLDataSources && this.availableCatalogSQLDataSources.length) {
+        } else  if(this.advancedMode && this.model.$catalogDataSourceId != undefined && this.availableCatalogSQLDataSources && this.availableCatalogSQLDataSources.length) {
             const ds = this.availableCatalogSQLDataSources.find(ds => ds.id == this.model.$catalogDataSourceId);
             if(ds != null && ds != undefined) {
                 if(ds.connector.pluginId == "jdbc" && datasourceIds.indexOf(ds.id) <0) {
@@ -879,7 +879,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             const format = ds.dataSet.format;
             let paths = [nodeName];
             let dataSet = new SparkDataSet({id:ds.dataSet.id,dataSource:ds.dataSet.dataSource,title:ds.dataSet.title,format:format,schema:columns,options:{"dbtable":nodeName}, paths:paths});
-            this.addDataSetToCanvas(datasourceId, nodeName, ds.tableSchema, dataSet);
+            this.addDataSetToCanvas(null, nodeName, ds.tableSchema, dataSet);
             this.loadingPage = false;
         }, error1 => {
             this.loadingPage = false;
