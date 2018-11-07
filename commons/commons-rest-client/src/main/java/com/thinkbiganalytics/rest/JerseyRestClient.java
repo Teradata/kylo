@@ -56,6 +56,7 @@ import java.util.concurrent.Future;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -89,6 +90,7 @@ public class JerseyRestClient {
      * @see #JerseyRestClient(JerseyClientConfig)
      */
     protected String uri;
+
     /**
      * The username to use to connect set by configuration of the REST Client
      * The constructor will set this value using {@link JerseyClientConfig#username}
@@ -410,20 +412,18 @@ public class JerseyRestClient {
      * @return the returned object of the specified Class
      */
     public <T> T get(Invocation.Builder builder, Class<T> clazz, boolean logError) {
-        T obj = null;
-
         try {
-            obj = builder.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+            return builder.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
-                obj = handleNotAcceptableGetRequestJsonException(builder, clazz);
+                return handleNotAcceptableGetRequestJsonException(builder, clazz);
             } else {
                 if (logError) {
                     log.error("Failed to process request " + builder, e);
                 }
+                throw e;  // NOTE: includes ProcessingException that can occur when service is down.
             }
         }
-        return obj;
     }
 
     /**

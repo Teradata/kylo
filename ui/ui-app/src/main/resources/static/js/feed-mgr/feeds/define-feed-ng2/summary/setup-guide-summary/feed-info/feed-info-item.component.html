@@ -1,31 +1,28 @@
-<div fxLayout="column" class="info-item">
-  <div fxLayout="row" class="info-item-row">
-    <mat-icon ngClass="tc-grey-600">{{icon}}</mat-icon>
-    <div fxLayout="column" class="info-item-text" *ngIf="!customReadonlyLayout && !readonlyList">
-      <div class="info-item-title">{{name}}</div>
-      <div class="info-item-description"> {{description}}</div>
-    </div>
-    <div *ngIf="customReadonlyLayout && !readonlyList">
-      <ng-content select=".readonly-content"></ng-content>
-    </div>
-    <div fxLayout="column" *ngIf="readonlyList" class="info-item-text">
-      <div class="info-item-title">{{name}}</div>
-      <div class="info-item-description"> {{description}}</div>
-      <mat-list dense *ngIf="!editing" class="no-padding">
-        <mat-list-item *ngFor="let item of readonlyList">{{item}}</mat-list-item>
-      </mat-list>
-    </div>
-    <span fxFlex></span>
-    <button mat-icon-button (click)="onEdit()" *ngIf="feed.canEdit() && !feed.readonly && !editing && editable">
-      <mat-icon ngClass="tc-grey-600">edit</mat-icon>
-    </button>
-  </div>
-  <div *ngIf="editing" fxLayout="column" class="info-item-edit">
-    <ng-content #content></ng-content>
-    <div fxLayout="row" class="info-item-action-buttons">
-      <button mat-button (click)="onCancel()">Cancel</button>
-      <button mat-button color="primary" (click)="onSave()" [disabled]="isSaveDisabled">Save</button>
-    </div>
+<mat-list-item *ngIf="!editing">
+  <mat-icon matListAvatar >{{icon}}</mat-icon>
+  <h3 matLine *ngIf="!customReadonlyLayout">{{name}}</h3>
+  <p matLine *ngIf="!customReadonlyLayout">{{description}}</p>
+  <ng-content select=".readonly-content" *ngIf="customReadonlyLayout && !readonlyList"></ng-content>
+  <div *ngIf="readonlyList" >
+    <mat-list dense *ngIf="!editing" class="no-padding">
+      <mat-list-item *ngFor="let item of readonlyList">{{item}}</mat-list-item>
+    </mat-list>
   </div>
 
+  <span></span>
+  <button mat-icon-button (click)="onEdit()" *ngIf="feed.canEdit() && !feed.readonly && !editing && editable">
+    <mat-icon ngClass="tc-grey-600">edit</mat-icon>
+  </button>
+</mat-list-item>
+<div *ngIf="editing" class="pad-sm">
+  <div class="mat-subheading-2 pull-bottom-none">Edit {{description}}</div>
+  <mat-divider></mat-divider>
+  <div class="pad">
+  <ng-content #content></ng-content>
+  </div>
+  <mat-divider></mat-divider>
+  <div fxLayout="row" class="pad-sm">
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="isSaveDisabled">Save</button>
+    <button mat-button (click)="onCancel()">Cancel</button>
+  </div>
 </div>

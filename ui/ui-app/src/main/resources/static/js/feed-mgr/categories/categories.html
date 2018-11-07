@@ -83,13 +83,13 @@
         </div>
     </div>
 -->
-  <div layout="row" flex class="md-padding feed-categories" layout-align="start start" style="justify-content: space-between" layout-wrap ng-if="!vm.loading">
+  <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap ng-if="!vm.loading">
     <div md-whiteframe="2" class="kylo-card-template cursor-pointer push-bottom push-right"
              ng-repeat="category in vm.categories | orderBy:'name' | filter: vm.searchQuery track by $index" flex="initial" flex-md="initial" flex-sm="50"
              ng-click="vm.editCategory(category)" flex layout="row">
 
       <div layout="column" ng-style="getColorStyle(category.iconColor)" layout-align="center center" flex="20">
-        <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon""></ng-md-icon>
+        <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon"></ng-md-icon>
       </div>
       <div fxLayout="column" flex>
         <div flex class="kylo-content-template push-top-md push-left">

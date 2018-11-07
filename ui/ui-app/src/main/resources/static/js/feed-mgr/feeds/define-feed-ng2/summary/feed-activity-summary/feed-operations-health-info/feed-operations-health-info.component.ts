@@ -16,6 +16,7 @@ import {Observable} from "rxjs/Observable";
 import {RequestOptions, ResponseContentType} from "@angular/http";
 import {NotificationService} from "../../../../../../services/notification.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {FeedOperationsSummary} from "../../../../../model/feed/feed-operations-summary.model";
 
 @Component({
     selector: "feed-operations-health-info",
@@ -33,18 +34,18 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     feedChange = new EventEmitter<Feed>()
 
     @Output()
-    feedHealthRefreshed = new EventEmitter<FeedSummary>();
+    feedHealthRefreshed = new EventEmitter<FeedOperationsSummary>();
 
     /**
      * feed operations data
      */
-    feedHealth: FeedSummary = new FeedSummary({});
+    feedHealth: FeedOperationsSummary = new FeedOperationsSummary({});
 
     feedHealthAvailable: boolean;
 
     refreshInterval: any;
 
-    refreshTime: number = 5000;
+    refreshTime: number = 10000;
 
     constructor(private http:HttpClient,private opsManagerFeedService: OpsManagerFeedService,
                 @Inject("BroadcastService") private broadcastService: BroadcastService,
@@ -72,7 +73,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     getFeedHealth() {
 
-        this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response: FeedSummary) => {
+        this.opsManagerFeedService.getFeedHealth(this.feed.getFullName()).subscribe((response: FeedOperationsSummary) => {
             if (response) {
                 this.feedHealth = response;
                 this.feedHealthAvailable = true;

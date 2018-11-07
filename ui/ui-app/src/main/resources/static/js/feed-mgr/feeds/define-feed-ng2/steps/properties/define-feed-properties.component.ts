@@ -50,6 +50,10 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
             this.displayEditActions = true;
       }
 
+    onAllowIndexingChange($event: boolean) {
+        //console.log("allowIndexing set to: " + $event);
+    }
+
     private initEditActions(){
         if(!this.feed.readonly && this.feed.userProperties.length >0){
             this.displayEditActions = true;

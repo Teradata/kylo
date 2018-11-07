@@ -105,6 +105,11 @@ public class TableSetup {
     @MetadataField(description = "List of fields that are primary keys separated by a comma")
     private String primaryKeyFields;
 
+    /**
+     * Was the table generated from a structured source?
+     */
+    private boolean structured;
+
     private Map<String,String> sourceTargetFieldMap;
 
     private Map<String,String> targetSourceFieldMap;
@@ -623,4 +628,12 @@ public class TableSetup {
     public String getFeedTblProperties() { return feedTblProperties; }
 
     public void setFeedTblProperties(String feedTblProperties) { this.feedTblProperties = feedTblProperties; }
+
+    public boolean isStructured() {
+        return structured;
+    }
+
+    public void setStructured(boolean structured) {
+        this.structured = structured;
+    }
 }

@@ -63,7 +63,7 @@ import javax.annotation.Nullable;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 
-public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient {
+public class NiFiRestClientV1 extends NiFiJerseyRestClient implements NiFiRestClient {
 
     /**
      * NiFi Connections REST client

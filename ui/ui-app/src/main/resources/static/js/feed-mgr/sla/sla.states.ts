@@ -2,8 +2,6 @@ import {SlaComponent} from "./sla.componment";
 import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 import {SlaListComponent} from "./list/sla-list.componment";
 import {SlaDetailsComponent} from "./details/sla-details.componment";
-import {FEED_DEFINITION_STATE_NAME} from "../model/feed/feed-constants";
-import {DefineFeedComponent} from "../feeds/define-feed-ng2/define-feed.component";
 
 export const SLA_ROOT_STATE = "sla";
 

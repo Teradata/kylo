@@ -63,7 +63,7 @@ export class RemoteFilesComponent extends BrowserComponent {
     createParentNodeParams(node: Node): any {
         const pathNodes = node.getPathNodes();
         const root = pathNodes[0];
-        if (RemoteFilesComponent.isAzure(new URL(root.getName()))) {
+        if (RemoteFilesComponent.isAzure(new URL(root.getName())) || RemoteFilesComponent.isS3(new URL(root.getName()))) {
             return {path: (<RemoteFile>node.getBrowserObject()).path};
         } else {
             return {path: pathNodes.map(n => n.getName()).join("/")};
@@ -164,6 +164,9 @@ export class RemoteFilesComponent extends BrowserComponent {
 
     private static isAzure(url: URL) {
         return url.protocol === "wasb:" || url.protocol === "wasbs:";
+    }
+    private static isS3(url: URL) {
+        return url.protocol === "s3:" || url.protocol === "s3a:";
     }
 
 }

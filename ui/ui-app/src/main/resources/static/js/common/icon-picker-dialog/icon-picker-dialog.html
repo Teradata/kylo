@@ -6,12 +6,12 @@
         <md-dialog-content layout="column" flex layout-fill  layout-padding style="min-width:700px;min-height:400px;height:400px;max-height:400px;">
             <div layout="row" flex layout-fill>
                 <div layout="column"  style="width:250px;">
-                    <span class="md-subhead" style="text-align: center;padding-bottom:10px;;">{{"views.icon-picker-dialog.Syi" | translate}}</span>
+                    <span class="md-subhead" style="text-align: center">{{"views.icon-picker-dialog.Syi" | translate}}</span>
                     <div  ng-if="loadingIcons"  layout-fill layout="row" layout-align="center center">
                         <md-progress-circular md-mode="indeterminate" md-diameter="60" class="md-accent"></md-progress-circular>
                     </div>
 
-                    <div style="overflow-y:auto;overflow-x:hidden">
+                    <div class="pad" style="overflow-y:auto;overflow-x:hidden;padding-top:0px">
                     <md-grid-list
                             md-cols="3"
                             md-row-height="1:1"
@@ -21,18 +21,18 @@
                                       md-colspan="1"
                                       ng-click="selectIcon(tile)"
                                 style=" outline: none;cursor:pointer;">
-                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;padding-right:30px;padding-bottom:30px;"></ng-md-icon>
+                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;margin:0px;padding:0px"></ng-md-icon>
                         </md-grid-tile>
                     </md-grid-list>
                     </div>
                 </div>
-                <div layout="column"  style="width:250px;padding-left:20px;">
-                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Syc" | translate}}</span>
+                <div layout="column" class="pad-left" style="width:250px">
+                    <span  class="md-subhead" style="text-align: center">{{"views.icon-picker-dialog.Syc" | translate}}</span>
                     <div ng-if="loadingColors" layout-fill layout="row" layout-align="center center">
                         <md-progress-circular md-mode="indeterminate" md-diameter="60" class="md-accent"></md-progress-circular>
                     </div>
 
-                    <div style="overflow-y:hidden">
+                  <div class="pad" style="overflow-y:auto;overflow-x:hidden">
                     <md-grid-list
                             md-cols="3"
                             md-row-height="1:1"
@@ -48,8 +48,8 @@
                     </div>
                 </div>
                 <div layout="column" flex >
-                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Yi" | translate}}</span>
-                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" ng-style="fillStyle" style="padding-bottom:120px;padding-right:40px;"></ng-md-icon>
+                    <span  class="md-subhead" style="text-align: center">{{"views.icon-picker-dialog.Yi" | translate}}</span>
+                  <ng-md-icon icon="{{selectedIconTile.title}}" size="100" style="margin-top:100px;margin-left:40px" ng-style="fillStyle"></ng-md-icon>
                 </div>
             </div>
         </md-dialog-content>

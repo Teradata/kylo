@@ -18,6 +18,7 @@ package com.thinkbiganalytics.feedmgr.service.template.importing;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportSection;
@@ -37,7 +38,9 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.validation.Abstr
 import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplateFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplatesArchive;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateImportException;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
@@ -101,9 +104,11 @@ public class TemplateImporter {
             init();
             AbstractValidateImportTemplate validateImportTemplate = validateImportTemplateFactory.apply(this.importTemplate, this.importTemplateOptions, importType);
             validateImportTemplate.validate();
+        } catch (NifiConnectionException e) {
+            throw e;
         } catch (Exception e) {
             this.overallStatusMessage.update("An Error occurred " + e.getMessage(), false);
-            throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
+            throw new TemplateImportException("Error importing template  " + fileName + ".  " + e.getMessage());
         }
         overallStatusMessage.update("Validated template for import ", this.importTemplate.isValid());
 
@@ -113,7 +118,6 @@ public class TemplateImporter {
     public ImportTemplate validateAndImport() {
         validate();
         if (this.importTemplate.isValid()) {
-
             ImportTemplateRoutine routine = importTemplateRoutineFactory.apply(importTemplate, importTemplateOptions, importType);
             routine.importTemplate();
         }

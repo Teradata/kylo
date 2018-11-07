@@ -204,6 +204,8 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                     if (updatedFeedResponse == undefined) {
                         //ERROR out
                         //@TODO present error or return observable.error()
+                        console.log("Failed to merge template with undefined");
+                        feed.propertiesInitialized = true;
                     } else {
                         //merge the properties back into this feed
                         feed.properties = updatedFeedResponse.properties;
@@ -246,6 +248,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                     }
 
 
+                }, err => {
+                    console.log("Failed to merge template", err);
+                    feed.propertiesInitialized = true;
                 })
         } else {
             //  this.defineFeedService.setupFeedProperties(this.feed,this.feed.registeredTemplate, 'edit')

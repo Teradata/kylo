@@ -181,15 +181,19 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     }
 
     initFeedColumn() {
-        if (this.origName == undefined || this.history.length == 0) {
+        if (this.origName == undefined) {
             this.origName = this.name;
             this.origDataType = this.derivedDataType;
             this.deleted = false;
             this.history = [];
             this.dataTypeDisplay = this.getDataTypeDisplay();
+        }
+        if(this.history.length == 0){
             this.addHistoryItem();
         }
-        this.replaceNameSpaces();
+        if(this.dataTypeDisplay == undefined) {
+         this.dataTypeDisplay  = this.getDataTypeDisplay();
+        }
     }
 
     deleteColumn() {

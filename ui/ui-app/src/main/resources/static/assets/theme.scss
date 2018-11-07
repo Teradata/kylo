@@ -5,12 +5,23 @@
 @import '../../../../../node_modules/@covalent/core/theming/all-theme';
 
 $font-family-text: Arial, Helvetica, sans-serif;
+/*
+  $headline: mat-typography-level(24px, 32px 700),
+  $subheading-2:  mat-typography-level(14px, 24px, 400),
+  $subheading-1:  mat-typography-level(12px, 20px, 400),
+  $body-2:        mat-typography-level(14px, 24px, 500),
+  $body-1:        mat-typography-level(12px, 20px, 400),
+  $caption:       mat-typography-level(12px, 20px, 400)
+
+   $subheading-2:  mat-typography-level(14px, 24px, 400),
+  $body-1:        mat-typography-level(12px, 20px, 400)
+ */
 
 // Custom typography
 $typography: mat-typography-config(
   $button: mat-typography-level(14px, 14px, 400),
- $font-family: 'Arial, Helvetica, sans-serif',
-  $headline: mat-typography-level(32px, 48px 700)
+  $font-family: 'Arial, Helvetica, sans-serif'
+
 );
 $toolbar-typography: mat-typography-config(
   $title: mat-typography-level(20px, 32px, 400)
@@ -61,10 +72,10 @@ $warn:    mat-palette($mat-deep-orange, 800, 100, 900);
 $theme: mat-light-theme($primary, $accent, $warn);
 
 // Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
+// Alternatively, you can import and @include the theme mixins for each .item-title component
 // that you are using.
 @include angular-material-theme($theme);
-@include covalent-theme($theme, $typography);
+@include covalent-theme($theme);
 @include teradata-brand($theme);
 
 
@@ -73,14 +84,42 @@ mat-nav-list {
   [mat-list-item].active {
     mat-icon[matListAvatar] {
       background-color: mat-color($accent);
-      color: mat-color($accent, default-contrast)
+      color: mat-color($accent, default-contrast);
+      fill: mat-color($accent, default-contrast);
     }
     mat-icon[matListIcon] {
       color: mat-color($accent);
+      fill: mat-color($accent);
     }
   }
 }
 
+// allow a link in a mat-list
+mat-list {
+  a[mat-list-item] {
+    text-decoration: none;
+    color: inherit;
+    &:hover, &:focus {
+      outline: none;
+      .mat-list-item {
+        background: rgba(black, 0.04);
+      }
+    }
+  }
+}
+/*
+mat-list[dense] {
+  [mat-list-item] {
+      font-size:14px;
+   }
+  .mat-list-item {
+    font-size:14px;
+  }
+}
+*/
+.mat-list[dense] .mat-list-item {
+  font-size:14px !important;
+}
 
 /* ------------------------------------------------------------------------------- */
 $foreground: map-get($theme, foreground);

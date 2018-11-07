@@ -35,6 +35,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {CovalentSearchModule} from "@covalent/core/search";
+import {SafeHtmlPipe} from "./safe-html/safe-html.pipe";
 @NgModule({
     declarations: [
         AddButtonComponent,
@@ -46,7 +47,8 @@ import {CovalentSearchModule} from "@covalent/core/search";
         BaseDraggableDirective,
         KyloDraggableDirective,
         KyloTimerDirective,
-        FilteredPaginatedTableViewComponent
+        FilteredPaginatedTableViewComponent,
+        SafeHtmlPipe
     ],
     entryComponents: [
         AddButtonComponent,
@@ -89,7 +91,8 @@ import {CovalentSearchModule} from "@covalent/core/search";
         BaseDraggableDirective,
         KyloDraggableDirective,
         KyloTimerDirective,
-        FilteredPaginatedTableViewComponent
+        FilteredPaginatedTableViewComponent,
+        SafeHtmlPipe
     ]
 })
 export class KyloCommonModule {

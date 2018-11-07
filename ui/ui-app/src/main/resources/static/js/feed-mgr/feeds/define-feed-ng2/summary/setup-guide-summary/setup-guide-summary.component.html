@@ -86,7 +86,7 @@
             </div>
           </mat-card-header>
           <mat-card-content>
-            <div fxLayout="column" class="feed-info-list">
+            <mat-list dense>
               <feed-info-name [feed]="feed"></feed-info-name>
               <mat-divider></mat-divider>
 
@@ -105,9 +105,7 @@
 
 
               <feed-info-schedule [feed]="feed"  ></feed-info-schedule>
-
-
-            </div>
+            </mat-list>
           </mat-card-content>
         </mat-card>
       </div>

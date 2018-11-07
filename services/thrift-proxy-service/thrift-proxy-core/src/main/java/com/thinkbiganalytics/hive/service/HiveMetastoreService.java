@@ -272,14 +272,15 @@ public class HiveMetastoreService {
                        + "JOIN  TBLS t ON s.SD_ID = t.SD_ID "
                        + "JOIN  DBS d on d.DB_ID = t.DB_ID "
                        + "WHERE t.TBL_NAME='" + table + "' and d.NAME='" + schema + "' "
-                       + "ORDER BY d.NAME, t.TBL_NAME";
+                       + "ORDER BY d.NAME, t.TBL_NAME, c.INTEGER_IDX";
         if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
             query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\",c.\"TYPE_NAME\" "
                     + "FROM \"COLUMNS_V2\" c "
                     + "JOIN  \"SDS\" s on s.\"CD_ID\" = c.\"CD_ID\" "
                     + "JOIN  \"TBLS\" t ON s.\"SD_ID\" = t.\"SD_ID\" "
                     + "JOIN  \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" "
-                    + "WHERE t.\"TBL_NAME\"='" + table + "' and d.\"NAME\"='" + schema + "' ";
+                    + "WHERE t.\"TBL_NAME\"='" + table + "' and d.\"NAME\"='" + schema + "' "
+                    + "ORDER BY d.\"NAME\", t.\"TBL_NAME\", c.\"INTEGER_IDX\"";
 
 
         }

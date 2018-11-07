@@ -58,7 +58,7 @@
         <mat-card fxFlex fxLayout="row" class="kylo-card-template pad-none cursor-pointer" (click)="selectTemplate(template)">
 
           <div fxLayout="column" [style.background]="template.iconColor" fxLayoutAlign="center center" fxFlex="20">
-            <mat-icon class="kylo-card-icon" fxLayoutAlign="center center">{{template.icon}}</mat-icon>
+            <ng-md-icon [icon]="template.icon" size="40" class="kylo-card-icon"></ng-md-icon>
           </div>
           <div fxLayout="column" fxFlex>
             <mat-card-content fxFlex class="kylo-content-template">

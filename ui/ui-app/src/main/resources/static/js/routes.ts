@@ -176,24 +176,7 @@ class Route {
                 });
             }
         })
-/*
-        $stateProvider.state({
-            name: 'service-level-agreements.**',
-            url: '/service-level-agreements',
-            params: {
-                slaId: null
-            },
-            lazyLoad: (transition: any) => {
-                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                const onModuleLoad = () => {
-                    return import(/***** webpackChunkName: "feed-mgr.sla.module"  "./feed-mgr/sla/module")
-                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "service-level-agreements", transition.params()));
-                };
-                import(/***** webpackChunkName: "feed-mgr.module-require" "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
-            }
-        });
-*/
-        $stateProvider.state({
+    $stateProvider.state({
             name: 'users.**',
             url: '/users',
             lazyLoad: (transition: any) => {
@@ -517,27 +500,6 @@ class Route {
             }
         });
 
-        $stateProvider.state('sla-email-templates.**', {
-            url: '/sla-email-templates',
-            lazyLoad: (transition: any) => {
-                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
-                return import(/* webpackChunkName: "admin.sla-email-templates.module" */ "./feed-mgr/sla/module")
-                    .then(mod => {
-                        $ocLazyLoad.load({name: mod.default.module.name})
-                            .then(function success(args: any) {
-                                //upon success go back to the state
-                                $stateProvider.stateService.go('sla-email-templates', transition.params())
-                                return args;
-                            }, function error(err: any) {
-                                console.log("Error loading sla email templates ", err);
-                                return err;
-                            });
-                    })
-                    .catch(err => {
-                        throw new Error("Failed to load feed-mgr/sla/module, " + err);
-                    });
-            }
-        });
 
         $stateProvider.state('cluster.**', {
             url: '/admin/cluster',

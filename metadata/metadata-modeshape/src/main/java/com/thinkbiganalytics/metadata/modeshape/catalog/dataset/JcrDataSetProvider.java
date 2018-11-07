@@ -133,6 +133,16 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         return JcrUtil.toSystemName(title);
     }
 
+    private boolean isFileUpload(DataSource dataSource){
+        return dataSource.getConnector() != null ? dataSource.getConnector().getPluginId().equalsIgnoreCase("file-upload") : false;
+    }
+
+    private boolean isJdbcSource(DataSource dataSource, String format) {
+        DataSetSparkParameters srcParams = dataSource.getEffectiveSparkParameters();
+        String effectiveFormat = StringUtils.isEmpty(format) ? srcParams.getFormat() : format;
+        return effectiveFormat.equals("jdbc");
+    }
+
     private String generateTitle(DataSource dataSource, String title, String format, Map<String, String> options, Set<String> paths) {
         String derivedTile = title;
         DataSetSparkParameters srcParams = dataSource.getEffectiveSparkParameters();
@@ -280,6 +290,12 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             Map<String, String> totalOptions = Stream.concat(sparkParams.getOptions().entrySet().stream(), this.options.entrySet().stream())
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v2));
 
+            //if we dont have a title and we are a file upload create the title and set it
+            if(StringUtils.isBlank(this.title) && isFileUpload(dataSource)) {
+                String title = UUID.randomUUID().toString();
+                String ensuredTitle = generateTitle(this.dataSource, title, this.format, this.options, this.paths);
+                this.title = ensuredTitle;
+            }
             return generateHashCode(effectiveFormat, paths, totalOptions);
         }
 

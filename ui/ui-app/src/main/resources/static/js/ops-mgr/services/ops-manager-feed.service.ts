@@ -10,6 +10,7 @@ import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {Observable} from "rxjs/Observable";
 import {RestUrlConstants} from "../../feed-mgr/services/RestUrlConstants";
 import {RestResponseStatus} from "../../common/common.model";
+import {FeedOperationsSummary} from "../../feed-mgr/model/feed/feed-operations-summary.model";
 
 @Injectable()
 export class OpsManagerFeedService {
@@ -176,11 +177,11 @@ export class OpsManagerFeedService {
         }
     }
 
-    getFeedHealth(feedName:string) :Observable<FeedSummary>{
-        let subject = new ReplaySubject<FeedSummary>(1);
+    getFeedHealth(feedName:string) :Observable<FeedOperationsSummary>{
+        let subject = new ReplaySubject<FeedOperationsSummary>(1);
 
         var successFn = (response: any)=> {
-            let feedHealth = new FeedSummary({});
+            let feedHealth = new FeedOperationsSummary({});
             if (response) {
                 //transform the data for UI
                 if (response.feedSummary && response.feedSummary.length && response.feedSummary.length >0) {

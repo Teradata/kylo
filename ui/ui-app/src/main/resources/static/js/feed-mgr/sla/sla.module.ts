@@ -34,6 +34,9 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatListModule} from "@angular/material/list";
 import {MatCardModule} from "@angular/material/card";
 import {KyloFeedManagerModule} from "../feed-mgr.module";
+import {CodemirrorModule} from "ng2-codemirror";
+import {CovalentSearchModule} from "@covalent/core/search";
+import {CovalentDataTableModule} from "@covalent/core/data-table";
 
 @NgModule({
     declarations: [
@@ -44,7 +47,6 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
         SlaComponent
     ],
     entryComponents: [
-
     ],
     exports:[
         SlaListComponent,
@@ -57,6 +59,8 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
         CovalentDialogsModule,
         CovalentLoadingModule,
         CovalentLayoutModule,
+        CovalentDataTableModule,
+        CovalentSearchModule,
         FlexLayoutModule,
         FormsModule,
         MatButtonModule,
@@ -84,6 +88,7 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
         FieldPoliciesModule,
         CronExpressionPreviewModule,
         DynamicFormModule,
+        CodemirrorModule,
         UIRouterModule.forChild()
     ],
     providers:[

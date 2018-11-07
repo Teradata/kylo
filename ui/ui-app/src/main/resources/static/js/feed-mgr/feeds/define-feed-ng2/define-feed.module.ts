@@ -126,6 +126,7 @@ import {SlaModule} from "../../sla/sla.module";
 import {ExampleStepComponent} from './steps/example-step/example-step.component';
 import {TruncatePipe} from './summary/profile/container/stats/truncate-pipe';
 import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module';
+import {MetadataIndexingComponent} from "../../shared/metadata-indexing/metadata-indexing.component";
 
 @NgModule({
     declarations: [
@@ -190,6 +191,7 @@ import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.
         CharactersPipe,
         ExampleStepComponent,
         TruncatePipe,
+        MetadataIndexingComponent,
     ],
     entryComponents:[
         NewFeedDialogComponent,

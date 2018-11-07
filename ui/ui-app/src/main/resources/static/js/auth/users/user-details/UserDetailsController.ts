@@ -104,6 +104,11 @@ export class UserDetailsController implements ng.IComponentController {
         loading:any = true;
 
         /**
+         * Indicates record is being deleted.
+         */
+        deleting:boolean = false;
+
+        /**
          * User model for the read-only view.
          * @type {UserPrincipal}
          */
@@ -121,7 +126,7 @@ export class UserDetailsController implements ng.IComponentController {
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
         canDelete() {
-            return (this.model.systemName !== null);
+            return (this.model.systemName !== null && !this.deleting);
         };       
                 /**
          * Finds the substring of the title for the specified group that matches the query term.
@@ -176,23 +181,27 @@ export class UserDetailsController implements ng.IComponentController {
          * Deletes the current user.
          */
         onDelete() {
+            this.deleting = true;
             var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
             this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
                     .then(() => {
-                        this.$mdToast.show(
-                                this.$mdToast.simple()
-                                        .textContent("Successfully deleted the user " + name)
-                                        .hideDelay(3000)
-                        );
+                        this.deleting = false;
                         this.StateService.Auth.navigateToUsers();
+                        this.$mdToast.show(
+                            this.$mdToast.simple()
+                                .textContent("Successfully deleted the user " + name)
+                                .hideDelay(3000)
+                        );
+
                     }, () => {
+                        this.deleting = false;
                         this.$mdDialog.show(
                                 this.$mdDialog.alert()
                                         .clickOutsideToClose(true)
                                         .title("Delete Failed")
                                         .textContent("The user " + name + " could not be deleted. " )//+ err.data.message
                                         .ariaLabel("Failed to delete user")
-                                        .ok("Got it!")
+                                        .ok("Ok")
                         );
                     });
         };

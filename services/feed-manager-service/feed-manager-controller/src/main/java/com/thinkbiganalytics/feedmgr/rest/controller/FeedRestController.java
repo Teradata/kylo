@@ -61,6 +61,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
@@ -680,6 +681,8 @@ public class FeedRestController {
             return getMetadataService().getDraftFeedVersion(feedId, includeEntity)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (NifiConnectionException e ) {
+            throw e;
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -702,6 +705,8 @@ public class FeedRestController {
             return getMetadataService().getDraftFeedVersion(feedId, true)
                 .map(version -> Response.ok(version.getEntity()).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (NifiConnectionException e ) {
+            throw e;
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -737,6 +742,8 @@ public class FeedRestController {
             feed.addErrorMessage(msg);
             feed.setSuccess(false);
             return Response.status(Status.CONFLICT).entity(feed).build();
+        } catch (NifiConnectionException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to create a new feed.", e);
 
@@ -781,6 +788,8 @@ public class FeedRestController {
             feed.addErrorMessage(msg);
             feed.setSuccess(false);
             return Response.status(Status.CONFLICT).entity(feed).build();
+        } catch (NifiConnectionException e ) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to create a new feed.", e);
 

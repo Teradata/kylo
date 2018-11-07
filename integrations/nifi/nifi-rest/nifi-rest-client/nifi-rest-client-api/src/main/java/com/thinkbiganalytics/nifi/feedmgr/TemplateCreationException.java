@@ -23,8 +23,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
 /**
  * Exception thrown when a template is unable to be created
  */
-public class TemplateCreationException extends RuntimeException {
-
+public class TemplateCreationException extends TemplateException {
 
     /**
      * @param message
@@ -37,6 +36,6 @@ public class TemplateCreationException extends RuntimeException {
      * @param cause
      */
     public TemplateCreationException(String message, Throwable cause) {
-        super(cause);
+        super(message,cause);
     }
 }

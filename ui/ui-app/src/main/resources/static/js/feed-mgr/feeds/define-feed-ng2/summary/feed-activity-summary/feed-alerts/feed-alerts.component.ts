@@ -29,7 +29,7 @@ export class FeedAlertsComponent implements OnInit, OnDestroy{
 
     ngOnInit(){
         this.fetchFeedAlerts();
-        this.fetchInterval = setInterval(this.fetchFeedAlerts.bind(this),5000);
+        this.fetchInterval = setInterval(this.fetchFeedAlerts.bind(this),10000);
     }
     ngOnDestroy() {
         if(this.fetchInterval){
