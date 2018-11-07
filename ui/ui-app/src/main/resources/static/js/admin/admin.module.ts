@@ -25,6 +25,7 @@ import {CodemirrorModule} from "ng2-codemirror";
 import { CovalentDataTableModule } from '@covalent/core/data-table';
 import { KyloCommonModule } from "../common/common.module";
 import { MatCardModule } from "@angular/material/card";
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({ 
     declarations: [ 
@@ -53,6 +54,7 @@ import { MatCardModule } from "@angular/material/card";
         MatCardModule,
         CodemirrorModule,
         CovalentDataTableModule,
+        TranslateModule,
         UIRouterModule.forChild({states: adminStates})
     ],
     providers : [
