@@ -211,16 +211,16 @@ export class StateService {
     SlaStates = () => {
         var data: any = {};
         data.navigateToServiceLevelAgreements = () => {
-            this.$state.go('service-level-agreements');
+            this.$state.go('sla');
         }
         data.navigateToServiceLevelAgreement = (slaId: any) => {
-            this.$state.go('service-level-agreements',{slaId:slaId});
+            this.$state.go('sla.edit',{slaId:slaId});
         }
         data.navigateToNewEmailTemplate = (templateId: any) => {
-            this.$state.go('sla-email-template',{emailTemplateId:templateId});
+            this.$state.go('sla-email-template.edit',{emailTemplateId:templateId});
         }
         data.navigateToEmailTemplates = () => {
-            this.$state.go('sla-email-templates');
+            this.$state.go('sla-email-template.list');
         }
         return data;
     }
