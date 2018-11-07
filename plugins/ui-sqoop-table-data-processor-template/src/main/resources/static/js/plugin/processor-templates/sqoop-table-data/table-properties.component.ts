@@ -230,8 +230,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         /**
          * if we are editing or working with the cloned feed then get the selectedTable saved on this model.
          */
+        this.initializeAutoComplete();
         if (this.processor.form.enabled) {
-            this.initializeAutoComplete();
             if (this.model.cloned == true) {
                 //if we are cloning and creating a new feed setup the autocomplete
                 this.setupClonedFeedTableFields();
