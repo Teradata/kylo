@@ -1,6 +1,6 @@
-import {APP_BASE_HREF, DOCUMENT} from "@angular/common";
+import {DOCUMENT} from "@angular/common";
 import {HTTP_INTERCEPTORS, HttpClient, HttpClientModule} from "@angular/common/http";
-import {FactoryProvider, NgModule, NgModuleFactoryLoader, SystemJsNgModuleLoader} from "@angular/core";
+import {ClassProvider, FactoryProvider, Injector, NgModule, NgModuleFactoryLoader, SystemJsNgModuleLoader} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MatIconRegistry} from "@angular/material/icon";
 import {BrowserModule, DomSanitizer} from "@angular/platform-browser";
@@ -9,7 +9,7 @@ import {UpgradeModule} from "@angular/upgrade/static";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {TranslateLoader, TranslateModule, TranslateModuleConfig, TranslateService} from "@ngx-translate/core";
 import {TranslateHttpLoader} from "@ngx-translate/http-loader";
-import {UIRouterModule} from "@uirouter/angular";
+import {UIRouter, UIRouterModule, UrlService} from "@uirouter/angular";
 import {UIRouterUpgradeModule} from "@uirouter/angular-hybrid";
 
 import "routes"; // load AngularJS application
@@ -112,20 +112,30 @@ const translateConfig: TranslateModuleConfig = {
     ],
     providers: [
         {provide: "$ocLazyLoad", useFactory: (i: any) => i.get("$ocLazyLoad"), deps: ["$injector"]} as FactoryProvider,
-        {provide: HTTP_INTERCEPTORS, useClass: AngularHttpInterceptor, multi: true},
+        {provide: HTTP_INTERCEPTORS, useClass: AngularHttpInterceptor, multi: true} as ClassProvider,
         {provide: MatIconRegistry, useFactory: iconRegistryFactory, deps: [HttpClient, DomSanitizer, DOCUMENT]},
         {provide: NgModuleFactoryLoader, useClass: SystemJsNgModuleLoader}
     ]
 })
 export class KyloModule {
 
-    constructor(private domSanitizer: DomSanitizer, private iconRegistry: MatIconRegistry, private translate: TranslateService) {
+    constructor(private domSanitizer: DomSanitizer, private iconRegistry: MatIconRegistry, private injector: Injector, private translate: TranslateService) {
         this.initIcons();
         this.initTranslation();
     }
 
     ngDoBootstrap() {
-        // needed by UpgradeModule
+        const upgrade = this.injector.get(UpgradeModule) as UpgradeModule;
+
+        // The DOM must be already be available
+        upgrade.bootstrap(document.body, ["kylo"]);
+
+        // Initialize the Angular Module (get() any UIRouter service from DI to initialize it)
+        const url: UrlService = this.injector.get(UIRouter).urlService;
+
+        // Instruct UIRouter to listen to URL changes
+        url.listen();
+        url.sync();
     }
 
     private initIcons(): void {
@@ -139,7 +149,7 @@ export class KyloModule {
         const fasUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("../node_modules/@fortawesome/fontawesome-free/sprites/solid.svg");
         this.iconRegistry.addSvgIconSetInNamespace("fas", fasUrl);
 
-        this.iconRegistry.registerFontClassAlias("mdi","mdi-set")
+        this.iconRegistry.registerFontClassAlias("mdi", "mdi-set");
 
         const mdiSvgUrl = this.domSanitizer.bypassSecurityTrustResourceUrl("../node_modules/@mdi/font/fonts/materialdesignicons-webfont.svg");
         this.iconRegistry.addSvgIconSetInNamespace("mdi", mdiSvgUrl);

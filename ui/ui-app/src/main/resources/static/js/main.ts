@@ -1,14 +1,12 @@
-import * as angular from 'angular';
-import {setAngularJSGlobal} from '@angular/upgrade/static';
-setAngularJSGlobal(angular);
-import { enableProdMode } from '@angular/core';
-
-import {Injector} from "@angular/core";
+import {enableProdMode} from '@angular/core';
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
-import {UpgradeModule} from "@angular/upgrade/static";
-import {servicesPlugin, UrlService, UIRouter} from "@uirouter/core";
+import {setAngularJSGlobal} from '@angular/upgrade/static';
+import {servicesPlugin} from "@uirouter/core";
+import * as angular from 'angular';
 
 import {KyloModule} from "./app.module";
+
+setAngularJSGlobal(angular);
 
 enableProdMode();
 
@@ -16,17 +14,4 @@ enableProdMode();
 servicesPlugin(null);
 
 // Manually bootstrap the Angular app
-platformBrowserDynamic().bootstrapModule(KyloModule).then(platformRef => {
-    const injector: Injector = platformRef.injector;
-    const upgrade = injector.get(UpgradeModule) as UpgradeModule;
-
-    // The DOM must be already be available
-    upgrade.bootstrap(document.body, ["kylo"]);
-
-    // Initialize the Angular Module (get() any UIRouter service from DI to initialize it)
-    const url: UrlService = injector.get(UIRouter).urlService;//getUIRouter(injector).urlService;
-
-    // Instruct UIRouter to listen to URL changes
-    url.listen();
-    url.sync();
-});
+platformBrowserDynamic().bootstrapModule(KyloModule).catch(err => console.log("Failed to bootstrap KyloModule", err));
