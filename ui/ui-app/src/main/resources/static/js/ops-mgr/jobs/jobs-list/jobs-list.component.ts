@@ -20,11 +20,11 @@ import {OperationsRestUrlConstants} from "../../../services/operations-rest-url-
 import IconUtil from "../../../services/icon-util";
 import {DateTimeService} from "../../../common/utils/date-time.service";
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
-import {FeedSummary} from "../../../feed-mgr/model/feed/feed-summary.model";
 import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {AbandonAllJobsDialogComponent} from "./abandon-all-jobs-dialog.component";
 import {JobsFilterHelpPanelDialogComponent} from "./jobs-filter-help-panel-dialog.component";
+import {FeedOperationsSummary} from "../../../feed-mgr/model/feed/feed-operations-summary.model";
 
 
 
@@ -63,7 +63,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     @Input() tab: any;
     @Input() cardTitle: any;
     @Input() refreshIntervalTime: any;
-    @Input() feed: FeedSummary;
+    @Input() feed: FeedOperationsSummary;
     @Input() feedFilter: string;
     @Input() pageName: any;
 
