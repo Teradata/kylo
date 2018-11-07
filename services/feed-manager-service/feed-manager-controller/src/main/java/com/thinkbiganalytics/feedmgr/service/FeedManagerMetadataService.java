@@ -54,14 +54,18 @@ import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,8 +74,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -279,6 +286,11 @@ public class FeedManagerMetadataService implements MetadataService {
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
                 nifiRestClient.deleteProcessGroupAndConnections(processGroup, connections);
             }
+            //disable any ports that are not connected to anything
+            nifiRestClient.disableDisconnectedPorts(categoryProcessGroup);
+
+
+
         }
 
         // Step 9: Delete database entries

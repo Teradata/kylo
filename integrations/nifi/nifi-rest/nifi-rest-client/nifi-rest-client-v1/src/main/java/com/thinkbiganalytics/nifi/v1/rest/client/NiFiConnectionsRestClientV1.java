@@ -36,7 +36,6 @@ import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -183,11 +182,11 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
         return Optional.empty();
     }
 
-    public Set<ConnectionDTO> findConnectionsToEntity(String processGroupId, String entityId){
-return client.processGroups.getConnections(processGroupId)
-    .stream()
-    .filter(connectionDTO -> (connectionDTO.getSource() != null && connectionDTO.getSource().getId().equalsIgnoreCase(entityId)) ||
-                             (connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equalsIgnoreCase(entityId)))
-    .collect(Collectors.toSet());
+    public Set<ConnectionDTO> findConnectionsToEntity(String processGroupId, String entityId) {
+        return client.processGroups().getConnections(processGroupId)
+            .stream()
+            .filter(connectionDTO -> (connectionDTO.getSource() != null && connectionDTO.getSource().getId().equalsIgnoreCase(entityId)) ||
+                                     (connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equalsIgnoreCase(entityId)))
+            .collect(Collectors.toSet());
     }
 }

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -31,18 +30,18 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
+import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.PortEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotFoundException;
@@ -67,89 +66,195 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
         this.client = client;
     }
 
-    private boolean isModified(PortDTO current, PortDTO port){
+    private boolean isModified(PortDTO current, PortDTO port) {
         return current == null || port.getId() == null || (!current.getId().equals(port.getId()) ||
-            !current.getName().equals(port.getName())|| !current.getState().equals(port.getState()));
+                                                           !current.getName().equals(port.getName()) || !current.getState().equals(port.getState()));
     }
+
     @Nonnull
     @Override
     public PortDTO updateInputPort(@Nonnull final String processGroupId, @Nonnull final PortDTO inputPort) {
+        PortEntity entity = updateInputPortEntity(processGroupId, inputPort, 0);
+        return entity != null ? entity.getComponent() : inputPort;
+    }
+
+    private PortEntity updateInputPortEntity(@Nonnull final String processGroupId, @Nonnull final PortDTO inputPort, Integer retryAttempt) {
         // Get revision
-        final PortEntity current;
+        PortEntity current;
         try {
             current = client.get("/input-ports/" + inputPort.getId(), null, PortEntity.class);
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
         }
-       if(current == null || (current != null && isModified(current.getComponent(),inputPort))) {
+        if (current == null || (current != null && isModified(current.getComponent(), inputPort))) {
 
-            boolean update  = true;
-            //only mark input port as running if we have connections to it
-           //NIFI bug
-           if(StringUtils.isNotBlank(inputPort.getId())  && NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(inputPort.getState())) {
-               Set<ConnectionDTO> connectionDTOS = client.connections().findConnectionsToEntity(processGroupId, inputPort.getId());
-               if(connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getSource().getId().equals(inputPort.getId()))){
-                   log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are on upstream connections to it ",inputPort.getId(), inputPort.getName(), processGroupId);
-                   update = false;
-               }
+            boolean update = true;
 
-           }
-           if(update) {
-               // Update input port
-               final PortEntity entity = new PortEntity();
-               entity.setComponent(inputPort);
+            //if we are trying to do anything but disable the port and the port is currently invalid prevent it from updating.
+            if (current != null && current.getStatus().getRunStatus().equalsIgnoreCase("invalid") && !inputPort.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
+                update = false;
+            } else if (StringUtils.isNotBlank(inputPort.getId()) && NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(inputPort.getState())) {
+                //only mark input port as running if we have connections to it
+                //NIFI bug
+                Set<ConnectionDTO> connectionDTOS = client.connections().findConnectionsToEntity(processGroupId, inputPort.getId());
+                if (connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getSource().getId().equals(inputPort.getId()))) {
+                    log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are no upstream connections to it ", inputPort.getId(), inputPort.getName(),
+                             processGroupId);
+                    update = false;
+                }
 
-               final RevisionDTO revision = new RevisionDTO();
-               revision.setVersion(current.getRevision().getVersion());
-               entity.setRevision(revision);
+            }
+            if (update) {
 
-               //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
-               if(current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && inputPort.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())){
-                   //first need to make it ENABLED
-                   inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                   PortDTO port = updateInputPort(processGroupId,inputPort);
-                   inputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-               }
-               try {
-                   return client.put("/input-ports/" + inputPort.getId(), entity, PortEntity.class).getComponent();
-               } catch (final NotFoundException e) {
-                   throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
-               }
-           }
-           else {
-               return inputPort;
-           }
+                //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
+                if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && inputPort.getState()
+                    .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
+                    //first need to make it ENABLED
+                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                    current = updateInputPortEntity(processGroupId, inputPort, retryAttempt);
+                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                }
 
+                //if trying to make a RUNNING port DISABLED you need to make it STOPPED first and then mark it as DISABLED
+                if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name()) && inputPort.getState()
+                    .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
+                    //first need to make it ENABLED
+                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                    current = updateInputPortEntity(processGroupId, inputPort, retryAttempt);
+                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                }
+                // Update input port
+                final PortEntity entity = new PortEntity();
+                entity.setComponent(inputPort);
 
-       }
-       return inputPort;
+                final RevisionDTO revision = new RevisionDTO();
+                revision.setVersion(current.getRevision().getVersion());
+                entity.setRevision(revision);
 
+                try {
+                    return client.put("/input-ports/" + inputPort.getId(), entity, PortEntity.class);
+                } catch (final NotFoundException e) {
+                    throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
+                } catch (Exception e) {
+                    if (retryAttempt < 3) {
+                        retryAttempt++;
+                        log.info("An exception occurred attempting to update input port {}.  Retrying update {}/3", inputPort.getId(), retryAttempt);
+                        delay(500L);
+                        return updateInputPortEntity(processGroupId, inputPort, retryAttempt);
+                    } else {
+                        log.info("An exception occurred attempting to update input port {}. Max retries of 3 reached.", inputPort.getId(), e);
+                        throw e;
+                    }
+                }
+            }
+        }
+        if (current == null) {
+            PortEntity entity = new PortEntity();
+            entity.setComponent(inputPort);
+            entity.setPortType(inputPort.getType());
+            return entity;
+        } else {
+            return current;
+        }
 
     }
 
     @Nonnull
     @Override
     public PortDTO updateOutputPort(@Nonnull final String processGroupId, @Nonnull final PortDTO outputPort) {
+        PortEntity entity = updateOutputPortEntity(processGroupId, outputPort, 0);
+        return entity != null ? entity.getComponent() : outputPort;
+    }
+
+    @Nonnull
+    private PortEntity updateOutputPortEntity(@Nonnull final String processGroupId, @Nonnull final PortDTO outputPort, Integer retryAttempt) {
         // Get revision
-        final PortEntity current;
+        PortEntity current;
         try {
             current = client.get("/output-ports/" + outputPort.getId(), null, PortEntity.class);
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(outputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
         }
+        PortDTO currentPort = current != null ? current.getComponent() : null;
 
-        // Update output port
-        final PortEntity entity = new PortEntity();
-        entity.setComponent(outputPort);
+        boolean update = true;
+        //if we are trying to do anything but disable the port and the port is currently invalid prevent it from updating.
+        if (current != null && current.getStatus().getRunStatus().equalsIgnoreCase("invalid") && !outputPort.getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
+            update = false;
+        } else if (StringUtils.isNotBlank(outputPort.getId()) && NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(outputPort.getState())) {
+            //only mark port as running if we have connections to it
+            //NIFI bug
+            Set<ConnectionDTO> connectionDTOS = client.connections().findConnectionsToEntity(processGroupId, outputPort.getId());
+            if (connectionDTOS == null ||
+                connectionDTOS.isEmpty() ||
+                connectionDTOS.stream().noneMatch(connectionDTO -> (connectionDTO.getSource() != null && connectionDTO.getSource().getId().equals(outputPort.getId())) ||
+                                                                   (connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equalsIgnoreCase(outputPort.getId())))) {
+                log.warn("System will not start the output port [{}] [{}] in the process group [{}] since there are no connections to it ", outputPort.getId(), outputPort.getName(), processGroupId);
+                update = false;
+            }
 
-        final RevisionDTO revision = new RevisionDTO();
-        revision.setVersion(current.getRevision().getVersion());
-        entity.setRevision(revision);
+        }
+        if (update) {
 
+            //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
+            if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && outputPort.getState()
+                .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
+                //first need to make it ENABLED
+                outputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                current = updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
+                delay(500L);
+                outputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+            }
+
+            //if trying to make a RUNNING port DISABLED you need to make it STOPPED first and then mark it as DISABLED
+            if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name()) && outputPort.getState()
+                .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
+                //first need to make it ENABLED
+                outputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                current = updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
+                delay(500L);
+                outputPort.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+            }
+
+            // Update output port
+            final PortEntity entity = new PortEntity();
+            entity.setComponent(outputPort);
+
+            final RevisionDTO revision = new RevisionDTO();
+            revision.setVersion(current.getRevision().getVersion());
+            entity.setRevision(revision);
+
+            try {
+                return client.put("/output-ports/" + outputPort.getId(), entity, PortEntity.class);
+            } catch (final NotFoundException e) {
+                throw new NifiComponentNotFoundException(outputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
+            } catch (Exception e) {
+                if (retryAttempt < 3) {
+                    retryAttempt++;
+                    log.info("An exception occurred attempting to update output port {}.  Retrying update {}/3", outputPort.getId(), retryAttempt);
+                    delay(500L);
+                    return updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
+                } else {
+                    log.info("An exception occurred attempting to update output port {}. Max retries of 3 reached.", outputPort.getId(), e);
+                    throw e;
+                }
+            }
+        }
+        if (current == null) {
+            PortEntity entity = new PortEntity();
+            entity.setComponent(outputPort);
+            entity.setPortType(outputPort.getType());
+            return entity;
+        } else {
+            return current;
+        }
+    }
+
+    private void delay(long millis) {
         try {
-            return client.put("/output-ports/" + outputPort.getId(), entity, PortEntity.class).getComponent();
-        } catch (final NotFoundException e) {
-            throw new NifiComponentNotFoundException(outputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            // Do nothing
         }
     }
 
@@ -186,6 +291,23 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
         }
     }
 
+    public List<PortDTO> findOutputPorts(String parentGroupId) {
+
+        OutputPortsEntity outputPortsEntity = client.get("/process-groups/" + parentGroupId + "/output-ports", null, OutputPortsEntity.class);
+        if (outputPortsEntity != null && outputPortsEntity.getOutputPorts() != null) {
+            return outputPortsEntity.getOutputPorts().stream().map(portEntity -> portEntity.getComponent()).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<PortDTO> findPorts(String parentGroupId) {
+
+        List<PortDTO> inputPorts = findInputPorts(parentGroupId);
+        List<PortDTO> outputPorts = findOutputPorts(parentGroupId);
+        return Stream.concat(inputPorts.stream(), outputPorts.stream()).collect(Collectors.toList());
+    }
+
     @Override
     public PortDTO deleteInputPort(@Nonnull String portId) {
         try {
@@ -199,10 +321,9 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
                     return inputPortsEntity.getComponent();
                 }
             }
-        }
-        catch (NotFoundException e) {
+        } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(portId, NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
-            }
+        }
         return null;
     }
 }
