@@ -88,7 +88,7 @@
                 <input required ng-model="vm.editModel.feedName" name="feedName" />
 
                 <div ng-show="vm.editFeedDefinitionForm.feedName.$touched && vm.editFeedDefinitionForm.feedName.$invalid" ng-messages="vm.editFeedDefinitionForm.feedName.$error">
-                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">{{"views.define-feed-general-info.Req" | translate}}</div>
+                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">{{"views.common.required.text" | translate}}</div>
                 </div>
             </md-input-container>
             <div flex="10"></div>

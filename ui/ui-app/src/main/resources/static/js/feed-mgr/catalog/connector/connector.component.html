@@ -10,7 +10,7 @@
       </div>
       <div class="card-title-text">{{connector.title}}</div>
     </mat-card-title>
-    <mat-card-subtitle>{{datasource ? 'Edit existing' : 'Create new'}} '{{connector.title}}' data source</mat-card-subtitle>
+    <mat-card-subtitle>{{datasource ? 'FEEDMGR.connector.component.edit.existing' | translate : 'FEEDMGR.connector.component.create.new' | translate}} '{{connector.title}}' {{'views.common.data.source' | translate}}</mat-card-subtitle>
     <mat-divider></mat-divider>
 
     <mat-card-content>
@@ -23,7 +23,7 @@
                 required
                 autocomplete="new-password"
                 [formControl]="titleControl"/>
-            <mat-error *ngIf="titleControl.hasError('required')">Required</mat-error>
+            <mat-error *ngIf="titleControl.hasError('required')">{{'views.common.required.text' | translate}}</mat-error>
           </mat-form-field>
 
           <ng-template let-element let-last="last" ngFor [ngForOf]="plugin.options">
@@ -47,9 +47,9 @@
               </mat-select>
 
 
-              <mat-error *ngIf="getControl(element).hasError('required')">Required</mat-error>
-              <mat-error *ngIf="getControl(element).hasError('url')">Invalid Url</mat-error>
-              <mat-error *ngIf="getControl(element).hasError('url-protocol')">Invalid Url Protocol</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('required')">{{'views.common.required.text' | translate}}</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url')">{{'FEEDMGR.connector.component.invalid.url' | translate}}</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url-protocol')">{{'FEEDMGR.connector.component.invalid.url.protocol' | translate}}</mat-error>
               <mat-hint *ngIf="element.hint">{{element.hint}}</mat-hint>
             </mat-form-field>
           </ng-template>
@@ -69,17 +69,17 @@
     <mat-card-actions>
       <button mat-button mat-raised-button color="primary" class="text-upper"
               [disabled]="isFormInvalid() || isLoading"
-              (click)="saveDatasource()">Save
+              (click)="saveDatasource()">{{'view.main.save' | translate}}
       </button>
       <button mat-button mat-raised-button class="text-upper"
               [disabled]="isLoading"
               *ngIf="datasource"
-              (click)="cancel()">Cancel
+              (click)="cancel()">{{'view.main.cancel' | translate}}
       </button>
       <button mat-button mat-raised-button class="text-upper"
               [disabled]="isLoading"
               *ngIf="datasource"
-              (click)="deleteDatasource()">Delete
+              (click)="deleteDatasource()">{{'view.main.delete' | translate}}
       </button>
     </mat-card-actions>
   </mat-card>

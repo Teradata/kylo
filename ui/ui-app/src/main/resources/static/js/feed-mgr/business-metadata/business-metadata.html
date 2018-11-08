@@ -21,8 +21,8 @@
     <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
     <mat-card *ngIf="!loading">
         <mat-card-title>
-            <div class="card-title">Property Definition</div>
-            <div class="card-label">Define standard properties available to feeds and categories</div>
+            <div class="card-title">{{'FEEDMGR.business.metadata.property.def' | translate}}</div>
+            <div class="card-label">{{'FEEDMGR.business.metadata.feeds.cat.define' | translate}}</div>
         </mat-card-title>
         <mat-card-body>
             <vertical-section-layout section-title="Category Fields" (on-save-edit)="onCategorySave()" (on-edit)="onCategoryEdit()" [editable]="isCategoryEditable" [isValid]="isCategoryValid"

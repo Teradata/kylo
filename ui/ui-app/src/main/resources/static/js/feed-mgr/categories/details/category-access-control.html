@@ -5,12 +5,12 @@
     <entity-access-control entity="model" entity-type="category" the-form="categoryAccessControlForm" read-only="true"></entity-access-control>
     <div>{{"views.category-access-control.RIbF" | translate}}</div>
     <entity-access-control entity="model" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="categoryAccessControlForm" read-only="true"></entity-access-control>
-    <div>Index Control</div>
+    <div>{{"views.category-access-control.index.control" | translate}}</div>
     <div layout="row" layout-padding>
       <div flex="40" style="align-self:center;">
-        <span>Index category metadata</span>
+        <span>{{"views.category-access-control.index.control.metadata" | translate}}</span>
         <div class="hint">
-          Index metadata for the category in a search engine.
+          {{"views.category-access-control.index.metadata.category" | translate}}
         </div>
       </div>
       <div flex class="">
@@ -31,12 +31,12 @@
     <entity-access-control entity="editModel" entity-type="category" the-form="categoryAccessControlForm"></entity-access-control>
     <div>{{"views.category-access-control.RIbF2" | translate}}</div>
     <entity-access-control entity="editModel" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="categoryAccessControlForm"></entity-access-control>
-    <div>Index Control</div>
+    <div>{{"views.category-access-control.index.control" | translate}}</div>
     <div layout="row" layout-padding>
       <div flex="40" style="align-self:center;">
-        <span>Index category metadata</span>
+        <span>{{"views.category-access-control.index.control.metadata" | translate}}</span>
         <div class="hint">
-          Index metadata for the category in a search engine. (Unchecking will disable indexing of category's metadata, and also delete the category's existing metadata from index.)
+          {{"views.category-access-control.index.category.search.engine" | translate}}
         </div>
       </div>
       <div flex class="">

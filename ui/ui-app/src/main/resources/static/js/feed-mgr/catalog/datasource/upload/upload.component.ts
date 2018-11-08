@@ -6,6 +6,7 @@ import {FileManagerService} from "../../api/services/file-manager.service";
 import {FileUpload, FileUploadStatus} from "./models/file-upload";
 import {UploadDataSource} from "./models/upload-dataset";
 import {DataSetFile} from '../../api/models/dataset-file';
+import { TranslateService } from "@ngx-translate/core";
 
 /**
  * Provides a form for uploading files and managing uploaded files for a data set.
@@ -39,7 +40,7 @@ export class UploadComponent implements OnInit {
      */
     isReady = false;
 
-    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService) {
+    constructor(private dialogs: TdDialogService, private fileManager: FileManagerService, private translate: TranslateService) {
     }
 
     public ngOnInit(): void {
@@ -76,8 +77,8 @@ export class UploadComponent implements OnInit {
         // Delete server file
         if (file.status === FileUploadStatus.SUCCESS) {
             this.dialogs.openConfirm({
-                message: `Are you sure you want to delete ${file.name}?`,
-                acceptButton: "Delete"
+                message: this.translate.instant('FEEDMGR.file.upload.file.delete.confirm.message',{fileName:file.name}),
+                acceptButton: this.translate.instant('view.main.delete')
             }).afterClosed().subscribe((accept: boolean) => this.deleteFile(file));
         } else {
             this.deleteFile(file);
@@ -95,7 +96,7 @@ export class UploadComponent implements OnInit {
             }
         } else if (this.files.find(file => file.name === event.name)) {
             this.dialogs.openAlert({
-                message: "File already exists."
+                message: this.translate.instant('FEEDMGR.file.upload.fileExists')
             });
         } else {
             // Upload single file

@@ -11,6 +11,7 @@ import { FeedService } from "../../services/FeedService";
 import 'rxjs/add/operator/timeout';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'thinkbig-category-definition',
@@ -110,7 +111,8 @@ export class CategoryDefinition {
                 private FeedSecurityGroups: FeedSecurityGroups,
                 private feedService : FeedService,
                 private _tdDialogService: TdDialogService,
-                private snackBar : MatSnackBar) {}
+                private snackBar : MatSnackBar,
+                private translate : TranslateService) {}
 
     /**
          * System Name states:
@@ -129,25 +131,25 @@ export class CategoryDefinition {
             // console.log("this.hasFeeds() = " + this.hasFeeds());
 
             if (!this.isNewCategory() && !this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return "Can be customised";
+                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.customizable');
             }
             if (!this.isNewCategory() && !this.isSystemNameEditable() && this.hasFeeds()) {
-                return "Cannot be customised because Category has Feeds";
+                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.not.customizable.has.feeds');
             }
             if (!this.isNewCategory() && this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return "System name is now editable";
+                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.now.editable');
             }
             if (!this.isNewCategory() && this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be both editable and have feeds!
             }
             if (this.isNewCategory() && !this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return "Auto generated from Category Name, can be customised";
+                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.not.customizable.auto.generated');
             }
             if (this.isNewCategory() && !this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be new and already have feeds
             }
             if (this.isNewCategory() && this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return "System name is now editable";
+                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.now.editable');
             }
             if (this.isNewCategory() && this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be new with feeds

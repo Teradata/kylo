@@ -9,8 +9,8 @@
 
 </mat-dialog-content>
 <mat-dialog-actions style="float: right" ng-if="renderActionButtons">
-  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button mat-dialog-close>{{'view.main.cancel' | translate}}</button>
   <button mat-button mat-dialog-close
           (click)="onOk()"
-          cdkFocusInitial>Ok</button>
+          cdkFocusInitial>{{'view.main.ok' | translate}}</button>
 </mat-dialog-actions>

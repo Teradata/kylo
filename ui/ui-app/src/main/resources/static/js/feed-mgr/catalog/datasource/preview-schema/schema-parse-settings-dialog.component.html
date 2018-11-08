@@ -1,10 +1,10 @@
-<h1 mat-dialog-title>Schema Parse Settings</h1>
+<h1 mat-dialog-title>{{'FEEDMGR.schema.parse.settings' | translate}}</h1>
 <div fxLayout="column" mat-dialog-content>
 
   <inline-field-policy-form  [showAdvancedOptions]="false" [expandAdvancedOptions]="true" [(selectedPolicyRule)]="selectedParser" policyParameter="sparkSchemaParser"  [(defaultValue)]="XML" selectLabel="FileParser" ></inline-field-policy-form>
 </div>
 
 <div mat-dialog-actions>
-  <button mat-button (click)="onNoClick()">No Thanks</button>
-  <button mat-button [mat-dialog-close]="data.schemaParser" cdkFocusInitial>Ok</button>
+  <button mat-button (click)="onNoClick()">{{'view.main.no.thanks' | translate}}</button>
+  <button mat-button [mat-dialog-close]="data.schemaParser" cdkFocusInitial>{{'view.main.ok' | translate}}</button>
 </div>

@@ -13,6 +13,7 @@ import {KyloCommonModule} from "../../../../common/common.module";
 import {CatalogApiModule} from "../../api/catalog-api.module";
 import {UploadComponent} from "./upload.component";
 import {uploadStates} from "./upload.states";
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({
     declarations: [
@@ -32,6 +33,7 @@ import {uploadStates} from "./upload.states";
         MatDividerModule,
         MatListModule,
         MatProgressBarModule,
+        TranslateModule,
         UIRouterModule.forChild({states: uploadStates})
     ]
 })

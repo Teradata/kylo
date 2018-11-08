@@ -1,5 +1,5 @@
-<h2 mat-dialog-title class="selection-dialog-header">Selected Items</h2>
-<span class="hint">A list of items selected on all paths</span>
+<h2 mat-dialog-title class="selection-dialog-header">{{"FEEDMGR.datasource.selection.dialog.selected.items" | translate}}</h2>
+<span class="hint">{{"FEEDMGR.datasource.selection.dialog.selected.items.all.paths" | translate}}</span>
 <mat-dialog-content fxFlex>
   <td-data-table
       #selectionTable
@@ -17,7 +17,7 @@
     </ng-template>
   </td-data-table>
   <div class="md-padding" *ngIf="!selectionTable.hasData" layout="row" layout-align="center center">
-    <h3>No results to display.</h3>
+    <h3>{{"views.main.no-results" | translate}}</h3>
   </div>
   <td-paging-bar #selectionPagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
     <span hide-xs>{{"views.main.rows-per-page" | translate}}</span>
@@ -30,8 +30,8 @@
   </td-paging-bar>
 </mat-dialog-content>
 <mat-dialog-actions style="float: right">
-  <button mat-button mat-dialog-close class="text-upper">Cancel</button>
+  <button mat-button mat-dialog-close class="text-upper">{{"view.main.cancel" | translate}}</button>
   <button mat-button mat-dialog-close class="text-upper"
           color="accent" (click)="onOk()"
-          cdkFocusInitial>Ok</button>
+          cdkFocusInitial>{{"view.main.ok" | translate}}</button>
 </mat-dialog-actions>

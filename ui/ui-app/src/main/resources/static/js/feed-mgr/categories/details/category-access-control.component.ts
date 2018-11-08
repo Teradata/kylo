@@ -7,6 +7,7 @@ import { TdDialogService } from '@covalent/core/dialogs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectUtils } from '../../../common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-category-access-control',
@@ -80,7 +81,8 @@ export class CategoryAccessControl {
                 private accessControlService: AccessControlService,
                 private entityAccessControlService: EntityAccessControlService,
                 private _tdDialogService : TdDialogService,
-                private snackBar : MatSnackBar) {
+                private snackBar : MatSnackBar,
+                private translate : TranslateService) {
 
     }
 
@@ -109,15 +111,15 @@ export class CategoryAccessControl {
             //this will flip the directive to read only mode and call the entity-access#init() method to requery the accesss control for this entity
             this.isEditable = false;
             this.CategoriesService.update(response);
-            this.snackBar.open('Saved the Category', 'OK', {duration : 3000});
+            this.snackBar.open(this.translate.instant('FEEDMGR.category.saved'), this.translate.instant('view.main.ok'), {duration : 3000});
         }, (err: any) => {
             //keep editable active if an error occurred
             this.isEditable = true;
             this._tdDialogService.openAlert({
-                title : "Save Failed",
-                message : "The category '" + model.name + "' could not be saved. " + err.message,
-                ariaLabel : "Failed to save category",
-                closeButton : "Gor it!",
+                title : this.translate.instant('views.common.save.failed.title'),
+                message : this.translate.instant('FEEDMGR.category.dialog.save.failed.message',{entity: model.name, message: err.message}),
+                ariaLabel : this.translate.instant('views.common.save.failed',{entity:'Category'}),
+                closeButton : this.translate.instant('views.common.dialog.gotIt'),
                 disableClose : false
             });
         });
