@@ -135,6 +135,8 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
     }
     onSqlChange(value:any){
         if(typeof value == "string") {
+            //remove trailing semi-colon in SQL
+            value = value.replace(/;$/, "");
             this.sqlChange.emit(value);
         }
     }
