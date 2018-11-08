@@ -166,6 +166,43 @@
       <artifactId>kylo-spark-shell-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-kerberos-test-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-install-inspector-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-install-inspector-app</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-install-inspector-inspections</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-teradata-tdch-nar</artifactId>
+      <version>${project.version}</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-multi-exec-spark-v1</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-multi-exec-spark-v2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- used to copy in the default dependencies to the plugin folder -->
     <dependency>
@@ -208,7 +245,6 @@
       <artifactId>hawtbuf</artifactId>
       <version>1.11</version>
     </dependency>
-
   </dependencies>
   <build>
     <plugins>
