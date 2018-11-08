@@ -28,6 +28,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.OutputPortsEntity;
@@ -35,10 +36,13 @@ import org.apache.nifi.web.api.entity.PortEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -97,7 +101,21 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
                 //only mark input port as running if we have connections to it
                 //NIFI bug
                 Set<ConnectionDTO> connectionDTOS = client.connections().findConnectionsToEntity(processGroupId, inputPort.getId());
-                if (connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getSource().getId().equals(inputPort.getId()))) {
+                //find this ports processgroup parent
+                Optional<ProcessGroupDTO> group = client.processGroups().findById(processGroupId, false, false);
+                if(group.isPresent() && StringUtils.isNotBlank(group.get().getParentGroupId())){
+                    Set<ConnectionDTO> upstreamConnections = client.connections().findConnectionsToEntity(group.get().getParentGroupId(), inputPort.getId());
+                    if(upstreamConnections != null && !upstreamConnections.isEmpty() ) {
+                    if(connectionDTOS == null){
+                        connectionDTOS = new HashSet<>();
+                    }
+                        connectionDTOS = Stream.concat(connectionDTOS.stream(), upstreamConnections.stream()).collect(Collectors.toSet());
+
+                    }
+                }
+
+
+                if (connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equals(inputPort.getId()))) {
                     log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are no upstream connections to it ", inputPort.getId(), inputPort.getName(),
                              processGroupId);
                     update = false;
