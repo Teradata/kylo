@@ -30,12 +30,12 @@
               <select-network-node [selectedNode]="selectedNode"></select-network-node>
           </div>
         </div>
-        <kylo-vis-network #lineageGraph *ngIf="!loading"
+        <kylo-vis-network #lineageGraph
                             [data]="data"
                             [options]="options"
                             (onLoad)="onLoad($event)"
                             (onSelect)="onSelect($event)"
-                            (stabilized)="stabilized($event)"  browser-height browser-height-scroll-y="false" [browser-height-offset]="300" (heightChange)="onHeightChange($event)"
+                            (stabilized)="onStabilized($event)"  browser-height browser-height-scroll-y="false" [browser-height-offset]="300" (heightChange)="onHeightChange($event)"
                              style="width: 100%; height: 550px;"></kylo-vis-network>
       </mat-card-content>
     </mat-card>
