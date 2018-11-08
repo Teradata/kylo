@@ -57,7 +57,7 @@ export class ConnectorsComponent {
     /**
      * Updates filteredConnectors by filtering availableConnectors.
      */
-    private filter() {
+    protected filter() {
         let filteredConnectorTypes = this.dataTable.filterData(this.availableConnectors, this.searchTerm, true);
         filteredConnectorTypes = this.dataTable.sortData(filteredConnectorTypes, "title");
         this.filteredConnectors = filteredConnectorTypes;
