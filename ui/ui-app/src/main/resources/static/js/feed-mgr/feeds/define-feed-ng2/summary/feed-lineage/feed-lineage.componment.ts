@@ -147,6 +147,10 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     changed = false;
     panelOpenState = false;
 
+    onLoad(event:any) {
+
+    }
+
     onSelect(item: any) {
         console.log("onSelect!!");
         if (item && item.nodes && item.nodes[0]) {
