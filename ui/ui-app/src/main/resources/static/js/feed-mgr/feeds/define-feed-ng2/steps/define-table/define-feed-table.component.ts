@@ -54,6 +54,7 @@ const moduleName = require('../../../define-feed/module-name');
 
 class TablePermissions {
     tableLocked: boolean;
+    partitionsLocked:boolean;
     dataTypeLocked: boolean;
     canRemoveFields: boolean;
     constructor() {
@@ -240,10 +241,11 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.indexCheckAll.setup(this.feed.table);
 
 
-        let locked = this.feed.hasBeenDeployed();
+        let locked = this.feed.hasBeenDeployed() || this.feed.isDataTransformation();
         this.tablePermissions.canRemoveFields = !locked
         this.tablePermissions.dataTypeLocked = locked
         this.tablePermissions.tableLocked = locked
+        this.tablePermissions.partitionsLocked = this.feed.hasBeenDeployed();
 
 
         this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.definePartitionForm, this.feed);
@@ -1064,9 +1066,9 @@ class TableFormControls {
 
     private buildPartitionFieldFormControl(partition: TableFieldPartition ) :Common.Map<FormControl> {
         let controls :Common.Map<FormControl> = {}
-        controls["partitionColumnRef_"+partition._id] = new FormControl({value:'',disabled:this.tablePermissions.tableLocked},[Validators.required]);
-        controls["partitionFormula_"+partition._id] = new FormControl({value:partition.formula,disabled:this.tablePermissions.tableLocked},[Validators.required]);
-        controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(!partition.allowPartitionNameChanges() || this.tablePermissions.tableLocked)},[Validators.required]);
+        controls["partitionColumnRef_"+partition._id] = new FormControl({value:'',disabled:this.tablePermissions.partitionsLocked},[Validators.required]);
+        controls["partitionFormula_"+partition._id] = new FormControl({value:partition.formula,disabled:this.tablePermissions.partitionsLocked},[Validators.required]);
+        controls["partitionName_"+partition._id] = new FormControl({value:partition.field,disabled:(!partition.allowPartitionNameChanges() || this.tablePermissions.partitionsLocked)},[Validators.required]);
         return controls;
     }
 

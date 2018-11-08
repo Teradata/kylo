@@ -395,7 +395,7 @@
                 <div *ngIf="feed.table.partitions.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
                   <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
                   <h2>No partitions defined</h2>
-                  <button *ngIf="!tablePermissions.tableLocked" mat-raised-button (click)="addPartitionField()"><span class="tc-primary">Add Partition</span></button>
+                  <button *ngIf="!tablePermissions.partitionsLocked" mat-raised-button (click)="addPartitionField()"><span class="tc-primary">Add Partition</span></button>
 
                 </div>
 
