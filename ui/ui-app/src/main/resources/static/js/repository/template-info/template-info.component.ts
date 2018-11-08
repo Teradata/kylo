@@ -68,7 +68,7 @@ export class TemplateInfoComponent implements OnInit {
         this.enabling = true;
         if (this.template.id) {
             this.registerTemplateService.enableTemplate(this.template.id).then((response: any) => {
-                console.log(response);
+                // console.log(response);
                 this.template = response.data;
                 this.enabling = false;
             }, (error: any) => {

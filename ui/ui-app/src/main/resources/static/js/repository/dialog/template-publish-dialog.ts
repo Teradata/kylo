@@ -29,7 +29,7 @@ export class TemplatePublishDialog implements OnInit {
     public ngOnInit() {
         this.templateService.getRepositories()
             .subscribe((data: TemplateRepository[]) => {
-                this.repositories = data;
+                this.repositories = data.filter(r => !r.readOnly);
                 this.loading = false;
             }, (errorRsp: any) => {
                 this.error = true;
