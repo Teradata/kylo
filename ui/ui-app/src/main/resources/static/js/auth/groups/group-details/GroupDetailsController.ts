@@ -74,10 +74,15 @@ export class GroupDetailsController implements ng.IComponentController {
      * @type {Array.<UserPrincipal>}
      */
     users: any[] = [];
+
+    /**
+     * flag set when a delete is in progress
+     */
+    deleting:boolean = false;
     
     ngOnInit(){}
     static readonly $inject = ["$scope","$mdDialog","$mdToast",//"$transition$",
-                                "AccessControlService","UserService","StateService"];
+                                "AccessControlService","UserService","StateService","LoadingDialogService"];
     constructor(
         private $scope:angular.IScope,
         private $mdDialog:angular.material.IDialogService,
@@ -85,7 +90,8 @@ export class GroupDetailsController implements ng.IComponentController {
         //private $transition$: Transition,
         private accessControlService:AccessControlService,
         private UserService:UserService,
-        private StateService:StateService){
+        private StateService:StateService,
+        private loadingDialog:LoadingDialogService){
          // Update isValid when $error is updated
         $scope.$watch(
             () => {return this.$error},
@@ -121,7 +127,7 @@ export class GroupDetailsController implements ng.IComponentController {
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
         canDelete() {
-            return (this.model.systemName !== null);
+            return (!this.deleting && this.model.systemName !== null);
         };       
 
         /**
@@ -132,14 +138,21 @@ export class GroupDetailsController implements ng.IComponentController {
                 this.StateService.Auth.navigateToGroups();
             }
         };
+        testLoading(){
+            this.loadingDialog.showDialog();
+        }
 
         /**
-         * Deletes the current user.
+         * Deletes the current group.
          */
         onDelete() {
+            this.deleting = true;
+            this.loadingDialog.showDialog();
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
              this.UserService.deleteGroup(this.model.systemName)
                     .then(() => {
+                        this.deleting = false;
+                        this.loadingDialog.hideDialog()
                         this.$mdToast.show(
                                 this.$mdToast.simple()
                                         .textContent("Successfully deleted the group " + name)
@@ -147,6 +160,8 @@ export class GroupDetailsController implements ng.IComponentController {
                         );
                         this.StateService.Auth.navigateToGroups();
                     }, () => {
+                        this.deleting = false
+                        this.loadingDialog.hideDialog()
                         this.$mdDialog.show(
                                 this.$mdDialog.alert()
                                         .clickOutsideToClose(true)
