@@ -7,21 +7,10 @@
     <p style="text-align:center;"><img src="/assets/images/kylo-logo-orange.png" style="width:300px;"/></p>
     <p style="text-align:center;"><b>{{"views.about.Version" | translate}}</b> {{version}}</p>
 
-            <p style="text-align:justify; padding:10px">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.
-              It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.
-              <br><br>
-              For enterprise support options, please visit <a href="https://www.thinkbiganalytics.com/kylo/" target="_blank">Think Big</a>.
-              <br><br>
-              <textarea class="scrollabletextbox layout-fill flex" name="apache-licence" readonly="true" rows="7" style="text-align:justify; color: black; background-color: #F6DDCC; padding:10px;">
-Copyright 2017 Teradata Corporation
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-          </textarea>
-            </p>
+            <p style="text-align:justify; padding:10px" [innerHTML]="'COMMON.about.details.para' | translate"></p>
+            <br/>
+            <textarea [innerHTML]="'COMMON.about.details.text.area' | translate" class='scrollabletextbox layout-fill flex' name=apache-licence readonly='true' rows='7' style='text-align:justify; color: black; background-color: #F6DDCC; padding:10px;'> 
+            </textarea>
 
   </mat-dialog-content>
   <mat-dialog-actions>

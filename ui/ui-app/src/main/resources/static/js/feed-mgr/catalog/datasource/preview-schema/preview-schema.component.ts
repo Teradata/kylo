@@ -35,6 +35,7 @@ import {PreviewJdbcDataSet} from "./model/preview-jdbc-data-set";
 import {PreviewFileDataSet} from "./model/preview-file-data-set";
 //import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
 import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
+import { TranslateService } from "@ngx-translate/core";
 
 
 
@@ -144,7 +145,17 @@ export class PreviewSchemaComponent implements OnInit {
      */
   //  engine: QueryEngine<any>  ;
 
-    constructor(private http: HttpClient, private sanitizer: DomSanitizer, private selectionService: SelectionService, private dialog: MatDialog, private fileMetadataTransformService: FileMetadataTransformService, private previewRawService :PreviewRawService, private previewSchemaService :PreviewSchemaService, private $$angularInjector: Injector, private stateService: StateService) {
+    constructor(private http: HttpClient,
+        private sanitizer: DomSanitizer, 
+        private selectionService: SelectionService, 
+        private dialog: MatDialog, 
+        private fileMetadataTransformService: FileMetadataTransformService, 
+        private previewRawService :PreviewRawService,
+        private previewSchemaService :PreviewSchemaService,
+        private $$angularInjector: Injector, 
+        private stateService: StateService,
+        private translate : TranslateService) {
+
         this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
         this.singleNodeSelection = this.selectionService.hasPolicy(SingleSelectionPolicy);
     }
@@ -331,7 +342,7 @@ export class PreviewSchemaComponent implements OnInit {
             }
         if(paths) {
             //TODO Move to Factory
-            this.openStatusDialog("Examining file metadata", "Validating file metadata",true,false)
+            this.openStatusDialog(this.translate.instant('FEEDMGR.preview.schema.dialog.examining.title'), this.translate.instant('FEEDMGR.preview.schema.dialog.examining.message'),true,false)
 
             if (!this.datasource.connector.template.format) {
                 this.createFileBasedDataSets(paths);
@@ -358,7 +369,7 @@ export class PreviewSchemaComponent implements OnInit {
             }
         }
         else {
-            this.openStatusDialog("No path has been supplied. ","Please select an item to preview from the catalog",false,true);
+            this.openStatusDialog(this.translate.instant("FEEDMGR.preview.schema.dialog.no.path.supplied"),this.translate.instant('FEEDMGR.preview.schema.dialog.please.select.item'),false,true);
         }
     }
 
@@ -400,10 +411,10 @@ export class PreviewSchemaComponent implements OnInit {
                     this.closeStatusDialog();
                 }
                 else {
-                    this.openStatusDialog("Error. Cant process", "No results found ", false,true);
+                    this.openStatusDialog(this.translate.instant('FEEDMGR.preview.schema.dialog.cant.process.error'),this.translate.instant('views.common.Nrf'), false,true);
                 }
             },error1 => (response:FileMetadataTransformResponse) => {
-                this.openStatusDialog("Error","Error",false,true);
+                this.openStatusDialog(this.translate.instant("views.common.error"),this.translate.instant("views.common.error"),false,true);
             });
 
         }

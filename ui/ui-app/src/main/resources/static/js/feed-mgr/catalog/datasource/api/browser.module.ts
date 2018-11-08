@@ -19,6 +19,7 @@ import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {CovalentLoadingModule} from '@covalent/core/loading';
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({
     declarations: [
@@ -46,6 +47,7 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
         MatProgressBarModule,
         MatSelectModule,
         MatCheckboxModule,
+        TranslateModule,
         MatDialogModule,
     ]
 })

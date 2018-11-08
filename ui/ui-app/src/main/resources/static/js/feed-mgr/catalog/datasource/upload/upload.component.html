@@ -2,8 +2,8 @@
   <div *ngIf="files.length == 0" class="drop-zone-empty" fxLayout="column">
     <ng-md-icon icon="fa-file" size="64" class="tc-accent"></ng-md-icon>
     <ng-md-icon icon="fa-folder" size="64" class="tc-primary"></ng-md-icon>
-    <p>Drag and drop here<br>OR</p>
-    <button mat-raised-button color="primary" (click)="fileInput.value=null; fileInput.click()">Add file</button>
+    <p>{{'FEEDMGR.drag.drop.here' | translate}}<br>{{'views.service-level-agreement-form.OR' | translate}}</p>
+    <button mat-raised-button color="primary" (click)="fileInput.value=null; fileInput.click()">{{'FEEDMGR.file.upload.add.file' | translate}}</button>
   </div>
 
   <div *ngIf="files.length > 0" class="drop-zone-list">
@@ -30,7 +30,7 @@
 <ng-container *ngIf="files.length > 0">
   <mat-divider></mat-divider>
   <mat-card-actions>
-    <button mat-button class="text-upper" color="primary" (click)="fileInput.value=null; fileInput.click()">Add more files</button>
-    <button *ngIf="isReady" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview">Continue</button>
+    <button mat-button class="text-upper" color="primary" (click)="fileInput.value=null; fileInput.click()">{{'FEEDMGR.file.upload.add.more.files' | translate}}</button>
+    <button *ngIf="isReady" mat-button class="text-upper" color="primary" uiSref="explorer.dataset.preview">{{'view.main.continue' | translate}}</button>
   </mat-card-actions>
 </ng-container>

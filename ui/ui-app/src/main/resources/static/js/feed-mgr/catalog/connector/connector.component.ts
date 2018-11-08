@@ -13,6 +13,7 @@ import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {ValidationErrors} from '@angular/forms/src/directives/validators';
 import * as _ from "underscore";
+import { TranslateService } from "@ngx-translate/core";
 
 
 interface UiOptionsMapper {
@@ -109,7 +110,8 @@ export class ConnectorComponent {
 
     constructor(private state: StateService, private catalogService: CatalogService,
                 private snackBarService: MatSnackBar,
-                private loadingService: TdLoadingService) {
+                private loadingService: TdLoadingService,
+                private translate : TranslateService) {
         this.titleControl = new FormControl('', ConnectorComponent.required);
 
         this.loadingService.create({
@@ -132,8 +134,8 @@ export class ConnectorComponent {
             if (optionsMapper) {
                 optionsMapper.mapFromModelToUi(this.datasource, this.controls);
             } else {
-                this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
-                    + " for connector " + this.connector.title);
+                this.showSnackBar(this.translate.instant('FEEDMGR.connector.component.unknown.ui.options',
+                                {mapper:this.plugin.optionsMapperId,connector:this.connector.title}));
                 return;
             }
         }
@@ -184,7 +186,7 @@ export class ConnectorComponent {
                 this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
             }))
             .pipe(catchError((err) => {
-                this.showSnackBar('Failed to save. ', err.message);
+                this.showSnackBar(this.translate.instant('views.common.save.failed',{entity : ''}), err.message);
                 return [];
             }))
             .subscribe((source: DataSource) => {
@@ -195,8 +197,8 @@ export class ConnectorComponent {
     getDataSourceFromUi(): DataSource | undefined {
         const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
         if (!optionsMapper) {
-            this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
-                + " for connector " + this.connector.title);
+            this.showSnackBar(this.translate.instant('FEEDMGR.connector.component.unknown.ui.options',
+                                {mapper:this.plugin.optionsMapperId,connector:this.connector.title}));
             return undefined;
         }
 
@@ -260,7 +262,7 @@ export class ConnectorComponent {
                 this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
             }))
             .pipe(catchError((err) => {
-                this.showSnackBar('Failed to delete.', err.message);
+                this.showSnackBar(this.translate.instant('views.common.delete.failure', {entity : ''}), err.message);
                 return [];
             }))
             .subscribe(() => {

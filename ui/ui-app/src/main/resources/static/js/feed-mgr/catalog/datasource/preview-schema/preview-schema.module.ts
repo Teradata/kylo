@@ -37,6 +37,7 @@ import {FileMetadataTransformService} from "./service/file-metadata-transform.se
 import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
 import {KyloServicesModule} from "../../../../services/services.module";
 import {UpgradeModule} from "@angular/upgrade/static";
+import { TranslateModule } from "@ngx-translate/core";
 //import {VisualQuery2Module} from "../../../visual-query/visual-query.ng2.module";
 //import {WranglerModule} from "../../../visual-query/wrangler/core/wrangler.module";
 
@@ -79,6 +80,7 @@ import {UpgradeModule} from "@angular/upgrade/static";
         CovalentChipsModule,
         FieldPoliciesModule,
         KyloServicesModule,
+        TranslateModule,
         //VisualQuery2Module,
        // WranglerModule,
         UIRouterModule.forChild({

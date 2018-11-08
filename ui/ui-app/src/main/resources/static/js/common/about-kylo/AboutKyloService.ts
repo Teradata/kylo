@@ -3,6 +3,7 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 
 import "../module";
 import { HttpClient } from "@angular/common/http";
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: "about-kylo-dialog-controller",
@@ -57,7 +58,7 @@ export default class AboutKyloDialogController {
         .then((response: any) => {
             this.version = response;
         },(err: any) =>{
-            this.version = "Not Available"
+            this.version = this.translate.instant('COMMON.not.available')
         });
         this.hide = () => {
             this.dialogRef.close();
@@ -67,7 +68,8 @@ export default class AboutKyloDialogController {
         };
     }
     constructor(private http: HttpClient,
-                private dialogRef: MatDialogRef<AboutKyloDialogController>){}
+                private dialogRef: MatDialogRef<AboutKyloDialogController>,
+                private translate: TranslateService){}
 }
 
 @Injectable()

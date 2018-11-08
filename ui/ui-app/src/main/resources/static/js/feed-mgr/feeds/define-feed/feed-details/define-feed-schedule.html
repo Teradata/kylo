@@ -52,7 +52,7 @@
                  ng-message="cronExpression"> {{"views.define-feed-schedule.ICE" | translate}}
             </div>
             <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.required" ng-message="required">
-              {{"views.define-feed-general-info.Req" | translate}}
+              {{"views.common.required.text" | translate}}
             </div>
           </div>
           <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod"

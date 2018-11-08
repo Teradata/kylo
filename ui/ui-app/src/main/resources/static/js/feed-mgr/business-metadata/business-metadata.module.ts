@@ -10,6 +10,7 @@ import { KyloServicesModule } from "../../services/services.module";
 import { CommonModule } from "@angular/common";
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { SharedModule } from "../shared/shared.modules";
+import {TranslateModule} from "@ngx-translate/core";
 
 @NgModule({
     declarations:[
@@ -27,6 +28,7 @@ import { SharedModule } from "../shared/shared.modules";
         KyloFeedManagerModule,
         KyloCommonModule,
         KyloServicesModule,
+        TranslateModule,
         UIRouterModule.forChild({states: businessMetadataStates})],
     exports:[],
     providers:[],

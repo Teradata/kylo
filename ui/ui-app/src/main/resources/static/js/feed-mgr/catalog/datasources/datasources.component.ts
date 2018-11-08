@@ -11,6 +11,7 @@ import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import * as _ from "underscore";
+import { TranslateService } from '@ngx-translate/core';
 
 /**
  * Displays available datasources
@@ -54,7 +55,7 @@ export class DataSourcesComponent implements OnInit {
     searchTerm: string;
 
     constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loadingService: TdLoadingService,
-                private state: StateService, private $$angularInjector: Injector, private snackBarService: MatSnackBar) {
+                private state: StateService, private $$angularInjector: Injector, private snackBarService: MatSnackBar, private translate: TranslateService) {
         this.loadingService.create({
             name: DataSourcesComponent.topOfPageLoader,
             mode: LoadingMode.Indeterminate,
@@ -122,7 +123,7 @@ export class DataSourcesComponent implements OnInit {
                 this.loadingService.resolve(DataSourcesComponent.topOfPageLoader);
             }))
             .pipe(catchError((err) => {
-                this.showSnackBar('Failed to delete.', err.message);
+                this.showSnackBar(this.translate.instant('views.common.delete.failure',{entity:''}), err.message);
                 return [];
             }))
             .subscribe(() => {

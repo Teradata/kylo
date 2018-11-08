@@ -105,7 +105,7 @@
                              ng-message="cronExpression">Invalid Cron Expression.
                         </div>
                         <div ng-show="vm.scheduleFeedForm.cronExpression.$error.required" ng-message="required">
-                            {{"views.feed-schedule.Required" | translate}}
+                            {{"views.common.required.text" | translate}}
                         </div>
                     </div>
                     <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod"

@@ -45,7 +45,7 @@
         <div layout="row" class="feed-property"
              ng-class="'versions-' + vm.diff('/description')">
 
-            <span flex="25" class="property-name">{{"views.import_feed.Description" | translate}} </span>
+            <span flex="25" class="property-name">{{"views.common.description" | translate}} </span>
 
             <div flex>
                 {{vm.model.description}}
@@ -84,11 +84,11 @@
         <ng-form name="vm.editFeedDefinitionForm">
         <div layout="row" layout-align="space-between start">
             <md-input-container flex="45" class="condensed">
-                <label> {{"views.feed-definition.DN" | translate}} </label>
+                <label> {{"views.common.DN" | translate}} </label>
                 <input required ng-model="vm.editModel.feedName" name="feedName" />
 
                 <div ng-show="vm.editFeedDefinitionForm.feedName.$touched && vm.editFeedDefinitionForm.feedName.$invalid" ng-messages="vm.editFeedDefinitionForm.feedName.$error">
-                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">{{"views.define-feed-general-info.Req" | translate}}</div>
+                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">{{"views.common.required.text" | translate}}</div>
                 </div>
             </md-input-container>
             <div flex="10"></div>
@@ -99,7 +99,7 @@
         </div>
 
         <md-input-container class="md-block condensed">
-            <label> {{"views.import_feed.Description" | translate}} </label>
+            <label> {{"views.common.description" | translate}} </label>
             <textarea ng-model="vm.editModel.description"></textarea>
         </md-input-container>
         <md-input-container flex="45" class="condensed">

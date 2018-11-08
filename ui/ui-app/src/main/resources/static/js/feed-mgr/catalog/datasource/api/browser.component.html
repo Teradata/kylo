@@ -14,8 +14,8 @@
           </span>
         </div>
         <div *ngIf="selectedTotal() > 0" class="selected-items" >
-          {{selectedHere()}} item(s) selected here,
-          <a class="mat-accent" (click)="openSelectionDialog()" class="cursor-pointer">{{selectedTotal()}} in total</a>
+          {{selectedHere()}} {{'FEEDMGR.browser.component.items.selected' | translate}}
+          <a class="mat-accent" (click)="openSelectionDialog()" class="cursor-pointer">{{selectedTotal()}} {{'FEEDMGR.browser.component.items.total' | translate}}</a>
         </div>
       </li>
     </ol>
@@ -73,8 +73,8 @@
   </table>
 
   <div class="md-padding" *ngIf="filteredFiles.length === 0" layout="row" layout-align="center center">
-    <h3>No results to display.</h3>
-    <span *ngIf="errorMsg !== undefined" class="md-warn-text">An error occurred: {{errorMsg}}</span>
+    <h3>{{"views.main.no-results" | translate}}</h3>
+    <span *ngIf="errorMsg !== undefined" class="md-warn-text" [translate]="views.common.error.message" [translateParams]="{message:errorMsg}"></span>
   </div>
 
 </div>

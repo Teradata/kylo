@@ -128,9 +128,13 @@
     "view.main.resume": "RESUME",
     "view.main.links": "Links",
     "view.main.cancel": "Cancel",
+    "view.main.ok": "Ok",
+    "view.main.no.thanks": "No Thanks",
     "view.main.close": "Close",
     "view.main.save": "Save",
+    "view.main.delete":"Delete",
     "view.main.filter": "Filter",
+    "view.main.continue":"Continue",
     "views.main.no-results": "No results to display.",
     "views.main.rows-per-page": "Rows per page:",
     "views.main.search-btn": "Search",
@@ -178,11 +182,8 @@
     "views.import_feed.Import_a_feed": "Import a feed",
     "views.import_feed.Import": "Import",
     "views.import_feed.Type": "Type",
-
     "views.import_feed.File_type": "File type",
-    "views.import_feed.Description": "Description",
     "views.import_feed.Archive": "Archive",
-
     "views.import_feed.ZIP": "ZIP",
     "views.import_feed.NifiKylo": "An archive contains both Nifi and Kylo feed data.",
     "views.import_feed.NifiKylo2": "This will import into Nifi and register the feed and respective template in Kylo .",
@@ -214,8 +215,6 @@
     "views.define-feed-stepper.AccessControl": "Access Control",
     "views.define-feed-stepper.Schedule": "Schedule",
     "views.define-feed-general-info.GeneralInfo": "General Info",
-    "views.define-feed-general-info.DN": "Display Name",
-    "views.define-feed-general-info.Req": "Required.",
     "views.define-feed-general-info.SN": "System Name",
     "views.define-feed-general-info.Category": "Category",
     "views.define-feed-general-info.Description": "Description",
@@ -229,7 +228,6 @@
     "views.step-buttons.Continue-btn": "Continue to Step",
     "views.step-buttons.Cancel-btn": "Cancel",
     "views.step-buttons.Previous-btn": "Previous Step",
-    "views.define-feed-details.DS": "Data Source",
     "views.define-feed-details.ChooseDS": "Choose data source and options",
     "views.define-feed-details.ChooseTS": "Choose the source",
     "views.define-feed-properties.BP": "Business Properties",
@@ -249,7 +247,6 @@
     "views.define-feed-table.Sfn": "Standardize field names",
     "views.define-feed-table.Upload": "Upload",
     "views.define-feed-table.Dts": "Define table schema",
-
     "views.define-feed-table.Collapse": "Collapse",
     "views.define-feed-table.Ts": "Table schema",
     "views.define-feed-table.ClickAddField": "No fields are defined. Click <i>Add Field</i> to define a new field for this table.",
@@ -257,7 +254,6 @@
     "views.define-feed-table.DT": "Data Type",
     "views.define-feed-table.Primary": "Primary",
     "views.define-feed-table.IndicatesFields": "Indicates field is the primary key for the record",
-
     "views.define-feed-schedule.Schedule": "Schedule",
     "views.define-feed-schedule.SAETF": "Schedule and enable the feed",
     "views.define-feed-schedule.Strategy": "Strategy",
@@ -326,7 +322,6 @@
     "views.feed-definition.StreamHint": "Kylo will only track key metrics.  Individual jobs and steps will not be tracked.",
     "views.feed-definition.Kwtijas": "Kylo will track individual jobs and steps.",
     "views.feed-definition.Batch": "Batch",
-    "views.feed-definition.DN": "Display Name",
     "views.feed-definition.Saving": "Saving...",
     "views.module.EF": "Edit Feed",
     "views.feed-details.FD": "Feed Details",
@@ -376,7 +371,6 @@
     "views.feed-schedule.Period": "Period",
     "views.feed-schedule.ExecutionNode": "ExecutionNode",
     "views.feed-schedule.Expression": "Expression",
-    "views.feed-schedule.Required": "Required.",
     "views.feed-schedule.RS": "Run Schedule",
     "views.feed-schedule.Units": "Units",
     "views.feed-schedule.Days": "Days",
@@ -400,7 +394,6 @@
     "views.feed-stats-charts.FeedD": "Feed Details",
     "views.feed-stats-charts.Completed": "COMPLETED",
     "views.feed-stats-charts.Running": "RUNNING",
-    "views.feed-stats-charts.Status": "Status",
     "views.feed-stats-charts.FS": "Flows Started",
     "views.feed-stats-charts.FF": "Flows Finished",
     "views.feed-stats-charts.FlowsR": "Flows Running",
@@ -410,16 +403,13 @@
     "views.feed-stats-charts.FM": "Feed Manager",
     "views.feed-stats-charts.Time": "Time",
     "views.feed-stats.module.FS": "Feed Stats",
-
     "views.profile-history.NoProfileData": "No profile history available",
-
     "views.feed-activity-template.JA": "Job Activity",
     "views.feed-activity-template.3D": "3 days",
     "views.feed-activity-template.10D": "10 days",
     "views.feed-activity-template.1M": "1 month",
     "views.feed-activity-template.3M": "3 months",
     "views.feed-activity-template.1Y": "1 year",
-
     "views.feeds.feed-details.Jobs": "Jobs",
     "views.feeds.feed-details.FD": "Job Summary",
     "views.feeds.feed-details.Completed": "COMPLETED",
@@ -431,11 +421,9 @@
     "views.feeds.feed-details.FM": "Feed Manager",
     "views.feeds.feed-details.FeedD": "Feed Details",
     "views.feeds.feed-details.LF": "Loading Feed ...",
-    "views.feeds.feed-details.db.describe-table-dialog.Title":"Analyzing table ",
-    "views.feeds.feed-details.db.describe-table-dialog.Message":"Determining the schema and data types.",
-
+    "views.feeds.feed-details.db.describe-table-dialog.Title": "Analyzing table ",
+    "views.feeds.feed-details.db.describe-table-dialog.Message": "Determining the schema and data types.",
     "views.all-page.Rows_per_page": "Rows per page",
-
     "views.feed-data-policies.TS&DP": "Table Schema & Data Policies",
     "views.feed-data-policies.SFRF": "Source Feed Record Format",
     "views.feed-data-policies.DTN": "Destination Table Name",
@@ -506,16 +494,13 @@
     "views.feed-data-policies.None": "None",
     "views.feed-data-policies.Reapply": "Reapply",
     "views.feed-data-policies.Saving": "Saving...",
-
     "views.transform-feed-details.Query": "Query",
     "views.transform-feed-details.DataTransformations": "Data Transformations",
-
     "views.define-feed-data-processing-field-policy-dialog.ff": "for field",
     "views.define-feed-data-processing-field-policy-dialog.Dpuadtr": "Drag policies up and down to reorder",
     "views.define-feed-data-processing-field-policy-dialog.SRT": "Select Rule Type",
     "views.define-feed-data-processing-field-policy-dialog.Cancel": "Cancel",
     "views.define-feed-data-processing-field-policy-dialog.Done": "Done",
-
     "views.feed-nifi-properties.FD": "Feed Details",
     "views.feed-nifi-properties.Source": "Source",
     "views.feed-nifi-properties.Tiasp": "This is a sensitive property.",
@@ -523,7 +508,6 @@
     "views.feed-nifi-properties.CaFI": "Choose a Feed Input",
     "views.feed-nifi-properties.Ycctipatfhbc": "Cannot change alter the data source after feed has been created",
     "views.feed-nifi-properties.Saving": "Saving...",
-
     "views.feed-lineage.SF": "Show Feeds",
     "views.feed-lineage.SFaS": "Show Feeds and Sources",
     "views.feed-lineage.Lfl": "Loading feed lineage ...",
@@ -536,11 +520,9 @@
     "views.feed-lineage.Collapse": "Collapse",
     "views.feed-lineage.Datblots": "Display at the bottom left of the screen",
     "views.feed-lineage.Datasource": "Datasource",
-
     "views.feed-service-level-agreements.Filter": "Filter",
     "views.feed-service-level-agreements.Warning": "Warning.  This feed is disabled.  SLA can be modified, but they will not run until this feed is enabled.",
     "views.feed-service-level-agreements.ASLA": "Add SLA",
-
     "views.service-level-agreement-form.BtL": "Back to List",
     "views.service-level-agreement-form.SlaAssessments": "SLA Assessments",
     "views.service-level-agreement-form.Name": "Name",
@@ -563,16 +545,13 @@
     "views.service-level-agreement-form.Delete": "Delete",
     "views.service-level-agreement-form.Cancel": "Cancel",
     "views.service-level-agreement-form.SSLA": "Save SLA",
-
     "views.profile-history.Rows": "# Rows",
     "views.profile-history.Valid": "# Valid",
     "views.profile-history.Invalid": "# Invalid",
     "views.profile-history.ProcessingDate": "Processing Date",
     "views.profile-history.Dates Processed": "Dates Processed",
     "views.profile-history.View": "View",
-
     "views.category-details.CD": "Category Details",
-
     "views.category-definition.CD": "Category Definition",
     "views.category-definition.Description": "Description",
     "views.category-definition.HSG": "Hadoop Security Groups",
@@ -587,11 +566,8 @@
     "views.category-definition.AaHSG": "Add a Hadoop Security Group",
     "views.category-definition.Icon2": "Icon",
     "views.category-definition.CI": "Change Icon",
-
     "views.category-properties.CP": "Category Properties",
-
     "views.category-feed-properties": "Feed Properties",
-
     "views.properties-admin-editor.Name": "Name",
     "views.properties-admin-editor.Nmbu": "Names must be unique.",
     "views.properties-admin-editor.Anir": "A name is required.",
@@ -599,34 +575,31 @@
     "views.properties-admin-editor.Description": "Description",
     "views.properties-admin-editor.Required": "Required?",
     "views.properties-admin-editor.AP": "Add Property",
-
     "views.properties-admin.Name": "Name",
     "views.properties-admin.SystemName": "System Name",
     "views.properties-admin.Required": "Required",
-
     "views.category-access-control.AC": "Access Control",
     "views.category-access-control.CR": "Category Roles",
     "views.category-access-control.RIbF": "Roles Inherited by Feeds",
     "views.category-access-control.CR2": "Category Roles",
+    "views.category-access-control.index.control":"Index Control",
+    "views.category-access-control.index.category.metadata":"Index category metadata",
+    "views.category-access-control.index.metadata.category":"Index metadata for the category in a search engine.",
+    "views.category-access-control.index.category.search.engine":"Index metadata for the category in a search engine. (Unchecking will disable indexing of category's metadata, and also delete the category's existing metadata from index.)",
     "views.category-access-control.RIbF2": "Roles Inherited by Feeds",
-
     "views.category-feeds.RF": "Related Feeds",
     "views.category-feeds.Name": "Name",
-    "views.category-feeds.Active": "Active",
     "views.category-feeds.LM": "Last Modified",
     "views.category-feeds.Loading": "Loading ...",
     "views.category-feeds.Tanfawtc": "No feeds associated with this category",
-
     "views.icon-picker-dialog.If": "Icon for",
     "views.icon-picker-dialog.Syi": "Select your icon",
     "views.icon-picker-dialog.Syc": "Select your color",
     "views.icon-picker-dialog.Yi": "Your icon",
     "views.icon-picker-dialog.Cancel": "Cancel",
     "views.icon-picker-dialog.Save": "Save",
-
     "views.categories.FC": "Filter Categories",
     "views.categories.RF": "Related Feeds",
-
     "views.table.Fields": "Fields",
     "views.table.Field": "Field",
     "views.table.DT": "Data Type",
@@ -635,25 +608,19 @@
     "views.table.Nullable": "Nullable",
     "views.table.Preview": "Preview",
     "views.table.Query": "Query",
-
     "views.preview.Limit": "Limit",
-
     "views.hql-editor.Iad": "Initializing auto-complete data",
     "views.hql-editor.EQ": "Enter Query",
     "views.hql-editor.FS": "Full Screen",
     "views.hql-editor.Database": "Database",
     "views.hql-editor.BH": "Browse Hive",
     "views.hql-editor.Table": "Table",
-
     "views.hql-editor-fullscreen.BH": "Browse Hive",
     "views.hql-editor-fullscreen.Close": "Close",
-
     "views.data-transform-stepper.BQ": "Build Query",
     "views.data-transform-stepper.TD": "Transform Data",
     "views.data-transform-stepper.Table": "Table",
     "views.data-transform-stepper.DP": "Data Processing",
-
-    "views.visual-query-builder.DS": "Data Source",
     "views.visual-query-builder.St": "Search tables",
     "views.visual-query-builder.Schema": "Schema:",
     "views.visual-query-builder.Table": "Table:",
@@ -664,7 +631,6 @@
     "views.visual-query-builder.Utctsds": "Unable to connect to selected data source.",
     "views.visual-query-builder.AT": "Add Table",
     "views.visual-query-builder.ESQL": "Edit SQL",
-
     "views.visual-query-transform.History": "History",
     "views.visual-query-transform.Sample": "Sample",
     "views.visual-query-transform.Profile": "Profile",
@@ -679,28 +645,24 @@
     "views.visual-query-transform.Limit": "Limit",
     "views.visual-query-transform.Lbs": "Limit before sampling",
     "views.visual-query-transform.Update": "Update",
-
     "views.profile-stats-dialog.Close": "Close",
     "views.profile-stats-dialog.PD": "Profile Data",
-
     "views.define-feed-data-processing.of": "of",
-
     "views.define-table-stepper.Table": "Table",
     "views.define-table-stepper.DP": "Data Processing",
-    "views.import_feed.padding_bottom" : "The following properties need to be supplied before importing this feed:",
-    "views.import_feed.data_source":"Data Source",
-    "views.import_feed.dataset":"Dataset",
-    "views.import_feed.dataset-required":"Data set assignment required",
-    "views.import_feed.choose-datasets-message":"This feed references a dataset not available in this system. Please re-assign below.",
-    "views.import_feed.update-dataset":"Update Data Set ",
-    "views.import_feed.datasource-required":"Data source assignment required",
-    "views.import_feed.choose-datasource-message":"This feed references a data source not available in this system. Please re-assign below.",
-    "views.import_feed.no-catigories" : "No categories matching",
+    "views.import_feed.padding_bottom": "The following properties need to be supplied before importing this feed:",
+    "views.import_feed.dataset": "Dataset",
+    "views.import_feed.dataset-required": "Data set assignment required",
+    "views.import_feed.choose-datasets-message": "This feed references a dataset not available in this system. Please re-assign below.",
+    "views.import_feed.update-dataset": "Update Data Set ",
+    "views.import_feed.datasource-required": "Data source assignment required",
+    "views.import_feed.choose-datasource-message": "This feed references a data source not available in this system. Please re-assign below.",
+    "views.import_feed.no-catigories": "No categories matching",
     "views.import_feed.were-found": "were found.",
     "views.import_feed.related-feeds": "Related Feeds",
     "views.import_feed.data-access-control": "Data access control",
     "views.import_feed.hadoop-sekyriti": "Hadoop Security Groups",
-    "views.import_feed.Upload_Progress_Title":"Upload Progress",
+    "views.import_feed.Upload_Progress_Title": "Upload Progress",
     "views.define-feed-complete": "Congratulations! Your feed has been successfully created.",
     "views.define-feed-complete2": "You can augment your feed by adding the following enhancements",
     "views.define-feed-complete3": "Add a Service Level Agreement",
@@ -735,13 +697,9 @@
     "views.define-feed-mgr-tables.tables": "Loading Tables",
     "views.define-feed-mgr-tables.tables2": "Table",
     "views.define-feed-mgr-tables.tables3": "Schema",
-    "views.define-feed-mgr-tables.tables4": "No results found",
     "views.main.feeds-title": "Feeds",
-
     "views.dirPagination.tpl.of": "of",
-
     "views.card-filter-header-template.Filter": "Filter",
-
     "views.alerts-template.Alerts": "Alerts",
     "views.alerts-template.AlertsForFeed": "Alerts for feed",
     "views.alerts-template.Na": "No alerts",
@@ -751,14 +709,11 @@
     "views.alerts-template. Job Failure": "Job Failure",
     "views.alerts-template. Service": "Service Failure",
     "views.alerts-template. Sla Violation": "SLA",
-
     "views.vertical-section-layout-template.Delete": "Delete",
     "views.vertical-section-layout-template.Cancel": "Cancel",
     "views.vertical-section-layout-template.Save": "Save",
-
     "views.jobs-template.ST": "Start Time",
     "views.jobs-template.RT": "Run Time",
-    "views.jobs-template.Nrf": "No results found",
     "views.jobs-template.JN": "Job Name",
     "views.jobs-template.State": "State",
     "views.jobs-template.Feed": "Feed",
@@ -766,15 +721,11 @@
     "views.jobs-template.Action": "Action",
     "views.jobs-template.FAIL": "FAIL",
     "views.jobs-template.ABANDON": "ABANDON",
-
     "views.FeedActivityDirective.Count": "Count",
-
     "views.kylo-options.Logout": "Logout",
     "views.kylo-options.AK": "About Kylo",
-
     "views.TableController.Tables": "Tables",
     "views.TableController.Schemas": "Schemas",
-
     "view.login.KL": "Kylo Login",
     "view.login.Login": "Login",
     "view.login.Username": "Username",
@@ -783,9 +734,7 @@
     "view.login.Pir": "Password is required",
     "view.login.Login-btn": "Login",
     "view.login-app.login-error": "Invalid username or password.",
-
     "views.module.Categories": "Categories",
-
     "view.search.Srf": "Search results from",
     "view.search.seconds": "seconds",
     "view.search.to": "to",
@@ -797,7 +746,6 @@
     "view.search.Urt": "Unknown result type",
     "view.search.Dna": "Details not available.",
     "view.search.unknown-result": "Unknown result type",
-    "view.search.Nrf": "No results found",
     "feeds.visual-query-stepper.build-query": "Build Query",
     "feeds.visual-query-stepper.data-transform": "Transform Data",
     "view.visual-query-builder.connection-details": "Connection Details for",
@@ -816,7 +764,7 @@
     "views.query-table-header.clone-column": "Clone Column",
     "views.query-table-header.rename-column": "Rename Column",
     "views.query-table-header.filter": "Filter",
-    "views.query-table-header.filter-apply" : "Apply",
+    "views.query-table-header.filter-apply": "Apply",
     "views.query-table-header.transform": "Transform",
     "views.query-table-header.format": "Format",
     "views.query-table-header.ml": "Prepare",
@@ -826,7 +774,6 @@
     "views.query-table-header.other": "Other",
     "views.query-table-header.analyze": "Analyze...",
     "view.FeedService.Fss": "Feed successfully saved",
-
     "view.feed-stats-charts.Time": "Time",
     "view.feed-stats-charts.FPS": "Flows Per Second",
     "view.feed-stats-charts.Completed": "Completed",
@@ -834,8 +781,6 @@
     "view.feed-stats-charts.STOPPED": "STOPPED",
     "view.feed-stats-charts.RUNNING": "RUNNING",
     "view.feed-stats-charts.noData": "No Data",
-
-    "view.search.Title": "Title",
     "view.search.System name (Kylo)": "System name (Kylo)",
     "view.search.Description": "Description",
     "view.search.User properties": "User properties",
@@ -852,7 +797,6 @@
     "view.search.Column name": "Column name",
     "view.search.databaseName": "Database",
     "view.search.tableName": "Table",
-
     "views.job-details.JE": "Job Execution",
     "views.job-details-template.ED": "Exit Description",
     "views.JobDetailsDirective.Nda": "No description available.",
@@ -871,20 +815,17 @@
     "UNHEALTHY": "UNHEALTHY",
     "RUNNING": "RUNNING",
     "RUNNING_JOB_ACTIVITY": "RUNNING_JOB_ACTIVITY",
-
     "Jobs": "Jobs",
     "Dashboard": "Dashboard",
     "Domain Types": "Domain Types",
     "Templates": "Templates",
     "Users": "Users",
     "Groups": "Groups",
-
     "views.jobs-template.All": "All",
     "views.jobs-template.Running": "Running",
     "views.jobs-template.Failed": "Failed",
     "views.jobs-template.Completed": "Completed",
     "views.jobs-template.Abandoned": "Abandoned",
-
     "views.job-details-template.ST": "Start Time",
     "views.job-details-template.RT": "Run Time",
     "views.Utils.sec": "sec",
@@ -904,48 +845,38 @@
     "views.job-details-template.Type": "Type",
     "views.job-details-template.ET": "End Time",
     "views.job-details-template.EC": "Exit Code",
-
     "views.about.Version": "Version:",
     "views.about.Close": "Close",
-
     "views.feed-stats-charts.Last Minute": "Last Minute",
     "views.feed-stats-charts.Last 3 Minutes": "Last 3 Minutes",
     "views.feed-stats-charts.Last 5 Minutes": "Last 5 Minutes",
-
     "views.hql-editor.UseCTRL": "Use CTRL + space for autocomplete on table and column names",
     "views.hql-editor.LoadingTable": "Loading table and column metadata",
     "views.hql-editor.UnableTlt": "Unable to load table and column metadata.  Autocomplete for tables and columns is disabled.",
-
     "views.feed-error-dialog.Ec": "Error creating",
     "views.feed-error-dialog.Okay": "Okay",
-
     "views.FeedCreationErrorService.iiwf": " invalid items were found.  Please review and fix these items.",
     "views.FeedCreationErrorService.Found": "",
     "views.FeedCreationErrorService.iiwf2": " invalid items were found.  Please review and fix these items.",
-
     "views.FeedStatsService.Time": "Time (sec)",
     "views.DefineFeedScheduleDirective.Cron": "Cron",
     "views.DefineFeedScheduleDirective.Timer": "Timer",
     "views.DefineFeedScheduleDirective.T/E": "Trigger/Event",
-
     "views.feed-schedule.Cron": "Cron",
     "views.feed-schedule.Timer": "Timer",
     "views.feed-schedule.T/E": "Trigger/Event",
     "CRON_DRIVEN": "CRON_DRIVEN",
     "TIMER_DRIVEN": "TIMER_DRIVEN",
     "TRIGGER_DRIVEN": "TRIGGER_DRIVEN",
-
     "Editor": "Editor",
     "Admin": "Admin",
     "Read-Only": "Read-Only",
     "Feed Creator": "Feed Creator",
-
     "views.feed-defenition-kyloWill": "Kylo will only track key metrics.  Individual jobs and steps will not be tracked.",
     "views.feed-defenition-kyloWill2": "Kylo will track individual jobs and steps.",
     "views.main.registerService-accessDenied": "Access Denied",
     "views.main.registerService-accessDenied2": "You do not have access to edit templates.",
     "views.main.registerService-accessDenied3": "Access denied to edit templates",
-
     "views.feed-stats-charts.Average Duration": "Average Duration",
     "views.feed-stats-charts.Bytes In": "Bytes In",
     "views.feed-stats-charts.Bytes Out": "Bytes Out",
@@ -955,10 +886,8 @@
     "views.feed-stats-charts.Failed Events": "Failed Events",
     "views.feed-stats-charts.Processor": "Processor",
     "views.feed-stats-charts.Errors": "Errors",
-
     "views.repository.templates": "Templates",
     "views.repository.feeds": "Feeds",
-
     "views.feed-details-delete-dialogDelete": "Delete",
     "views.feed-details-delete-dialogDelete2": "All data for this feed will be permanently deleted.",
     "views.feed-details-delete-dialogDelete3": "Enter YES to confirm",
@@ -966,10 +895,28 @@
     "views.feed-details-delete-dialogDelete5": "Cancel",
     "views.feed-details-delete-dialogDeleteConfirmationEntry": "YES",
     "views.views.FeedActivityDirective.noData": "No data for this period",
-    "views.common.date":"Date",
-    "views.common.executeQ":"Execute Query",
-    "views.common.previousQ":"Previous Queries",
-    "views.common.ok":"OK",
+    "views.common.date": "Date",
+    "views.common.executeQ": "Execute Query",
+    "views.common.previousQ": "Previous Queries",
+    "views.common.ok": "OK",
+    "views.common.title":"Title",
+    "views.common.description":"Description",
+    "views.common.DN":"Display Name",
+    "views.common.Email.Address":"Email Address",
+    "views.common.Email.Address.error":"Email address is not valid.",
+    "views.common.Active":"Active",
+    "views.common.status":"Status",
+    "views.common.delete.success":"Successfully deleted {{entity}} ",
+    "views.common.delete.failure.title":"Delete Failed",
+    "views.common.dialog.gotIt":"Got it!",
+    "views.common.delete.failure":"Failed to delete {{entity}} ",
+    "views.common.required.text":"Required.",
+    "views.common.data.source":"Data Source",
+    "views.common.save.failed":"failed to save {{entity}}",
+    "views.common.save.failed.title":"Save Failed",
+    "views.common.error.message":"An error occurred: {{message}}",
+    "views.common.Nrf": "No results found",
+    "views.common.error":"Error",
     "Feeds": "Feeds",
     "Define Feed": "Define Feed",
     "Import Feed": "Import Feed",
@@ -999,34 +946,31 @@
     "Service Details": "Service Details",
     "Service Component": "Service Component",
     "Service Level Assessments": "Service Level Assessments",
-    "All":"All",
-    "Running":"Running",
-    "Healthy":"Healthy",
-    "Unhealthy":"Unhealthy",
-    "Streaming":"Streaming",
-    "views.dashboard.feed-health":"Feed Health",
-    "views.dashboard.status":"Status",
-    "views.dashboard.since":"Since",
-    "views.dashboard.lastRunTime":"Last Run Time",
-    "views.dashboard.noResultsFound":"No results found",
-    "views.dashboard.feed":"Feed",
-    "Feed Health":"Feed Health",
-    "Monitors All Feed Health":"Monitors All Feed Health",
-    "Data Confidence":"Data Confidence",
-    "Validates Data Integrity":"Validates Data Integrity",
-    "Job Activity":"Job Activity",
+    "All": "All",
+    "Running": "Running",
+    "Healthy": "Healthy",
+    "Unhealthy": "Unhealthy",
+    "Streaming": "Streaming",
+    "views.dashboard.feed-health": "Feed Health",
+    "views.dashboard.status": "Status",
+    "views.dashboard.since": "Since",
+    "views.dashboard.lastRunTime": "Last Run Time",
+    "views.dashboard.feed": "Feed",
+    "Feed Health": "Feed Health",
+    "Monitors All Feed Health": "Monitors All Feed Health",
+    "Data Confidence": "Data Confidence",
+    "Validates Data Integrity": "Validates Data Integrity",
+    "Job Activity": "Job Activity",
     "Currently Running Jobs": "Currently Running Jobs",
-    "Services Health":"Services Health",
-    "Monitors All Service Health":"Monitors All Service Health",
-    "Total":"Total",
-
+    "Services Health": "Services Health",
+    "Monitors All Service Health": "Monitors All Service Health",
+    "Total": "Total",
     "dirPagination.tpl.5": "5",
     "dirPagination.tpl.10": "10",
     "dirPagination.tpl.20": "20",
     "dirPagination.tpl.50": "50",
     "dirPagination.tpl.100": "100",
     "dirPagination.tpl.All": "All",
-
     "CATALOG": {
         "DATA_SOURCES": {
             "CONFIRM_DELETE": {
@@ -1044,77 +988,90 @@
             "TITLE": "Data Sources"
         }
     },
-
     "VISUAL_QUERY": {
         "FEED_STEP": {
             "DATA_TRANSFORMATIONS": "Data Transformations",
             "QUERY": "Query"
         }
     },
-
-    "FeedDefinition":{
-        "Steps":{
-            "Source":{
-               "Name":"Source",
-                "SourceDetails":"Source Details",
-                "SourceDetailsDescription":"Assign the true source of the data"
+    "FeedDefinition": {
+        "Steps": {
+            "Source": {
+                "Name": "Source",
+                "SourceDetails": "Source Details",
+                "SourceDetailsDescription": "Assign the true source of the data"
             },
-            "Target":{
-             "Name":"Target"
+            "Target": {
+                "Name": "Target"
             },
-            "AdditionalOptions":{
-             "Name":"Additional options",
-             "Description":"Required settings for this feed"
+            "AdditionalOptions": {
+                "Name": "Additional options",
+                "Description": "Required settings for this feed"
             },
             "Properties": {
-                "Name":"Properties",
-                "CustomProperties":"Custom Properties",
-                "MetadataIndexing":"Metadata Indexing",
-                "IndexSchemaAndMetadata":"Index schema and metadata",
-                "IndexSchemaAndMetadataHint":"Index metadata and schema for the feed in a search engine."
+                "Name": "Properties",
+                "CustomProperties": "Custom Properties",
+                "MetadataIndexing": "Metadata Indexing",
+                "IndexSchemaAndMetadata": "Index schema and metadata",
+                "IndexSchemaAndMetadataHint": "Index metadata and schema for the feed in a search engine."
             },
-            "Permissions":{
-                "Name":"Permissions"
+            "Permissions": {
+                "Name": "Permissions"
             },
-            "Wrangler":{
-                "Name":"Transformation"
+            "Wrangler": {
+                "Name": "Transformation"
             }
         },
-        "Links":{"Summary":{"Name":"Summary"},
-                 "FeedActivity":{"Name":"Feed Activity"},
-                 "SetupGuide":{"Name":"Setup Guide"},
-                 "SetupReview":{"Name":"Setup Review"},
-                 "Profile":{"Name":"Profile"},
-                 "SLA":{"Name":"SLA"},
-                 "Lineage":{"Name":"Lineage"},
-                 "Versions":{"Name":"Versions"}
+        "Links": {
+            "Summary": {
+                "Name": "Summary"
+            },
+            "FeedActivity": {
+                "Name": "Feed Activity"
+            },
+            "SetupGuide": {
+                "Name": "Setup Guide"
+            },
+            "SetupReview": {
+                "Name": "Setup Review"
+            },
+            "Profile": {
+                "Name": "Profile"
+            },
+            "SLA": {
+                "Name": "SLA"
+            },
+            "Lineage": {
+                "Name": "Lineage"
+            },
+            "Versions": {
+                "Name": "Versions"
+            }
         },
         "Actions": {
             "DeleteFeed": "Delete Feed",
             "RemoveDraft": "Remove Draft"
         },
         "Dialogs": {
-          "RemoveDraft": {
-            "Accept": "Yes",
-            "Cancel": "No",
-            "Message": "Are you sure you want to remove the current draft?",
-            "Title": "Confirm Remove Draft"
-          }
+            "RemoveDraft": {
+                "Accept": "Yes",
+                "Cancel": "No",
+                "Message": "Are you sure you want to remove the current draft?",
+                "Title": "Confirm Remove Draft"
+            }
         }
     },
-    "FeedStats":{
-        "Name":"Feed Activity"
+    "FeedStats": {
+        "Name": "Feed Activity"
     },
-    "Lineage":{
-        "Name":"Feed Lineage",
-        "Description":"View feed relationships to data sources and other feeds"
-
+    "Lineage": {
+        "Name": "Feed Lineage",
+        "Description": "View feed relationships to data sources and other feeds"
     },
-
     "Profile": {
-        "History":{
-            "Title":"Profile History",
-            "SubTitle":"View profile history of prior feed executions"
+        "History": {
+            "Title": "Profile History",
+            "SubTitle": "View profile history of prior feed executions"
         },
         "Valid": {
             "NoValidRows": "There are no valid rows",
@@ -1128,10 +1085,9 @@
             "Filter": "Filter By Rule Violation"
         },
         "Stats": {
-            "Title":"Profile Statistics",
-            "SubTitle":"View profile statistics as of",
+            "Title": "Profile Statistics",
+            "SubTitle": "View profile statistics as of",
             "ShowOnlyProfiled": "Show Only Profiled",
-            "NoResults": "No results found",
             "Summary": "Summary",
             "RelativeStats": "Relative Statistics",
             "TopValues": "Top Values",
@@ -1161,8 +1117,6 @@
             "Missing": "Missing"
         }
     },
-
-
     "Sla": {
         "ServiceLevelAgreements": "Service Level Agreements",
         "RelatedFeeds": "Related Feeds",
@@ -1170,14 +1124,10 @@
         "NoData": "No Service Level Agreements",
         "Loading": "Loading...",
         "DisabledFeedWarning": "Warning. This feed is disabled. SLA can be modified, but they will not run until this feed is enabled.",
-
         "Details": {
             "EditSla": "Edit SLA",
             "CreateNewSla": "New SLA",
             "CreateNewSlaSubtitle": "Define a new service level agreement.",
-            "Save": "Save",
-            "Cancel": "Cancel",
-            "Delete": "Delete",
             "ErrorLoadingSla": "Error loading the SLA",
             "AccessDenied": "Access denied to edit the SLA",
             "Ok": "OK",
@@ -1207,36 +1157,35 @@
             "AddAction": "Add Action"
         },
         "EmailTemplates": {
-            "Title":"SLA Email Templates",
-            "TemplateTitle":"Email Template",
-            "Create":"Create",
-            "EmptyTitle":"No templates exist",
-            "TemplateBody":"Template body",
-            "NoTemplateWarning":"Warning.  The SLA email plugin was not found.  This template will not be applied.",
-            "NoTemplateWarningHint":"Please consult with your administrator about configuring the SLA email plugin.",
-            "NameRequired":"Template name is required",
-            "SubjectRequired":"Email subject is required",
-            "SubjectHint":"Supports velocity and template variables (i.e. $sla.name will resolve to the SLA name)",
-            "EnabledHint":"If the template has related SLA's it cannot be disabled.",
-            "DefaultHint":"The default template will be used for SLA emails when a template has not yet been assigned to the SLA. There is only one default template.",
-            "LoadExample":"Load Example Template",
-            "Active":"Active",
-            "DefaultTemplate":"Default template",
-            "Preview":"Preview",
-            "PreviewTooltip":"Preview the template",
-            "SendTest":"Send Test",
-            "Save":"Save",
-            "Cancel":"Cancel",
-            "TemplateVariables":"Template Variables",
-            "RelatedSlas":"Related SLA's",
-            "NoRelatedSlas":"No SLA's found using this template",
-            "PreviewTitle":"Preview the template",
-            "PreviewTitleHint":"Quickly validate and preview your email",
-            "TestEmailTitle":"Test email",
-            "TestEmailTitleHint":"Validate the template by sending a test email"
+            "Title": "SLA Email Templates",
+            "TemplateTitle": "Email Template",
+            "Create": "Create",
+            "EmptyTitle": "No templates exist",
+            "TemplateBody": "Template body",
+            "NoTemplateWarning": "Warning.  The SLA email plugin was not found.  This template will not be applied.",
+            "NoTemplateWarningHint": "Please consult with your administrator about configuring the SLA email plugin.",
+            "NameRequired": "Template name is required",
+            "SubjectRequired": "Email subject is required",
+            "SubjectHint": "Supports velocity and template variables (i.e. $sla.name will resolve to the SLA name)",
+            "EnabledHint": "If the template has related SLA's it cannot be disabled.",
+            "DefaultHint": "The default template will be used for SLA emails when a template has not yet been assigned to the SLA. There is only one default template.",
+            "LoadExample": "Load Example Template",
+            "Active": "Active",
+            "DefaultTemplate": "Default template",
+            "Preview": "Preview",
+            "PreviewTooltip": "Preview the template",
+            "SendTest": "Send Test",
+            "Save": "Save",
+            "Cancel": "Cancel",
+            "TemplateVariables": "Template Variables",
+            "RelatedSlas": "Related SLA's",
+            "NoRelatedSlas": "No SLA's found using this template",
+            "PreviewTitle": "Preview the template",
+            "PreviewTitleHint": "Quickly validate and preview your email",
+            "TestEmailTitle": "Test email",
+            "TestEmailTitleHint": "Validate the template by sending a test email"
         }
     },
-
     "WRANGLER": {
         "DATASOURCES": {
             "ACCESS_DENIED": {
@@ -1245,8 +1194,7 @@
             }
         }
     },
-
-    "Versions":{
+    "Versions": {
         "CompareVersions": "Compare versions",
         "Current": "Current",
         "CreatedBy": "Created by ",
@@ -1266,54 +1214,109 @@
             "RunPreconditions": "Run Preconditions"
         }
     },
-    "ADMIN":{
-        "cluster.cluster-test.title":"Is Kylo Clustered",
-        "cluster.cluster-test.warning":"Warning.  Only 1 member is found in the cluster.",
-        "cluster.cluster-test.ensure.request":"Please ensure your Kylo cluster configuration is configured correctly.",
-        "cluster.cluster-test.members":"Cluster Members",
-        "cluster.cluster-test.sendMessage":"Send a Message",
-        "cluster.cluster-test.sendButton":"Send",
-        "cluster.cluster-test.receivedMessage":"Received Messages",
-        "cluster.cluster-test.messageText":"Message",
-        "cluster.cluster-test.fromText":"From",
-        "cluster.cluster-test.no.messages.receivedText":"No Messages received",
-        "cluster.cluster-test.not.clustered.part1":"Kylo is not clustered.  Please follow the ",
-        "cluster.cluster-test.not.clustered.part2":"and ensure the following items are configured.",
-        "cluster.cluster-test.default.kylo.conf.text":"The default Kylo installation provides sample configuration files for the items below in the",
-        "cluster.cluster-test.modeshape.jgroups.conf":"Modeshape jgroups configuration",
-        "cluster.cluster-test.ensure.modeshape.jgroups.part1":"Ensure the correct {{fileName}} exists in the '{{filePath}}' and is configured.",
-        "cluster.cluster-test.ensure.file.configured":"Ensure the file above is configured and referenced in the {{fileName}} file.",
-        "cluster.cluster-test.kylo.job.conf.text":"Kylo jgroups configuration",
-        "cluster.cluster-test.ensure.kylo.cluster.conf.part1":"Ensure the {{fileName}} exists in the '{{filePath}}' and is configured.",
-        "cluster.cluster-test.property.kylo.ensure":"The property in the {{filePath}} exists referring to the file above: {{fileKey}} ",
-        "cluster.cluster-test.quartz.scheduler":"Quartz Scheduler",
-        "cluster.cluster-test.quartz.ensure":"Ensure the Quartz Scheduler is configured for cluster mode and the '{{fileName}}' file is in the '{{filePath}}'",
-        "cluster.dialog.sent.message":"Sent the message",
-        "cluster.dialog.error.message":"Error sending the message",
-        "jcrquery.query.return":"The query returned {{resultSize}} rows and took: {{queryTime }} ",
-        "jcrquery.explain.plan":"Explain Plan",
-        "jcrquery.existing.indexes":"Existing Indexes",
-        "jcrquery.reindex":"Re-index",
-        "jcrquery.add.index":"Add a new Index",
-        "jcrquery.index.name":"Index Name",
-        "jcrquery.kind":"Kind",
-        "jcrquery.index.node.type":"Index Node Type",
-        "jcrquery.property.name":"Property Name",
-        "jcrquery.property.type":"Property Type",
-        "jcrquery.register.index":"Register Index",
-        "jcrquery.dialog.adding.title":"Adding Index",
-        "jcrquery.dialog.adding.message":"Adding index. Please wait...",
-        "jcrquery.dialog.reindexing.title":"Reindexing",
-        "jcrquery.dialog.reindexing.message":"Reindexing. Please wait...",
-        "jcrquery.reindex.success":"Successfully reindexed",
-        "jcrquery.reindex.error":"Error reindexing",
-        "jcrquery.index.add":"Added the index",
-        "jcrquery.index.remove":"Removed the index ",
-        "jcrquery.error.query.perform":"Error performing query ",
-        "jcrquery.index.get.error":"Error getting indexes "
-
+    "ADMIN": {
+        "cluster.cluster-test.title": "Is Kylo Clustered",
+        "cluster.cluster-test.warning": "Warning.  Only 1 member is found in the cluster.",
+        "cluster.cluster-test.ensure.request": "Please ensure your Kylo cluster configuration is configured correctly.",
+        "cluster.cluster-test.members": "Cluster Members",
+        "cluster.cluster-test.sendMessage": "Send a Message",
+        "cluster.cluster-test.sendButton": "Send",
+        "cluster.cluster-test.receivedMessage": "Received Messages",
+        "cluster.cluster-test.messageText": "Message",
+        "cluster.cluster-test.fromText": "From",
+        "cluster.cluster-test.no.messages.receivedText": "No Messages received",
+        "cluster.cluster-test.not.clustered.part1": "Kylo is not clustered.  Please follow the ",
+        "cluster.cluster-test.not.clustered.part2": "and ensure the following items are configured.",
+        "cluster.cluster-test.default.kylo.conf.text": "The default Kylo installation provides sample configuration files for the items below in the",
+        "cluster.cluster-test.modeshape.jgroups.conf": "Modeshape jgroups configuration",
+        "cluster.cluster-test.ensure.modeshape.jgroups.part1": "Ensure the correct {{fileName}} exists in the '{{filePath}}' and is configured.",
+        "cluster.cluster-test.ensure.file.configured": "Ensure the file above is configured and referenced in the {{fileName}} file.",
+        "cluster.cluster-test.kylo.job.conf.text": "Kylo jgroups configuration",
+        "cluster.cluster-test.ensure.kylo.cluster.conf.part1": "Ensure the {{fileName}} exists in the '{{filePath}}' and is configured.",
+        "cluster.cluster-test.property.kylo.ensure": "The property in the {{filePath}} exists referring to the file above: {{fileKey}} ",
+        "cluster.cluster-test.quartz.scheduler": "Quartz Scheduler",
+        "cluster.cluster-test.quartz.ensure": "Ensure the Quartz Scheduler is configured for cluster mode and the '{{fileName}}' file is in the '{{filePath}}'",
+        "cluster.dialog.sent.message": "Sent the message",
+        "cluster.dialog.error.message": "Error sending the message",
+        "jcrquery.query.return": "The query returned {{resultSize}} rows and took: {{queryTime }} ",
+        "jcrquery.explain.plan": "Explain Plan",
+        "jcrquery.existing.indexes": "Existing Indexes",
+        "jcrquery.reindex": "Re-index",
+        "jcrquery.add.index": "Add a new Index",
+        "jcrquery.index.name": "Index Name",
+        "jcrquery.kind": "Kind",
+        "jcrquery.index.node.type": "Index Node Type",
+        "jcrquery.property.name": "Property Name",
+        "jcrquery.property.type": "Property Type",
+        "jcrquery.register.index": "Register Index",
+        "jcrquery.dialog.adding.title": "Adding Index",
+        "jcrquery.dialog.adding.message": "Adding index. Please wait...",
+        "jcrquery.dialog.reindexing.title": "Reindexing",
+        "jcrquery.dialog.reindexing.message": "Reindexing. Please wait...",
+        "jcrquery.reindex.success": "Successfully reindexed",
+        "jcrquery.reindex.error": "Error reindexing",
+        "jcrquery.index.add": "Added the index",
+        "jcrquery.index.remove": "Removed the index ",
+        "jcrquery.error.query.perform": "Error performing query ",
+        "jcrquery.index.get.error": "Error getting indexes "
+    },
+    "AUTH":{
+        "group.details.title":"Group Details",
+        "group.details.groupName":"Group Name",
+        "group.details.groupName.required":"A group name is required.",
+        "group.details.groupName.inUse":"That group name is already in use.",
+        "group.details.noUser.warn":"There are no users associated with this group.",
+        "user.details.title":"User Details",
+        "user.details.userName.inUse":"That username is already in use.",
+        "group.tile":"Group",
+        "user.details.noGroups.warn":"At least one group is required."
+    },
+    "COMMON":{
+        "about.details.para":"The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.<br>It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.<br><br>For enterprise support options, please visit <a href='https://www.thinkbiganalytics.com/kylo/' target='_blank'>Think Big</a>. <br> <br>",
+        "about.details.text.area":"Copyright 2017 Teradata Corporation <br/> Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <br/> http://www.apache.org/licenses/LICENSE-2.0 <br><br>  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
+        "not.available":"Not Available",
+        "options.menu.view":"View Options"
 
     },
-  "utils.singlespace": " ",
-  "utils.notApplicable": "NA"
+    "FEEDMGR":{
+        "business.metadata.property.def":"Property Definition",
+        "business.metadata.feeds.cat.define":"Define standard properties available to feeds and categories",
+        "connector.component.invalid.url":"Invalid Url",
+        "connector.component.invalid.url.protocol":"Invalid Url Protocol",
+        "connector.component.edit.existing":"Edit existing",
+        "connector.component.create.new":"Create new",
+        "connector.component.unknown.ui.options":"Unknown ui options mapper {{mapper}}  for connector {{connector}}",
+        "connectors.no.connectors":"No Connectors",
+        "connectors.no.connectors.see.kyloDoc":"There are no available connectors. See the Kylo documentation for more information.",
+        "datasource.selection.dialog.selected.items":"Selected Items",
+        "datasource.selection.dialog.selected.items.all.paths":"A list of items selected on all paths",
+        "browser.component.items.selected":"item(s) selected here",
+        "browser.component.items.total":"in total",
+        "create.feed":"Create Feed",
+        "wrangle":"Wrangle",
+        "view.raw":"View Raw",
+        "settings":"Settings",
+        "data.sets":"Data sets",
+        "preview.schema.dialog.examining.title":"Examining file metadata",
+        "preview.schema.dialog.examining.message":"Validating file metadata",
+        "preview.schema.dialog.cant.process.error":"Error. Cant process",
+        "preview.schema.dialog.no.path.supplied":"No path has been supplied",
+        "preview.schema.dialog.please.select.item":"Please select an item to preview from the catalog",
+        "schema.parse.settings":"Schema Parse Settings",
+        "drag.drop.here":"Drag and drop here",
+        "file.upload.add.file":"Add file",
+        "file.upload.add.more.files":"Add more files",
+        "file.upload.fileExists":"File already exists",
+        "file.upload.file.delete.confirm.message":"Are you sure you want to delete ${file.name}?",
+        "datasources.noDS":"No Datasources",
+        "datasources.noDS.see.kylo.doc":"There are no available datasources. See the Kylo documentation for more information.",
+        "category.saved":"Saved the Category",
+        "category.dialog.save.failed.message":"The category '{{category}}' could not be saved {{message}}",
+        "category.def.sys.name.desc.customizable":"Can be customised",
+        "category.def.sys.name.desc.not.customizable.has.feeds":"Cannot be customised because Category has Feeds",
+        "category.def.sys.name.desc.now.editable":"System name is now editable",
+        "category.def.sys.name.desc.not.customizable.auto.generated":"Auto generated from Category Name, can be customised"        
+    },
+    "utils.singlespace": " ",
+    "utils.notApplicable": "NA"
 }

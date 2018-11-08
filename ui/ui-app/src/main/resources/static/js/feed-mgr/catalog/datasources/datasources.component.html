@@ -25,8 +25,8 @@
 
   <div *ngIf="!datasources || datasources.length == 0" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
     <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
-    <h2>No Datasources</h2>
-    <span>There are no available datasources. See the Kylo documentation for more information.</span>
+    <h2>{{'FEEDMGR.datasources.noDS' | translate}}</h2>
+    <span>{{'FEEDMGR.datasources.noDS.see.kylo.doc' | translate}}</span>
   </div>
 
 </ng-container>
