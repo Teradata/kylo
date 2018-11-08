@@ -85,7 +85,7 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
         if (JcrPropertyUtil.hasProperty(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED)) {
             return JcrPropertyUtil.getBoolean(securityNode, SecurityPaths.ENTITY_ACCESS_CONTROL_ENABLED);
         } else {
-            return roleProvider.getRoles().values().stream().anyMatch(roles -> roles.size() > 0);
+            return false;
         }
     }
 

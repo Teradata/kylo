@@ -149,7 +149,7 @@
 /* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
 
 [tba:securityFolder] > nt:folder
-    - tba:entityAccessControlled (BOOLEAN) = 'false'
+    - tba:entityAccessControlled (BOOLEAN) = 'false' autocreated 
     + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
     + roles (tba:entityRolesFolder) = tba:entityRolesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
