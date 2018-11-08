@@ -1,4 +1,4 @@
-import {Component, Input} from "@angular/core";
+import {Component, Injector, Input} from "@angular/core";
 
 @Component({
     selector: "select-network-node",
@@ -12,4 +12,16 @@ export class SelectNetworkNodeComponent {
     objectKeys = Object.keys;
 
     panelOpenState = false;
+
+    private kyloStateService:any
+
+    constructor( private $$angularInjector: Injector) {
+        this.kyloStateService = $$angularInjector.get("StateService");
+    }
+
+    navigateToFeed() {
+        if (this.selectedNode.type == 'FEED' && this.selectedNode.content) {
+            this.kyloStateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
+        }
+    }
 }

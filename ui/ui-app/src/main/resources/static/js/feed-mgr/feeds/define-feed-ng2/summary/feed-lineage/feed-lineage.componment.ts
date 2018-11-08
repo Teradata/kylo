@@ -25,7 +25,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     restUrlService: any;
     utils: any;
-    StateService: any;
+    kyloStateService: any;
 
     public kyloIcons_Links_lineage = KyloIcons.Links.lineage;
 
@@ -67,7 +67,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
         this.utils = $$angularInjector.get("Utils");
         this.restUrlService = $$angularInjector.get("RestUrlService");
-        this.StateService = $$angularInjector.get("StateService");
+        this.kyloStateService = $$angularInjector.get("StateService");
 
         this.options = {
             "height": "100%",
@@ -130,7 +130,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     navigateToFeed() {
         if (this.selectedNode.type == 'FEED' && this.selectedNode.content) {
-            this.StateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
+            this.kyloStateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
         }
     }
 
