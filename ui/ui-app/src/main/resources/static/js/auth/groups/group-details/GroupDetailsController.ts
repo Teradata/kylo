@@ -9,6 +9,7 @@ import AccessConstants from "../../../constants/AccessConstants";
 import "../../module";
 import "../../module-require";
 import {Transition} from "@uirouter/core";
+import {LoadingDialogService} from "../../../common/loading-dialog/loading-dialog";
 
 export class GroupDetailsController implements ng.IComponentController {
     $transition$: Transition;
