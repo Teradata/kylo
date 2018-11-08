@@ -17,12 +17,13 @@
   limitations under the License.
   #L%
   -->
-<div mat-dialog aria-label="Abandon all jobs for feed">
+  <!-- aria-label="{{'OPS-MGR.feeds.abandon-all-jobs.feed-label'| translate}}" -->
+<div mat-dialog >
   <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
     <div class="md-toolbar-tools">
       <h4>
-        <ng-md-icon size="24" md-icon icon="save" aria-label="Abandon all jobs" style="fill:#3483BA"></ng-md-icon>
-        <span>Abandon all jobs for {{feedName | truncate:50}}</span>
+        <ng-md-icon size="24" md-icon icon="save" aria-label="{{'OPS-MGR.feeds.abandon-all-jobs.label'| translate}}" style="fill:#3483BA"></ng-md-icon>
+        <span>{{"OPS-MGR.feeds.abandon-all-jobs.text"| translate}} {{feedName | truncate:50}}</span>
       </h4>
       <span flex></span>
     </div>

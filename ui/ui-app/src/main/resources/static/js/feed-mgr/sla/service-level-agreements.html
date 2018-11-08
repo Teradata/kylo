@@ -31,7 +31,7 @@
       <mat-toolbar style="display:flex">
         <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
         <td-search-box *ngIf="!creatingNewSla" #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;"
-          placeholder="Filter" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+          placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
         </td-search-box>
       </mat-toolbar>
     </mat-card-title>
@@ -54,7 +54,7 @@
   </mat-card>
   <mat-card flex="20" card-toolbar="false" *ngIf="editSla != null  && !loading && !creatingNewSla">
     <mat-card-title class="sla-details-header card-toolbar2">
-      <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
+      <div style="white-space: nowrap;margin-top:10px;" class="card-title">{{"view.main.links"| translate}}</div>
       <span flex="5"></span>
 
     </mat-card-title>
@@ -62,8 +62,9 @@
       <mat-list flex layout-fill layout="column" class="list-item-table">
         <mat-list-item>
           <div layout="column" class="item-column md-list-item-text ">
-            <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple" (click)="viewSlaAssessments()">SLA
-              Assessments</button>
+            <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple" (click)="viewSlaAssessments()">
+              {{"views.main.sla-assessments"| translate}}
+            </button>
           </div>
         </mat-list-item>
 

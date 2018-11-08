@@ -3,7 +3,7 @@
       <div fxLayout="row" fxLayoutAlign="center">
         <span style="padding-top: 20px; padding-right: 20px;" class="card-title">{{"REPOSITORY.dialog.list.search" | translate}}</span>
         <mat-form-field style="padding-top: 10px;" class="search-form" fxFlex="78%">
-          <input placeholder="Filter" matInput (keyup)="search($event.target.value)" />
+          <input placeholder="{{'view.main.filter'| translate}}" matInput (keyup)="search($event.target.value)" />
         </mat-form-field>
       </div>
       <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
@@ -54,7 +54,7 @@
 
             <button mat-button color="primary" *ngIf="element.installed && element.updateAvailable" (click)="importTemplate(element)">
               <ng-md-icon icon="update" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">{{"REPOSITORY.dialog.list.update" | translate}}</span>
+              <span class="md-body-2">{{"view.main.update" | translate}}</span>
             </button>
           </mat-cell>
         </ng-container>

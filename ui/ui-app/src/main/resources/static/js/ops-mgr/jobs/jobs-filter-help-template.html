@@ -24,27 +24,27 @@
   <mat-dialog-content style="max-height:400px;overflow-y:auto;overflow-x:hidden;padding:0;margin:0;" layout="column">
     <mat-list>
       <mat-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
-        <span class="card-sub-header">Filter Help</span>
+        <span class="card-sub-header">{{"OPS-MGR.feeds.jobs-filter-help-template.filter-help"| translate}}</span>
       </mat-list-item>
 
       <mat-divider></mat-divider>
       <div class="layout-padding-left-right  with-padding">
-        <span class="card-sub-header">Filter Syntax</span>
+        <span class="card-sub-header">{{"OPS-MGR.feeds.jobs-filter-help-template.filter-syntax"| translate}}</span>
       </div>
 
       <div class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
         <span>{{ '{'+'field'+'}' + '{'+'operator'+'}' + '{'+'value'+'}' }}</span>
 
         <span style="padding:5px;"></span>
-        <span class="hint">'%' is used for a wildcard when using the '=~', LIKE, operator</span>
+        <span class="hint">{{"OPS-MGR.feeds.jobs-filter-help-template.wildcard-hint"| translate}}</span>
         <span style="padding:5px;"></span>
-        <span class="hint"> If no field/operator is specified a LIKE filter on the job name will be performed</span>
+        <span class="hint"> {{"OPS-MGR.feeds.jobs-filter-help-template.field-operator-hint"| translate}}</span>
       </div>
 
 
       <mat-divider></mat-divider>
       <div class="layout-padding-left-right  with-padding">
-        <span class="card-sub-header">Filter Fields</span>
+        <span class="card-sub-header">{{"OPS-MGR.feeds.jobs-filter-help-template.filter-fields"| translate}}</span>
       </div>
       <div class="filter-help-item layout-padding-left-right with-padding"
                      tabindex="-1"
@@ -56,7 +56,7 @@
       <mat-divider></mat-divider>
 
       <div class="layout-padding-left-right with-padding">
-        <span class="card-sub-header">Filter Operators</span>
+        <span class="card-sub-header">{{"OPS-MGR.feeds.jobs-filter-help-template.filter-operators"| translate}}</span>
       </div>
       <div class="filter-help-item layout-padding-left-right  with-padding"
                     tabindex="-1"
@@ -68,7 +68,7 @@
       <mat-divider></mat-divider>
 
       <div class="layout-padding-left-right  with-padding">
-        <span class="card-sub-header">Filter Examples</span>
+        <span class="card-sub-header">{{"OPS-MGR.feeds.jobs-filter-help-template.filter-examples"| translate}}</span>
       </div>
       <div class="filter-help-item layout-padding-left-right  with-padding"
                      tabindex="-1"

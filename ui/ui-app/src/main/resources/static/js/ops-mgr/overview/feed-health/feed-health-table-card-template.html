@@ -23,7 +23,7 @@
   
       <mat-toolbar style="display:flex">
           <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>  
-          <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+          <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
           </td-search-box>
       </mat-toolbar>
 

@@ -24,18 +24,18 @@
     <div flex layout="column">
       <!-- HEADER SECTION -->
     <div layout="row">
-      <span class="card-title kpi-header">Feed Statistics</span>
+      <span class="card-title kpi-header">{{"OPS-MGR.feeds.feed-stats-grid.feed-statistics"| translate}}</span>
       <span flex></span>
 
       <div layout="column">
         <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
-        <span class="md-caption">Last Refreshed</span>
+        <span class="md-caption">{{"OPS-MGR.feeds.feed-stats-grid.last-refreshed"| translate}}</span>
       </div>
     </div>
 
     <div layout="row">
       <md-input-container class="md-block layout-padding-top-bottom">
-        <label class="md-container-ignore label-small layout-padding-top">Time Frame</label>
+        <label class="md-container-ignore label-small layout-padding-top">{{"OPS-MGR.feeds.feed-stats-grid.time-frame"| translate}}</label>
         <md-select ng-model="vm.timeFrame" ng-change="vm.onTimeFrameChange()" aria-label="Rule Type">
           <md-option value="{{opt.value}}" ng-repeat="opt in vm.timeFrameOptions track by opt.value">{{ opt.label }}</md-option>
         </md-select>
@@ -65,14 +65,14 @@
             <span style="font-weight:bold;padding:5px;">{{vm.summaryStatistics.flowsRunning | number}} active</span>
           </div>
           <md-grid-tile-footer>
-            <h3>Flows </h3>
+            <h3>{{"OPS-MGR.feeds.feed-stats-grid.flows"| translate}} </h3>
           </md-grid-tile-footer>
         </md-grid-tile>
 
         <md-grid-tile class="yellow">
           <h3>{{vm.summaryStatistics.flowsStartedPerSecond | number}} / sec</h3>
           <md-grid-tile-footer>
-            <h3>Flow Rate</h3>
+            <h3>{{"OPS-MGR.feeds.feed-stats-grid.flow-rate"| translate}}</h3>
           </md-grid-tile-footer>
         </md-grid-tile>
 
@@ -80,10 +80,10 @@
         <md-grid-tile class="blue">
           <div layout="column" layout-align="start center" style="margin-top:-50px;">
           <nvd3 flex options="vm.eventsPieChartOptions" data="vm.eventsPieChartData" api="vm.eventsPieChartApi"></nvd3>
-            <span style="font-weight:bold;padding:5px; margin-top:-15px;">{{vm.failedEventsPercent}} % failed</span>
+            <span style="font-weight:bold;padding:5px; margin-top:-15px;">{{vm.failedEventsPercent}} % {{"OPS-MGR.feeds.feed-stats-grid.failed"| translate}}</span>
           </div>
           <md-grid-tile-footer>
-            <h3>Success/Failure Events</h3>
+            <h3>{{"OPS-MGR.feeds.feed-stats-grid.success-failure-events"| translate}}</h3>
           </md-grid-tile-footer>
         </md-grid-tile>
 
@@ -93,7 +93,7 @@
                       md-cols-md="2" md-colspan-sm="1" md-colspan-xs="1">
           <nvd3 flex options="vm.topNProcessorChartOptions" data="vm.topNProcessorChartData" api="vm.topNProcessorChartApi" config="{deepWatchOptions:true}"></nvd3>
           <md-grid-tile-footer>
-            <h3>Top {{vm.topN}} Average Processor Duration</h3>
+            <h3>{{"OPS-MGR.feeds.feed-stats-grid.processor-duration"| translate: vm.topN}}</h3>
           </md-grid-tile-footer>
         </md-grid-tile>
 
@@ -101,7 +101,7 @@
                       md-rowspan="2" md-colspan="3" md-colspan-sm="1" md-colspan-xs="1" md-cols-md="2">
           <nvd3 flex options="vm.summaryStatisticsChartOptions" data="vm.summaryStatisticsChartData" api="vm.summaryStatisticsChartApi"></nvd3>
           <md-grid-tile-footer>
-            <h3>Average Flow Duration</h3>
+            <h3>{{"OPS-MGR.feeds.feed-stats-grid.average-flow-duration"| translate}}</h3>
           </md-grid-tile-footer>
         </md-grid-tile>
 
@@ -112,7 +112,7 @@
             <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
           </div>
           <md-grid-tile-footer>
-            <h3>Flows Started/Completed</h3>
+            <h3>{{"OPS-MGR.feeds.feed-stats-grid.flow-started-completed"| translate}}</h3>
           </md-grid-tile-footer>
         </md-grid-tile>
 
@@ -123,8 +123,8 @@
     <!-- processor duration -->
     <div>
     <md-input-container class="md-block layout-padding-top-bottom">
-      <label class="md-container-ignore label-small layout-padding-top">Processor Metric</label>
-      <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="Rule Type">
+      <label class="md-container-ignore label-small layout-padding-top">{{"OPS-MGR.feeds.feed-stats-grid.processor-metric"| translate}}</label>
+      <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="{{'OPS-MGR.feeds.feed-stats-grid.rule-type'| translate}}">
         <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
       </md-select>
     </md-input-container>

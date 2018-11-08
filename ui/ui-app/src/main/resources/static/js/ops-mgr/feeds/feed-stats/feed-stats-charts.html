@@ -28,7 +28,7 @@
             <div fxLayout="column">
               <div fxLayout="row" fxLayoutAlign="space-between start" layout-fill>
                 <span class="card-title right-card-title-text">{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
-                <span style="margin-top: 5px;">Date Range: {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+                <span style="margin-top: 5px;">{{"OPS-MGR.feeds.feeds-stats-charts.date-range"| translate}} {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
               </div>
             </div>
             <div flex>
@@ -38,17 +38,17 @@
                 <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
               </div>
             </div>
-            <label *ngIf="isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
+            <label *ngIf="isZoomed" class="hint">{{"OPS-MGR.feeds.feeds-stats-charts.zoom-level-refresh"| translate}} '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
           </div>
           <span flex style="padding-left: 40px"></span>
           <div fxLayout="column">
             <div fxLayout="row">
               <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()">
-                <button mat-button> Refresh</button>
+                <button mat-button>{{"OPS-MGR.feeds.feeds-stats-charts.refresh" | translate}}</button>
               </div>
             </div>
             <mat-slide-toggle [color]="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
-              Auto Refresh
+              {{"OPS-MGR.feeds.feeds-stats-charts.auto-refresh" | translate}}
             </mat-slide-toggle>
           </div>
         </div>
@@ -75,13 +75,13 @@
               <div fxLayout="row">
                 <mat-slide-toggle class="md-primary" md-no-ink [aria-label]="'Auto Refresh'" [(ngModel)]="feedProcessorErrors.autoRefresh"
                            (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
-                  Auto Refresh: {{feedProcessorErrors.autoRefreshMessage}}
+                  {{"OPS-MGR.feeds.feeds-stats-charts.auto-refresh" | translate}}: {{feedProcessorErrors.autoRefreshMessage}}
                 </mat-slide-toggle>
                 <button mat-button class="md-icon-button" *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
                   <mat-icon>refresh</mat-icon>
                 </button>
               </div>
-              <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
+              <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin-top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
             </div>
           </div>
         </mat-toolbar>
@@ -204,7 +204,7 @@
               <mat-input-container class="md-block layout-padding-top-bottom">
                 <label class="md-container-ignore label-small layout-padding-top">{{"views.feed-stats-charts.PM" | translate}}</label>
                 <mat-select [(ngModel)]="selectedProcessorStatisticFunction" (change)="onProcessorChartFunctionChanged()" aria-label="Rule Type">
-                  <mat-option [value]="opt" *ngFor="let opt of processorStatsFunctions">{{  'views.feed-stats-charts.' + opt | translate}}</mat-option>
+                  <mat-option [value]="opt" *ngFor="let opt of processorStatsFunctions">{{ 'views.feed-stats-charts.' + opt | translate}}</mat-option>
                 </mat-select>
               </mat-input-container>
 
@@ -303,7 +303,7 @@
 
                 <mat-list-item style="padding: 16px;">
                   <div fxLayout="column" class="layout-padding-top-bottom layout-padding-left-right" fxLayoutAlign="space-between start">
-                    <div class="md-subhead layout-padding-bottom">Links</div>
+                    <div class="md-subhead layout-padding-bottom">{{"view.main.links"| translate}}</div>
                     <div class="layout-padding-left ">
                        <button mat-button color="primary" (click)="gotoFeedDetails($event)">{{"views.feed-stats-charts.FeedD" | translate}}</button>
                     </div>

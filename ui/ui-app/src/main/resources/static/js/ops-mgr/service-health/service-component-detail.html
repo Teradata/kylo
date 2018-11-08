@@ -19,39 +19,39 @@
   -->
   <div fxLayout="row">
       <div fxFlex="80">
-  <filtered-paginated-table-view 
-  [cardTitle]="cardTitle"
-  [filteredData]="filteredData"
-  [columns]="columns"
-  [clickable]="false"
-  [sortable]="true"
-  [sortOrder]="sortOrder"
-  [sortBy]="sortBy"
-  [firstLast]="false"
-  [pageSize]="pageSize"
-  [filteredTotal]="filteredTotal"
-  [allowedPageSize]="[5,10,20,50]"
-  (sortChanged)="sort($event)"
-  (searchDebounced)="search($event)"
-  (pageSizeChanged)="onPageSizeChange($event)"
->
+        <filtered-paginated-table-view 
+            [cardTitle]="cardTitle"
+            [filteredData]="filteredData"
+            [columns]="columns"
+            [clickable]="false"
+            [sortable]="true"
+            [sortOrder]="sortOrder"
+            [sortBy]="sortBy"
+            [firstLast]="false"
+            [pageSize]="pageSize"
+            [filteredTotal]="filteredTotal"
+            [allowedPageSize]="[5,10,20,50]"
+            (sortChanged)="sort($event)"
+            (searchDebounced)="search($event)"
+            (pageSizeChanged)="onPageSizeChange($event)"
+            >
 
-<ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
-        <span >
-            <mat-icon class="{{value.iconstyle}}" size="20" options='{"rotation": "clock"}' >
-                    {{value.icon}}
-            </mat-icon>
-            {{value.healthText}}
-        </span>
-    </ng-template>
-    <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
-            <span>{{row.latestTimestamp | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-    </ng-template>
-</filtered-paginated-table-view>
+        <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+            <span >
+                <mat-icon class="{{value.iconstyle}}" size="20" options='{"rotation": "clock"}' >
+                        {{value.icon}}
+                </mat-icon>
+                {{value.healthText}}
+            </span>
+        </ng-template>
+        <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
+                <span>{{row.latestTimestamp | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+        </ng-template>
+    </filtered-paginated-table-view>
 </div>
 <mat-card fxFlex="20">
     <mat-card-title class="card-title">
-            Component Details
+            {{"OPS-MGR.service-health.component-details"| translate}}
     </mat-card-title>
     <mat-card-content>
         <mat-list fxFlex fxLayoutFill fxLayout="column" class="list-item-table">
@@ -70,7 +70,7 @@
             <mat-list-item *ngIf="component && component.checkDate !== null" class="ListItemContainer">
                 <div layout="column"  class="item-column md-list-item-text">
                     <span class="item-title">{{component.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                    <span class="column-title column-title-bottom">Last Checked</span>
+                    <span class="column-title column-title-bottom">{{"OPS-MGR.service-health.last-checked"| translate}}</span>
                 </div>
             </mat-list-item>
 

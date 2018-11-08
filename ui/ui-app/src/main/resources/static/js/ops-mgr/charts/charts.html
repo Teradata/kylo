@@ -20,7 +20,7 @@
 <div flex fxLayout="row">
     <mat-card fxFlex="80">
         <mat-card-title style="white-space:nowrap" class="card-title">
-            Pivot Charts
+            {{"OPS-MGR.charts.pivot-title"| translate}}
         </mat-card-title>
         <mat-card-content>
             <div *ngIf="loading" style="width:100%">
@@ -34,7 +34,7 @@
     </mat-card>
     <mat-card fxFlex="20" style="height: 100%;" class="filter-chart">
         <mat-card-title style="white-space:nowrap" class="card-title">
-            Filter Chart
+            {{"OPS-MGR.charts.filter-title"| translate}}
         </mat-card-title>
         <mat-card-content>
             <div *ngIf="message != ''" [ngClass]="{'error':isWarning}" style="padding-left:25px;">
@@ -44,7 +44,7 @@
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
                         <mat-form-field>
-                            <label>Feed</label>
+                            <label>{{"views.main.feed-manage-narrow"| translate}}</label>
                             <mat-select multiple [(ngModel)]="selectedFeedNames" (change)="feedsSelected($event)">
                                 <mat-option *ngFor="let feedName of feedNames" [value]="feedName">
                                     {{feedName}}
@@ -57,7 +57,7 @@
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
                         <mat-form-field>
-                            <input matInput [matDatepicker]="startPicker" placeholder="Start Date">
+                            <input matInput [matDatepicker]="startPicker" placeholder="{{'OPS-MGR.charts.start-date-placeholder'| translate}}">
                             <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
                             <mat-datepicker #startPicker></mat-datepicker>
                         </mat-form-field>
@@ -66,7 +66,7 @@
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
                         <mat-form-field>
-                            <input matInput [matDatepicker]="endPicker" placeholder="End Date">
+                            <input matInput [matDatepicker]="endPicker" placeholder="{{'OPS-MGR.charts.end-date-placeholder'| translate}}">
                             <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
                             <mat-datepicker #endPicker></mat-datepicker>
                         </mat-form-field>
@@ -88,7 +88,7 @@
                 <mat-divider></mat-divider>
                 <mat-list-item class="ListItemContainer" layout-align="space-between start" fxLayout="column">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
-                        <button mat-button class="border-btn" color="primary" (click)="refreshPivotTable()">Update</button>
+                        <button mat-button class="border-btn" color="primary" (click)="refreshPivotTable()">{{"view.main.update"| translate}}</button>
                     </div>
                 </mat-list-item>
             </mat-list>

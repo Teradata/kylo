@@ -21,9 +21,9 @@
   <mat-toolbar style="color: rgb(255,255,255);">
     <div class="md-toolbar-tools" style="background-color: rgb(52,131,186);">
       <h4>
-        <ng-md-icon size="24" md-icon icon="vector_triangle" aria-label="Services Details" ></ng-md-icon>
+        <ng-md-icon size="24" md-icon icon="vector_triangle" aria-label="{{'OPS-MGR.overview.service-details'| translate}}" ></ng-md-icon>
         <!-- titleCase pipe on status -->
-        <span>Service Status {{services.length}} {{status}} </span>
+        <span>{{"OPS-MGR.overview.services-details-dialog.service-status"| translate}} {{services.length}} {{status}} </span>
       </h4>
       <span flex></span>
     </div>
@@ -32,15 +32,15 @@
     <mat-list class="md-dense" flex>
       <mat-list-item style="height: auto; margin: 16px -16px;" class="md-3-line" *ngFor="let item of services">
         <div style="margin-bottom: 16px;" class="md-list-item-text" layout="column">
-          <a href (click)="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span *ngIf="item.componentName">, {{item.componentName}}</span> <span *ngIf="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} Alerts</span></a>
+          <a href (click)="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span *ngIf="item.componentName">, {{item.componentName}}</span> <span *ngIf="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} {{"views.main.alerts"| translate}}</span></a>
           <div style="line-height: 1.05; font-size: 13px;" *ngIf="item.componentMessage != null">{{item.componentMessage}}</div>
-          <div style="line-height: 1.05; font-size: 12px;">Last checked: {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</div>
+          <div style="line-height: 1.05; font-size: 12px;">{{"OPS-MGR.overview.services-details-dialog.last-checked"| translate}} {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</div>
         </div>
         <mat-divider ></mat-divider>
       </mat-list-item>
       <mat-list-item style="height: auto;" class="md-3-line" *ngIf="services.length == 0">
         <div class="md-list-item-text" layout="column">
-          No services found matching your criteria
+          {{"OPS-MGR.overview.services-details-dialog.no-service-found" | translate}}
         </div>
       </mat-list-item>
     </mat-list>

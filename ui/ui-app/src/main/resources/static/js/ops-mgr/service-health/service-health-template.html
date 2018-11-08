@@ -19,24 +19,24 @@
   -->
 
   <filtered-paginated-table-view 
-  [cardTitle]="cardTitle"
-  [filteredData]="filteredData"
-  [columns]="columns"
-  [clickable]="true"
-  [sortable]="true"
-  [sortOrder]="sortOrder"
-  [sortBy]="sortBy"
-  [firstLast]="false"
-  [pageSize]="pageSize"
-  [filteredTotal]="filteredTotal"
-  [allowedPageSize]="[5,10,20,50]"
-  (rowClicked)="serviceDetails($event)"
-  (sortChanged)="sort($event)"
-  (searchDebounced)="search($event)"
-  (pageSizeChanged)="onPageSizeChange($event)"
->
+    [cardTitle]="cardTitle"
+    [filteredData]="filteredData"
+    [columns]="columns"
+    [clickable]="true"
+    [sortable]="true"
+    [sortOrder]="sortOrder"
+    [sortBy]="sortBy"
+    [firstLast]="false"
+    [pageSize]="pageSize"
+    [filteredTotal]="filteredTotal"
+    [allowedPageSize]="[5,10,20,50]"
+    (rowClicked)="serviceDetails($event)"
+    (sortChanged)="sort($event)"
+    (searchDebounced)="search($event)"
+    (pageSizeChanged)="onPageSizeChange($event)"
+    >
 
-<ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+    <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
         <span >
             <mat-icon size="20" options='{"rotation": "clock"}' >
                     {{value.icon}}

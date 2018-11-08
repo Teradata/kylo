@@ -22,6 +22,7 @@ import { ServiceComponentHealthDetailsComponent } from "./ServiceComponentHealth
 import { ServiceHealthComponent } from "./ServiceHealthComponent";
 import { ServiceHealthDetailsComponent } from "./ServiceHealthDetailsComponent";
 import { MatIconModule } from "@angular/material/icon";
+import { TranslateModule } from "@ngx-translate/core";
 
 
 @NgModule({
@@ -46,6 +47,7 @@ import { MatIconModule } from "@angular/material/icon";
         MatIconModule,
         MatListModule,
         FlexLayoutModule,
+        TranslateModule.forChild(),
         UIRouterModule.forChild({states: serviceHealthStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],

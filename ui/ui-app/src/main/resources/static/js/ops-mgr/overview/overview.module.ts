@@ -93,7 +93,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         MatDialogModule,
         FormsModule,
         ReactiveFormsModule,
-        TranslateModule,
+        TranslateModule.forChild(),
         MatFormFieldModule,
         MatCardModule,
         MatCheckboxModule,

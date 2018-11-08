@@ -159,7 +159,7 @@ export default class UserDetailsComponent {
      * @returns {Array.<string>} the group titles for this user
      */
     getGroupTitles () {
-        return _.map(this.model.groups, this.getGroupTitle);
+        return _.map(this.model.groups, (group :any) => {this.getGroupTitle(group)});
     };
 
     /**

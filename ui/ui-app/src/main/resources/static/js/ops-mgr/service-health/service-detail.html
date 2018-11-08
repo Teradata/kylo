@@ -51,7 +51,7 @@
     </div>
     <mat-card fxFlex="20">
         <mat-card-title>
-                <div class="card-title">Service Details</div>
+                <div class="card-title">{{"OPS-MGR.service-health.service-details"| translate}}</div>
         </mat-card-title>
         <mat-card-content>
             <mat-list fxFlex fxLayoutFill fxLayout="column" class="list-item-table">
@@ -70,7 +70,7 @@
                 <mat-list-item *ngIf="!loading && service && service.checkDate !== null" class="ListItemContainer">
                     <div layout="column"  class="item-column md-list-item-text">
                         <span class="item-title">{{service.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-                        <span class="column-title column-title-bottom">Last Checked</span>
+                        <span class="column-title column-title-bottom">{{"OPS-MGR.service-health.last-checked"| translate}}</span>
                     </div>
                 </mat-list-item>
             </mat-list>

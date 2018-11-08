@@ -22,7 +22,7 @@
 
         <mat-toolbar style="display:flex">
             <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
-            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="Filter" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
             </td-search-box>
             <button class="md-icon-button filter-help-button md-button md-kylo-theme md-ink-ripple" 
                     style="background-color: white; border: 0;"
