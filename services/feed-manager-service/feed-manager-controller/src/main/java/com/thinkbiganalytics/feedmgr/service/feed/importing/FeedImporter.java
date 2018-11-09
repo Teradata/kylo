@@ -524,6 +524,9 @@ public class FeedImporter {
                         if(dataSource != null){
                             List<String> newIds = metadata.getDataTransformation().getCatalogDataSourceIds().stream().map(id -> id.equalsIgnoreCase(datasourceId) ? catalogDataSourceId : id ).collect(Collectors.toList());
                             metadata.getDataTransformation().setCatalogDataSourceIds(newIds);
+                            String script = metadata.getDataTransformation().getDataTransformScript();
+                            script = script.replaceAll(datasourceId,catalogDataSourceId);
+                            metadata.getDataTransformation().setDataTransformScript(script);
                             chartModelReplacements.put(datasourceId, catalogDataSourceId);
                             return true;
                         }
