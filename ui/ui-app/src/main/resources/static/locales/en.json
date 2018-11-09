@@ -1329,7 +1329,21 @@
                 "IMPORT_FROM_NIFI_TITLE":"Import from NiFi",
                 "IMPORT_FROM_FILE_DESCRIPTION":"Import from a Kylo archive or NiFi template file",
                 "IMPORT_FROM_NIFI_DESCRIPTION":"Import a NiFi template directly from the current environment"
-            }
+            },
+            "ORDER":{
+                "ORDER_SAVED":"Saved the template order",
+                "ERROR_IN_SAVE":"Error ordering templates {{error}}",
+                "CHANGE_ORDER":"Change Template Order",
+                "CHANGE_ORDER_HINT":"Drag the templates below to adjust their order at feed creation time. "
+            },
+            "STEPPER":{
+                "SELECT_TEMP":"Select Template",
+                "REGISTER":"Register",
+                "ACCESS_CONTROL":"Access Control",
+                "ADDITIONAL_PROP":"Additional Properties",
+                "INPUT_PROP":"Input Properties"
+            },
+            "UPDATE_AVAILABLE":"Update Available"
         },
         "business.metadata.property.def":"Property Definition",
         "business.metadata.feeds.cat.define":"Define standard properties available to feeds and categories",

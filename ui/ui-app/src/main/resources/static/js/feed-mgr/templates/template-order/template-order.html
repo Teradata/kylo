@@ -18,8 +18,8 @@
   #L%
   -->
   <div layout="column">
-      <div class="md-subhead left-aligned">Change Template Order</div>
-      <span class="hint">Drag the templates below to adjust their order at feed creation time. </span>
+      <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.ORDER.CHANGE_ORDER' | translate}}</div>
+      <span class="hint">{{'FEEDMGR.TEMPLATES.ORDER.CHANGE_ORDER_HINT' | translate}}</span>
       <ul class="list-group" dnd-sortable-container [sortableData]="model" style="list-style-type: none;">
         <li *ngFor="let item of model; 
                     let i = index" 
