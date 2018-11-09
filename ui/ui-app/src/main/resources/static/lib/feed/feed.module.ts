@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 
-import {DynamicFormModule} from "../../js/feed-mgr/shared/dynamic-form/dynamic-form.module";
+import {DynamicFormModule} from "../dynamic-form/dynamic-form.module";
 import {ProcessorFormComponent} from "./processor/processor-form.component";
 
 @NgModule({
@@ -10,7 +10,7 @@ import {ProcessorFormComponent} from "./processor/processor-form.component";
         ProcessorFormComponent
     ],
     exports: [
-        ProcessorFormComponent
+        ProcessorFormComponent,
     ],
     imports: [
         CommonModule,

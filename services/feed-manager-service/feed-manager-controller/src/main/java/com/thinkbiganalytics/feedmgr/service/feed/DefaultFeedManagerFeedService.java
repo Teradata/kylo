@@ -1506,6 +1506,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         });
     }
 
+    private boolean isTreatSourceDataSetsAsSample(FeedMetadata feedMetadata, RegisteredTemplate template){
+        return template.isDataTransformation() && template.getInputProcessors().size() >1;
+    }
+
     /**
      * Assign the feed sources/destinations
      *
@@ -1537,6 +1541,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             .map(fs -> fs.getDatasource().get().getId())
             .collect(Collectors.toSet());
 
+
+        boolean isSampleDataSet = isTreatSourceDataSetsAsSample(feed,template);
         //find Definition registration
         derivedDatasourceFactory.populateDatasources(feed, template, sourceDatasources, destinationDatasources);
 
@@ -1578,7 +1584,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
                 newDataSetIds.add(addedDataSet.getId());
                 catalogModelTransform.updateDataSet(dataSet, addedDataSet);
-                feedProvider.ensureFeedSource(domainFeedId, addedDataSet.getId());
+                feedProvider.ensureFeedSource(domainFeedId, addedDataSet.getId(), isSampleDataSet);
             });
 
             // Remove any data set sources no longer referenced in the updated feed.

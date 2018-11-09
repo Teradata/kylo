@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.core.feed;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
@@ -768,6 +769,11 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public FeedSource ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId, boolean isSample) {
         return null;
     }
 

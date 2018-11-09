@@ -1,7 +1,7 @@
 import {Observable} from "rxjs/Observable";
 import {DataCategory} from "../../column-delegate";
 import {QueryResultColumn} from "../..";
-import {DynamicFormDialogData} from "../../../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {DynamicFormDialogData} from "../../../../../../lib/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
 import {ColumnForm} from "../../core/columns/column-form";
 
 /**

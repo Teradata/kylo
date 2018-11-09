@@ -2,7 +2,7 @@ import {Component, EventEmitter, Inject, Injector, Output} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {Feed} from "../../model/feed/feed.model";
 import {FormGroup} from "@angular/forms";
-import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
+import {PolicyInputFormService} from "../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service";
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {CloneUtil} from "../../../common/utils/clone-util";

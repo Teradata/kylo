@@ -5,7 +5,7 @@ import {Subject} from "rxjs/Subject";
 import {SaveFeedResponse} from "../../../../feeds/define-feed-ng2/model/save-feed-response.model";
 import {Feed} from "../../../../model/feed/feed.model";
 import {FeedDataTransformation} from "../../../../model/feed-data-transformation";
-import {KyloObject} from "../../../../../common/common.model";
+import {KyloObject} from "../../../../../../lib/common/common.model";
 
 export namespace FlowChart {
 

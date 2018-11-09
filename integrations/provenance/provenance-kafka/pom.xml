@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-provenance</artifactId>
-    <version>0.9.2-SNAPSHOT</version>
+    <version>0.10.0-SNAPSHOT</version>
   </parent>
   <properties>
     <scala.version>2.11.0</scala.version>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-provenance-api</artifactId>
-      <version>0.9.2-SNAPSHOT</version>
+      <version>0.10.0-SNAPSHOT</version>
     </dependency>
 
 

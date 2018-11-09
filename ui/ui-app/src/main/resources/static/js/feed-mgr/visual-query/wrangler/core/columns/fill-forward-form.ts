@@ -1,6 +1,6 @@
 import {ColumnUtil} from "../column-util";
 import {ColumnForm} from "./column-form";
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnController} from "../../column-controller";
 import {FormGroup} from "@angular/forms";
 

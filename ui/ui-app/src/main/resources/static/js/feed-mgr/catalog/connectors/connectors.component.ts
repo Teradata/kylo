@@ -35,7 +35,7 @@ export class ConnectorsComponent {
      */
     searchTerm: string;
 
-    constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loading: TdLoadingService, private state: StateService) {
+    constructor(protected catalog: CatalogService, protected dataTable: TdDataTableService, protected dialog: TdDialogService, protected loading: TdLoadingService, protected state: StateService) {
     }
 
     public ngOnInit() {
@@ -57,7 +57,7 @@ export class ConnectorsComponent {
     /**
      * Updates filteredConnectors by filtering availableConnectors.
      */
-    private filter() {
+    protected filter() {
         let filteredConnectorTypes = this.dataTable.filterData(this.availableConnectors, this.searchTerm, true);
         filteredConnectorTypes = this.dataTable.sortData(filteredConnectorTypes, "title");
         this.filteredConnectors = filteredConnectorTypes;

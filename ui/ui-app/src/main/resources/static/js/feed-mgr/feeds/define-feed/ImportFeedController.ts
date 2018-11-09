@@ -1,10 +1,10 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {Common} from "../../../common/CommonTypes";
 import Map = Common.Map;
 import '../module-require';
 import './module-require';
 import {ImportComponentOption, ImportComponentType, ImportService} from '../../services/ImportComponentOptionTypes';
+import {Common} from '../../../../lib/common/CommonTypes';
 
 const moduleName = require('./module-name');
 

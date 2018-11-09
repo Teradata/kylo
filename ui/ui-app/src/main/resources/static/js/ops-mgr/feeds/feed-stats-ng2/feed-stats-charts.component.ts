@@ -3,7 +3,7 @@ import {OperationsRestUrlConstants} from "../../../services/operations-rest-url-
 const d3 = require('d3');
 import * as _ from "underscore";
 import * as moment from "moment";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import {Component, Input, OnInit, OnDestroy, Output, EventEmitter} from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import {ProvenanceEventStatsServiceNg2} from "./provenance-event-stats.service";

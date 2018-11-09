@@ -1,7 +1,7 @@
 import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 
-import {RestResponseStatus, RestResponseStatusType} from "../../../../../../common/common.model";
+import {RestResponseStatus, RestResponseStatusType} from "../../../../../../../lib/common/common.model";
 import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
 import {OpsManagerFeedService} from "../../../../../../ops-mgr/services/ops-manager-feed.service";
 import {BroadcastService} from "../../../../../../services/broadcast-service";

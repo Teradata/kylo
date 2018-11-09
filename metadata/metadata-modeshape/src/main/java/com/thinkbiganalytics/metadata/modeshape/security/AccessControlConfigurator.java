@@ -21,8 +21,11 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.Connector;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
+import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
@@ -38,6 +41,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnector;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
@@ -47,6 +51,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -69,11 +74,15 @@ import javax.jcr.Node;
  * Utility methods for setting up entity access control during a fresh installation or when 
  * entity access control is turned on at a later time.
  */
+// TODO: Create a builder for defining new entity-level actions and role assignments
 public class AccessControlConfigurator {
 
 
     @Inject
     private MetadataAccess metadata;
+    
+    @Inject
+    private AccessController accessController;
 
     @Inject
     private SecurityRoleProvider roleProvider;
@@ -86,6 +95,9 @@ public class AccessControlConfigurator {
 
     @Inject
     private FeedProvider feedProvider;
+    
+    @Inject
+    private ConnectorProvider connectorProvider;
 
     @Inject
     private FeedManagerTemplateProvider feedManagerTemplateProvider;
@@ -97,7 +109,61 @@ public class AccessControlConfigurator {
     private DataSourceProvider dataSourceProvider;
 
     private volatile boolean entityRolesConfigured = false;
-    
+
+    /**
+     * Creates a new role for a particular entity type.  This method must be call within a metadata transaction.
+     * @param entityName the name of the entity type (generally from SecurityRole.<entity type>)
+     * @param roleName the system name of the role
+     * @param title the title of the role
+     * @param desc a description of the role
+     * @param actions any additional permitted actions allowed by this role
+     * @return the new role instance
+     */
+    public SecurityRole createDefaultRole(String entityName, String roleName, String title, String desc, Action... actions) {
+        Supplier<SecurityRole> createIfNotFound = () -> {
+            SecurityRole role = roleProvider.createRole(entityName, roleName, title, desc);
+            role.setPermissions(actions);
+            return role;
+        };
+
+        Function<SecurityRole, SecurityRole> ensureActions = (role) -> {
+            role.setDescription(desc);
+            if (actions != null) {
+                List<Action> actionsList = Arrays.asList(actions);
+                boolean needsUpdate = actionsList.stream().anyMatch(action -> !role.getAllowedActions().hasPermission(action));
+                if (needsUpdate) {
+                    role.setPermissions(actions);
+                }
+            }
+            return role;
+        };
+
+        try {
+            return roleProvider.getRole(entityName, roleName).map(ensureActions).orElseGet(createIfNotFound);
+
+        } catch (RoleNotFoundException e) {
+            return createIfNotFound.get();
+        }
+    }
+
+    /**
+     * Creates a new role for a particular entity type; using an existing base role for initial definition of permissions.
+     * This method must be call within a metadata transaction.
+     * @param entityName the name of the entity type (generally from SecurityRole.<entity type>)
+     * @param roleName the system name of the role
+     * @param title the title of the role
+     * @param desc a description of the role
+     * @param baseRole a base role from which to derive this new role's allowed permissions
+     * @param actions any additional permitted actions allowed by this role
+     * @return the new role instance
+     */
+    public SecurityRole createDefaultRole(@Nonnull final String entityName, @Nonnull final String roleName, @Nonnull final String title, final String desc, @Nonnull final SecurityRole baseRole,
+                                             final Action... actions) {
+        final Stream<Action> baseActions = baseRole.getAllowedActions().getAvailableActions().stream().flatMap(AllowableAction::stream);
+        final Action[] allowedActions = Stream.concat(baseActions, Stream.of(actions)).toArray(Action[]::new);
+        return createDefaultRole(entityName, roleName, title, desc, allowedActions);
+    }
+  
     public void configureServicesActions() {
         metadata.commit(() -> {
             Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
@@ -112,14 +178,61 @@ public class AccessControlConfigurator {
         if (! this.entityRolesConfigured) {
             this.entityRolesConfigured = metadata.commit(() -> {
                 createDefaultRoles();
+                createDefaultCatalogRoles();
 
-                ensureTemplateAccessControl();
-                ensureCategoryAccessControl();
-                ensureFeedAccessControl();
-                ensureDataSourceAccessControl();
+                if (this.accessController.isEntityAccessControlled()) {
+                    ensureTemplateAccessControl();
+                    ensureCategoryAccessControl();
+                    ensureFeedAccessControl();
+                    ensureDataSourceAccessControl();
+                    ensureCatalogAccessControl();
+                }
+                
                 return true;
             }, MetadataAccess.SERVICE);
         }
+    }
+
+    /**
+     * Adds the default roles introduced by the catalog architecture.
+     */
+    public void createDefaultCatalogRoles() {
+        createDefaultRole(SecurityRole.CONNECTOR, "readOnly", "Read-Only", "Allows a user to view information about the connector",
+                          ConnectorAccessControl.ACCESS_CONNECTOR);
+        createDefaultRole(SecurityRole.CONNECTOR, "admin", "Admin", "Allows a user to edit the connector information plus activate/deactivate it, change its permissions, and create data sources from it",
+                          ConnectorAccessControl.ACCESS_CONNECTOR,
+                          ConnectorAccessControl.EDIT_CONNECTOR,
+                          ConnectorAccessControl.CREATE_DATA_SOURCE,
+                          ConnectorAccessControl.ACTIVATE_CONNECTOR,
+                          ConnectorAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.CONNECTOR, "use", "Use", "Allows a user to view information about the connector plus create data sources from it",
+                          ConnectorAccessControl.ACCESS_CONNECTOR,
+                          ConnectorAccessControl.CREATE_DATA_SOURCE);
+    }
+
+    /**
+     * Ensures that the entity-level access control is setup up for the entities introduced by the connector architecture.
+     */
+    public void ensureCatalogAccessControl() {
+        List<Connector> connectors = connectorProvider.findAll();
+        List<SecurityRole> conntorRoles = this.roleProvider.getEntityRoles(SecurityRole.CONNECTOR);
+        Optional<AllowedActions> connectorActions = this.actionsProvider.getAvailableActions(AllowedActions.CONNECTOR);
+        
+        connectors.stream().forEach(conn -> {
+            Principal owner = conn.getOwner() != null ? conn.getOwner() : JcrMetadataAccess.getActiveUser();
+            connectorActions.ifPresent(actions -> ((JcrConnector) conn).enableAccessControl((JcrAllowedActions) actions, owner, conntorRoles));
+        });
+        
+        List<DataSource> dataSources = dataSourceProvider.findAll();
+        List<SecurityRole> dataSourceRoles = this.roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+        Optional<AllowedActions> dataSourceActions = this.actionsProvider.getAvailableActions(AllowedActions.DATASOURCE);
+
+        dataSources.stream()
+            .map(JcrDataSource.class::cast)
+            .forEach(dataSource -> {
+                Principal owner = dataSource.getOwner() != null ? dataSource.getOwner() : JcrMetadataAccess.getActiveUser();
+                dataSourceActions.ifPresent(actions -> dataSource.enableAccessControl((JcrAllowedActions) actions, owner, dataSourceRoles));
+            });
     }
 
     private void createDefaultRoles() {
@@ -189,40 +302,6 @@ public class AccessControlConfigurator {
         createDefaultRole(SecurityRole.PROJECT, ProjectAccessControl.ROLE_READER, "Read-Only", "Allows a user to view the project", ProjectAccessControl.ACCESS_PROJECT);
     }
 
-    protected SecurityRole createDefaultRole(@Nonnull final String entityName, @Nonnull final String roleName, @Nonnull final String title, final String desc, @Nonnull final SecurityRole baseRole,
-                                             final Action... actions) {
-        final Stream<Action> baseActions = baseRole.getAllowedActions().getAvailableActions().stream().flatMap(AllowableAction::stream);
-        final Action[] allowedActions = Stream.concat(baseActions, Stream.of(actions)).toArray(Action[]::new);
-        return createDefaultRole(entityName, roleName, title, desc, allowedActions);
-    }
-
-    protected SecurityRole createDefaultRole(String entityName, String roleName, String title, String desc, Action... actions) {
-        Supplier<SecurityRole> createIfNotFound = () -> {
-            SecurityRole role = roleProvider.createRole(entityName, roleName, title, desc);
-            role.setPermissions(actions);
-            return role;
-        };
-
-        Function<SecurityRole, SecurityRole> ensureActions = (role) -> {
-            role.setDescription(desc);
-            if (actions != null) {
-                List<Action> actionsList = Arrays.asList(actions);
-                boolean needsUpdate = actionsList.stream().anyMatch(action -> !role.getAllowedActions().hasPermission(action));
-                if (needsUpdate) {
-                    role.setPermissions(actions);
-                }
-            }
-            return role;
-        };
-
-        try {
-            return roleProvider.getRole(entityName, roleName).map(ensureActions).orElseGet(createIfNotFound);
-
-        } catch (RoleNotFoundException e) {
-            return createIfNotFound.get();
-        }
-    }
-
     private void ensureFeedAccessControl() {
         List<Feed> feeds = feedProvider.findAll();
         if (feeds != null) {
@@ -262,24 +341,16 @@ public class AccessControlConfigurator {
     }
     
     private void ensureDataSourceAccessControl() {
-        List<Datasource> oldDatasources = legacyDatasourceProvider.getDatasources();
-        List<DataSource> newDataSources = dataSourceProvider.findAll();
+        List<Datasource> datasources = legacyDatasourceProvider.getDatasources();
         List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
         Optional<AllowedActions> allowedActions = this.actionsProvider.getAvailableActions(AllowedActions.DATASOURCE);
 
-        oldDatasources.stream()
+        datasources.stream()
             .filter(JcrUserDatasource.class::isInstance)
             .map(JcrUserDatasource.class::cast)
             .forEach(datasource -> {
                 Principal owner = datasource.getOwner() != null ? datasource.getOwner() : JcrMetadataAccess.getActiveUser();
                 allowedActions.ifPresent(actions -> datasource.enableAccessControl((JcrAllowedActions) actions, owner, roles));
-            });
-        
-        newDataSources.stream()
-            .map(JcrDataSource.class::cast)
-            .forEach(dataSource -> {
-                Principal owner = dataSource.getOwner() != null ? dataSource.getOwner() : JcrMetadataAccess.getActiveUser();
-                allowedActions.ifPresent(actions -> dataSource.enableAccessControl((JcrAllowedActions) actions, owner, roles));
             });
     }
 

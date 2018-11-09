@@ -232,6 +232,10 @@ export default class AccessConstants {
 
     public static ADMIN_METADATA: string = "adminMetadata";
 
+    public static ACCESS_CONNECTOR: string = "accessConnectors";
+
+    public static ADMIN_CONNECTOR_ACCESS: string = "adminConnectors";
+
     public static ENTITY_ACCESS = {
         CATEGORY: {
             //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
@@ -261,6 +265,12 @@ export default class AccessConstants {
             EDIT_DETAILS: "editDatasourceDetails",
             DELETE_DATASOURCE: "deleteDatasource",
             CHANGE_DATASOURCE_PERMISSIONS: "changeDatasourcePermissions"
+        },
+        CONNECTOR: {
+            EDIT_CONNECTOR:"editConnector",
+            CHANGE_CONNECTOR_PERMISSIONS:"changeConnectorPermissions",
+            ACTIVATE_CONNECTOR:"activateConnector",
+            CREATE_DATA_SOURCE:"createDataSource"
         }
     };
 
@@ -312,6 +322,8 @@ export default class AccessConstants {
         SERVICE_DETAILS: {state: "service-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_LEVEL_ASSESSMENTS: {state: "service-level-assessments", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
-        SERVICE_LEVEL_ASSESSMENT: {state: "service-level-assessment", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]}
+        SERVICE_LEVEL_ASSESSMENT: {state: "service-level-assessment", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
+        ADMIN_CONNECTORS:{state:"catalog.admin-connectors",permissions:[AccessConstants.ADMIN_CONNECTOR_ACCESS]},
+        ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTOR_ACCESS]}
     }
 }

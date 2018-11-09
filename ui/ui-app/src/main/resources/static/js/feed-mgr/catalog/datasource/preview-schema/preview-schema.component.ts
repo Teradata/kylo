@@ -1,31 +1,24 @@
 import * as _ from "underscore";
 
 import {HttpClient} from "@angular/common/http";
-import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
-import {Component, Input, OnInit, ChangeDetectionStrategy, Injector, Inject, EventEmitter, Output, ChangeDetectorRef} from "@angular/core";
+import {StateService} from "@uirouter/angular";
+import {Component, EventEmitter, Injector, Input, OnInit, Output} from "@angular/core";
 import {DomSanitizer} from "@angular/platform-browser";
 import {SelectionService, SingleSelectionPolicy} from "../../api/services/selection.service";
 import {DataSource} from "../../api/models/datasource";
 import {Node} from '../../api/models/node';
-import {MAT_DIALOG_DATA, MatDialog} from "@angular/material/dialog";
+import {MatDialog} from "@angular/material/dialog";
 import {SatusDialogComponent} from "../../dialog/status-dialog.component";
-import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import {MatDialogRef} from "@angular/material/dialog/typings/dialog-ref";
-import {TransformResponse} from "../../../visual-query/wrangler/model/transform-response";
-import {QueryResultColumn} from "../../../visual-query/wrangler/model/query-result-column";
-import {QueryEngine} from "../../../visual-query/wrangler/query-engine";
-//import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
-import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
+import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
 import {PreviewUploadDataSet} from "./model/preview-upload-data-set";
 import {SchemaParseSettingsDialog} from "./schema-parse-settings-dialog.component";
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 
-import {TableViewModel, TableColumn} from "./model/table-view-model"
-import {Common} from "../../../../common/CommonTypes"
+import {TableColumn} from "./model/table-view-model"
 
 import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
-import {FileMetadata} from "./model/file-metadata";
 import {FileMetadataTransformResponse} from "./model/file-metadata-transform-response";
 
 import {PreviewSchemaService} from "./service/preview-schema.service";
@@ -34,9 +27,8 @@ import {PreviewDataSetRequest} from "./model/preview-data-set-request";
 import {DatasetCollectionStatus, PreviewDataSet} from "./model/preview-data-set";
 import {PreviewJdbcDataSet} from "./model/preview-jdbc-data-set";
 import {PreviewFileDataSet} from "./model/preview-file-data-set";
-//import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
 import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
-
+import {Common} from '../../../../../lib/common/CommonTypes';
 
 
 //NOT USED NOW!!!

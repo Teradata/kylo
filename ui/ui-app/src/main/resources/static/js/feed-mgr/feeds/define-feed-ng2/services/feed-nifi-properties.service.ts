@@ -1,5 +1,5 @@
 import {Feed} from "../../../model/feed/feed.model";
-import {Templates} from "../../../services/TemplateTypes";
+import {Templates} from "../../../../../lib/feed-mgr/services/TemplateTypes";
 import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
 import {Injectable, Injector} from "@angular/core";
 import {HttpClient, HttpParams} from "@angular/common/http";

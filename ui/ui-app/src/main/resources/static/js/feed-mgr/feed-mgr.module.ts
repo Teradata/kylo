@@ -28,7 +28,7 @@ import {NiFiService} from "./services/NiFiService";
 import {ApplyDomainTypeDialogComponent} from "./shared/domain-type/apply-domain-type/apply-domain-type-dialog.component";
 import {ApplyDomainTypesDialogComponent} from "./shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {DomainTypeConflictDialogComponent} from "./shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component";
-import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
+import {DynamicFormModule} from "../../lib/dynamic-form/dynamic-form.module";
 import {EntityAccessControlComponent} from "./shared/entity-access-control/entity-access-control.component";
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";

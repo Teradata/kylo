@@ -9,7 +9,7 @@ import {FeedPreconditionDialogService} from "./feed-precondition-dialog-service"
 import {MatButtonModule} from "@angular/material/button";
 import {MatSelectModule} from "@angular/material/select";
 import {MatFormFieldModule} from "@angular/material/form-field";
-import {DynamicFormModule} from "../dynamic-form/dynamic-form.module";
+import {DynamicFormModule} from "../../../../lib/dynamic-form/dynamic-form.module";
 import {FieldPoliciesModule} from "../field-policies-angular2/field-policies.module";
 import {CovalentChipsModule} from "@covalent/core/chips";
 

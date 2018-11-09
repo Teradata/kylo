@@ -10,11 +10,11 @@ import {expand} from "rxjs/operators/expand";
 import {Subscription} from "rxjs/Subscription";
 
 import * as _ from "underscore";
-import {Common} from "../../../common/CommonTypes";
 import {ImportComponentOption, ImportComponentType, ImportService, ImportTemplateResult, InputPortListItem, RemoteProcessInputPort} from '../../services/ImportComponentOptionTypes';
 import {RegisterTemplateServiceFactory} from "../../services/RegisterTemplateServiceFactory";
 import {moduleName} from "../module-name";
 import Map = Common.Map;
+import {Common} from '../../../../lib/common/CommonTypes';
 
 export class ImportTemplateController implements angular.IController, OnDestroy, OnInit {
 

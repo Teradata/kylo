@@ -22,7 +22,7 @@
  */
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { Templates } from "./TemplateTypes";
+import { Templates } from "../../../lib/feed-mgr/services/TemplateTypes";
 import {UiComponentsService} from "./UiComponentsService";
 
 

@@ -1,13 +1,13 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
-import {Common} from "../../common/CommonTypes";
 import {AccessControlService} from "../../services/AccessControlService";
 import {TableColumnDefinition} from "../model/TableColumnDefinition";
 import {TableFieldPolicy} from "../model/TableFieldPolicy";
-import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
+import {EntityAccessControlService} from "../shared/entity-access-control/EntityAccessControlService";
 import {FeedConstants} from "./FeedConstants";
-import {moduleName} from "../module-name";
+import {Common} from '../../../lib/common/CommonTypes';
+
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)

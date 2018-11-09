@@ -5,8 +5,8 @@ import * as _ from 'underscore';
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import IconService from "../../services/IconStatusService";
 import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
+import {Common} from '../../../../lib/common/CommonTypes';
 
-import {Common} from "../../../common/CommonTypes";
 
 
 class PageState {

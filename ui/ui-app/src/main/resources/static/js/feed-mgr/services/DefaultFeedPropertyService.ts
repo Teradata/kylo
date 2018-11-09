@@ -1,4 +1,4 @@
-import {Templates} from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import {FeedPropertyService} from "./FeedPropertyService";
 import {NifiFeedPropertyUtil} from "./nifi-feed-property-util";
 

@@ -1,5 +1,5 @@
-import {FieldConfig} from "../../../../shared/dynamic-form/model/FieldConfig";
-import { Templates } from "../../../../services/TemplateTypes";
+import {FieldConfig} from "../../../../../../lib/dynamic-form/model/FieldConfig";
+import { Templates } from "../../../../../../lib/feed-mgr/services/TemplateTypes";
 
 export class FieldConfigurationState {
 

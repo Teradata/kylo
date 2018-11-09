@@ -3,7 +3,7 @@ import {Sla} from '../model/sla.model';
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from '@angular/forms';
 import {Feed} from '../..//model/feed/feed.model';
 import * as _ from 'underscore';
-import {PolicyInputFormService} from '../../shared/field-policies-angular2/policy-input-form.service';
+import {PolicyInputFormService} from '../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service';
 import * as angular from 'angular';
 import {FormMode, RuleType} from './sla-details.componment';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';

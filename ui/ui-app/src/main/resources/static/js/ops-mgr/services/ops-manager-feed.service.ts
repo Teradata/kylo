@@ -9,7 +9,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {FeedSummary} from "../../feed-mgr/model/feed/feed-summary.model";
 import {Observable} from "rxjs/Observable";
 import {RestUrlConstants} from "../../feed-mgr/services/RestUrlConstants";
-import {RestResponseStatus} from "../../common/common.model";
+import {RestResponseStatus} from "../../../lib/common/common.model";
 import {FeedOperationsSummary} from "../../feed-mgr/model/feed/feed-operations-summary.model";
 
 @Injectable()

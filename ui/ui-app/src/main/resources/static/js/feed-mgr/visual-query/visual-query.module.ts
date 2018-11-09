@@ -39,7 +39,7 @@ import {KyloCodeMirrorModule} from '../../codemirror-require/codemirror.module';
 import {KyloCommonModule} from "../../common/common.module";
 import {CatalogDatasetPreviewModule} from "../catalog-dataset-preview/catalog-dataset-preview.module";
 import {KyloFeedManagerModule} from "../feed-mgr.module";
-import {DynamicFormModule} from "../shared/dynamic-form/dynamic-form.module";
+import {DynamicFormModule} from "../../../lib/dynamic-form/dynamic-form.module";
 import {FieldPoliciesModule} from "../shared/field-policies-angular2/field-policies.module";
 import {PropertyListModule} from "../shared/property-list/property-list.module";
 import {SqlEditorModule} from "../shared/sql-editor/sql-editor.module";

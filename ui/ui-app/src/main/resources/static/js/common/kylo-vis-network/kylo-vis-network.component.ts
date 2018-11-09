@@ -1,6 +1,7 @@
 import {Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from "@angular/core";
 import {Network, DataSet, Node, Edge, IdType} from 'vis';
-
+import * as _ from "underscore";
+import {CloneUtil} from "../utils/clone-util";
 // declare var vis: any;
 
 @Component({
@@ -9,7 +10,7 @@ import {Network, DataSet, Node, Edge, IdType} from 'vis';
 })
 export class KyloVisNetworkComponent implements OnInit, OnChanges {
 
-    network: Network;
+    network: Network = null;
 
     @Input()
     data: any;
@@ -34,7 +35,7 @@ export class KyloVisNetworkComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (this.network !== undefined) {
+        if (changes && this.network !== undefined) {
             if(changes['data'] && changes['data'].previousValue) {
                 this.network.setData(changes['data'].currentValue);
             }
@@ -46,6 +47,9 @@ export class KyloVisNetworkComponent implements OnInit, OnChanges {
 
     drawNetwork() {
         let container = this.elementRef.nativeElement;
+        if (this.network != null) {
+            this.network.destroy();
+        }
         this.network = new Network(container, this.data, this.options);
         // create a network
         this.network.setSize(this.widthPx, this.heightPx);
@@ -62,5 +66,12 @@ export class KyloVisNetworkComponent implements OnInit, OnChanges {
     setHeight(height:number){
         this.network.setSize(this.widthPx, height+"px");
     }
+
+    updateOptions(options:any){
+        let copy = CloneUtil.deepCopy(this.options);
+        copy = _.extend(copy,options);
+        this.network.setOptions(copy);
+    }
+
 }
 

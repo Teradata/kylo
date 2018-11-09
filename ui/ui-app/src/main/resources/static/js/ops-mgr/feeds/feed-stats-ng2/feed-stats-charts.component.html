@@ -69,16 +69,16 @@
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
             <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-              <h1 class="kpi-stat">{{eventSuccessKpi.value}}%</h1>
-              <mat-icon  class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}">{{eventSuccessKpi.icon}}</mat-icon>
+              <h1 class="kpi-stat tc-grey-700">{{eventSuccessKpi.value}}%</h1>
+              <mat-icon  class="kpi_icon tc-accent">{{eventSuccessKpi.icon}}</mat-icon>
               <span class="kpi-title" matTooltip="{{'views.feed-stats-charts.SR' | translate}}">{{"views.feed-stats-charts.SR" | translate}}</span>
             </mat-card-content>
           </mat-card>
 
             <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
               <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-                <h1 class="kpi-stat">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
-                <mat-icon class="kpi_icon" [ngStyle]="{'color':flowRateKpi.color}"  >{{flowRateKpi.icon}}</mat-icon>
+                <h1 class="kpi-stat tc-grey-700">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
+                <mat-icon class="kpi_icon tc-accent"   >{{flowRateKpi.icon}}</mat-icon>
                 <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.IFR' | translate}}">{{"views.feed-stats-charts.FR" | translate}}</span>
               </mat-card-content>
             </mat-card>
@@ -86,8 +86,8 @@
 
           <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
             <mat-card-content fxLayout="column" fxLayoutAlign="center center">
-              <h1 class="kpi-stat">{{avgDurationKpi.value}}</h1>
-              <mat-icon class="kpi_icon" [ngStyle]="{'color':avgDurationKpi.color}"  >{{avgDurationKpi.icon}}</mat-icon>
+              <h1 class="kpi-stat tc-grey-700">{{avgDurationKpi.value}}</h1>
+              <mat-icon class="kpi_icon tc-accent"   >{{avgDurationKpi.icon}}</mat-icon>
               <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.FD' | translate}}">{{"views.feed-stats-charts.FD" | translate}}</span>
             </mat-card-content>
           </mat-card>

@@ -15,7 +15,7 @@ import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "
 import {TdDialogService} from "@covalent/core/dialogs";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 import {EntityVersion} from "../../../../model/entity-version.model";
-import {RestResponseStatus, RestResponseStatusType} from "../../../../../common/common.model";
+import {RestResponseStatus, RestResponseStatusType} from "../../../../../../lib/common/common.model";
 import {DeployFeedDialogComponent, DeployFeedDialogComponentData} from "./deploy-feed-dialog/deploy-feed-dialog.component";
 import {DefineFeedPermissionsDialogComponent, DefineFeedPermissionsDialogComponentData} from "../../steps/permissions/define-feed-permissions-dialog/define-feed-permissions-dialog.component";
 

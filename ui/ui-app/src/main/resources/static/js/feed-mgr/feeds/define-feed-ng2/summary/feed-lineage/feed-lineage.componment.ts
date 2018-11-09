@@ -1,4 +1,4 @@
-import {Component, Injector, Input, OnInit, ViewChild} from "@angular/core";
+import {AfterViewInit, Component, Injector, Input, OnInit, ViewChild} from "@angular/core";
 import {StateService} from "@uirouter/angular";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
@@ -10,13 +10,14 @@ import {HttpClient} from "@angular/common/http";
 import {LINEAGE_LINK} from "../../model/feed-link-constants";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 import {KyloVisNetworkComponent} from "../../../../../common/kylo-vis-network/kylo-vis-network.component";
+import {CloneUtil} from "../../../../../common/utils/clone-util";
 
 @Component({
     selector: "feed-lineage",
     styleUrls: ["./feed-lineage.component.css"],
     templateUrl: "./feed-lineage.component.html"
 })
-export class FeedLineageComponment extends AbstractLoadFeedComponent implements OnInit {
+export class FeedLineageComponment extends AbstractLoadFeedComponent implements OnInit, AfterViewInit {
 
     static LOADER = "FeedLineage.LOADER";
 
@@ -24,7 +25,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     restUrlService: any;
     utils: any;
-    StateService: any;
+    kyloStateService: any;
 
     public kyloIcons_Links_lineage = KyloIcons.Links.lineage;
 
@@ -66,61 +67,61 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
         this.utils = $$angularInjector.get("Utils");
         this.restUrlService = $$angularInjector.get("RestUrlService");
-        this.StateService = $$angularInjector.get("StateService");
+        this.kyloStateService = $$angularInjector.get("StateService");
 
         this.options = {
-            height: '80%',
-            width: '100%',
+            "height": "100%",
+            "width": "100%",
             "edges": {
                 "arrowStrikethrough": false,
-                smooth: {
-                    enabled: true,
-                    type: "cubicBezier",
-                    roundness: 0,
+                "smooth": {
+                    "enabled": true,
+                    "type": "cubicBezier",
+                    "roundness": 0,
                     "forceDirection": "horizontal"
                 },
-                font: {align: 'horizontal',size:12,face:'arial'}
-            },
-            layout: {
-                hierarchical: {
-                    direction: "LR",
-                    nodeSpacing: 350,
-                    sortMethod: 'directed'
+                "font": {
+                    "align": "horizontal"
                 }
             },
-            autoResize: true,
-            physics:false,
-            nodes: {
-                shape: 'box',
-                font: {
-                    align: 'center',
-                    size: 12, // px
-                    face: 'arial'
+            "layout": {
+                "randomSeed":50,
+                "hierarchical": {
+                    "direction": "LR",
+                    "nodeSpacing": 300,
+                    "sortMethod": "directed"
                 }
             },
-            groups: {
-                feed: {
-                    shape: 'box',
-                    font: {
-                        align: 'center'
+            "nodes": {
+                "shape": "box",
+                "font": {
+                    "align": "center"
+                }
+            },
+            "groups": {
+                "feed": {
+                    "shape": "box",
+                    "font": {
+                        "align": "center"
                     }
                 },
-                datasource: {
-                    shape: 'box',
-                    font: {
-                        align: 'center',
-                        size: 12,
-                        face: 'arial'
+                "datasource": {
+                    "shape": "box",
+                    "font": {
+                        "align": "center"
                     }
                 }
             },
-            interaction: {
-                hover: true,
-                navigationButtons: true,
-                dragNodes:true,
-                keyboard: true
+            "interaction": {
+                "hover": true,
+                "navigationButtons": true,
+                "keyboard": true
+            },
+            "physics": {
+                "enabled": false,
+                "solver": "hierarchicalRepulsion"
             }
-        };
+        }
     }
 
     getLinkName() {
@@ -129,7 +130,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     navigateToFeed() {
         if (this.selectedNode.type == 'FEED' && this.selectedNode.content) {
-            this.StateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
+            this.kyloStateService.FeedManager().Feed().navigateToFeedDetails(this.selectedNode.content.id, 2);
         }
     }
 
@@ -145,6 +146,10 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
      */
     changed = false;
     panelOpenState = false;
+
+    onLoad(event:any) {
+
+    }
 
     onSelect(item: any) {
         console.log("onSelect!!");
@@ -173,6 +178,30 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         else {
             this.selectedNode = this.SELECT_A_NODE;
         }
+    }
+
+    onStabilized(event:any){
+
+        let optionsUpdate = {
+            physics: {enabled: false, stabilization: false,  "solver": "hierarchicalRepulsion"},
+            interaction: {dragNodes: true},
+            layout: {
+                hierarchical: {
+                    enabled: false
+                }
+            }
+        }
+        let copy = CloneUtil.deepCopy(this.options);
+
+        let newOptions = _.extend(copy,optionsUpdate)
+        if (this.lineageGraph) {
+            this.lineageGraph.updateOptions(newOptions);
+        }
+
+    }
+
+    ngAfterViewInit(){
+        this._draw();
     }
 
     init() {
@@ -230,9 +259,16 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
         this.edgeKeys = {};
         this.processedNodes = {};
 
-        //turn on physics for layout
-        this.buildVisJsGraph(this.feedLineage.feed);
-        this.setNodeData();
+        if(this.feedLineage && this.lineageGraph) {
+            //turn on physics for layout
+            this.options.physics.enabled = true;
+            this.options.physics.solver = "hierarchicalRepulsion";
+            this.options.physics.stabilization = true
+            //turn on physics for layout
+            this.buildVisJsGraph(this.feedLineage.feed);
+            this.setNodeData();
+            this.lineageGraph.drawNetwork();
+        }
     }
 
     setNodeData() {

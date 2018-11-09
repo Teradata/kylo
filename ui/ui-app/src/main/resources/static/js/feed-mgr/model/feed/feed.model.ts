@@ -1,14 +1,14 @@
 import * as _ from "underscore";
 
-import {KyloObject, ObjectChanged} from "../../../common/common.model";
+import {KyloObject, ObjectChanged} from "../../../../lib/common/common.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
-import {ObjectUtils} from "../../../common/utils/object-utils";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
 import {ConnectorPlugin} from "../../catalog/api/models/connector-plugin";
 import {ConnectorPluginNifiProperties} from "../../catalog/api/models/connector-plugin-nifi-properties";
 import {TableColumn} from "../../catalog/datasource/preview-schema/model/table-view-model";
 import {TableSchemaUpdateMode} from "../../feeds/define-feed-ng2/services/define-feed.service";
 import {FeedDetailsProcessorRenderingHelper} from "../../services/FeedDetailsProcessorRenderingHelper";
-import {Templates} from "../../services/TemplateTypes";
+import {Templates} from "../../../../lib/feed-mgr/services/TemplateTypes";
 import {Category} from "../category/category.model";
 import {DefaultFeedDataTransformation, FeedDataTransformation} from "../feed-data-transformation";
 import {SchemaParser} from "../field-policy";
@@ -31,6 +31,7 @@ import {PreviewHiveDataSet} from "../../catalog/datasource/preview-schema/model/
 import {PreviewJdbcDataSet} from "../../catalog/datasource/preview-schema/model/preview-jdbc-data-set";
 import {FeedStepConstants} from "./feed-step-constants";
 import {NifiFeedPropertyUtil} from "../../services/nifi-feed-property-util";
+import {KyloFeed} from '../../../../lib/feed-mgr/model/feed/kylo-feed';
 
 
 export interface TableOptions {
@@ -120,7 +121,7 @@ export class StepStateChangeEvent {
  */
 export const SKIP_SOURCE_CATALOG_KEY = "SKIP_SOURCE_CATALOG"
 
-export class Feed  implements KyloObject{
+export class Feed implements KyloObject, KyloFeed {
 
 
     public static OBJECT_TYPE: string = 'Feed'
@@ -527,7 +528,8 @@ export class Feed  implements KyloObject{
      * @return {boolean}
      */
     hasBeenDeployed(){
-        return !this.isDraft() || (this.isDraft() && this.deployedVersion != undefined);
+        return (!this.isDraft()) ||
+            (this.isDraft() && !_.isUndefined(this.deployedVersion) && !_.isUndefined(this.deployedVersion.id));
     }
 
     isDraft(){

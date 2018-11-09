@@ -2,8 +2,8 @@ import {DefaultTableSchema} from "../default-table-schema.model";
 import {TableColumnDefinition} from "../TableColumnDefinition";
 import {FeedTableDefinition} from "./feed-table-definition.model";
 import {TableFieldPolicy} from "../TableFieldPolicy";
-import {KyloObject} from "../../../common/common.model";
-import {ObjectUtils} from "../../../common/utils/object-utils";
+import {KyloObject} from "../../../../lib/common/common.model";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
 import {StringUtils} from "../../../common/utils/StringUtils";
 
 

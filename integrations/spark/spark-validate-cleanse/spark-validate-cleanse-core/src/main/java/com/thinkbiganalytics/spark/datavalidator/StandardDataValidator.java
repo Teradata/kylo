@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -319,6 +320,12 @@ public class StandardDataValidator implements DataValidator, Serializable {
 
         // Maps each partition in the JavaRDD<CleansedRowResults> to a long[] of invalid column counts and total valid/invalid counts
         JavaRDD<long[]> partitionCounts = validatorStrategy.getCleansedRowResultPartitionCounts(cleansedRowResultJavaRDD, schemaLength);
+
+        if (cleansedRowResultJavaRDD.isEmpty()) {
+            long[] counts = new long[schemaLength + 2] ;
+            Arrays.fill(counts , 0);
+            return counts ;
+        }
 
         // Sums up all partitions validation counts into one long[]
         return partitionCounts.reduce(new SumPartitionLevelCounts());

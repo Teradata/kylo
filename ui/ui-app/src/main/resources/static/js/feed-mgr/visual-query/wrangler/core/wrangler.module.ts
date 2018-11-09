@@ -10,7 +10,7 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 
-import {DynamicFormModule} from "../../../shared/dynamic-form/dynamic-form.module";
+import {DynamicFormModule} from "../../../../../lib/dynamic-form/dynamic-form.module";
 import {DIALOG_SERVICE, INJECTOR} from "../api/index";
 import {DateFormatDialog} from "./columns/date-format.component";
 import {WranglerDialogService} from "./services/dialog.service";

@@ -2,14 +2,14 @@ import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import * as _ from "underscore"
 
-import {Templates} from "../../../js/feed-mgr/services/TemplateTypes";
-import {FieldConfig} from "../../../js/feed-mgr/shared/dynamic-form/model/FieldConfig";
-import {FieldGroup} from "../../../js/feed-mgr/shared/dynamic-form/model/FieldGroup";
-import {InputType} from "../../../js/feed-mgr/shared/dynamic-form/model/InputText";
-import {DynamicFormBuilder} from "../../../js/feed-mgr/shared/dynamic-form/services/dynamic-form-builder";
-import {DynamicFormFieldGroupBuilder} from "../../../js/feed-mgr/shared/dynamic-form/services/dynamic-form-field-group-builder";
-import {DynamicFormService} from "../../../js/feed-mgr/shared/dynamic-form/services/dynamic-form.service";
-import {ConfigurationFieldBuilder} from "../../../js/feed-mgr/shared/dynamic-form/services/field-config-builder";
+import {Templates} from "../../feed-mgr/services/TemplateTypes";
+import {FieldConfig} from "../../dynamic-form/model/FieldConfig";
+import {FieldGroup} from "../../dynamic-form/model/FieldGroup";
+import {InputType} from "../../dynamic-form/model/InputText";
+import {DynamicFormBuilder} from "../../dynamic-form/services/dynamic-form-builder";
+import {DynamicFormFieldGroupBuilder} from "../../dynamic-form/services/dynamic-form-field-group-builder";
+import {DynamicFormService} from "../../dynamic-form/services/dynamic-form.service";
+import {ConfigurationFieldBuilder} from "../../dynamic-form/services/field-config-builder";
 import {Property} from "../model/property";
 import {ProcessorRef} from "./processor-ref";
 
@@ -41,8 +41,8 @@ export class FieldConfigurationState {
 
     /**
      * are there input fields defined for the processor
-     * @param {string} processorId
-     * @return {boolean}
+     * param {string} processorId
+     * return {boolean}
      */
     hasInputFields(processorId: string) {
         return this.inputFieldsMap[processorId] != undefined;
@@ -50,8 +50,8 @@ export class FieldConfigurationState {
 
     /**
      * are there fields defined for the processor
-     * @param {string} processorId
-     * @return {boolean}
+     * param {string} processorId
+     * return {boolean}
      */
     hasNonInputFields(processorId: string) {
         return this.processorFieldMap[processorId] != undefined;

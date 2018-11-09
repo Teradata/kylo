@@ -2,29 +2,26 @@ import * as _ from 'underscore';
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import {TabService} from "../../../services/tab.service";
 import {AccessControlService} from "../../../services/AccessControlService";
-import { Component, Output, Input, OnChanges, SimpleChanges, Inject, EventEmitter } from "@angular/core";
-import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
+import {Component, EventEmitter, Inject, Input, Output} from "@angular/core";
+import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {BroadcastService} from "../../../services/broadcast-service";
 import {StateService as  KyoStateService} from "../../../services/StateService";
-import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
-import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from "@covalent/core/data-table";
-import { IPageChangeEvent } from "@covalent/core/paging";
-import { Subject } from "rxjs/Subject";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {DefaultPaginationDataService} from "../../../services/PaginationDataService";
+import {ITdDataTableColumn, TdDataTableService} from "@covalent/core/data-table";
+import {IPageChangeEvent} from "@covalent/core/paging";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import 'rxjs/add/operator/timeout';
-import { BaseFilteredPaginatedTableView } from "../../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
-import { ObjectUtils } from "../../../common/utils/object-utils";
-import { Subscription } from "rxjs";
+import {BaseFilteredPaginatedTableView} from "../../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
+import {Subscription} from "rxjs";
 import {OperationsRestUrlConstants} from "../../../services/operations-rest-url-constants";
 import IconUtil from "../../../services/icon-util";
 import {DateTimeService} from "../../../common/utils/date-time.service";
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
-import {FeedSummary} from "../../../feed-mgr/model/feed/feed-summary.model";
 import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {AbandonAllJobsDialogComponent} from "./abandon-all-jobs-dialog.component";
 import {JobsFilterHelpPanelDialogComponent} from "./jobs-filter-help-panel-dialog.component";
+import {FeedOperationsSummary} from "../../../feed-mgr/model/feed/feed-operations-summary.model";
 
 
 
@@ -63,7 +60,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     @Input() tab: any;
     @Input() cardTitle: any;
     @Input() refreshIntervalTime: any;
-    @Input() feed: FeedSummary;
+    @Input() feed: FeedOperationsSummary;
     @Input() feedFilter: string;
     @Input() pageName: any;
 
@@ -100,7 +97,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     fetchFeedHealth(){
         if(this.feedFilter) {
-            this.opsManagerFeedService.getFeedHealth(this.feedFilter).subscribe((response: FeedSummary) => {
+            this.opsManagerFeedService.getFeedHealth(this.feedFilter).subscribe((response: FeedOperationsSummary) => {
                 if (response) {
                     this.feed = response;
                     this.abandonAllDisabled = this.feed.healthText != "UNHEALTHY"

@@ -383,6 +383,15 @@ export class RestUrlConstants {
     };
 
     /**
+     * Endpoint for roles changes to a Datasource entity.
+     * @param {string} datasourceId the datasource id
+     * @returns {string} the url for datasource role changes
+     */
+    static CONNECTOR_ROLES_URL(connectorId:string) {
+        return RestUrlConstants.CATALOG_BASE_URL + "/connector/" + encodeURIComponent(connectorId) + "/roles";
+    };
+
+    /**
      * The URL for retrieving the list of template table option plugins.
      * @type {string}
      */

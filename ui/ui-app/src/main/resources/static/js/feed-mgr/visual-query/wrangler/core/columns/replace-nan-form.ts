@@ -1,8 +1,8 @@
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnForm} from "./column-form";
 import {ColumnController} from "../../column-controller";
 import {ColumnUtil} from "../column-util";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {InputType} from "../../../../../../lib/dynamic-form/model/InputText";
 
 export class ReplaceNanForm extends ColumnForm{
     constructor(column:any, grid:any,controller:ColumnController, value?:string){

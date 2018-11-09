@@ -7,7 +7,7 @@
     <div fxLayout="row" class="layout-padding-bottom-15">
       <div fxFlex="40" style="align-self:center;" layout="column">
         <div class="hint">{{"views.entity-access-control.Owner" | translate}}</div>
-        <span>{{entity.owner.displayName}}</span>
+        <span *ngIf="entity && entity.owner">{{entity.owner.displayName}}</span>
       </div>
     </div>
     <div fxLayout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">

@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {Input, Output,Component, OnInit, OnChanges, EventEmitter} from '@angular/core';
 import {FieldPolicyOptionsService} from "./field-policy-options.service";
-import {PolicyInputFormService} from "./policy-input-form.service"
+import {PolicyInputFormService} from "../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service"
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 import {FormGroup} from "@angular/forms";
 

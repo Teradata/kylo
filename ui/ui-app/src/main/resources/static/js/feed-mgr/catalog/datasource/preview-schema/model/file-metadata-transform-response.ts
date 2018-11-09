@@ -1,6 +1,6 @@
-import {Common} from "../../../../../common/CommonTypes";
 import {FileMetadata} from "./file-metadata";
 import {PreviewFileDataSet} from "./preview-file-data-set";
+import {Common} from '../../../../../../lib/common/CommonTypes';
 
 /**
  *  Response object that will create new FileDataSet objects

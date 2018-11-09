@@ -57,5 +57,24 @@ public class ValidatorV1Test {
         long[] expectedOutput = {1L, 2L, 0L, 0L, 2L, 7L, 2L};
 
         assertArrayEquals(expectedOutput, output);
+
+        sc.close();
+    }
+
+    @Test
+    public void testEmptyResultValidationCountsV1() {
+        SparkConf conf = new SparkConf();
+        conf.setMaster("local[*]");
+        conf.setAppName("Validator Test - Spark 1");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaRDD<CleansedRowResult> inputRDD = sc.emptyRDD();
+
+        StandardDataValidator validator = new StandardDataValidator(new ValidatorStrategyV1(), Mockito.mock(SparkContextService.class));
+
+        long[] output = validator.cleansedRowResultsValidationCounts(inputRDD, 1);
+        long[] expectedOutput = {0L, 0L, 0L};
+
+        assertArrayEquals(expectedOutput, output);
+        sc.close();
     }
 }

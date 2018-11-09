@@ -39,6 +39,8 @@ import {DataSourcesComponent} from "./datasources/datasources.component";
 import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
 import {CreateFeedComponent} from './datasource/create-feed/create-feed.component';
 import {MatExpansionModule} from '@angular/material/expansion';
+import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
+import {AdminConnectorComponent} from "./connector/admin-connector.component";
 
 @NgModule({
     declarations: [
@@ -49,13 +51,17 @@ import {MatExpansionModule} from '@angular/material/expansion';
         CatalogComponent,
         VisibleOnMouseOverDirective,
         CreateFeedComponent,
+        AdminConnectorsComponent,
+        AdminConnectorComponent
     ],
     exports: [
         DataSourcesComponent,
         DatasourceComponent,
         ConnectorsComponent,
         ConnectorComponent,
-        CatalogComponent
+        CatalogComponent,
+        AdminConnectorsComponent,
+        AdminConnectorComponent
     ],
     imports: [
         CatalogApiModule,

@@ -1,15 +1,15 @@
 import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild} from "@angular/core";
-import {PolicyInputFormService} from "./policy-input-form.service";
+import {PolicyInputFormService} from "../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service";
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {FieldConfig} from "../dynamic-form/model/FieldConfig";
-import {InputType} from "../dynamic-form/model/InputText";
-import {DynamicFormService} from "../dynamic-form/services/dynamic-form.service";
+import {FieldConfig} from "../../../../lib/dynamic-form/model/FieldConfig";
+import {InputType} from "../../../../lib/dynamic-form/model/InputText";
+import {DynamicFormService} from "../../../../lib/dynamic-form/services/dynamic-form.service";
 import {FieldPolicyProperty, FieldPolicySelectableValue} from "../../model/field-policy";
-import {DynamicFormFieldGroupBuilder} from "../dynamic-form/services/dynamic-form-field-group-builder";
-import {DynamicFormBuilder} from "../dynamic-form/services/dynamic-form-builder";
-import {FieldGroup, Layout} from "../dynamic-form/model/FieldGroup";
-import {ConfigurationFieldBuilder, RadioButtonFieldBuilder, SelectFieldBuilder} from "../dynamic-form/services/field-config-builder";
-import {DynamicFormComponent} from "../dynamic-form/dynamic-form.component";
+import {DynamicFormFieldGroupBuilder} from "../../../../lib/dynamic-form/services/dynamic-form-field-group-builder";
+import {DynamicFormBuilder} from "../../../../lib/dynamic-form/services/dynamic-form-builder";
+import {FieldGroup, Layout} from "../../../../lib/dynamic-form/model/FieldGroup";
+import {ConfigurationFieldBuilder, RadioButtonFieldBuilder, SelectFieldBuilder} from "../../../../lib/dynamic-form/services/field-config-builder";
+import {DynamicFormComponent} from "../../../../lib/dynamic-form/dynamic-form.component";
 
 export function MultipleEmail(control: FormControl) {
 

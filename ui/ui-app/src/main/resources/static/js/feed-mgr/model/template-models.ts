@@ -1,4 +1,4 @@
-import {Templates} from "../services/TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import processors = Templates.Processor; 
 import properties = Templates.Property;
 import NiFiRemoteProcessGroup = Templates.NiFiRemoteProcessGroup;

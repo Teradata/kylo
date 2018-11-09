@@ -2,7 +2,7 @@ import * as _ from "underscore";
 import {FeedFieldPolicyDialogData} from "./feed-field-policy-dialog-data";
 import {FieldPolicyOptionsService} from "../field-policies-angular2/field-policy-options.service";
 import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ViewChild} from "@angular/core";
-import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
+import {PolicyInputFormService} from "../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service";
 import {FormGroup} from "@angular/forms";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";

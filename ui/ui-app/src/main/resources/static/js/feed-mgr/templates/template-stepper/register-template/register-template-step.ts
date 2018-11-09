@@ -1,12 +1,12 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "../../module-name";
-import { Common } from "../../../../common/CommonTypes";
 import LabelValue = Common.LabelValue;
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import {StateService} from '../../../../services/StateService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 import '../../module-require';
+import {Common} from '../../../../../lib/common/CommonTypes';
 
 
 export class RegisterCompleteRegistrationController {

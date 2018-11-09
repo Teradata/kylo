@@ -23,7 +23,7 @@ export default class LoginNotificationService {
             let allowed = this.accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
             if (allowed) {
                 this.templateService.getTemplates().subscribe((template: TemplateMetadata) => {
-                        console.log(template);
+                        // console.log(template);
                         this.$http.get(this.CommonRestUrlService.CONFIGURATION_PROPERTIES_URL).then((response: any) => {
                             const notification = this.NotificationService.addNotification("Template updates available in repository. Click to dismiss this message.", "update");
                             notification.callback = this.NotificationService.removeNotification.bind(this.NotificationService);

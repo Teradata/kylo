@@ -1,10 +1,6 @@
-
-import {FileMetadata} from  "./file-metadata"
 import {DataSource} from "../../../api/models/datasource";
-import {SchemaParser} from "../../../../model/field-policy";
 import {PreviewDataSetRequest} from "./preview-data-set-request"
-import {TableViewModel, TableColumn} from "./table-view-model";
-import {Common} from "../../../../../common/CommonTypes";
+import {TableColumn, TableViewModel} from "./table-view-model";
 import {SparkDataSet} from "../../../../model/spark-data-set.model";
 import * as _ from "underscore";
 import {CloneUtil} from "../../../../../common/utils/clone-util";

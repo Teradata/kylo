@@ -20,28 +20,27 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-import { Dictionary } from "underscore";
+import {Dictionary} from "underscore";
 import 'pascalprecht.translate';
-import { Templates } from "./TemplateTypes";
-import { FeedPropertyService } from "./FeedPropertyService";
-import { Common } from "../../common/CommonTypes";
-import { AccessControl } from "../../services/AccessControl";
-import { RegisteredTemplateService } from "./RegisterTemplateService";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
+import {FeedPropertyService} from "./FeedPropertyService";
+import {AccessControl} from "../../services/AccessControl";
+import {RegisteredTemplateService} from "./RegisterTemplateService";
 
 
-import {moduleName} from "../module-name";;
-import Property = Templates.Property;
-import PropertyRenderType = Templates.PropertyRenderType;
-import PropertyAndProcessors = Templates.PropertyAndProcessors;
-import Processor = Templates.Processor;
-import MetadataProperty = Templates.MetadataProperty;
-import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import {moduleName} from "../module-name";
 import {AccessControlService} from '../../services/AccessControlService';
-import { EmptyTemplate, ExtendedTemplate, SaveAbleTemplate } from '../model/template-models';
-import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
+import {EmptyTemplate, ExtendedTemplate, SaveAbleTemplate} from '../model/template-models';
+import {EntityAccessControlService} from '../shared/entity-access-control/EntityAccessControlService';
 import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
 import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
 import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
+
+import Property = Templates.Property;
+import PropertyAndProcessors = Templates.PropertyAndProcessors;
+import Processor = Templates.Processor;
+import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import {Common} from '../../../lib/common/CommonTypes';
 
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 

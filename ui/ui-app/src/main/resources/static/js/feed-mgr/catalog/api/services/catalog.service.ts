@@ -125,7 +125,7 @@ export class CatalogService {
         const self = this;
         let params = new HttpParams();
         params = params.append('schema', schema);
-        return <Observable<DatasetTable>> this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table,null,{params:params});
+        return <Observable<DatasetTable>> this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table+"/dataset",null,{params:params});
     }
 
 

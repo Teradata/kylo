@@ -33,18 +33,17 @@ public interface KyloVersion extends Comparable<KyloVersion> {
     String getVersion();
 
     /**
-     * Return the {@link #getMajorVersion()} as a numeric value
-     *
-     * @return the numeric value of the major version
-     */
-    Float getMajorVersionNumber();
-
-    /**
      * Return the major versoin of Kylo
      *
      * @return the major version string
      */
     String getMajorVersion();
+    
+    /**
+     * Derive a value that that be compared with another major version.
+     * @return a comparable value for the major version
+     */
+    Integer getMajorVersionValue();
 
     /**
      * Return the minor version of Kylo

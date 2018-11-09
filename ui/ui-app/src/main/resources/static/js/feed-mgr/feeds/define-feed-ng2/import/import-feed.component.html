@@ -180,7 +180,7 @@
 
             <mat-list class="padding-left" *ngFor="let errorKey of getErrorMapKeys()">
               <mat-list-item *ngFor="let error of errorMap[errorKey]; let $last=last ">
-                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">{{views.import_feed.Processor}} {{error.processorName}}</h4>
+                <h4 *ngIf="error.processorName != null && error.processorName != ''" class="tc-green-500">{{"views.import_feed.Processor" | translate}} {{error.processorName}}</h4>
                 <div class="warn">{{error.message}}</div>
                 <mat-divider *ngIf="!$last"></mat-divider>
               </mat-list-item>

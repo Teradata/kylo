@@ -2,11 +2,11 @@ import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview
 import {SparkDataSet} from "./spark-data-set.model";
 import {FlowChart} from "../visual-query/build-query/flow-chart/model/flow-chart.model";
 import {Feed} from "./feed/feed.model";
-import {ObjectUtils} from "../../common/utils/object-utils";
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
 import {FeedTableDefinition} from "./feed/feed-table-definition.model";
 import {FeedTableSchema} from "./feed/feed-table-schema.model";
 import ChartDataModel = FlowChart.ChartDataModel;
-import {KyloObject} from "../../common/common.model";
+import {KyloObject} from "../../../lib/common/common.model";
 import {DataSource} from "../catalog/api/models/datasource";
 
 

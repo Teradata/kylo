@@ -176,14 +176,27 @@ public class KyloVersionUtil {
          *
          * @return the major version
          */
+        @Override
         public String getMajorVersion() {
             return this.majorVersion == null ? "" : this.majorVersion;
+        }
+        
+        @Override
+        public Integer getMajorVersionValue() {
+            String major = getMajorVersion();
+            if (major.contains(".")) {
+                String[] split = major.split("\\.");
+                return Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
+            } else {
+                return Integer.parseInt(major) * 10;
+            }
         }
 
         public void setMajorVersion(String majorVersion) {
             this.majorVersion = majorVersion;
         }
 
+        @Override
         public String getMinorVersion() {
             return this.minorVersion == null ? "" : this.minorVersion;
         }
@@ -192,6 +205,7 @@ public class KyloVersionUtil {
             this.minorVersion = minorVersion;
         }
 
+        @Override
         public String getPointVersion() {
             return pointVersion == null ? "" : this.pointVersion;
         }
@@ -200,6 +214,7 @@ public class KyloVersionUtil {
             this.pointVersion = pointVersion;
         }
 
+        @Override
         public String getTag() {
             return tag == null ? "" : this.tag;
         }
@@ -212,23 +227,6 @@ public class KyloVersionUtil {
         public KyloVersion withoutTag() {
             return new Version(this.getMajorVersion(), this.getMinorVersion(), this.getPointVersion(), null);
         }
-
-        /**
-         * @return the major version number
-         */
-        @Override
-        public Float getMajorVersionNumber() {
-            if (getMajorVersion() != null) {
-                try {
-                    return Float.parseFloat(getMajorVersion());
-                } catch (NumberFormatException e) {
-                    throw new IllegalStateException("Cannot parse major version number", e);
-                }
-            } else {
-                return null;
-            }
-        }
-
 
         @Override
         public String getDescription() {
@@ -277,7 +275,7 @@ public class KyloVersionUtil {
         @Override
         public int compareTo(KyloVersion o) {
             int result = 0;
-            if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) {
+            if ((result = getMajorVersionValue().compareTo(o.getMajorVersionValue())) != 0) {
                 return result;
             }
             if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) {

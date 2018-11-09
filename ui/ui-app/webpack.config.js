@@ -37,7 +37,7 @@ const devServer = {
             '/proxy',
             '/api-docs'
         ],
-        target: 'http://kylo-demo:8400',
+        target: 'http://localhost:8400',
         secure: false,
         changeOrigin: false,
         headers: {host: 'localhost:3000'}
@@ -235,7 +235,7 @@ const webpackConfig = (env) => {
             }),
 
             new CleanWebpackPlugin([
-                path.resolve(__dirname, "./target/classes/static"),
+                path.resolve(__dirname, "./target/classes/static/*.js"),
                 path.resolve(__dirname, "./target/cache"),
                 path.resolve(__dirname, "./target/aot")
             ]),

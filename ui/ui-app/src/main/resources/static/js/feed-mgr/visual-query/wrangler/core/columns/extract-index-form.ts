@@ -1,7 +1,7 @@
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnForm} from "./column-form";
 import {ColumnUtil} from "../column-util";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {InputType} from "../../../../../../lib/dynamic-form/model/InputText";
 import {ColumnDelegate} from "../../api";
 import {Validators} from "@angular/forms";
 

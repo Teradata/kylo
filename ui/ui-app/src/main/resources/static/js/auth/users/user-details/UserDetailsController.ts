@@ -8,13 +8,14 @@ import AccessConstants from "../../../constants/AccessConstants";
 import "../../module";
 import "../../module-require";
 import {Transition} from "@uirouter/core";
+import {LoadingDialogService} from "../../../common/loading-dialog/loading-dialog";
 
 export class UserDetailsController implements ng.IComponentController {
     $transition$: Transition;
     ngOnInit(){
     }
     static readonly $inject = ["$scope","$mdDialog","$mdToast",//"$transition$",
-                                "AccessControlService","UserService","StateService"];
+                                "AccessControlService","UserService","StateService","LoadingDialogService"];
     constructor(
         private $scope:angular.IScope,
         private $mdDialog:angular.material.IDialogService,
@@ -23,6 +24,7 @@ export class UserDetailsController implements ng.IComponentController {
         private accessControlService:AccessControlService,
         private UserService:UserService,
         private StateService:StateService,
+        private loadingDialog:LoadingDialogService
     ){
         $scope.$watch(
             () => {return this.$error},
@@ -181,10 +183,12 @@ export class UserDetailsController implements ng.IComponentController {
          * Deletes the current user.
          */
         onDelete() {
+            this.loadingDialog.showDialog();
             this.deleting = true;
             var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
             this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
                     .then(() => {
+                        this.loadingDialog.hideDialog();
                         this.deleting = false;
                         this.StateService.Auth.navigateToUsers();
                         this.$mdToast.show(
@@ -194,6 +198,7 @@ export class UserDetailsController implements ng.IComponentController {
                         );
 
                     }, () => {
+                        this.loadingDialog.hideDialog();
                         this.deleting = false;
                         this.$mdDialog.show(
                                 this.$mdDialog.alert()
