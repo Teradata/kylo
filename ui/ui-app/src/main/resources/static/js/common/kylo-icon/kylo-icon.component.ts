@@ -54,7 +54,9 @@ export class KyloIconComponent implements OnChanges {
 
     public ngOnChanges(changes: SimpleChanges): void {
         if (changes.icon) {
-            if (typeof this.iconService.getShape(changes.icon.currentValue) !== "undefined") {
+            if (changes.icon.currentValue === null || typeof changes.icon.currentValue !== "string") {
+                this.setIcon();
+            } else if (typeof this.iconService.getShape(changes.icon.currentValue) !== "undefined") {
                 // Icon is registered with ngMdIconService
                 this.setIcon(changes.icon.currentValue);
             } else {
