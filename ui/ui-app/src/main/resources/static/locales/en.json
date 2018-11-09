@@ -642,6 +642,8 @@
     "views.FeedActivityDirective.Date": "Date",
 
     "views.kylo-options.Logout": "Logout",
+    "views.kylo-options.DocsThisVersion": "Docs (This Version)",
+    "views.kylo-options.DocsLatestVersion": "Docs (Latest Version)",
     "views.kylo-options.AK": "About Kylo",
 
     "views.TableController.Tables": "Tables",
