@@ -221,8 +221,8 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties && (
             Object.keys(property.additionalProperties).indexOf("legacyTableDataSource") >=0 &&
             (property.additionalProperties["legacyTableDataSource"] == "true" ||property.additionalProperties["legacyTableDataSource"] == true)) ||
-            Object.keys(property.additionalProperties).indexOf("dataset") &&
-            (property.additionalProperties["dataset"] == "true" ||property.additionalProperties["dataset"] == true));
+            (Object.keys(property.additionalProperties).indexOf("dataset") &&
+            (property.additionalProperties["dataset"] == "true" ||property.additionalProperties["dataset"] == true)));
     }
 
     public findDataSourcePropertiesFilter(importOption:ImportComponentOption): ImportProperty[]{
@@ -230,8 +230,11 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
             return [];
         }
         return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties &&
-            Object.keys(property.additionalProperties).indexOf("legacyQueryDataSource") >=0 &&
-            (property.additionalProperties["legacyQueryDataSource"] == "true" ||property.additionalProperties["legacyQueryDataSource"] == true));
+            (Object.keys(property.additionalProperties).indexOf("legacyQueryDataSource") >=0 &&
+            (property.additionalProperties["legacyQueryDataSource"] == "true" ||property.additionalProperties["legacyQueryDataSource"] == true)) ||
+            (Object.keys(property.additionalProperties).indexOf("catalogDataSource") &&
+            (property.additionalProperties["catalogDataSource"] == "true" ||property.additionalProperties["dataset"] == true)));
+
     }
 
     /**

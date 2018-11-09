@@ -455,6 +455,16 @@ public class FeedImporter {
         final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATASOURCES);
         if (componentOption.getProperties().isEmpty()) {
             componentOption.setProperties(FeedImportDatasourceUtil.buildDatasourceAssignmentProperties(metadata, availableDatasources));
+            //add in any catalogDataSourceIds
+            if(metadata.getDataTransformation().getCatalogDataSourceIds() != null && !metadata.getDataTransformation().getCatalogDataSourceIds().isEmpty()){
+                final Set<String> catalogDataSources = metadataAccess.read(
+                    () -> catalogDataSourceProvider.findAll().stream()
+                        .map(com.thinkbiganalytics.metadata.api.catalog.DataSource::getId)
+                        .map(Object::toString)
+                        .collect(Collectors.toSet())
+                );
+                componentOption.getProperties().addAll(FeedImportDatasourceUtil.buildCatalogDatasourceAssignmentProperties(metadata,catalogDataSources));
+            }
         }
 
         // Update feed with re-mapped data sources
@@ -502,6 +512,25 @@ public class FeedImporter {
                         else {
                             return false;
                         }
+                    }
+                    if(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.CATALOG_DATASOURCE_KEY) != null && "true".equalsIgnoreCase(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.CATALOG_DATASOURCE_KEY))){
+                        String datasourceId = property.getAdditionalPropertyValue("datasourceId");
+                        String catalogDataSourceId = property.getPropertyValue();
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = metadataAccess.read(() -> {
+                            return catalogDataSourceProvider.find(catalogDataSourceProvider.resolveId(catalogDataSourceId))
+                                .map(catalogDataSource -> catalogModelTransform.dataSourceToRestModel().apply(catalogDataSource)).orElse(null);
+                        });
+
+                        if(dataSource != null){
+                            List<String> newIds = metadata.getDataTransformation().getCatalogDataSourceIds().stream().map(id -> id.equalsIgnoreCase(datasourceId) ? catalogDataSourceId : id ).collect(Collectors.toList());
+                            metadata.getDataTransformation().setCatalogDataSourceIds(newIds);
+                            chartModelReplacements.put(datasourceId, catalogDataSourceId);
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+
                     }
                     else {
                         //Shouldnt get here now!!

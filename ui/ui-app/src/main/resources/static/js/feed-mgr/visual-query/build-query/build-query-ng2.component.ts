@@ -1122,6 +1122,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.model && !changes.model.firstChange) {
+            this.initModelAttributes();
             // Setup the flowchart Model
             this.setupFlowChartModel();
             this.addPreviewDataSets();
@@ -1131,12 +1132,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         }
     }
 
-    /**
-     * Finish initializing after data-bound properties are initialized.
-     */
-    ngOnInit(): void {
-        //init the form objects
-        this.initFormComponents();
+    private initModelAttributes(){
 
         if (this.model.$selectedDatasourceId == null && this.model.datasourceIds && this.model.datasourceIds.length > 0) {
             this.model.$selectedDatasourceId = this.model.datasourceIds[0];
@@ -1150,6 +1146,16 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.advancedMode = false;
             this.advancedModeText = "Advanced Mode";
         }
+    }
+
+    /**
+     * Finish initializing after data-bound properties are initialized.
+     */
+    ngOnInit(): void {
+        //init the form objects
+        this.initFormComponents();
+
+        this.initModelAttributes();
         this.autoCompleteEnabledCheck();
 
         // Wait for query engine to load
