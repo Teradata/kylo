@@ -23,7 +23,7 @@
 
       <mat-card-title>
         <div layout="row" layout-align="center start">
-          <div class="card-title">Import Template<span *ngIf="templateParam != null">: {{templateParam.templateName}}</span></div>
+          <div class="card-title">{{'FEEDMGR.TEMPLATES.IMPORT.CARD_TITLE' | translate}}<span *ngIf="templateParam != null">: {{templateParam.templateName}}</span></div>
           <span flex></span>
           <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
         </div>
@@ -35,7 +35,7 @@
         <div layout="column" class="md-padding">
           <span *ngIf="templateParam == null">
           <div>
-            <div class="item-title">Import one of the following from another environment:</div>
+            <div class="item-title">{{'FEEDMGR.TEMPLATES.IMPORT.ITEM_TITLE' | translate}}</div>
           </div>
 
           <div class="layout-padding-indent">
@@ -44,13 +44,13 @@
               <mat-list-item>
                 <div layout="row" layout-fill>
                   <div flex="20" class="md-list-item-text hint">
-                    Type
+                    {{'views.import_feed.Type' | translate}}
                   </div>
                   <div flex="10" class="md-list-item-text hint">
-                    File type
+                    {{'views.import_feed.File_type' | translate}}
                   </div>
                   <div flex="60" class="md-list-item-text hint">
-                    Description
+                    {'views.common.description' | translate}}
                   </div>
 
                 </div>
@@ -60,13 +60,13 @@
               <mat-list-item>
                 <div layout="row" layout-fill>
                   <div flex="20" class="md-list-item-text ">
-                    NiFi template
+                    {{'FEEDMGR.TEMPLATES.IMPORT.NIFI_TEMPLATE' | translate}}
                   </div>
                   <div flex="10" class="md-list-item-text ">
                     XML
                   </div>
                   <div flex="60" class="md-list-item-text ">
-                    Imports a NiFi template
+                    {{'FEEDMGR.TEMPLATES.IMPORT.IMPORTS_NIFI_TEMPLATE' | translate}}
                   </div>
                 </div>
               </mat-list-item>
@@ -74,13 +74,13 @@
               <mat-list-item>
                 <div layout="row" layout-fill>
                   <div flex="20" class="md-list-item-text ">
-                    Kylo template bundle
+                    {{'FEEDMGR.TEMPLATES.IMPORT.KYLO_TEMPLATES_BUNDLE' | translate}}
                   </div>
                   <div flex="10" class="md-list-item-text ">
-                    ZIP
+                    {{'views.import_feed.ZIP' | translate}}
                   </div>
                   <div flex="60" class="md-list-item-text ">
-                    Imports Kylo configuration and NiFi template
+                    {{'FEEDMGR.TEMPLATES.IMPORT.IMPORTS_KYLO_CONF_AND_NIFI_TEMPLATE' | translate}}
                   </div>
                 </div>
               </mat-list-item>
@@ -109,27 +109,27 @@
 
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50" >
                 <mat-checkbox name="templateDataImportOption" [(ngModel)]="templateDataImportOption.overwrite" aria-label="Overwrite if exists">
-                  Overwrite
+                  {{'view.main.overwrite' | translate}}
                 </mat-checkbox>
                 <div class="hint">
-                  If a feed template with the same name (as inside the .zip) already exists in NiFi, it will be replaced.
+                  {{'FEEDMGR.TEMPLATES.IMPORT.OVERWRITE_HINT' | translate}}
                 </div>
               </div>
 
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50" >
                 <mat-checkbox name="templateDataImportOption" [(ngModel)]="reusableTemplateImportOption.shouldImport" aria-label="Import reusable template" >
-                  Import the reusable template
+                  {{'FEEDMGR.TEMPLATES.IMPORT.IMPORT_REUSABLE_TEMPLATE' | translate}}
                 </mat-checkbox>
 
                 <div class="hint">
-                  If the archive contains a reusable template it will be imported.  If a reusable template with the same name already exists in NiFi it will be replaced and re-initialized.
+                  {{'FEEDMGR.TEMPLATES.IMPORT.IMPORT_REUSABLE_TEMPLATE_HINT' | translate}}
                 </div>
               </div>
 
               </div>
 
               <div *ngIf="templateDataImportOption.properties && templateDataImportOption.properties.length >0 " flex layout="column">
-                <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+                <div class="layout-padding-bottom">{{'FEEDMGR.TEMPLATES.IMPORT.NEEDFUL_PROPERTIES' | translate}}</div>
 
                 <div *ngFor="let prop of templateDataImportOption.properties" layout="column" layout-align="start start">
                   <span>{{prop.processorName}}</span>
@@ -148,7 +148,7 @@
                 </div>
 
                 <div *ngIf="reusableTemplateImportOption.properties && reusableTemplateImportOption.properties.length >0" flex layout="column">
-                  <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+                  <div class="layout-padding-bottom">{{'FEEDMGR.TEMPLATES.IMPORT.NEEDFUL_PROPERTIES' | translate}}</div>
 
                   <div *ngFor="let prop of reusableTemplateImportOption.properties" layout="column" layout-align="start start">
                     <span>{{prop.processorName}}</span>
@@ -175,8 +175,7 @@
               </div>
 
               <div *ngIf="reusableTemplateImportOption.properties && reusableTemplateImportOption.properties.length > 0" flex layout="column">
-                <div class="layout-padding-bottom">
-                  The following properties (total count: {{ reusableTemplateImportOption.properties.length }}) need to be supplied before importing this reusable template.
+                <div class="layout-padding-bottom" [translate]="'FEEDMGR.TEMPLATES.IMPORT.NEEDFUL_PROPERTIES_WITH_COUNT' | translate" [translateParams]="{Length:reusableTemplateImportOption.properties.length}">
                 </div>
 
                 <div *ngFor="let prop of reusableTemplateImportOption.properties" layout="column" layout-align="start start">
@@ -193,29 +192,29 @@
               <div layout="row">
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50">
                 <mat-checkbox name="nifiTemplateDataImportOption" [(ngModel)]="nifiTemplateImportOption.overwrite" aria-label="Overwrite if exists">
-                  Overwrite
+                  {{'view.main.overwrite' | translate}}
                 </mat-checkbox>
                 <div class="hint">
-                  Replace any existing template in NiFi that has the same name.
+                  {{'FEEDMGR.TEMPLATES.IMPORT.REPLACE_HINT' | translate}}
                 </div>
               </div>
 
 
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50">
                 <mat-checkbox name="reusableTemplateDataImportOption" [(ngModel)]="reusableTemplateImportOption.shouldImport" aria-label="Create a reusable flow (callable by other flows)">
-                  Create Reusable Flow
+                  {{'FEEDMGR.TEMPLATES.IMPORT.CREATE_REUSABLE_FLOW_TITLE' | translate}}
                 </mat-checkbox>
                 <div class="hint">
-                  Create a reusable flow from this template under 'reusable_templates' process group in NiFi. Other feed templates can reuse this template's flow by connecting to it.
+                  {{'FEEDMGR.TEMPLATES.IMPORT.CREATE_REUSABLE_FLOW' | translate}}
                 </div>
               </div>
 
                 <div class="condensed-no-float md-block layout-padding-bottom" flex="50" *ngIf="reusableTemplateImportOption.shouldImport && remoteProcessGroupAware">
                   <mat-checkbox name="remoteProcessGroupImportOption" [(ngModel)]="remoteProcessGroupImportOption.shouldImport" aria-label="Make available for Remote Process Groups">
-                   Remote Process Group Aware
+                    {{'FEEDMGR.TEMPLATES.IMPORT.RPG_AWARE_TITLE' | translate}}
                   </mat-checkbox>
                   <div class="hint">
-                   Make this template available for Feed Remote Process Groups
+                    {{'FEEDMGR.TEMPLATES.IMPORT.RPG_AWARE_HINT' | translate}}
                   </div>
                 </div>
 
@@ -228,7 +227,7 @@
           <div layout="row" class="layout-padding-top">
             <button class="md-raised md-primary md-button md-kylo-theme md-ink-ripple" (click)="importTemplate()" *ngIf="(templateFile != null || templateParam != null) && !reusableTemplateInputPortsNeeded && !remoteProcessGroupInputPortsNeeded"
                        [disabled]="uploadInProgress">
-              Import Template
+                       {{'FEEDMGR.TEMPLATES.IMPORT.CARD_TITLE' | translate}}
             </button>
             <span flex="5"></span>
             <md-progress-linear flex md-mode="determinate" value="{{uploadProgress}}" *ngIf="uploadInProgress"></md-progress-linear>
@@ -279,10 +278,10 @@
 
             <div layout="column">
             <ng-container [formGroup]="importTemplateForm" layout="column">
-              <div class="md-subhead left-aligned">Connection Options</div>
+              <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_OPTIONS' | translate}}</div>
               <div layout="row" *ngFor="let connection of importResult.reusableTemplateConnections">
                 <div layout="column" flex="50">
-                  <span>Connect From: {{connection.feedOutputPortName}}</span>
+                  <span [translate]="'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_FROM' | translate" [translateParams]="{outputPortName:connection.feedOutputPortName}"></span>
                 </div>
                 <div layout="column" flex="50">
                   <div class="md-block condensed">
@@ -296,23 +295,22 @@
 
                     </mat-select>
                     <mat-error *ngIf="importTemplateForm.controls['port-'+connection.feedOutputPortName] && importTemplateForm.controls['port-'+connection.feedOutputPortName].errors?.required" >
-                        This field is required.
+                      {{'FEEDMGR.TEMPLATES.IMPORT.FIELD_REQUIRED_ERROR' | translate}}
                     </mat-error>
                     <mat-error *ngIf="importTemplateForm.controls['port-'+connection.feedOutputPortName] && importTemplateForm.controls['port-'+connection.feedOutputPortName].errors?.invalidConnection" >
-                        The selected input port is no longer available.
+                      {{'FEEDMGR.TEMPLATES.IMPORT.INPUT_PORT_NOT_AVAILABLE_ERROR' | translate}}
                     </mat-error>
                   </div>
                 </div>
               </div>
               <div layout="row" layout-align="start">
                 <span flex="100"></span>
-                <button (click)="cancelImport()">Cancel</button>
-                <button class="md-primary" (click)="setReusableConnections()" *ngIf="!noReusableConnectionsFound">Import</button>
+                <button (click)="cancelImport()">{{'view.main.cancel' | translate}}</button>
+                <button class="md-primary" (click)="setReusableConnections()" *ngIf="!noReusableConnectionsFound">{{'views.import_feed.Import' | translate}}</button>
               </div>
 
-                <div *ngIf="noReusableConnectionsFound">
-                  ERROR!!!!! There are no other reusable connections found.
-                  You will need to re import additional templates before registering this one.
+                <div *ngIf="noReusableConnectionsFound" [innerHTML]="'FEEDMGR.TEMPLATES.IMPORT.NO_REUSABLE_TEMPLATE_FOUND_ERROR' | translate">
+                  
                 </div>
               </ng-container>
             </div>
@@ -321,7 +319,7 @@
             <div *ngIf="remoteProcessGroupInputPortsNeeded && remoteProcessGroupImportOption.shouldImport">
 
               <mat-list class="padding-left" *ngIf="remoteProcessGroupImportOption.errorMessages.length >0">
-                <div class="md-warn">Remote Input Port Errors</div>
+                <div class="md-warn">{{'FEEDMGR.TEMPLATES.IMPORT.REMOTE_INPUT_PORT_ERROR' | translate}}</div>
                 <ng-template *ngFor="let error of remoteProcessGroupImportOption.errorMessages; let last = last">
                   <mat-list-item class="md-2-line">
                     <div class="md-list-item-text">
@@ -335,15 +333,12 @@
             <div layout="column">
 
               <form #importTemplateForm=ngForm name="importTemplateForm" layout="column">
-                <div class="md-subhead left-aligned">Remote Process Group Input Ports</div>
-                <div *ngIf="importResult.remoteProcessGroupInputPortNames.length ==0">
-                  Please select at least one input port to be available to remote process groups.
-                  <br/>
-                  If you dont wish to expose your template to remote process groups uncheck <i>Remote Process Group Aware</i> option above
+                <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.IMPORT.RPG_INPUT_PORTS' | translate}}</div>
+                <div [innerHTML]="'FEEDMGR.TEMPLATES.IMPORT.RPG_INPUT_PORTS_MESSAGE' | translate" *ngIf="importResult.remoteProcessGroupInputPortNames.length ==0">
                 </div>
 
                   <div>
-                    <mat-label>Remote Input Ports</mat-label>
+                    <mat-label>{{'FEEDMGR.TEMPLATES.IMPORT.REMOTE_INPUT_PORT_TITLE' | translate}}</mat-label>
                     <mat-select name="importResult" multiple [(ngModel)]="importResult.remoteProcessGroupInputPortNames" [ngModelOptions]="{trackBy: '$value.inputPortName'}">
                       <ng-template *ngFor="let port of remoteProcessGroupInputPortNames">
                         <mat-option [value]="port" >
@@ -355,8 +350,8 @@
 
                 <div layout="row" layout-align="start">
                   <span flex="100"></span>
-                  <button (click)="cancelImport()">Cancel</button>
-                  <button class="md-primary" (click)="setRemoteProcessInputPorts()">Import</button>
+                  <button (click)="cancelImport()">{{'view.main.cancel' | translate}}</button>
+                  <button class="md-primary" (click)="setRemoteProcessInputPorts()">{{'views.import_feed.Import' | translate}}</button>
                 </div>
 
 

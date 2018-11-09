@@ -3,6 +3,7 @@ import AccessControlService from '../../../services/AccessControlService';
 import StateService from '../../../services/StateService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import { Component } from '@angular/core';
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector:'register-new-template-controller',
@@ -23,7 +24,7 @@ export class RegisterNewTemplateController {
             .then((actionSet: any) => {
                 if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                     this.registrationMethods.push({
-                        name: "Import from NiFi", description: "Import a NiFi template directly from the current environment", icon: "near_me",
+                        name:this.translate.instant("FEEDMGR.TEMPLATES.IMPORT.IMPORT_FROM_NIFI_TITLE"), description:this.translate.instant("FEEDMGR.TEMPLATES.IMPORT.IMPORT_FROM_NIFI_DESCRIPTION"), icon: "near_me",
                         iconColor: "#3483BA", onClick: () => this.createFromNifi()
                     });
                 }
@@ -34,7 +35,7 @@ export class RegisterNewTemplateController {
             .then((actionSet: any) => {
                 if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                     this.registrationMethods.push({
-                        name: "Import from a file", description: "Import from a Kylo archive or NiFi template file", icon: "file_upload",
+                        name:this.translate.instant("FEEDMGR.TEMPLATES.IMPORT.IMPORT_FROM_FILE_TITLE"), description:this.translate.instant("FEEDMGR.TEMPLATES.IMPORT.IMPORT_FROM_FILE_DESCRIPTION"), icon: "file_upload",
                         iconColor: "#F08C38", onClick: () => this.importFromFile()
                     });
                 }
@@ -52,7 +53,8 @@ export class RegisterNewTemplateController {
      */
     constructor(private accessControlService: AccessControlService,
                 private stateService: StateService,
-                private registerTemplateService: RegisterTemplateServiceFactory) {}
+                private registerTemplateService: RegisterTemplateServiceFactory,
+                private translate : TranslateService) {}
     /**
          * Creates a new Feed Manager template from a NiFi template.
          */
