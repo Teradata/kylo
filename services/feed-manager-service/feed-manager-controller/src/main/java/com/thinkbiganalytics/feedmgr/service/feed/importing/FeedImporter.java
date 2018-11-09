@@ -518,7 +518,9 @@ public class FeedImporter {
             if(datasetIds != null) {
                 metadata.setSourceDataSetIds(datasetIds.stream().collect(Collectors.joining(",")));
             }
+            FeedImportDatasourceUtil.ensureConnectionKeysMatch(metadata);
             FeedImportDatasourceUtil.replaceChartModelReferences(metadata, chartModelReplacements);
+            FeedImportDatasourceUtil.populateFeedDatasourceIdsProperty(metadata);
             statusMessage.update("Validated data sources.", true);
         } else {
             statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);

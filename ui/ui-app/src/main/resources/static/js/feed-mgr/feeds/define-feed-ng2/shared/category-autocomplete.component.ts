@@ -93,6 +93,14 @@ export class CategoryAutocompleteComponent implements OnInit {
     }
 
     /**
+     * return the selected category object, or null if not set
+     * @return {null}
+     */
+    getCategoryValue(){
+        return typeof this.categoryControl.value == "string" ? null : this.categoryControl.value;
+    }
+
+    /**
      * Check that category is provided. It is required field.
      * @param {FormGroup} formGroup
      * @param {string} controlName

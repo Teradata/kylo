@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
@@ -282,6 +283,11 @@ public class ExecuteSparkJob extends BaseProcessor {
      * Kerberos service principal
      */
     private PropertyDescriptor kerberosPrincipal;
+
+    String fetchDataSourceAttemptAttribute  = "fetchDataSourceAttempt";
+
+    Integer MAX_RETRY_ATTEMPTS = 3;
+
 
     public static Boolean validPath(String path) {
         try {
@@ -574,136 +580,255 @@ public class ExecuteSparkJob extends BaseProcessor {
         return prop.isSet() && StringUtils.isNoneBlank(prop.getValue()) ? prop.evaluateAttributeExpressions(flowFile).getValue() : "";
     }
 
+
+    private com.thinkbiganalytics.kylo.catalog.rest.model.DataSet fetchDataSet(String id,ProcessSession session, FlowFile flowFile,MetadataProviderService metadataService, List<String> extraJarPaths){
+        final MetadataProvider provider = metadataService.getProvider();
+        final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet;
+        try {
+            dataSet = provider.getDataSet(id, false);
+        } catch (final Exception e) {
+            getLog().error("Unable to access data set: {}: {}", new Object[]{id, e}, e);
+            throw e;
+        }
+        if(dataSet.isPresent()){
+            if (dataSet.get().getJars() != null) {
+                extraJarPaths.addAll(dataSet.get().getJars());
+            }
+            if (dataSet.get().getDataSource() != null) {
+                final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = dataSet.get().getDataSource();
+                if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
+                    extraJarPaths.addAll(dataSource.getTemplate().getJars());
+                }
+                if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getJars() != null) {
+                    extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
+                }
+            }
+        }
+        return dataSet != null && dataSet.isPresent() ? dataSet.get() : null;
+     }
+
+
+    /**
+     * fetches a legacy datasource and populates the extraJars if found
+     * @param id
+     * @param session
+     * @param flowFile
+     * @param metadataService
+     * @param extraJarPaths
+     * @return
+     */
+     private Datasource fetchDatasource(String id,ProcessSession session, FlowFile flowFile,MetadataProviderService metadataService, List<String> extraJarPaths) {
+         final MetadataProvider provider = metadataService.getProvider();
+         final Optional<Datasource> datasource;
+         try {
+             datasource = provider.getDatasource(id);
+         } catch (final Exception e) {
+             getLog().error("Unable to access data source: {}: {}", new Object[]{id, e}, e);
+             throw e;
+         }
+         if (datasource.isPresent()) {
+             if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
+                 final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
+                 extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
+             }
+         }
+          return datasource != null && datasource.isPresent() ? datasource.get() : null;
+     }
+
+    /**
+     * Fetches a catalog datasource and populates the extraJars if found
+     * @param id
+     * @param session
+     * @param flowFile
+     * @param metadataService
+     * @param extraJarPaths
+     * @return
+     */
+     private com.thinkbiganalytics.kylo.catalog.rest.model.DataSource fetchCatalogDataSource(String id,ProcessSession session, FlowFile flowFile,MetadataProviderService metadataService, List<String> extraJarPaths){
+         final MetadataProvider provider = metadataService.getProvider();
+         final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSource> optionalDataSource;
+         try {
+             optionalDataSource = provider.getCatalogDataSource(id);
+         }catch (final Exception e){
+             getLog().error("Unable to access catalog data source: {}: {}", new Object[]{id, e}, e);
+             throw e;
+         }
+         if (optionalDataSource.isPresent()) {
+             com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = optionalDataSource.get();
+             if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
+                 extraJarPaths.addAll(dataSource.getTemplate().getJars());
+             }
+             if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getJars() != null) {
+                 extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
+             }
+         }
+         return optionalDataSource != null && optionalDataSource.isPresent() ? optionalDataSource.get() : null;
+     }
+
+
+    /**
+     * Writes a collection as a JSON string
+     * @param set
+     * @return
+     * @throws JsonProcessingException
+     */
+     private String writeCollectionAsString(Set<? extends Object> set) throws JsonProcessingException {
+         final StringBuilder dataSets = new StringBuilder(10240);
+        if(set != null && !set.isEmpty()){
+            final ObjectMapper objectMapper = new ObjectMapper();
+            for(Object s: set){
+                dataSets.append((dataSets.length() == 0) ? '[' : ',');
+                dataSets.append(objectMapper.writeValueAsString(s));
+            }
+                dataSets.append(']');
+        }
+        return dataSets.toString();
+     }
+
+    /**
+     * When an exception occurs attempting to retreive a datasource, increment the retry attempts and if under the threshold, penalize and retry, otherwise fail
+     */
+     private FlowFile checkAndPenalize(ProcessSession session, FlowFile flowFile, Exception e,String PROVENANCE_JOB_STATUS_KEY, String type, String id, Integer attempts) {
+        if(attempts < MAX_RETRY_ATTEMPTS){
+              attempts +=1;
+              flowFile = session.putAttribute(flowFile, fetchDataSourceAttemptAttribute,String.valueOf(attempts));
+              session.penalize(flowFile);
+              session.transfer(flowFile);
+              return flowFile;
+        }
+        else {
+            getLog().error("Unable to access{}: {}. Max retries reached: {} ", new Object[]{type, id,e},e);
+            flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Unable to access "+type+" : " + id);
+            session.transfer(flowFile, REL_FAILURE);
+            return flowFile;
+        }
+     }
+
+
+
     private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, String dataSetIds,String catalogDataSourceIds,
                                                MetadataProviderService metadataService, List<String> extraJarPaths) throws JsonProcessingException {
         final Map<String, String> env = new HashMap<>();
         final Set<String> resolvedDatasources = new HashSet<>();
 
-        if (StringUtils.isNotEmpty(dataSetIds)) {
-            final StringBuilder dataSets = new StringBuilder(10240);
-            final ObjectMapper objectMapper = new ObjectMapper();
-            final MetadataProvider provider = metadataService.getProvider();
 
+        final Set<Datasource> legacyDatasources = new HashSet<>();
+        final Set<com.thinkbiganalytics.kylo.catalog.rest.model.DataSource> catalogDataSources = new HashSet<>();
+        final Set<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> catalogDataSets = new HashSet<>();
+        String attemptsStr = flowFile.getAttribute(fetchDataSourceAttemptAttribute);
+        Integer attempts = (attemptsStr == null) ? 0 : Integer.valueOf(attemptsStr);
+
+        //first populate all the Catalog items
+        if(StringUtils.isNotBlank(dataSetIds)) {
             for (final String id : dataSetIds.split(",")) {
-                dataSets.append((dataSets.length() == 0) ? '[' : ',');
-
-                final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet;
-                try {
-                    dataSet = provider.getDataSet(id, false);
-                } catch (final Exception e) {
-                    getLog().error("Unable to access data set: {}: {}", new Object[]{id, e}, e);
-                    session.penalize(flowFile);
-                    session.transfer(flowFile);
-                    return null;
-                }
-
-                if (dataSet.isPresent()) {
-                    if (dataSet.get().getJars() != null) {
-                        extraJarPaths.addAll(dataSet.get().getJars());
-                    }
-                    if (dataSet.get().getDataSource() != null) {
-                        final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = dataSet.get().getDataSource();
-                        if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
-                            extraJarPaths.addAll(dataSource.getTemplate().getJars());
+                if (StringUtils.isNotBlank(id)) {
+                    try {
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet = fetchDataSet(id, session, flowFile, metadataService, extraJarPaths);
+                        if (dataSet != null) {
+                            catalogDataSets.add(dataSet);
                         }
-                        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getJars() != null) {
-                            extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
-                        }
-                        resolvedDatasources.add(dataSource.getId());
+                    } catch (Exception e) {
+                        flowFile = checkAndPenalize(session, flowFile, e, PROVENANCE_JOB_STATUS_KEY, "catalog dataset", id, attempts);
+                        return null;
                     }
-                    dataSets.append(objectMapper.writeValueAsString(dataSet.get()));
-
-                } else {
-                    getLog().error("Required data set {} is missing for Spark job: {}", new Object[]{id, flowFile});
-                    flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data set: " + id);
-                    session.transfer(flowFile, REL_FAILURE);
-                    return null;
                 }
             }
-
-            if (dataSets.length() != 0) {
-                dataSets.append(']');
-                env.put("DATASETS", dataSets.toString());
+        }
+        if(StringUtils.isNotBlank(catalogDataSourceIds)) {
+            for (final String id : catalogDataSourceIds.split(",")) {
+                if (StringUtils.isNotBlank(id)) {
+                    try {
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource catalogDataSource = fetchCatalogDataSource(id, session, flowFile, metadataService, extraJarPaths);
+                        if (catalogDataSource != null) {
+                            catalogDataSources.add(catalogDataSource);
+                        }
+                    } catch (Exception e) {
+                        flowFile = checkAndPenalize(session, flowFile, e, PROVENANCE_JOB_STATUS_KEY, "catalog data source", id, attempts);
+                        return null;
+                    }
+                }
             }
         }
 
-        if (StringUtils.isNotBlank(datasourceIds)) {
-            final StringBuilder datasources = new StringBuilder(10240);
-            final ObjectMapper objectMapper = new ObjectMapper();
-            final MetadataProvider provider = metadataService.getProvider();
+        if(StringUtils.isNotBlank(datasourceIds)) {
+            //datasourceids can hold anytype of data
+            //first get by legacy, then by catalog datasource, then by id... error out if none match
 
             for (final String id : datasourceIds.split(",")) {
-                if (!resolvedDatasources.contains(id)) {
-                    datasources.append((datasources.length() == 0) ? '[' : ',');
+                //if the id exists and it doesnt already match a datasource, dataset, or catalog datasource then try to match it
+                if (StringUtils.isNotBlank(id) && (
+                    !(catalogDataSources.stream().anyMatch(dataSource -> dataSource.getId().equalsIgnoreCase(id)) ||
+                      catalogDataSets.stream().anyMatch(dataSet1 -> dataSet1.getId().equalsIgnoreCase(id)) ||
+                      legacyDatasources.stream().anyMatch(ds -> ds.getId().equalsIgnoreCase(id))))) {
 
-                    final Optional<Datasource> datasource;
+                    Datasource datasource = null;
                     try {
-                        datasource = provider.getDatasource(id);
-                    } catch (final Exception e) {
-                        getLog().error("Unable to access data source: {}: {}", new Object[]{id, e}, e);
-                        session.penalize(flowFile);
-                        session.transfer(flowFile);
-                        return null;
+                        datasource = fetchDatasource(id, session, flowFile, metadataService, extraJarPaths);
+                        if (datasource != null) {
+                            legacyDatasources.add(datasource);
+                        }
+                    } catch (Exception e) {
+                        //swallow and continue
                     }
-                    if (datasource.isPresent()) {
-                        if (datasource.get() instanceof JdbcDatasource && StringUtils.isNotBlank(((JdbcDatasource) datasource.get()).getDatabaseDriverLocation())) {
-                            final String[] databaseDriverLocations = ((JdbcDatasource) datasource.get()).getDatabaseDriverLocation().split(",");
-                            extraJarPaths.addAll(Arrays.asList(databaseDriverLocations));
+                    if (datasource == null) {
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource catalogDataSource = null;
+                        if (catalogDataSources.stream().noneMatch(dataSource -> dataSource.getId().equalsIgnoreCase(id))) {
+                            try {
+                                catalogDataSource = fetchCatalogDataSource(id, session, flowFile, metadataService, extraJarPaths);
+                                final com.thinkbiganalytics.kylo.catalog.rest.model.DataSource finalDataSource = catalogDataSource;
+                                if (catalogDataSource != null) {
+                                    catalogDataSources.add(catalogDataSource);
+                                }
+                            } catch (Exception e) {
+                                //swallow and continue
+
+                            }
                         }
-                        datasources.append(objectMapper.writeValueAsString(datasource.get()));
+                        if (catalogDataSource == null) {
+                            com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet = null;
+                            if (catalogDataSets.stream().noneMatch(dataSet1 -> dataSet1.getId().equalsIgnoreCase(id))) {
+                                try {
+                                    dataSet = fetchDataSet(id, session, flowFile, metadataService, extraJarPaths);
+                                    if (dataSet != null) {
+                                        catalogDataSets.add(dataSet);
+                                    }
+                                } catch (Exception e) {
+                                    //swallow and continue
+                                }
+                                if (dataSet == null) {
+                                    ///ERROR OUT
+                                    flowFile = checkAndPenalize(session, flowFile, null, PROVENANCE_JOB_STATUS_KEY, "datasource", id, attempts);
+                                    return null;
+                                }
+                            }
 
-                    } else {
-                        getLog().error("Required datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
-                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data source: " + id);
-                        session.transfer(flowFile, REL_FAILURE);
-                        return null;
-                    }
-                }
-            }
-
-            if (datasources.length() != 0) {
-                datasources.append(']');
-                env.put("DATASOURCES", datasources.toString());
-            }
-        }
-
-        if (StringUtils.isNotBlank(catalogDataSourceIds)) {
-            final StringBuilder datasources = new StringBuilder(10240);
-            final ObjectMapper objectMapper = new ObjectMapper();
-            final MetadataProvider provider = metadataService.getProvider();
-
-            for (final String id : catalogDataSourceIds.split(",")) {
-                if (!resolvedDatasources.contains(id)) {
-                    datasources.append((datasources.length() == 0) ? '[' : ',');
-
-                    final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSource> optionalDataSource = provider.getCatalogDataSource(id);
-                    if (optionalDataSource.isPresent()) {
-                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource =optionalDataSource.get();
-                        if (dataSource.getTemplate() != null && dataSource.getTemplate().getJars() != null) {
-                            extraJarPaths.addAll(dataSource.getTemplate().getJars());
                         }
-                        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null && dataSource.getConnector().getTemplate().getJars() != null) {
-                            extraJarPaths.addAll(dataSource.getConnector().getTemplate().getJars());
-                        }
-                        resolvedDatasources.add(dataSource.getId());
-
-                        datasources.append(objectMapper.writeValueAsString(dataSource));
-                        getLog().info("Adding CatalogDataSource {} ", new Object[] {dataSource.getId()});
-
-                    } else {
-                        getLog().error("Required catalog datasource {} is missing for Spark job: {}", new Object[]{id, flowFile});
-                        flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Invalid data catalog source: " + id);
-                        session.transfer(flowFile, REL_FAILURE);
-                        return null;
                     }
                 }
             }
-
-            if (datasources.length() != 0) {
-                datasources.append(']');
-                env.put("CATALOG_DATASOURCES", datasources.toString());
-            }
         }
+        StringBuilder datasourceSummary = new StringBuilder();
+
+        if(!catalogDataSets.isEmpty()){
+            String dataSets = writeCollectionAsString(catalogDataSets);
+            datasourceSummary.append(catalogDataSets.size()+" datasets");
+            env.put("DATASETS", dataSets);
+        }
+        if(!legacyDatasources.isEmpty()){
+            String datasources = writeCollectionAsString(legacyDatasources);
+            (datasourceSummary.length() >0 ? datasourceSummary.append("; ") : datasourceSummary).append(legacyDatasources.size()+" legacy datasources");
+            env.put("DATASOURCES", datasources);
+        }
+        if(!catalogDataSources.isEmpty()){
+            String datasources = writeCollectionAsString(catalogDataSources);
+            (datasourceSummary.length() >0 ? datasourceSummary.append("; ") : datasourceSummary).append(catalogDataSources.size()+" catalog datasources");
+            env.put("CATALOG_DATASOURCES", datasources);
+        }
+        String summaryString = datasourceSummary.toString();
+        if(StringUtils.isNotBlank(summaryString)) {
+            flowFile = session.putAttribute(flowFile, "Data source usage", summaryString);
+        }
+
 
         return env;
     }

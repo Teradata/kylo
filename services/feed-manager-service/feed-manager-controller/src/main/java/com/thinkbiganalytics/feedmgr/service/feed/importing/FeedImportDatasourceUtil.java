@@ -111,6 +111,24 @@ public class FeedImportDatasourceUtil {
 
     }
 
+    public static void populateFeedDatasourceIdsProperty(FeedMetadata metadata){
+        //fill the datasourceIds array will catalog datasets and datasources for backwards compatability
+        List<String> catalogDataSources =metadata.getDataTransformation().getCatalogDataSourceIds();
+        List<DataSet> catalogDataSets = metadata.getSourceDataSets();
+        List<String> datasourceIds = metadata.getDataTransformation().getDatasourceIds();
+
+        final  List<String> ids  = datasourceIds != null ? datasourceIds : new ArrayList<>();
+        if(catalogDataSets != null){
+            catalogDataSets.stream().filter(dataSet -> !ids.contains(dataSet.getId())).forEach(dataSet -> ids.add(dataSet.getId()));
+        }
+
+        if(catalogDataSources != null){
+            catalogDataSources.stream().filter(datasource -> !ids.contains(datasource)).forEach(datasource -> ids.add(datasource));
+        }
+        metadata.getDataTransformation().setDatasourceIds(ids);
+
+    }
+
     public static void fixDatasetMatchesUserDataSource(FeedMetadata metadata, String datasourceId, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet){
 
         if(metadata.getDataTransformation() != null && StringUtils.isNotBlank(metadata.getDataTransformation().getDataTransformScript()) && metadata.getDataTransformation().getChartViewModel() != null) {
@@ -172,6 +190,62 @@ public class FeedImportDatasourceUtil {
                 metadata.getDataTransformation().updateDataSourceIdsString();
             }
         }
+    }
+
+    /**
+     * Make sure the connections attributes that link source and dest nodes are correct.
+     * it appears some kylo instances have the joinKeys that list the (sourceKey and destKey)mapping to the wrong node.
+     * this will fix the join keys so the sourceKey maps to the source node and the destKey maps to the destNode
+     * 
+     * @param metadata
+     */
+    public static void ensureConnectionKeysMatch(FeedMetadata metadata){
+
+        List<Map<String, Object>> nodes = (List<Map<String, Object>>) metadata.getDataTransformation().getChartViewModel().get("nodes");
+
+        Map<String,Map<String,Object>> nodeById = nodes.stream().collect(Collectors.toMap(node -> node.get("id").toString(), node->node));
+        List<Map<String,Map<String,Object>>> connections = (List<Map<String,Map<String,Object>>>) metadata.getDataTransformation().getChartViewModel().get("connections");
+        if(connections != null){
+
+
+            connections.stream().forEach(connection -> {
+                Map<String,Object>joinKeys =  (Map<String,Object>)connection.get("joinKeys");
+                String sourceKey = joinKeys.get("sourceKey").toString();
+                String destKey = joinKeys.get("destKey").toString();
+
+
+
+                Map<String,Object> sourceNode = nodeById.get(connection.get("source").get("nodeID")+"");
+                Map<String,Object> destNode = nodeById.get(connection.get("dest").get("nodeID")+"");
+
+                Map<String,Map<String,Object>> srcNodeAttrs = ((Map<String,Map<String,Object>>)sourceNode.get("nodeAttributes"));
+                List<Map<String,String>> srcAttrs = (List<Map<String,String>>)srcNodeAttrs.get("attributes");
+                List<String> sourceFields = srcAttrs.stream().map(attr -> attr.get("name")).collect(Collectors.toList());
+
+
+                Map<String,Map<String,Object>> destNodeAttrs = ((Map<String,Map<String,Object>>)destNode.get("nodeAttributes"));
+                List<Map<String,String>> destAttrs = (List<Map<String,String>>)destNodeAttrs.get("attributes");
+                List<String> destFields = destAttrs.stream().map(attr -> attr.get("name")).collect(Collectors.toList());
+
+                boolean validSource = sourceFields.contains(sourceKey);
+                boolean validDest = destFields.contains(destKey);
+                if(!validDest && !validSource){
+                    //try flipping them
+                    validSource = sourceFields.contains(destKey);
+                    validDest = destFields.contains(sourceKey);
+                    if(validDest && validSource){
+                        //flip them
+                        joinKeys.put("sourceKey",destKey);
+                        joinKeys.put("destKey",sourceKey);
+                        log.info("Fixed source and dest Keys for feed {} ",metadata.getCategoryAndFeedName());
+                    }
+                }
+            });
+
+        }
+
+
+
     }
 
 
