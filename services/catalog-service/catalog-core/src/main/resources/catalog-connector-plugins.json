@@ -41,7 +41,10 @@
         "hint":"Supply a location to upload to. For example 'file:/var/upload' ",
         "validators": [
           {
-            "type": "url"
+            "type": "url",
+            "params": {
+              "protocol": "file:"
+            }
           }
         ]
       }
