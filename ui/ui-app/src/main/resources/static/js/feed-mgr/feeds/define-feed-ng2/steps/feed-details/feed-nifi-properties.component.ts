@@ -12,7 +12,7 @@ import {Feed} from "../../../../model/feed/feed.model";
 import {FeedDetailsProcessorRenderingHelper} from "../../../../services/FeedDetailsProcessorRenderingHelper";
 import {RegisterTemplatePropertyService} from "../../../../services/RegisterTemplatePropertyService";
 import {RestUrlConstants} from "../../../../services/RestUrlConstants";
-import {Templates} from "../../../../services/TemplateTypes";
+import {Templates} from "../../../../../../lib/feed-mgr/services/TemplateTypes";
 import {DefineFeedService} from "../../services/define-feed.service";
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedNifiPropertiesService} from "../../services/feed-nifi-properties.service";

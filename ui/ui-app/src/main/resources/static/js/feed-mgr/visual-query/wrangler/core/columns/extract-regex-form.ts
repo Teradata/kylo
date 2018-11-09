@@ -1,7 +1,7 @@
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnForm} from "./column-form";
 import {ColumnController} from "../../column-controller";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {InputType} from "../../../../../../lib/dynamic-form/model/InputText";
 import {Validators} from "@angular/forms";
 
 export class ExtractRegexForm extends ColumnForm{

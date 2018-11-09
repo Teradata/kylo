@@ -3,7 +3,7 @@ import {UserProperty} from "../../model/user-property.model";
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
-import {FormControlValidation} from "../../../common/utils/form-control-validation";
+import {FormControlValidation} from "../../../../lib/common/utils/form-control-validation";
 import {FieldPolicyProperty} from "../../model/field-policy";
 
 

@@ -1,8 +1,8 @@
 import {ColumnForm} from "./column-form";
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnController} from "../../column-controller";
 import {FormGroup, Validators} from "@angular/forms";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {InputType} from "../../../../../../lib/dynamic-form/model/InputText";
 import {ColumnUtil} from "../column-util";
 
 export class BinValuesForm extends ColumnForm {

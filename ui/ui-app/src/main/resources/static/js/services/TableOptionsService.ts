@@ -1,11 +1,11 @@
 import {ListTableView} from "./ListTableViewTypes";
-import {Common} from "../common/CommonTypes";
 import * as angular from 'angular';
 import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
 import {moduleName} from './module-name';
 import {DefaultPaginationDataService} from "./PaginationDataService";
+import {Common} from '../../lib/common/CommonTypes';
 
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
     sortOptions:Common.Map<SortOption[]> = {};

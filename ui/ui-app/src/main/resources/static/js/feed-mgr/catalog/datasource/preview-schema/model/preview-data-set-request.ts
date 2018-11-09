@@ -1,7 +1,7 @@
 import {DataSource} from "../../../api/models/datasource";
-import {Common} from "../../../../../common/CommonTypes";
 import {PageSpec} from "../../../../visual-query/wrangler/query-engine";
 import {SchemaParser} from "../../../../model/field-policy";
+import {Common} from '../../../../../../lib/common/CommonTypes';
 
 /**
  * Request to preview a given data set

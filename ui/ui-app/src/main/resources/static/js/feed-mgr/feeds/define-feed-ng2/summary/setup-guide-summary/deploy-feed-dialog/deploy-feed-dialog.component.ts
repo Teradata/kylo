@@ -12,7 +12,7 @@ import {FeedScheduleComponent} from "../feed-schedule/feed-schedule.component";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {FeedLoadingService} from "../../../services/feed-loading-service";
-import {Templates} from "../../../../../services/TemplateTypes";
+import {Templates} from "../../../../../../../lib/feed-mgr/services/TemplateTypes";
 import {FeedStepConstants} from "../../../../../model/feed/feed-step-constants";
 import {DeployEntityVersionResponse} from "../../../../../model/deploy-entity-response.model";
 import {NifiErrorMessage} from "../../../../../model/nifi-error-message.model";

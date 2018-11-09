@@ -276,21 +276,11 @@
             </configuration>
           </execution>
           <execution>
-            <id>npm build</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <arguments>run build</arguments>
-            </configuration>
-          </execution>
-          <execution>
             <id>npm build lib</id>
             <goals>
               <goal>npm</goal>
             </goals>
-            <phase>package</phase>
+            <phase>generate-resources</phase>
             <configuration>
               <arguments>run build:lib</arguments>
             </configuration>
@@ -300,11 +290,21 @@
             <goals>
               <goal>npm</goal>
             </goals>
-            <phase>install</phase>
+            <phase>generate-resources</phase>
             <configuration>
               <arguments>link</arguments>
               <installDirectory>${project.basedir}</installDirectory>
-              <workingDirectory>${project.build.directory}/lib/feed</workingDirectory>
+              <workingDirectory>${project.build.directory}/classes/static/lib</workingDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>npm build</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <arguments>run build</arguments>
             </configuration>
           </execution>
         </executions>

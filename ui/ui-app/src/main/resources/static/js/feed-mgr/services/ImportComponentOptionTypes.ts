@@ -1,8 +1,6 @@
-import * as angular from "angular";
-import * as _ from "underscore";
-import {Common} from "../../common/CommonTypes";
-import {Templates} from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import {Common} from '../../../lib/common/CommonTypes';
 
      export enum ImportComponentType {
         NIFI_TEMPLATE = "NIFI_TEMPLATE",

@@ -1,10 +1,10 @@
 import * as _ from "underscore";
 import {ListTableView} from "./ListTableViewTypes";
-import {Common} from "../common/CommonTypes";
 import PaginationData = ListTableView.PaginationData;
 import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
 import {Injectable} from "@angular/core";
+import {Common} from '../../lib/common/CommonTypes';
 
 export enum ViewType {
     TABLE,
@@ -91,7 +91,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
         var pageData = this.paginationData(pageName, tabName);
 
         //deactivate the tab
-        _.each(pageData.tabs, (tabData, name) => {
+        _.each(pageData.tabs, (tabData: any, name: any) => {
             tabData.active = false;
             if (name == tabName) {
                 tabData.active = true;

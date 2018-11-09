@@ -1,11 +1,11 @@
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 
-import {DynamicFormFieldGroupBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-field-group-builder";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
-import {Templates} from "../../../../services/TemplateTypes";
-import {FieldConfig} from "../../../../shared/dynamic-form/model/FieldConfig";
+import {DynamicFormFieldGroupBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-field-group-builder";
+import {InputType} from "../../../../../../lib/dynamic-form/model/InputText";
+import {Templates} from "../../../../../../lib/feed-mgr/services/TemplateTypes";
+import {FieldConfig} from "../../../../../../lib/dynamic-form/model/FieldConfig";
 import {FieldConfigurationState} from "./field-configuration-state";
-import {ConfigurationFieldBuilder} from "../../../../shared/dynamic-form/services/field-config-builder";
+import {ConfigurationFieldBuilder} from "../../../../../../lib/dynamic-form/services/field-config-builder";
 
 export class FieldConfigurationBuilder {
     formGroupBuilder:DynamicFormFieldGroupBuilder

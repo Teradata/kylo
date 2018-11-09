@@ -1,11 +1,11 @@
 import {ColumnForm} from "./column-form";
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnController} from "../../column-controller";
 import {AbstractControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
-import {InputType} from "../../../../shared/dynamic-form/model/InputText";
+import {InputType} from "../../../../../../lib/dynamic-form/model/InputText";
 import {ColumnUtil} from "../column-util";
 import {ColumnProfile} from "../../api/column-profile";
-import {FormValidators} from "../../../../shared/dynamic-form/form-validators/form-validators";
+import {FormValidators} from "../../../../../../lib/dynamic-form/form-validators/form-validators";
 
 
 export class RescaleForm extends ColumnForm {

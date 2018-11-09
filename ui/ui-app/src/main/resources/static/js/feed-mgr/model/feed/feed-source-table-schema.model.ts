@@ -1,8 +1,8 @@
 import {SchemaField} from "../schema-field";
 import {DefaultTableSchema} from "../default-table-schema.model";
-import {KyloObject} from "../../../common/common.model";
+import {KyloObject} from "../../../../lib/common/common.model";
 import {TableColumnDefinition} from "../TableColumnDefinition";
-import {ObjectUtils} from "../../../common/utils/object-utils";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
 import {FeedTableSchema} from "./feed-table-schema.model";
 
 export class SourceTableSchema extends DefaultTableSchema implements KyloObject{

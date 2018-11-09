@@ -1,6 +1,6 @@
 import * as _ from 'underscore';
 import { Injectable } from "@angular/core";
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 declare const d3: any;
 

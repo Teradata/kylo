@@ -4,11 +4,11 @@ import {TableFieldPartition} from "../TableFieldPartition";
 import {TableFieldPolicy} from "../TableFieldPolicy";
 import {DefaultTableSchema} from "../default-table-schema.model";
 import {TableColumnDefinition} from "../TableColumnDefinition";
-import {ObjectUtils} from "../../../common/utils/object-utils";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
 import {SourceTableSchema} from "./feed-source-table-schema.model";
 import {TableOptions} from "./feed.model";
 import {FeedTableSchema} from "./feed-table-schema.model";
-import {KyloObject} from "../../../common/common.model";
+import {KyloObject} from "../../../../lib/common/common.model";
 import {SchemaField} from "../schema-field";
 
 

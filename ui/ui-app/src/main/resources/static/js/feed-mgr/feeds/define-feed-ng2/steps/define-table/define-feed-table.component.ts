@@ -1,7 +1,6 @@
 import {ChangeDetectorRef, Component, Injector, OnDestroy, OnInit, Pipe, PipeTransform, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {Common} from "../../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../../services/DomainTypesService";
 import {TableColumnDefinition} from "../../../../model/TableColumnDefinition";
 import {TableFieldPartition} from "../../../../model/TableFieldPartition";
@@ -9,34 +8,32 @@ import {TableFieldPolicy} from "../../../../model/TableFieldPolicy";
 import {HttpClient} from "@angular/common/http";
 import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define-feed.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
-import {TableCreateMethod} from "../../../../model/feed/feed-table";
 import {FeedTableColumnDefinitionValidation} from "../../../../model/feed/feed-table-column-definition-validation";
-import {FormArray, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
+import {FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {AbstractControl} from "@angular/forms/src/model";
-import { interval } from 'rxjs/observable/interval';
-import { distinctUntilChanged, map, merge } from 'rxjs/operators';
 import {TdDialogService} from "@covalent/core/dialogs";
-import {StateRegistry, StateService} from "@uirouter/angular";
+import {StateService} from "@uirouter/angular";
 import {FeedService} from "../../../../services/FeedService";
-import {TableSchema} from "../../../../model/table-schema";
-import {SchemaField} from "../../../../model/schema-field";
 import {ValidationErrors} from "@angular/forms/src/directives/validators";
-import {SaveFeedResponse} from "../../model/save-feed-response.model";
 import {TdVirtualScrollContainerComponent} from "@covalent/core/virtual-scroll";
 import {FeedFieldPolicyRulesDialogService} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.service";
 import {SelectedColumn} from "./feed-table-selected-column.model";
 import {Feed, SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
 import {FeedConstants} from "../../../../services/FeedConstants";
-import {FeedFieldPolicyRulesDialogComponent} from "../../../../shared/feed-field-policy-rules/feed-field-policy-rules-dialog.component";
-import {FeedFieldPolicyDialogData} from "../../../../shared/feed-field-policy-rules/feed-field-policy-dialog-data";
 import {Observable} from "rxjs/Observable";
-import {DomainTypeConflictDialogComponent, DomainTypeConflictDialogData, DomainTypeConflictDialogResponse} from "../../../../shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component";
+import {
+    DomainTypeConflictDialogComponent,
+    DomainTypeConflictDialogData,
+    DomainTypeConflictDialogResponse
+} from "../../../../shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component";
 import {ApplyDomainTypeDialogComponent, ApplyDomainTypeDialogData, ApplyDomainTypeDialogDataResponse} from "../../../../shared/domain-type/apply-domain-type/apply-domain-type-dialog.component";
 import {CheckAll} from "../../../shared/checkAll";
 import {MatDialog} from "@angular/material/dialog";
 import {
-    ApplyDomainTypesData, ApplyDomainTypesDialogComponent,
-    ApplyDomainTypesResponse, ApplyDomainTypesResponseStatus,
+    ApplyDomainTypesData,
+    ApplyDomainTypesDialogComponent,
+    ApplyDomainTypesResponse,
+    ApplyDomainTypesResponseStatus,
     ApplyDomainTypesRow
 } from "../../../../shared/domain-type/apply-domain-types/apply-domain-types-dialog.component";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
@@ -49,6 +46,8 @@ import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/
 import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
 import {DefineFeedSourceSampleService} from "./source-sample/define-feed-source-sample.service";
 import {CatalogService} from "../../../../catalog/api/services/catalog.service";
+import {Common} from '../../../../../../lib/common/CommonTypes';
+
 const moduleName = require('../../../define-feed/module-name');
 
 

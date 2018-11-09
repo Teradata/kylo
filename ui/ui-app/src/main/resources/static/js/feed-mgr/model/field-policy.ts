@@ -1,4 +1,4 @@
-import {Common} from "../../common/CommonTypes";
+import {Common} from '../../../lib/common/CommonTypes';
 
 
 export interface FieldPolicySelectableValue{

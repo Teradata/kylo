@@ -1,7 +1,7 @@
 ///<reference path="ImportComponentOptionTypes.ts"/>
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {Common} from "../../common/CommonTypes";
+import {Common} from '../../../lib/common/CommonTypes';
 import Map = Common.Map;
 import {moduleName} from "../module-name";
 import {ImportComponentOption, ImportComponentType, ImportProperty, ImportService} from './ImportComponentOptionTypes';

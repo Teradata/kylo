@@ -1,4 +1,4 @@
-import {Templates} from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 
 export class FeedDetailsProcessorRenderingHelper {
 

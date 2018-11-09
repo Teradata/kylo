@@ -1,5 +1,5 @@
 import * as _ from "underscore"
-import {Templates} from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import Property = Templates.Property;
 import Processor = Templates.Processor;
 

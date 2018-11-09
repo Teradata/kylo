@@ -26,7 +26,7 @@ import "./shared/feed-field-policy-rules/inline-field-policy-form";
 import "./shared/nifi-property-input/nifi-property-timunit-input";
 import "./shared/nifi-property-input/nifi-property-input";
 import "./shared/cron-expression-validator/cron-expression-validator";
-import "./shared/cron-expression-preview/cron-expression-preview";
+import "../../lib/cron-expression-preview/cron-expression-preview";
 import "./services/DatasourcesService";
 import "./shared/entity-access-control/entity-access";
 import "./shared/entity-access-control/EntityAccessControlDialogService";

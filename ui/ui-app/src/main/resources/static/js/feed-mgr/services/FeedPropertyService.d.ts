@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-import {Templates} from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import Property = Templates.Property;
 import Processor = Templates.Processor;
 

@@ -1,6 +1,6 @@
 import {ColumnController} from "../../column-controller";
 import {ColumnUtil} from "../column-util";
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnForm} from "./column-form";
 import {StringUtils} from "../../../../../common/utils/StringUtils";
 

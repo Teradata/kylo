@@ -5,8 +5,8 @@ import {Observable} from "rxjs/Observable";
 
 import {DateFormatConfig, DateFormatResponse, DialogService} from "../../api/services/dialog.service";
 import {DateFormatDialog} from "../columns/date-format.component";
-import {DynamicFormDialogData} from "../../../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
-import {SimpleDynamicFormDialogComponent} from "../../../../shared/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component";
+import {DynamicFormDialogData} from "../../../../../../lib/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {SimpleDynamicFormDialogComponent} from "../../../../../../lib/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component";
 import {ColumnForm} from "../columns/column-form";
 
 /**

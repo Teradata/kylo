@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
+import {Compiler, COMPILER_OPTIONS, CompilerFactory, NgModule} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
@@ -42,7 +42,7 @@ import {KyloCommonModule} from "../../../common/common.module";
 import {CatalogApiModule} from "../../catalog/api/catalog-api.module";
 import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.module";
 import {KyloFeedManagerModule} from "../../feed-mgr.module";
-import {DynamicFormModule} from "../../shared/dynamic-form/dynamic-form.module";
+import {DynamicFormModule} from "../../../../lib/dynamic-form/dynamic-form.module";
 import {FeedPreconditionModule} from "../../shared/feed-precondition/feed-precondition.module";
 import {FieldPoliciesModule} from "../../shared/field-policies-angular2/field-policies.module";
 import {PropertyListModule} from "../../shared/property-list/property-list.module";
@@ -52,8 +52,6 @@ import {DefineFeedComponent} from "./define-feed.component";
 import {FeedScheduleComponent} from "./summary/setup-guide-summary/feed-schedule/feed-schedule.component";
 import {NewFeedDialogComponent} from "./new-feed-dialog/new-feed-dialog.component";
 import {DefineFeedSelectTemplateComponent} from "./select-template/define-feed-select-template.component";
-import {DefineFeedService} from "./services/define-feed.service";
-import {FeedLoadingService} from "./services/feed-loading-service";
 import {CategoryAutocompleteComponent} from "./shared/category-autocomplete.component";
 import {SystemFeedNameComponent} from "./shared/system-feed-name.component";
 import {DefineFeedContainerComponent} from "./steps/define-feed-container/define-feed-container.component";
@@ -94,7 +92,7 @@ import {DefineFeedStepSourceComponent} from "./steps/source/define-feed-step-sou
 import {KyloFeedModule} from "../../../../lib/feed/feed.module";
 import {MatButtonToggleModule} from "@angular/material/button-toggle";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
-import {CronExpressionPreviewModule} from '../../shared/cron-expression-preview/cron-expression-preview2.module';
+import {CronExpressionPreviewModule} from '../../../../lib/cron-expression-preview/cron-expression-preview2.module';
 import {SelectNetworkNodeComponent} from "./summary/feed-lineage/select-network-node.component";
 
 import {FeedSetupGuideComponent} from "./summary/setup-guide-summary/feed-setup-guide/feed-setup-guide.component";
@@ -108,7 +106,6 @@ import {MatMenuModule} from "@angular/material/menu";
 import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
 import {OpsManagerServicesModule} from "../../../ops-mgr/services/ops-manager-services.module";
 import {KyloServicesModule} from "../../../services/services.module";
-import {FeedAccessControlService} from "./services/feed-access-control.service";
 import {FeedAlertsComponent} from "./summary/feed-activity-summary/feed-alerts/feed-alerts.component";
 import {FeedJobActivityComponent} from "./summary/feed-activity-summary/feed-job-activity/feed-job-activity.component";
 import {FeedOperationsHealthInfoComponent} from "./summary/feed-activity-summary/feed-operations-health-info/feed-operations-health-info.component";
@@ -127,6 +124,11 @@ import {ExampleStepComponent} from './steps/example-step/example-step.component'
 import {TruncatePipe} from './summary/profile/container/stats/truncate-pipe';
 import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module';
 import {MetadataIndexingComponent} from "../../shared/metadata-indexing/metadata-indexing.component";
+import {JitCompilerFactory} from '@angular/platform-browser-dynamic';
+
+export function createCompilerFn(c: CompilerFactory) {
+        return c.createCompiler([{useJit: true}]);
+    }
 
 @NgModule({
     declarations: [
@@ -200,11 +202,14 @@ import {MetadataIndexingComponent} from "../../shared/metadata-indexing/metadata
         DefineFeedPermissionsDialogComponent
     ],
     providers:[
-      FilterPartitionFormulaPipe,
-      FeedSideNavService,
-      FeedItemInfoService,
-      FeedNifiPropertiesService,
-      DefineFeedSourceSampleService,
+        FilterPartitionFormulaPipe,
+        FeedSideNavService,
+        FeedItemInfoService,
+        FeedNifiPropertiesService,
+        DefineFeedSourceSampleService,
+        {provide: COMPILER_OPTIONS, useValue: {}, multi: true},
+        {provide: CompilerFactory, useClass: JitCompilerFactory, deps: [COMPILER_OPTIONS]},
+        {provide: Compiler, useFactory: createCompilerFn, deps: [CompilerFactory]},
     ],
     imports: [
         CommonModule,

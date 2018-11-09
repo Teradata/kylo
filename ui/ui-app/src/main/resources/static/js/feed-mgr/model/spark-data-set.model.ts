@@ -1,10 +1,10 @@
 import * as _ from 'underscore';
 
-import {Common} from "../../common/CommonTypes";
 import {DataSource} from "../catalog/api/models/datasource";
 import {DataSourceTemplate} from "../catalog/api/models/datasource-template";
 import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 import {TableColumn} from "../catalog/datasource/preview-schema/model/table-view-model";
+import {Common} from '../../../lib/common/CommonTypes';
 
 /**
  * DataSet used by the Data Wrangler

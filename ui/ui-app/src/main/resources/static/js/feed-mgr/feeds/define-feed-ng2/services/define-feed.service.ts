@@ -22,8 +22,7 @@ import {Subject} from "rxjs/Subject";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
 
-import {ObjectChanged} from "../../../../common/common.model";
-import {Common} from "../../../../common/CommonTypes"
+import {ObjectChanged} from "../../../../../lib/common/common.model";
 import {CloneUtil} from "../../../../common/utils/clone-util";
 import {AccessControlService} from "../../../../services/AccessControlService";
 import {SelectionService} from "../../../catalog/api/services/selection.service";
@@ -44,6 +43,7 @@ import {FeedStepBuilderUtil} from "./feed-step-builder-util";
 import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {DeployEntityVersionResponse} from "../../../model/deploy-entity-response.model";
 import {FeedNifiErrorUtil} from "../../../services/feed-nifi-error-util";
+import {Common} from '../../../../../lib/common/CommonTypes';
 
 
 export class FeedEditStateChangeEvent{

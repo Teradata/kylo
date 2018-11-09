@@ -1,4 +1,4 @@
-import {DynamicFormBuilder} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {DynamicFormBuilder} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnController} from "../../column-controller";
 import {ColumnForm} from "./column-form";
 import {ColumnUtil} from "../column-util";

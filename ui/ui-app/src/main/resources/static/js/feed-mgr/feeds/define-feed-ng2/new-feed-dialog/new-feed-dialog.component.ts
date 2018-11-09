@@ -1,7 +1,7 @@
 import {Component, Inject, OnDestroy, OnInit} from "@angular/core";
-import {SimpleDynamicFormDialogComponent} from "../../../shared/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component";
+import {SimpleDynamicFormDialogComponent} from "../../../../../lib/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
-import {DynamicFormDialogData} from "../../../shared/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {DynamicFormDialogData} from "../../../../../lib/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
 import {Template} from "../../../model/template-models";
 import {AbstractControl, FormGroup} from "@angular/forms";
 import {CategoriesService} from "../../../services/CategoriesService";

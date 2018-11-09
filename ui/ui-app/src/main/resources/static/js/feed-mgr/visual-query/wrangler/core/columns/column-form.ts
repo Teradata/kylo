@@ -1,6 +1,6 @@
 import {ColumnUtil} from "../column-util";
 import {DataCategory,DataType} from "../../column-delegate";
-import {FormConfig} from "../../../../shared/dynamic-form/services/dynamic-form-builder";
+import {FormConfig} from "../../../../../../lib/dynamic-form/services/dynamic-form-builder";
 import {ColumnController} from "../../column-controller";
 import {QueryResultColumn} from "../../model/query-result-column";
 

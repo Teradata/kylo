@@ -14,10 +14,11 @@ import {single} from "rxjs/operators/single";
 import {Subscription} from "rxjs/Subscription";
 import {EmptyError} from "rxjs/util/EmptyError";
 
-import {ProcessorControl} from "../../../../../../lib/feed/processor/processor-control";
-import {ProcessorRef} from "../../../../../../lib/feed/processor/processor-ref";
+import {ProcessorRef} from "../../../../../../lib";
 import {UiComponentsService} from "../../../../services/UiComponentsService";
 import {ProcessorTemplate} from "./processor-template";
+
+declare const SystemJS: any;
 
 enum State {
     ERROR = "ERROR",
@@ -151,6 +152,8 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
             }),
             filter(template => typeof template !== "undefined"),
             concatMap(template => {
+                // const template = args[0];
+                // const kyloModule = args[1];
                 if (!this.isSystemJsSetup) {
                     this.setupSystemJs();
                     this.isSystemJsSetup = true;
@@ -162,17 +165,22 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
                     .then((module: any) => module[exportName])
                     .then((type: any) => this.checkNotEmpty(type, module, exportName))
                     .then((type: any) => this._compiler.compileModuleAsync(type));
+                    // .then((x: any) => [x, kyloModule]);
             }),
-            map((moduleFactory: any) => {
+            concatMap(template => SystemJS.import("@kylo/feed").then(kyloModule => [template, kyloModule])),
+            map((imports: any) => {
+                const moduleFactory = imports[0];
+                const kyloModule = imports[1];
+
                 // Find processor control
                 const module = moduleFactory.create(this.injector);
-                const processorControl = module.injector.get(ProcessorControl as any).find((control:any) => control.supportsProcessorType(this.processor.type));
+                const processorControl = module.injector.get(kyloModule.ProcessorControl as any).find((control:any) => control.supportsProcessorType(this.processor.type));
                 if (typeof processorControl === "undefined" || processorControl == null) {
                     throw new Error("Missing ProcessorControl provider for processor type: " + this.processor.type);
                 }
 
                 // Load component and update state
-                this.childInjector = Injector.create([{provide: ProcessorRef, useValue: this.processor}], module.injector);
+                this.childInjector = Injector.create([{provide: kyloModule.ProcessorRef, useValue: this.processor}], module.injector);
                 this.childModule = moduleFactory;
                 this.childType = processorControl.component;
                 this.state = State.TEMPLATE;
@@ -193,11 +201,41 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
             defaultJSExtensions: true,
         });
 
+        SystemJS.registerDynamic('angular', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../bower_components/angular/angular.min');
+        });
         SystemJS.registerDynamic('@angular/core', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/core');
         });
         SystemJS.registerDynamic('@angular/material/dialog', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/dialog');
+        });
+        SystemJS.registerDynamic('@angular/material', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material');
+        });
+        SystemJS.registerDynamic('@angular/material/toolbar', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/toolbar');
+        });
+        SystemJS.registerDynamic('@angular/material/divider', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/divider');
+        });
+        SystemJS.registerDynamic('@angular/material/checkbox', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/checkbox');
+        });
+        SystemJS.registerDynamic('@angular/material/core', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/core');
+        });
+        SystemJS.registerDynamic('@angular/material/form-field', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/form-field');
+        });
+        SystemJS.registerDynamic('@angular/material/card', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/card');
+        });
+        SystemJS.registerDynamic('@angular/material/list', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/list');
+        });
+        SystemJS.registerDynamic('@angular/material/tabs', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@angular/material/tabs');
         });
         SystemJS.registerDynamic('@angular/common/http', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/common/http');
@@ -207,6 +245,24 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         });
         SystemJS.registerDynamic('@angular/material/autocomplete', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/material/autocomplete');
+        });
+        SystemJS.registerDynamic('rxjs/operators', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../node_modules/rxjs/operators');
+        });
+        SystemJS.registerDynamic('rxjs/Observable', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../node_modules/rxjs/Observable');
+        });
+        SystemJS.registerDynamic('rxjs/Subscription', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../node_modules/rxjs/Subscription');
+        });
+        SystemJS.registerDynamic('rxjs/add/operator/do', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../node_modules/rxjs/add/operator/do');
+        });
+        SystemJS.registerDynamic('rxjs/add/operator/debounceTime', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../node_modules/rxjs/add/operator/debounceTime');
+        });
+        SystemJS.registerDynamic('rxjs/add/observable/merge', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../node_modules/rxjs/add/observable/merge');
         });
         SystemJS.registerDynamic('rxjs/observable/of', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/observable/of');
@@ -231,6 +287,9 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         });
         SystemJS.registerDynamic('rxjs/operators/switchMap', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('../../../../../../node_modules/rxjs/operators/switchMap')
+        });
+        SystemJS.registerDynamic('underscore', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('../../../../../../bower_components/underscore/underscore-min')
         });
         SystemJS.registerDynamic('@angular/common', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@angular/common');
@@ -262,8 +321,14 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         SystemJS.registerDynamic('@ngx-translate/core', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@ngx-translate/core');
         });
+        SystemJS.registerDynamic('@covalent/core/chips', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@covalent/core/chips');
+        });
+        SystemJS.registerDynamic('@covalent/core/dialogs', [], true, function(_require: any, _exports: any, _module: any) {
+            _module.exports = require('@covalent/core/dialogs');
+        });
         SystemJS.registerDynamic('@kylo/feed', [], true, function(_require: any, _exports: any, _module: any) {
-            _module.exports = require('../../../../../../lib/feed/index');
+            _module.exports = require('../../../../../../../../../../target/classes/static/lib/bundles/kylo-feed.umd.js');
         });
     }
 

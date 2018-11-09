@@ -2,7 +2,7 @@ import * as angular from "angular";
 
 import {Common} from "../../common/CommonTypes";
 import {AccessControl} from "../../services/AccessControl";
-import {Templates} from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 import PropertyAndProcessors = Templates.PropertyAndProcessors;
 import Property = Templates.Property;
