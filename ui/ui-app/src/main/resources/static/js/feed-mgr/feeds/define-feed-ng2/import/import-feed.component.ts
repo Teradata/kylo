@@ -218,9 +218,11 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         if(importOption.properties == undefined){
             return [];
         }
-        return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties &&
+        return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties && (
             Object.keys(property.additionalProperties).indexOf("legacyTableDataSource") >=0 &&
-            (property.additionalProperties["legacyTableDataSource"] == "true" ||property.additionalProperties["legacyTableDataSource"] == true));
+            (property.additionalProperties["legacyTableDataSource"] == "true" ||property.additionalProperties["legacyTableDataSource"] == true)) ||
+            Object.keys(property.additionalProperties).indexOf("dataset") &&
+            (property.additionalProperties["dataset"] == "true" ||property.additionalProperties["dataset"] == true));
     }
 
     public findDataSourcePropertiesFilter(importOption:ImportComponentOption): ImportProperty[]{

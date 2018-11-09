@@ -665,6 +665,7 @@ public class FeedImporter {
                     .withImportComponent(ImportComponent.USER_DATA_SETS)
                     .asValid(matchingDataSet != null)
                     .withAdditionalProperties(datasetAdditionalProperties.get(incomingDataSet.getId()))
+                    .putAdditionalProperty("dataset", "true")
                     .build();
                 dataSetProperties.add(property);
                 componentOption.setValidForImport(property.isValid());

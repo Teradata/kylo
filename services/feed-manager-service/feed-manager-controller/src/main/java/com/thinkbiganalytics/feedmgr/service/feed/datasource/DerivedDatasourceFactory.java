@@ -219,6 +219,13 @@ public class DerivedDatasourceFactory {
         final Set<String> dataSetIds = new HashSet<>();
         final Set<Datasource.ID> datasources = new HashSet<>();
 
+        if(feed.getSourceDataSets() != null) {
+         List<String>  datasetIds = feed.getSourceDataSets().stream().map(ds -> ds.getId()).collect(Collectors.toList());
+         dataSetIds.addAll(datasetIds);
+        }
+
+       final List<String> catalogSources = feed.getDataTransformation().getCatalogDataSourceIds() != null ? feed.getDataTransformation().getCatalogDataSourceIds() : new ArrayList<>();
+
         // Extract nodes in chart view model
         @SuppressWarnings("unchecked") final Stream<Map<String, Object>> nodes = Optional.ofNullable(feed.getDataTransformation().getChartViewModel())
             .map(model -> (List<Map<String, Object>>) model.get("nodes"))
@@ -255,7 +262,6 @@ public class DerivedDatasourceFactory {
                     properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
                     properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, datasource.getName()));
                 }
-
             }
             if (datasourceDefinition != null) {
                 // Create the derived data source
@@ -269,12 +275,13 @@ public class DerivedDatasourceFactory {
         });
 
         // Build the data sources from the data source ids
-        final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
-        datasourceIds.stream()
-            .filter(id -> !dataSetIds.contains(id))
-            .map(datasourceProvider::resolve)
-            .forEach(datasources::add);
-
+        if(dataSetIds.isEmpty()) {
+            final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
+            datasourceIds.stream()
+                .filter(id -> !dataSetIds.contains(id) && !catalogSources.contains(id))
+                .map(datasourceProvider::resolve)
+                .forEach(datasources::add);
+        }
         return datasources;
     }
 

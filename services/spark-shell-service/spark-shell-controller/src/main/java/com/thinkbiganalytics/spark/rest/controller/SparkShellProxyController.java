@@ -88,11 +88,14 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -171,7 +174,14 @@ public class SparkShellProxyController {
      */
     @Inject
     private DataSourceProvider kyloCatalogDataSourceProvider;
-    
+
+    /**
+     * Provides access to Kylo Catalog data sources
+     */
+    @Inject
+    private DataSetProvider kyloCatalogDataSetProvider;
+
+
     @Inject
     private CatalogModelTransform catalogModelTransform;
 
@@ -844,29 +854,27 @@ public class SparkShellProxyController {
         if (request.getCatalogDatasets() == null || request.getCatalogDatasets().isEmpty()) {
             return;
         }
-
+            List<DataSet> updatedDataSets = new ArrayList<>();
             request.getCatalogDatasets().forEach((dataSet) -> {
                 // DataSets will now be added when a user adds them to the wrangler canvas and then associated with an ID
                 // In the unlikely event the DataSet coming in doesn't have an ID, ensure it's built.
                 if (StringUtils.isBlank(dataSet.getId())) {
                     com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = kyloCatalogDataSourceProvider.resolveId(dataSet.getDataSource().getId());
                     com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = catalogModelTransform.buildDataSet(dataSet, dataSetProvider.build(dataSourceId));
-                    addDataSourceInformation(catalogModelTransform.dataSetToRestModel().apply(domainDs));
+                    updatedDataSets.add(addDataSourceInformation(catalogModelTransform.dataSetToRestModel().apply(domainDs)));
                 } else {
-                    addDataSourceInformation(dataSet);
+                    updatedDataSets.add(addDataSourceInformation(dataSet));
                 }
             });
-
-
+            request.setCatalogDatasets(updatedDataSets);
     }
 
-    private void addDataSourceInformation(@Nonnull DataSet dataSet){
+    private DataSet addDataSourceInformation(@Nonnull DataSet dataSet){
 
-        DataSource catalogDataSource = fetchCatalogDataSource(dataSet.getDataSource().getId());
-
-        dataSet.setDataSource(catalogDataSource);
-        DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);
-        dataSet.getDataSource().setTemplate(template);
+        DataSet fetchedDataSet = fetchDataSet(dataSet.getId());
+        DataSetTemplate template = DataSetUtil.mergeTemplates(fetchedDataSet);
+        fetchedDataSet.getDataSource().setTemplate(template);
+        return new DataSet(fetchedDataSet);
     }
 
     private DataSource fetchCatalogDataSource(@Nonnull String datasourceId){
@@ -876,6 +884,17 @@ public class SparkShellProxyController {
             return kyloCatalogDataSourceProvider.find(dsId)
                 .map(catalogModelTransform.dataSourceToRestModel(true,false))
                 .orElseThrow(() -> new BadRequestException("No Catalog datasource exists with the given ID: " + datasourceId));
+        });
+
+    }
+
+    private DataSet fetchDataSet(@Nonnull String dataSetId){
+        return metadata.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId = kyloCatalogDataSetProvider.resolveId(dataSetId);
+
+            return kyloCatalogDataSetProvider.find(dsId)
+                .map(catalogModelTransform.dataSetToRestModel(false))
+                .orElseThrow(() -> new BadRequestException("No Catalog dataset exists with the given ID: " + dataSetId));
         });
 
     }

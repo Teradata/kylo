@@ -705,7 +705,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
             //mark the datasourceId if its not a catalog datasource
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && this.availableCatalogSqlDataSourceIds.indexOf(id) <0);
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && (this.availableCatalogSqlDataSourceIds != undefined && this.availableCatalogSqlDataSourceIds.indexOf(id) <0));
             this.model.catalogDataSourceIds = this.selectedCatalogDatsSourceIds;
             this.model.$catalogDataSources = this.getCatalogDataSources();
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);

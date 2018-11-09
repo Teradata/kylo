@@ -101,6 +101,8 @@ public class CatalogModelTransform {
         dataSource.setTemplate(template);
         return dataSource;
     }
+
+
     
     public DataSetTemplate decryptOptions(DataSetTemplate template) {
         template.getOptions().entrySet().stream()
@@ -239,6 +241,9 @@ public class CatalogModelTransform {
             model.setTitle(domain.getTitle());
             // TODO: add description
             DataSetTemplate template = sparkParamsToRestModel(domain.getDataSource().getConnector().getPluginId(), encryptedCredentials).apply(domain.getSparkParameters());
+              if(!encryptedCredentials) {
+                  decryptOptions(template);
+              }
             model.setFormat(template.getFormat());
             model.setOptions(template.getOptions());
             model.setPaths(template.getPaths());
