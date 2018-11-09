@@ -528,7 +528,8 @@ export class Feed implements KyloObject, KyloFeed {
      * @return {boolean}
      */
     hasBeenDeployed(){
-        return !this.isDraft() || (this.isDraft() && this.deployedVersion != undefined);
+        return (!this.isDraft()) ||
+            (this.isDraft() && !_.isUndefined(this.deployedVersion) && !_.isUndefined(this.deployedVersion.id));
     }
 
     isDraft(){
