@@ -822,7 +822,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                         }
                     }
                 })
-            }catch(err:any){
+            }catch(err){
                 console.error("error assessing connection keys ",err)
             }
 
