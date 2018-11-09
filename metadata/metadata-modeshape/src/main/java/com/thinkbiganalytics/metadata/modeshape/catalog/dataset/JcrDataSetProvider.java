@@ -322,7 +322,11 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             ds.setDescription(this.description);
             ds.setParamsHash(hash);
             params.setFormat(this.format);
-            params.getOptions().putAll(this.options);
+            if(this.options != null) {
+                for (Map.Entry<String, String> entry : this.options.entrySet()) {
+                    params.addOption(entry.getKey(), entry.getValue());
+                }
+            }
             params.getPaths().addAll(this.paths);
             params.getFiles().addAll(this.files);
             params.getJars().addAll(this.jars);
