@@ -235,7 +235,7 @@ const webpackConfig = (env) => {
             }),
 
             new CleanWebpackPlugin([
-                path.resolve(__dirname, "./target/classes/static"),
+                path.resolve(__dirname, "./target/classes/static/*.js"),
                 path.resolve(__dirname, "./target/cache"),
                 path.resolve(__dirname, "./target/aot")
             ]),
