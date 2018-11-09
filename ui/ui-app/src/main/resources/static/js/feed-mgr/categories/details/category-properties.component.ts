@@ -6,6 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { CloneUtil } from "../../../common/utils/clone-util";
 import { ObjectUtils } from "../../../common/utils/object-utils";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-category-properties',
@@ -50,7 +51,8 @@ export class CategoryProperties {
                 private entityAccessControlService: EntityAccessControlService, 
                 private CategoriesService: CategoriesService,
                 private snackBar : MatSnackBar,
-                private _tdDialogService : TdDialogService) {
+                private _tdDialogService : TdDialogService,
+                private translate : TranslateService) {
 
         this.editModel = this.CategoriesService.newCategory();
         /**
@@ -91,11 +93,11 @@ export class CategoryProperties {
             this.snackBar.open("Saved the Category", "OK", {duration : 3000});
         }, (err: any) => {
             this._tdDialogService.openAlert({
-                message : "The category '" + model.name + "' could not be saved. " + err.message,
-                ariaLabel : "Failed to save category",
-                disableClose : false,
-                title : "Save Failed",
-                closeButton : 'Got it!'
+                title : this.translate.instant('views.common.save.failed.title'),
+                message : this.translate.instant('FEEDMGR.category.dialog.save.failed.message',{entity: model.name, message: err.message}),
+                ariaLabel : this.translate.instant('views.common.save.failed',{entity:'Category'}),
+                closeButton : this.translate.instant('views.common.dialog.gotIt'),
+                disableClose : false 
             });
         });
     };

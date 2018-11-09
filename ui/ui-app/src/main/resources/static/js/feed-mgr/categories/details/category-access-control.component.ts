@@ -120,7 +120,7 @@ export class CategoryAccessControl {
                 message : this.translate.instant('FEEDMGR.category.dialog.save.failed.message',{entity: model.name, message: err.message}),
                 ariaLabel : this.translate.instant('views.common.save.failed',{entity:'Category'}),
                 closeButton : this.translate.instant('views.common.dialog.gotIt'),
-                disableClose : false
+                disableClose : false 
             });
         });
     };
