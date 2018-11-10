@@ -31,9 +31,6 @@ import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.text.StrLookup;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -52,7 +49,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.naming.spi.ResolveResult;
 
 /**
  * Resolves the values for NiFi processor properties using the following logic:

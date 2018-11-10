@@ -25,6 +25,7 @@
     <module>commons-jpa</module>
     <module>commons-spark</module>
     <module>commons-hive</module>
+    <module>commons-spring</module>
     <module>commons-test-persistence</module>
     <module>commons-test</module>
     <module>commons-velocity-api</module>

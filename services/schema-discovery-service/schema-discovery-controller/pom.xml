@@ -29,6 +29,11 @@
       <artifactId>kylo-ui-annotation-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-spring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
