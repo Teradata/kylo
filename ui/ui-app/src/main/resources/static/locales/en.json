@@ -1410,6 +1410,8 @@
             },
             "UPDATE_AVAILABLE":"Update Available"
         },
+        "LOADING_SCHEMAS":"Loading schemas",
+        "SCHEMA":"Schema",
         "business.metadata.property.def":"Property Definition",
         "business.metadata.feeds.cat.define":"Define standard properties available to feeds and categories",
         "connector.component.invalid.url":"Invalid Url",
