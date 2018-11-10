@@ -871,6 +871,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
            //apply the updates to this form
             this.ensureTableFields();
             this.ensurePartitionData();
+            this.feed.table.syncTableFieldPolicyNames()
             this.showSourceSampleCatalog = false;
             this.catalogBrowserOpen = false;
             if(this.virtualScroll) {
