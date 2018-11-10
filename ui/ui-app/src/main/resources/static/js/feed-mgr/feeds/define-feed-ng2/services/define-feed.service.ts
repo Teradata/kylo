@@ -18,7 +18,7 @@ import {filter} from "rxjs/operators/filter";
 import {finalize} from "rxjs/operators/finalize";
 import {tap} from "rxjs/operators/tap";
 import {ReplaySubject} from "rxjs/ReplaySubject";
-import {ReplaySubject} from "rxjs/BehaviorSubject";
+import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Subject} from "rxjs/Subject";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
