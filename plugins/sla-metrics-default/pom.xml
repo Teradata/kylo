@@ -39,7 +39,7 @@
     <!-- Data Lake dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-util</artifactId>
+      <artifactId>kylo-commons-util7</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

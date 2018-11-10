@@ -24,6 +24,12 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-spring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-spark-shell-plugin-shared</artifactId>
       <version>${project.version}</version>
     </dependency>

@@ -24,7 +24,7 @@
     </dependency>
 
     <dependency>
-      <artifactId>kylo-commons-util</artifactId>
+      <artifactId>kylo-commons-util7</artifactId>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>

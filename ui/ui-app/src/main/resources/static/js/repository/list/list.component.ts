@@ -91,8 +91,11 @@ export class ListTemplatesComponent implements OnInit {
             return this.compare(a.templateName, b.templateName, isAsc);
         });
         this.search();
-        event.stopPropagation();
-        event.preventDefault();
+
+        if(event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
     }
 
     private compare(a: number | string, b: number | string, isAsc: boolean) {

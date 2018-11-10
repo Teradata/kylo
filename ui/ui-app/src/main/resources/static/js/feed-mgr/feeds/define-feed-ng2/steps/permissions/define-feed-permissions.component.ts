@@ -42,13 +42,13 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
         this.formGroup = new FormGroup({})
         this.subscribeToFormChanges(this.formGroup);
 
-        this.checkEntityAccess();
+
     }
 
     checkEntityAccess() {
         let entityAccessControlCheck:Observable<boolean> = of(this.accessControlService.checkEntityAccessControlled());
         entityAccessControlCheck.subscribe((result: any) => {
-                this.displayEditActions = this.accessControlService.isEntityAccessControlled();
+                this.displayEditActions = this.accessControlService.isEntityAccessControlled() && this.feed.accessControl.allowAdmin;
             }, (err: any) => {
                 console.log("Error checking if entity access control is enabled");
             });
@@ -56,6 +56,7 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
 
     init() {
         super.init();
+        this.checkEntityAccess();
         this.registerFormControls();
         this.subscribeToFormDirtyCheck(this.formGroup);
     }

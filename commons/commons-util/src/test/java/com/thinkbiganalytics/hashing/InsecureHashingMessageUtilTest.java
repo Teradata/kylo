@@ -4,7 +4,7 @@ package com.thinkbiganalytics.hashing;
  * #%L
  * kylo-commons-util
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package com.thinkbiganalytics.hashing;
  * limitations under the License.
  * #L%
  */
+
+
 
 import org.junit.Assert;
 import org.junit.Test;

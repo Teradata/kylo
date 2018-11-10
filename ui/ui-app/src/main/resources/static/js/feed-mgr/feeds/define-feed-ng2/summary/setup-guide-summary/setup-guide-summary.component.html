@@ -24,6 +24,8 @@
   <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
     <div fxLayout="row" *ngIf="feed != undefined">
 
+
+
       <div fxFlex="60%">
         <feed-setup-guide [(feed)]="feed" ></feed-setup-guide>
       </div>
@@ -36,7 +38,7 @@
               <mat-icon class="push-top-sm push-right-sm">{{kyloIcons.Links.setupGuide}}</mat-icon>
               <span fxFlex="100"  class="push-top-sm" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
               <span fxFlex="100"  class="push-top-sm" *ngIf="feed.isComplete()"> Ready for deployment</span>
-              <button mat-raised-button color="accent" [disabled]="!feed.isComplete()" (click)="deployFeed()">Deploy</button>
+              <button mat-raised-button color="accent" [disabled]="!feed.isComplete()" *ngIf="feed.canEdit()" (click)="deployFeed()">Deploy</button>
             </div>
             <div *ngIf="feed.hasBeenDeployed()">
               Deployed version: <a href="#" (click)="loadDeployedVersion($event)" > {{feed.deployedVersion.name}}</a>
@@ -90,7 +92,7 @@
               <feed-info-name [feed]="feed"></feed-info-name>
               <mat-divider></mat-divider>
 
-              <feed-info-category [feed]="feed" [editable]="!feed.hasBeenDeployed()"></feed-info-category>
+              <feed-info-category [feed]="feed" [editable]="!feed.hasBeenDeployed() && feed.canEdit()"></feed-info-category>
               <mat-divider></mat-divider>
 
               <feed-info-description [feed]="feed"  ></feed-info-description>

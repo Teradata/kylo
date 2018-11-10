@@ -922,6 +922,10 @@
     },
 
     "FeedDefinition":{
+        "AccessControl": {
+          "AccessControlIssues":"Access Control Issues",
+          "EditNoDatasourceAccess": "Unable to edit this feed. You need access to additional datasources in order to edit the feed"
+        },
         "Steps":{
             "Source":{
                "Name":"Source",

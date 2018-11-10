@@ -1,12 +1,10 @@
 package com.thinkbiganalytics.jdbc.util;
 
-import org.apache.commons.lang3.Validate;
-
 /*-
  * #%L
- * thinkbig-commons-jdbc
+ * kylo-commons-jdbc
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +19,9 @@ import org.apache.commons.lang3.Validate;
  * limitations under the License.
  * #L%
  */
+
+import org.apache.commons.lang3.Validate;
+
 
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
