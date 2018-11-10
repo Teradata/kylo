@@ -20,6 +20,9 @@ package com.thinkbiganalytics.nifi.v1.rest.util;
  * #L%
  */
 
+import com.thinkbiganalytics.functions.QuadFunction;
+import com.thinkbiganalytics.functions.QuintFunction;
+import com.thinkbiganalytics.functions.TriFunction;
 import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 
 import org.slf4j.Logger;

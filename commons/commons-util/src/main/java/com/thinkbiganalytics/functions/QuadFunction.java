@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.nifi.v1.rest.util;
+package com.thinkbiganalytics.functions;
 
 /*-
  * #%L
- * kylo-nifi-rest-client-v1
+ * kylo-commons-util
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,18 +20,19 @@ package com.thinkbiganalytics.nifi.v1.rest.util;
  * #L%
  */
 
+
 import java.util.Objects;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface QuintFunction<P1, P2, P3, P4, P5, R> {
+public interface QuadFunction<P1, P2, P3, P4, R> {
 
-    R apply(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
+    R apply(P1 p1, P2 p2, P3 p3, P4 p4);
 
-    default <V> QuintFunction<P1, P2, P3, P4, P5, V> andThen(
+    default <V> QuadFunction<P1, P2, P3, P4, V> andThen(
         Function<? super R, ? extends V> after) {
         Objects.requireNonNull(after);
-        return (P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) -> after.apply(apply(p1, p2, p3, p4, p5));
+        return (P1 p1, P2 p2, P3 p3, P4 p4) -> after.apply(apply(p1, p2, p3, p4));
     }
 }
 
