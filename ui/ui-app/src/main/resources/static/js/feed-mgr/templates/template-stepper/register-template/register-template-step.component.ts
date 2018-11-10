@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { ObjectUtils } from '../../../../common/utils/object-utils';
+import { TranslateService } from "@ngx-translate/core";
 
 export function invalidConnection(connectionMap: any, connection: any): ValidatorFn{
 
@@ -109,7 +110,8 @@ export class RegisterCompleteRegistrationController {
                 private entityAccessControlService: EntityAccessControlService,
                 private dialog: MatDialog,
                 private snackBar: MatSnackBar,
-                private http: HttpClient) {}
+                private http: HttpClient,
+                private translate: TranslateService) {}
 
     ngOnInit() {
 
@@ -232,15 +234,14 @@ export class RegisterCompleteRegistrationController {
                         else {
                             //INVALID
                             this.remoteProcessGroupValidation.valid = false;
-                            this.remoteProcessGroupValidation.invalidMessage = "The Remote Input Port defined for this Remote Process Group, <b>" + remoteInputPortProperty.value + "</b> does not exist.<br/>" +
-                                "You need to register a reusable template with this '<b>" + remoteInputPortProperty.value + "</b>' input port and check the box 'Remote Process Group Aware' when registering to make it available to this template. ";
+                            this.remoteProcessGroupValidation.invalidMessage =this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.REMOTE_INPUT_PORT_NOT_EXIST',{remoteValue:remoteInputPortProperty.value,port:remoteInputPortProperty.value});
                         }
                         this.remoteProcessGroupValidation.validatingPorts = false;
                     }
                 }, (err: any) => {
                     this.remoteProcessGroupValidation.validatingPorts = false;
                     this.remoteProcessGroupValidation.valid = false;
-                    this.remoteProcessGroupValidation.invalidMessage = "Unable to verify input port connections for your remote process group";
+                    this.remoteProcessGroupValidation.invalidMessage = this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.INPUT_PORT_CONNECTION_NOT_VERIFIED');
 
                 });
             }
@@ -331,7 +332,7 @@ export class RegisterCompleteRegistrationController {
 
         let successFn = (response: any) => {
             this.dialog.closeAll();
-            var message = 'Template Registered with ' + response.properties.length + ' properties';
+            var message = this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.TEMPLATE_REGISTERED',{lenght: response.properties.length });
             this.registrationSuccess = true;
 
             this.snackBar.open(message, "OK", {duration: 3000});
@@ -339,7 +340,7 @@ export class RegisterCompleteRegistrationController {
         }
         let errorFn = (response: any) => {
             this.dialog.closeAll();
-            var message = 'Error Registering Template ' + response.message;
+            var message = this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.ERROR_MESSAGE',{message: response.message}) ;
             this.registrationSuccess = false;
             this.snackBar.open(message, "OK", {duration: 3000});
             this.showErrorDialog(message);

@@ -21,8 +21,8 @@
 
     <mat-card-title>
         <div layout="row" layout-align="space-between-center" flex>
-            <div class="card-title" flex>Complete & Register</div>
-            <h2 class="card-sub-header">5 of 5</h2>
+            <div class="card-title" flex>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.COMPLETE_AND_REGISTER' | translate}}</div>
+            <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before:5,after:5}"></h2>
         </div>
     </mat-card-title>
 
@@ -35,26 +35,24 @@
                 </mat-form-field>
 
                 <div layout="column">
-                    <div class="md-subhead left-aligned md-subheader md-kylo-theme">Streaming template</div>
+                    <div class="md-subhead left-aligned md-subheader md-kylo-theme">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.STREAMING_TEMP' | translate}}</div>
 
                     <div layout="row" layout-align="start start">
                         <mat-checkbox name="isStream" [(ngModel)]="model.isStream" [ngModelOptions]="{standalone: true}" aria-label="Streaming Template">
-                            Streaming template
+                            {{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.STREAMING_TEMP' | translate}}
                         </mat-checkbox>
-                        <span>If checked individual jobs and steps will not be tracked in Operations Manager.  Summary statistics and critical failures will be tracked</span>
+                        <span>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.CHK_MSG' | translate}}</span>
                     </div>
                 </div>
 
                 <div layout="column" *ngIf="!model.isStream">
-                    <div class="md-subhead left-aligned">Batch template</div>
+                    <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.BATCH_TEMP' | translate}}</div>
 
                     <div layout="column">
                         <mat-form-field class="md-block" flex="100">
-                            <mat-label>Job creation flow rate interval (millis) </mat-label>
+                            <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER' | translate}}Job creation flow rate interval (millis) </mat-label>
                             <input matInput name="timeBetweenStartingBatchJobs" [(ngModel)]="model.timeBetweenStartingBatchJobs" [ngModelOptions]="{standalone: true}" type="number"  />
-                            <div class="hint">
-                                If Operations Manager receives more than 1 starting event within this given interval it will suppress the creation of the next job<br/>
-                                Set this to -1L or 0L to always create a job instance for each starting flow.
+                            <div class="hint" [innerHTML]="'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.OPS_MGR_WARN' | translate">
                             </div>
                         </mat-form-field>
 
@@ -62,24 +60,24 @@
                 </div>
 
                 <div layout="column" *ngIf="model.reusableTemplate">
-                    <div class="md-subhead left-aligned">Reusable Template</div>
-                    <span>This template is to be used as a reusable component. It cannot be used to create a new feed, but rather other feed templates can be registered to reference this template.
+                    <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.REUSABLE_TEMPLATE' | translate}}</div>
+                    <span>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.TEMPLATE_TO_BE_REUSABLE' | translate}}
                     </span>
                 </div>
 
                 <div layout="column" *ngIf="!model.reusableTemplate && model.allowPreconditions">
-                    <div class="md-subhead left-aligned">Feed Scheduling Options</div>
+                    <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.FEED_SCHED_OPTS' | translate}}</div>
                     <div layout="row" layout-align="start start">
                         <div><ng-md-icon icon="check" style="fill:green" size="20"></ng-md-icon></div>
-                        <span>This template allows for the feed to be triggered on a pre condition (i.e. the completion of another feed)</span>
+                        <span>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.FEED_TRIGGERABLE' | translate}}</span>
                     </div>
                 </div>
 
                 <div layout="column" *ngIf="model.needsReusableTemplate && loaded">
-                    <div class="md-subhead left-aligned">Connection Options</div>
+                    <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_OPTIONS' | translate}}</div>
                     <div layout="row" *ngFor="let connection of model.reusableTemplateConnections">
                         <div layout="column" flex="50">
-                            <span>Connect From: {{connection.feedOutputPortName}}</span>
+                            <span [translate]="'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.CONNECTION_FROM' | translate" [translateParams]="{entity:connection.feedOutputPortName}"></span>
                         </div>
                         <div layout="column" flex="50">
                             <mat-form-field class="md-block condensed">
@@ -90,10 +88,10 @@
                                     </mat-option>
                                 </mat-select>
                                 <mat-error *ngIf="formGroup.controls['port-'+connection.feedOutputPortName] && formGroup.controls['port-'+connection.feedOutputPortName].errors?.required" >
-                                    This field is required.
+                                    {{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.FIELD_REQUIRED' | translate}}
                                 </mat-error>
                                 <mat-error *ngIf="formGroup.controls['port-'+connection.feedOutputPortName] && formGroup.controls['port-'+connection.feedOutputPortName].errors?.invalidConnection" >
-                                    The selected input port is no longer available.
+                                    {{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.INPUT_PORT_NA' | translate}}
                                 </mat-error>
                             </mat-form-field>
                         </div>
@@ -101,12 +99,12 @@
                 </div>
 
                 <div layout="column">
-                    <div class="md-subhead left-aligned">Display Options</div>
+                    <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.DISPLAY_OPTIONS' | translate}}</div>
                     <div layout="column" class="layout-padding-top-bottom">
-                        <span class="md-input-label" style="font-size: 11px;">Icon </span>
+                        <span class="md-input-label" style="font-size: 11px;">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.ICON' | translate}} </span>
                         <div layout="row">
                             <ng-md-icon icon="{{model.icon.title}}" size="45" style="margin:inherit" [ngStyle]="{'fill':model.icon.color}"></ng-md-icon>
-                            <button class="md-primary md-button md-kylo-theme" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
+                            <button class="md-primary md-button md-kylo-theme" (click)="showIconPicker()" style="margin-left:35px;">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.CHANGE_ICON' | translate}}</button>
                         </div>
                     </div>
                 </div>
@@ -116,12 +114,12 @@
 
             <div layout="row" layout-align="space-between start" layout-fill>
               <div flex="100" layout="column">
-                <div class="md-subhead left-aligned">Feed Lineage Datasources</div>
-                <span class="hint">Select datasources that should track feed lineage</span>
+                <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.LINEAGE_DS' | translate}}</div>
+                <span class="hint">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.SELECT_DS' | translate}}</span>
 
                     <div *ngIf="loadingFlowData" layout="column" layout-align="start center" class="layout-padding-top-bottom">
                     <mat-spinner mode="indeterminate"></mat-spinner>
-                    <span>Loading ...</span>
+                    <span>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.LOADING' | translate}}</span>
                 </div>
 
                     <div layout="row" layout-fill layout-align="space-between center" *ngIf="!loadingFlowData" class="layout-padding-top-bottom">
@@ -139,7 +137,7 @@
                         </div>
 
                         <div *ngIf="processorDatasourceDefinitions.length ==0" class="layout-padding-top-bottom">
-                            No processors were found in the flow matching the configured datasource definitions
+                            {{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.NO_PROCESSOR_FOUND' | translate}}
                         </div>
 
                     </div>
@@ -151,7 +149,7 @@
             </div>
 
             <div layout="column" *ngIf="!remoteProcessGroupValidation.validatingPorts && !remoteProcessGroupValidation.valid">
-                <div class="md-subhead left-aligned">Remote Process Group Issues</div>
+                <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.RPG_ISSUE' | translate}}</div>
                 <div layout="row" class="layout-padding-top-bottom">
                         <span>
                           <ng-md-icon icon="error" size="20" style="fill:red"></ng-md-icon>
@@ -163,8 +161,8 @@
         </ng-container>
 
         <div style="float:right;">
-            <button class="md-button md-kylo-theme" mat-button matStepperPrevious (click)="stepper.previous()">PREVIOUS STEP</button>
-            <button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">Register</button>
+            <button class="md-button md-kylo-theme" mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
+            <button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</button>
         </div> 
 
     </mat-card-content>

@@ -1,8 +1,8 @@
 <mat-card>
   <mat-card-title>
     <div layout="row" layout-align="space-between-center" flex>
-      <div class="card-title" flex>Access Control</div>
-      <h2 class="card-sub-header">4 of 5</h2>
+      <div class="card-title" flex>{{'FEEDMGR.TEMPLATES.STEPPER.ACCESS_CONTROL' | translate}}</div>
+      <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before : 4, after: 5}"></h2>
     </div>
   </mat-card-title>
 
@@ -14,8 +14,8 @@
     <br/><br/><br/>
 
     <div>
-      <button mat-button matStepperPrevious (click)="stepper.previous()">PREVIOUS STEP</button>
-      <button mat-button matStepperNext (click)="stepper.next()">CONTINUE TO STEP 3</button>
+      <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
+      <button mat-button matStepperNext (click)="stepper.next()">{{'views.step-buttons.Continue-btn' | translate}}  3</button>
     </div>
 
   </form>

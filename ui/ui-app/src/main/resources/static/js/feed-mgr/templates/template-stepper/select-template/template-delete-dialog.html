@@ -19,14 +19,14 @@
   -->
   <div mat-dialog aria-label="Delete Template">
     <mat-dialog-content class="md-dialog-content">
-      <h2 class="md-title">Delete {{model.templateName}}?</h2>
+      <h2 class="md-title" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.DELETE_TEMP' | translate" [translateParams]="{entity: model.templateName}"></h2>
   
-      <div>This template will be permanently deleted.</div>
+      <div>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT.DELETE_TEMP' | translate}}</div>
     </mat-dialog-content>
     <mat-dialog-actions>
       <mat-spinner [diameter]="36" *ngIf="model.state == 'DELETED'"></mat-spinner>
-      <button class="md-warn" (click)="deleteTemplate()" aria-label="Delete" *ngIf="model.state == 'DISABLED'">Delete</button>
-      <button class="md-primary" aria-label="Cancel" (click)="hide()" [disabled]="model.state == 'DELETED'">Cancel</button>
+      <button class="md-warn" (click)="deleteTemplate()" aria-label="Delete" *ngIf="model.state == 'DISABLED'">{{'view.main.delete' | translate}}</button>
+      <button class="md-primary" aria-label="Cancel" (click)="hide()" [disabled]="model.state == 'DELETED'">{{'view.main.cancel' | translate}}</button>
     </mat-dialog-actions>
   </div>
   

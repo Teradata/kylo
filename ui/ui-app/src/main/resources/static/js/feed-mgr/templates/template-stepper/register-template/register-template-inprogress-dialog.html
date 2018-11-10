@@ -22,13 +22,13 @@
       <div class="md-toolbar-tools">
         <h4>
           <ng-md-icon size="24" md-icon icon="save" aria-label="Registering Template" style="fill:#3483BA"></ng-md-icon>
-          <span>Registering {{templateName | truncate:50}}</span>
+          <span>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.REGISTERING' | translate}} {{templateName | truncate:50}}</span>
         </h4>
         <span flex></span>
       </div>
     </mat-toolbar>
     <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-      <div class="md-subhead">Registering your template. Hang tight.</div>
+      <div class="md-subhead">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.HANG_TIGHT_MESSAGE' | translate}}</div>
       <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
       </div>
