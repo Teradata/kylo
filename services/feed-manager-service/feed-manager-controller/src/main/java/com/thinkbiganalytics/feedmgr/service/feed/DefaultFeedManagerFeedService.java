@@ -101,6 +101,11 @@ import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.role.ImmutableAllowableAction;
+import com.thinkbiganalytics.security.role.ImmutableAllowedActions;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.collections.ListUtils;
@@ -119,6 +124,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
 import java.security.Principal;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -157,6 +163,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private FeedManagerTemplateService templateRestProvider;
     @Inject
     private FeedModelTransform feedModelTransform;
+
+    @Inject
+    private SecurityModelTransform securityTransform;
     @Inject
     private ServiceLevelAgreementService serviceLevelAgreementService;
     @Inject
@@ -322,17 +331,18 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkAccessVersions(feedId);
 
-        return idOption
-            .map(domainFeedId -> {
+        return feedAccess
+            .map(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
                 return metadataAccess.read(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID deployedId = feedProvider.findDeployedVersion(domainFeedId, false)
                         .map(ver -> ver.getId())
                         .orElse(null);
                     List<com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed>> versions = feedProvider.findVersions(domainFeedId, includeContent);
 
-                    return feedModelTransform.domainToFeedVersions(versions, domainFeedId, deployedId);
+                    return feedModelTransform.domainToFeedVersions(versions, domainFeedId, deployedId, entry.getValue());
                 }, MetadataAccess.SERVICE);
             })
             .map(versions -> metadataAccess.read(() -> {
@@ -344,15 +354,50 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkAccessVersions(feedId);
 
-        return idOption
-            .flatMap(domainFeedId -> {
+        return feedAccess
+            .flatMap(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
                 return metadataAccess.read(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
 
                     return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                        .map(feedModelTransform::domainToFeedVersion);
+                        .map(domain -> feedModelTransform.domainToFeedVersion(domain,entry.getValue()));
+                }, MetadataAccess.SERVICE);
+            })
+            .map(version -> metadataAccess.read(() -> {
+                feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
+                return version;
+            }));
+
+    }
+
+    @Override
+    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkAccessVersions(feedId);
+
+        return feedAccess
+            .flatMap(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
+                return metadataAccess.read(() -> {
+                    return feedProvider.findLatestVersion(domainFeedId, includeContent)
+                        .map(version -> {
+                            EntityVersion feedVersion = feedModelTransform.domainToFeedVersion(version, entry.getValue());
+                            EntityVersion deployedVersion = null;
+                            if (feedVersion.isDraft()) {
+                                //find the latest deployed version id for this feed
+                                Optional<com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed>> optionalDeployedVersion = feedProvider.findDeployedVersion(domainFeedId, false);
+
+                                if (optionalDeployedVersion.isPresent()) {
+                                    deployedVersion = feedModelTransform.domainToFeedVersion(optionalDeployedVersion.get(), entry.getValue());
+                                }
+                                DraftEntityVersion draftEntityVersion = new DraftEntityVersion(feedVersion, deployedVersion);
+                                return draftEntityVersion;
+                            } else {
+                                return feedVersion;
+                            }
+                        });
                 }, MetadataAccess.SERVICE);
             })
             .map(version -> metadataAccess.read(() -> {
@@ -362,47 +407,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
 
     @Override
-    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
-
-        return idOption
-            .flatMap(domainFeedId -> {
-                return metadataAccess.read(() -> {
-                    return feedProvider.findLatestVersion(domainFeedId, includeContent)
-                        .map(version -> {
-                            EntityVersion feedVersion = feedModelTransform.domainToFeedVersion(version);
-                            EntityVersion deployedVersion = null;
-                            if (feedVersion.isDraft()) {
-                                //find the latest deployed version id for this feed
-                                Optional<com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed>> optionalDeployedVersion = feedProvider.findDeployedVersion(domainFeedId, false);
-
-                                if (optionalDeployedVersion.isPresent()) {
-                                    deployedVersion = feedModelTransform.domainToFeedVersion(optionalDeployedVersion.get());
-                                }
-                                DraftEntityVersion draftEntityVersion = new DraftEntityVersion(feedVersion, deployedVersion);
-                                return draftEntityVersion;
-                            } else {
-                                return feedVersion;
-                            }
-                        });
-                });
-            })
-            .map(version -> metadataAccess.read(() -> {
-                feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
-                return version;
-            }));
-    }
-
-    @Override
     public Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkAccessVersions(feedId);
 
-        return idOption
-            .flatMap(domainFeedId -> {
+        return feedAccess
+            .flatMap(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
                 return metadataAccess.read(() -> {
                     return feedProvider.findDraftVersion(domainFeedId, includeContent)
-                        .map(version -> feedModelTransform.domainToFeedVersion(version));
-                });
+                        .map(version -> feedModelTransform.domainToFeedVersion(version, entry.getValue()));
+                }, MetadataAccess.SERVICE);
             })
             .map(version -> metadataAccess.read(() -> {
                 feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
@@ -412,14 +426,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkAccessVersions(feedId);
 
-        return idOption
-            .flatMap(domainFeedId -> {
+        return feedAccess
+            .flatMap(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
                 return metadataAccess.read(() -> {
                     return feedProvider.findDeployedVersion(domainFeedId, includeContent)
-                        .map(version -> feedModelTransform.domainToFeedVersion(version));
-                });
+                        .map(version -> feedModelTransform.domainToFeedVersion(version, entry.getValue()));
+                }, MetadataAccess.SERVICE);
             })
             .map(version -> metadataAccess.read(() -> {
                 feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
@@ -429,9 +444,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public DeployResponseEntityVersion deployFeedVersion(String feedIdStr, String versionIdStr, boolean includeContent) throws DeployFeedException{
-        Optional<Feed.ID> idOption = checkChangeVersions(feedIdStr);
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkChangeVersions(feedIdStr);
 
-        return idOption.map(domainFeedId -> {
+        return feedAccess.map(entry -> {
+            Feed.ID domainFeedId = entry.getKey();
             return metadataAccess.commit(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
 
@@ -448,13 +464,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                                 }
                             }
 
-                           FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed);
+                           FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(feed,entry.getValue());
                            NifiFeed deployedFeed = deployFeed(feedMetadata, ver);
-                           EntityVersion entityVersion= feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get());
+                           EntityVersion entityVersion= feedModelTransform.domainToFeedVersion(feedProvider.findVersion(domainFeedId, versionId, includeContent).get(),entry.getValue());
                            return new DeployResponseEntityVersion(entityVersion,deployedFeed);
                         })
                         .orElseThrow(() -> new FeedNotFoundException(domainFeedId));
-            });
+            }, MetadataAccess.SERVICE);
         })
         .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedIdStr)));
     }
@@ -462,10 +478,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent) {
         return metadataAccess.commit(() -> {
-            Optional<Feed.ID> idOption = checkChangeVersions(feedId);
+            Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkChangeVersions(feedId);
 
-            return idOption
-                .map(domainFeedId -> {
+            return feedAccess
+                .map(entry -> {
+                    Feed.ID domainFeedId = entry.getKey();
                         com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> newVer = this.feedProvider.createVersion(domainFeedId, comment, false);
                         return this.feedModelTransform.domainToFeedVersion(newVer);
                 })
@@ -475,14 +492,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public EntityVersion createDraftFromFeedVersion(String feedId, String versionIdStr, boolean includeContent) {
-        Optional<Feed.ID> idOption = checkChangeVersions(feedId);
+        Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkChangeVersions(feedId);
 
-        return idOption
-            .map(domainFeedId -> {
+        return feedAccess
+            .map(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
                 return metadataAccess.commit(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId = this.feedProvider.resolveVersion(versionIdStr);
 
-                    return this.feedModelTransform.domainToFeedVersion(this.feedProvider.createDraftVersion(domainFeedId, versionId, includeContent));
+                    return this.feedModelTransform.domainToFeedVersion(this.feedProvider.createDraftVersion(domainFeedId, versionId, includeContent), entry.getValue());
                 }, MetadataAccess.SERVICE);
             })
             .map(version -> metadataAccess.read(() -> {
@@ -494,9 +512,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
-        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+       Optional<Map.Entry<Feed.ID,ActionGroup>> feedAccess = checkAccessVersions(feedId);
 
-        return idOption.map(domainFeedId -> {
+        return feedAccess
+            .map(entry -> {
+                Feed.ID domainFeedId = entry.getKey();
             return metadataAccess.read(() -> {
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
                     com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
@@ -531,7 +551,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }).orElseThrow(() -> new FeedNotFoundException(feedProvider.resolveId(feedId)));
     }
 
-    private Optional<Feed.ID> checkAccessVersions(String feedId) {
+    private Optional<Map.Entry<Feed.ID,ActionGroup>> checkAccessVersions(String feedId) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
@@ -542,14 +562,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 if (accessController.isEntityAccessControlled()) {
                     feed.getAllowedActions().checkPermission(FeedAccessControl.ACCESS_DETAILS);
                 }
-                return Optional.of(domainFeedId);
+                //add in access control items
+                ActionGroup allowed = securityTransform.toActionGroup(null).apply(feed.getAllowedActions());
+                return Optional.of(new AbstractMap.SimpleEntry(domainFeedId, allowed));
             } else {
                 throw new FeedNotFoundException(domainFeedId);
             }
         });
     }
 
-    private Optional<Feed.ID> checkChangeVersions(String feedId) {
+    private Optional<Map.Entry<Feed.ID,ActionGroup>>  checkChangeVersions(String feedId) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
@@ -560,7 +582,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 if (accessController.isEntityAccessControlled()) {
                     feed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
                 }
-                return Optional.of(domainFeedId);
+                //add in access control items
+                ActionGroup allowed = securityTransform.toActionGroup(null).apply(feed.getAllowedActions());
+                return Optional.of(new AbstractMap.SimpleEntry(domainFeedId, allowed));
             } else {
                 return Optional.empty();
             }

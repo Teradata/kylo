@@ -344,22 +344,38 @@ public class FeedModelTransform {
      */
     @Nonnull
     public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed.ID, Feed>> versions, @Nonnull final Feed.ID feedId, final EntityVersion.ID deployedId) {
+       return domainToFeedVersions(versions,feedId,deployedId,null);
+    }
+
+    /**
+     *
+     * @param versions
+     * @param feedId
+     * @param deployedId
+     * @param allowedActions
+     * @return
+     */
+    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed.ID, Feed>> versions, @Nonnull final Feed.ID feedId, final EntityVersion.ID deployedId, ActionGroup allowedActions) {
         String deployed = deployedId != null ? deployedId.toString() : null;
         FeedVersions feedVersions = new FeedVersions(feedId.toString(), deployed);
-        versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer)));
+        versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer,allowedActions)));
         return feedVersions;
     }
     
     @Nonnull
     public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed.ID, Feed> domainVer) {
+      return domainToFeedVersion(domainVer,null);
+    }
+
+    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed.ID, Feed> domainVer, ActionGroup actionGroup) {
         com.thinkbiganalytics.feedmgr.rest.model.EntityVersion version
-            = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(), 
-                                                                         domainVer.getName(), 
+            = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(),
+                                                                         domainVer.getName(),
                                                                          domainVer.getCreatedDate().toDate(),
                                                                          domainVer.getChangeComment().map(chg -> chg.getUser().getName()).orElse(""),
                                                                          domainVer.getChangeComment().map(chg -> chg.getComment()).orElse(""),
                                                                          domainVer.getEntityId().toString());
-        domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed)));
+        domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed, actionGroup)));
         return version;
     }
 
@@ -371,9 +387,12 @@ public class FeedModelTransform {
      */
     @Nonnull
     public FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain) {
-        return domainToFeedMetadata(domain, null);
+        return domainToFeedMetadata(domain,null, (ActionGroup) null);
     }
 
+    public FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, ActionGroup actionGroup) {
+        return domainToFeedMetadata(domain, null,actionGroup);
+    }
     /**
      * Transforms the specified Metadata feeds to Feed Manager feeds.
      *
@@ -423,6 +442,10 @@ public class FeedModelTransform {
             feed.setTemplateName(registeredTemplate.getTemplateName());
         }
     }
+
+    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap){
+        return this.domainToFeedMetadata(domain, userFieldMap,null);
+    }
     /**
      * Transforms the specified Metadata feed to a Feed Manager feed.
      *
@@ -431,7 +454,7 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
+    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap, @Nullable ActionGroup actionGroup) {
 
         FeedMetadata feed = deserializeFeedMetadata(domain, false);
         feed.setId(domain.getId().toString());
@@ -518,8 +541,13 @@ public class FeedModelTransform {
             .collect(Collectors.toList());
         feed.setSourceDataSets(srcDataSets);
 
-        //add in access control items
-        securityTransform.applyAccessControl(domain, feed);
+        if(actionGroup == null) {
+            //add in access control items
+            securityTransform.applyAccessControl(domain, feed);
+        }
+        else {
+            feed.setAllowedActions(actionGroup);
+        }
 
         return feed;
     }
