@@ -164,6 +164,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     profileCheckAll: CheckAll;
 
+    skippedSourceSample:boolean = false;
 
     /**
      *
@@ -819,6 +820,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         if($event.skip){
             //mark it in the metadata
             this.step.addProperty(SKIP_SOURCE_CATALOG_KEY,true);
+            this.skippedSourceSample = true;
         }
     }
 

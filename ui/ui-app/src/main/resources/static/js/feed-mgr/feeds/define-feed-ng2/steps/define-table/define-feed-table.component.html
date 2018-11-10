@@ -10,7 +10,8 @@
             <span fxFlex></span>
           </mat-card-header>
           <mat-card-content class="pull-top-md">
-            <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly"  [showSkipSourceButton]="false" [(showCatalog)]="showSourceSampleCatalog" (showCatalogChange)="onShowCatalogChange($event)" (sampleSaved)="onSampleSourceSaved($event)"  (showCatalogCanceled)="onCatalogCanceled($event)" [feed]="feed" [step]="step"></define-feed-step-source-sample>
+            <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly" [showSkipSourceButton]="true" [(showCatalog)]="showSourceSampleCatalog"
+                                            (showCatalogChange)="onShowCatalogChange($event)" (sampleSaved)="onSampleSourceSaved($event)"  (showCatalogCanceled)="onCatalogCanceled($event)" [feed]="feed" [step]="step"></define-feed-step-source-sample>
           </mat-card-content>
         </mat-card>
       </form>
@@ -19,7 +20,7 @@
 
     <div fxLayout="row">
 
-      <mat-card class="feed-card" fxFlex="{{feed.table.tableSchema.fields.length >0 ? 80 : 100}}">
+      <mat-card class="feed-card" fxFlex="{{feed.table.tableSchema.fields.length >0 ? 80 : 100}}" *ngIf="feed.table.tableSchema.fields.length > 0 || skippedSourceSample" >
         <mat-card-header>
           <mat-card-title>{{step.name}}</mat-card-title>
           <mat-card-subtitle>{{step.description}}</mat-card-subtitle>
@@ -175,11 +176,12 @@
               </form>
             </div>
 
-            <div *ngIf="feed.table.tableSchema.fields.length == 0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+            <div *ngIf="feed.table.tableSchema.fields.length == 0 && skippedSourceSample"  fxLayout="column" fxFlex fxLayoutAlign="center center"
+                 class="tc-grey-500 mat-typography pad">
               <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
               <h2>Target schema incomplete</h2>
               <ng-container *ngIf="!tablePermissions.tableLocked">
-                <h3>Upload a sample add a column to build your schema</h3>
+                <h3>Upload a sample or add a column to build your schema</h3>
                 <button mat-raised-button color="accent" (click)="addColumn()">Add Column</button>
               </ng-container>
             </div>
@@ -449,7 +451,7 @@
                 <div *ngFor="let strategy of mergeStrategies">
                   <mat-radio-button [value]="strategy.type"
                                     [aria-label]="strategy.name"
-                                    [disabled]="strategy.disabled">
+                                    [disabled]="strategy.disabled" class="push-bottom">
                     {{strategy.name}}
                     <div class="hint">{{strategy.hint}}</div>
                   </mat-radio-button>

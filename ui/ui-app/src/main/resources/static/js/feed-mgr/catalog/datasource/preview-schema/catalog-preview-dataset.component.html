@@ -13,7 +13,6 @@
 
   <ng-container *ngIf="!displayInCard">
     <datasets-preview-container #datasetPreviewContainer [autoSelectSingleDataSet]="autoSelectSingleDataSet" [renderBackButton]="false" [formGroup]="formGroup" [previews]="previews" *ngIf="previewsReady"  (previewDatasetInvalid)="onPreviewInvalid($event)" (previewDatasetValid)="onPreviewValid($event)" (previewSelectionChange)="onPreviewSelected($event)" ></datasets-preview-container>
-
   </ng-container>
 
   <div *ngIf="loading" class="loading-container">

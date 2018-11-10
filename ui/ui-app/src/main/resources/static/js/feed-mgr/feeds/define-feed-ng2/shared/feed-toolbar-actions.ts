@@ -7,7 +7,7 @@ import {Feed} from "../../../model/feed/feed.model";
     template:`
       <div fxLayout="row" fxLayoutAlign="space-between" *ngIf="feed != undefined">
         <button mat-raised-button button color="accent" (click)="edit()" *ngIf="showEditLink">Edit</button>
-        <button mat-button color="accent" (click)="cancelEdit()" *ngIf="showCancelLink && feed.canEdit() &&  !feed.readonly ">Cancel</button>
+        <button mat-button (click)="cancelEdit()" *ngIf="showCancelLink && feed.canEdit() &&  !feed.readonly ">Cancel</button>
       </div>
     `
     }

@@ -25,7 +25,7 @@
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
                 <div fxLayout="column">
-                  <button mat-button matStepperNext color="primary" [disabled]="selectDataForm.invalid">Next</button>
+                  <button mat-raised-button= matStepperNext color="accent" [disabled]="selectDataForm.invalid">Next</button>
                 <!-- <span *ngIf="selectDataForm.invalid" class="warn">A selection is required</span>-->
                 </div>
               </div>
@@ -37,7 +37,7 @@
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
                 <div fxLayout="column">
-                  <button mat-button matStepperNext color="primary" [disabled]="selectDataForm.invalid">Next</button>
+                  <button mat-raised-button matStepperNext color="accent" [disabled]="selectDataForm.invalid">Next</button>
                   <!-- <span *ngIf="selectDataForm.invalid" class="warn">A selection is required</span> -->
                 </div>
               </div>
@@ -64,7 +64,7 @@
                     <span fxFlex></span>
                     <button mat-button matStepperPrevious>Back</button>
                     <div fxLayout="column">
-                      <button mat-button (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
+                      <button mat-raised-button button color="accent" (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
                       <!-- <span *ngIf="previewForm.invalid" class="warn">A selection is required</span> -->
                     </div>
                   </div>
