@@ -42,6 +42,7 @@ constructor(@Inject("AccessControlService") private accessControlService:AccessC
                     let entityStartAccess = !entityAccessControlled || this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.START,feed)
                     let entityPermissionAccess = !entityAccessControlled || this.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS,feed)
 
+                    let allowDatasourceAccess =  this.accessControlService.hasAction(AccessControlService.DATASOURCE_ACCESS, actionSet.actions);
                     let allowEditAccess =  this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
                     let allowAdminAccess =  this.accessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
                     let slaAccess =  this.accessControlService.hasAction(AccessControlService.SLA_ACCESS, actionSet.actions);
@@ -49,7 +50,7 @@ constructor(@Inject("AccessControlService") private accessControlService:AccessC
                     let allowStart = allowEditAccess;
                     let datasourceAccess = true;
                     if(feed.sourceDataSets) {
-                        datasourceAccess = _.every(feed.sourceDataSets, (ds:SparkDataSet) => !_.isUndefined(ds.dataSource) && !_.isUndefined(ds.dataSource.id));
+                        datasourceAccess = _.every(feed.sourceDataSets, (ds:SparkDataSet) => !_.isUndefined(ds.dataSource) && !_.isUndefined(ds.dataSource.id)) && allowDatasourceAccess;
                     }
 
                     let accessMessage = "";
