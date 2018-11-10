@@ -18,6 +18,7 @@
   <modules>
     <module>commons-security</module>
     <module>commons-util7</module>
+    <module>commons-util</module>
     <module>commons-feed-util</module>
     <module>commons-rest-model</module>
     <module>commons-rest-client</module>
