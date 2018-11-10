@@ -3,7 +3,7 @@
   <feed-step-readonly-content>
     <form [formGroup]="formGroup">
       <div fxLayout="column">
-        <entity-access-control-ng2 [parentForm]="formGroup" [entity]="feed" [readonly]="feed.readonly" entityType="feed"></entity-access-control-ng2>
+        <entity-access-control-ng2 [parentForm]="formGroup" [entity]="feed" [readonly]="feed.readonly || !feed.accessControl.allowChangePermissions" entityType="feed"></entity-access-control-ng2>
       </div>
     </form>
   </feed-step-readonly-content>
@@ -11,7 +11,7 @@
   <feed-step-edit-content>
     <form [formGroup]="formGroup">
       <div fxLayout="column">
-        <entity-access-control-ng2  [parentForm]="formGroup" #entityAccessControl [entity]="feed" [readonly]="feed.readonly" entityType="feed"></entity-access-control-ng2>
+        <entity-access-control-ng2  [parentForm]="formGroup" #entityAccessControl [entity]="feed" [readonly]="feed.readonly || !feed.accessControl.allowAdmin" entityType="feed"></entity-access-control-ng2>
       </div>
     </form>
   </feed-step-edit-content>
