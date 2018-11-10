@@ -18,6 +18,7 @@ import {filter} from "rxjs/operators/filter";
 import {finalize} from "rxjs/operators/finalize";
 import {tap} from "rxjs/operators/tap";
 import {ReplaySubject} from "rxjs/ReplaySubject";
+import {ReplaySubject} from "rxjs/BehaviorSubject";
 import {Subject} from "rxjs/Subject";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
@@ -118,6 +119,8 @@ export class DefineFeedService {
 
 
     private loadingFeedCache :Common.Map<Observable<EntityVersion>> = {}
+
+    private loadingFeedErrors: Common.Map<string> = {};
 
 
 
@@ -231,6 +234,15 @@ export class DefineFeedService {
         let feed = this.getFeed();
         if((feed && (feed.id != id || this.feedLoadMode != loadMode)) || (feed == undefined && id != undefined) || force == true) {
 
+            //if asking for a deployed feed and the feed matches the id to load and the feed is deployed
+            if(feed && feed.id == id && loadMode == LoadMode.DEPLOYED && feed.isDeployed()){
+                return Observable.of(this.feed.copy())
+            }
+            else  if(feed && feed.id == id && loadMode == LoadMode.DRAFT && feed.isDraft()){
+                return Observable.of(this.feed.copy())
+            }
+
+
             if (LoadMode.LATEST == loadMode) {
                return this.loadLatestFeed(id, true,force);
 
@@ -239,7 +251,7 @@ export class DefineFeedService {
                 return this.loadDeployedFeed(id, false,force).pipe(
                     catchError((error1: any) => {
                         console.log("unable to load deployed feed... retry against latest", id, error1);
-                        return this.loadLatestFeed(id, true, true)
+                        return this.loadLatestFeed(id, true, false)
                     }));
 
             }
@@ -792,26 +804,55 @@ export class DefineFeedService {
         let loadFeedSubject = new ReplaySubject<Feed>(1);
         let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
 
+        /**
+         * subject for the http request.
+         * Any subsequent request asking for this same entity/loadMode will return this as a cached observable rather than hitting the http client
+         * @type {}
+         */
+        let entitySubject: ReplaySubject<EntityVersion> = new ReplaySubject<EntityVersion>(1);
 
         let feed = this.getFeed();
+
         //clear the cache if we are switching feeds
         if(feed && (feed.id != id )){
             Object.keys(this.loadingFeedCache).filter((cacheKey:string) => cacheKey.indexOf(feed.id) >=0).forEach((key:string) => {
                 delete this.loadingFeedCache[key]
             });
+            //remove the error map
+            delete this.loadingFeedErrors[feed.id];
         }
+
         let key = this.loadingCacheKey(id,loadMode);
+
+        //setup the observable we will return
         let observable: Observable<EntityVersion> = null;
+
         if(!force && this.loadingFeedCache[key]){
-            console.log("return cache ",key)
             observable = this.loadingFeedCache[key]
         } else {
-            observable  = <Observable<EntityVersion>> this.http.get(url);
+            //make the http request and then assign the result to the 'entitySubject' for others to subscribe to
+             this.http.get(url).subscribe((entityVersion:EntityVersion) => {
+                entitySubject.next(entityVersion);
+            }, error1 => {
+                if(load && alertOnError && this.loadingFeedErrors[id] == undefined) {
+                    this.loadingFeedErrors[id] = id;
+                    this._dialogService.openAlert({
+                        title:"Error loading feed",
+                        message: "There was an error attempting to load the feed "
+                    });
+                }
+                loadFeedSubject.error(error1)
+            });
+             //set the observable and cache
+            observable = entitySubject.asObservable()
             this.loadingFeedCache[key] = observable;
         }
 
         observable.subscribe((entityVersion:EntityVersion) => {
+
             let feed:Feed = <Feed>entityVersion.entity;
+            //remove the error map
+            delete this.loadingFeedErrors[feed.id];
             feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.DEPLOYED;
             feed.versionId = entityVersion.id;
             feed.versionName = entityVersion.name;
@@ -870,14 +911,6 @@ export class DefineFeedService {
                 this.feedLoadedSubject.next(feedModel.copy());
             }
             loadFeedSubject.next(feedModel.copy());
-        }, error1 => {
-            if(load && alertOnError) {
-                this._dialogService.openAlert({
-                    title:"Error loading feed",
-                    message: "There was an error attempting to load the feed "
-                });
-            }
-            loadFeedSubject.error(error1)
         })
         return loadFeedObservable$;
 
