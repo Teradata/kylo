@@ -385,7 +385,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                                 return feedVersion;
                             }
                         });
-                }, MetadataAccess.SERVICE);
+                });
             })
             .map(version -> metadataAccess.read(() -> {
                 feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
@@ -402,7 +402,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 return metadataAccess.read(() -> {
                     return feedProvider.findDraftVersion(domainFeedId, includeContent)
                         .map(version -> feedModelTransform.domainToFeedVersion(version));
-                }, MetadataAccess.SERVICE);
+                });
             })
             .map(version -> metadataAccess.read(() -> {
                 feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
@@ -419,7 +419,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 return metadataAccess.read(() -> {
                     return feedProvider.findDeployedVersion(domainFeedId, includeContent)
                         .map(version -> feedModelTransform.domainToFeedVersion(version));
-                }, MetadataAccess.SERVICE);
+                });
             })
             .map(version -> metadataAccess.read(() -> {
                 feedModelTransform.updateDataSets((FeedMetadata) version.getEntity());
@@ -454,7 +454,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                            return new DeployResponseEntityVersion(entityVersion,deployedFeed);
                         })
                         .orElseThrow(() -> new FeedNotFoundException(domainFeedId));
-            }, MetadataAccess.SERVICE);
+            });
         })
         .orElseThrow(() -> new FeedNotFoundException(this.feedProvider.resolveFeed(feedIdStr)));
     }

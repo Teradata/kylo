@@ -86,7 +86,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     loadDraftVersion($event:MouseEvent){
         $event.stopPropagation();
         $event.preventDefault();
-        this.defineFeedService.loadDraftFeed(this.feed.id).subscribe((feed:Feed) => {
+        this.defineFeedService.loadDraftFeed(this.feed.id,true,true).subscribe((feed:Feed) => {
             this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:this.feed.id, loadMode:LoadMode.LATEST},{reload:false});
         });
     }
@@ -94,7 +94,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
     loadDeployedVersion($event:MouseEvent){
         $event.stopPropagation();
         $event.preventDefault();
-        this.defineFeedService.loadDeployedFeed(this.feed.id).subscribe((feed:Feed) => {
+        this.defineFeedService.loadDeployedFeed(this.feed.id,true,true).subscribe((feed:Feed) => {
             this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:this.feed.id, loadMode:LoadMode.DEPLOYED},{reload:false});
         });
     }

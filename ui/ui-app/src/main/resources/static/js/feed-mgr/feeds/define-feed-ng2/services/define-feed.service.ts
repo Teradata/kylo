@@ -117,6 +117,9 @@ export class DefineFeedService {
     private accessControlService: AccessControlService;
 
 
+    private loadingFeedCache :Common.Map<Observable<EntityVersion>> = {}
+
+
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
@@ -227,18 +230,21 @@ export class DefineFeedService {
 
         let feed = this.getFeed();
         if((feed && (feed.id != id || this.feedLoadMode != loadMode)) || (feed == undefined && id != undefined) || force == true) {
-            if(LoadMode.LATEST == loadMode) {
-                return this.loadLatestFeed(id);
+
+            if (LoadMode.LATEST == loadMode) {
+               return this.loadLatestFeed(id, true,force);
+
             }
-            else if(LoadMode.DEPLOYED == loadMode){
-                return this.loadDeployedFeed(id).pipe(
+            else if (LoadMode.DEPLOYED == loadMode) {
+                return this.loadDeployedFeed(id, false,force).pipe(
                     catchError((error1: any) => {
-                        console.log("unable to load deployed feed... retry against latest",id);
-                        return this.loadLatestFeed(id)
+                        console.log("unable to load deployed feed... retry against latest", id, error1);
+                        return this.loadLatestFeed(id, true, true)
                     }));
+
             }
-            else if(LoadMode.DRAFT == loadMode){
-                return this.loadDraftFeed(id)
+            else if (LoadMode.DRAFT == loadMode) {
+                return this.loadDraftFeed(id,true,force)
             }
         }
         else if(feed){
@@ -255,25 +261,32 @@ export class DefineFeedService {
             console.error("ERROR STARTING spark shell ",error1)
         }));
     }
-
-    loadLatestFeed(feedId:string):Observable<Feed>{
-        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/latest";
-        return this._loadFeedVersion(url, LoadMode.LATEST,true)
+    private loadingCacheKey(feedId:string, loadMode:LoadMode){
+        return feedId+"-"+loadMode;
     }
 
-    loadDeployedFeed(feedId:string):Observable<Feed>{
+
+
+
+    loadLatestFeed(feedId:string, alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
+         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/latest";
+       return  this._loadFeedVersion(feedId, url,LoadMode.LATEST, true, true, force)
+    }
+
+    loadDeployedFeed(feedId:string, alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed";
-        return this._loadFeedVersion(url, LoadMode.DEPLOYED,true)
+       return  this._loadFeedVersion(feedId, url,LoadMode.DEPLOYED, true, true, force)
     }
 
-    loadDraftFeed(feedId:string):Observable<Feed>{
+    loadDraftFeed(feedId:string,alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
-        return this._loadFeedVersion(url,LoadMode.DRAFT,true)
+        return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, true, true, force)
     }
 
     getDraftFeed(feedId:string):Observable<Feed>{
+        console.log("get draft version ",feedId)
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
-        return this._loadFeedVersion(url, LoadMode.DRAFT,false)
+        return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, false, true, true)
     }
 
     deployedVersionExists(feedId:string):Observable<string> {
@@ -775,14 +788,28 @@ export class DefineFeedService {
 
 
 
-    private _loadFeedVersion(url:string, loadMode:LoadMode,load:boolean = true ){
+    private _loadFeedVersion(id:string,url:string, loadMode:LoadMode,load:boolean = true, alertOnError:boolean = true, force:boolean = false ){
         let loadFeedSubject = new ReplaySubject<Feed>(1);
         let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
 
 
-        //let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
+        let feed = this.getFeed();
+        //clear the cache if we are switching feeds
+        if(feed && (feed.id != id )){
+            Object.keys(this.loadingFeedCache).filter((cacheKey:string) => cacheKey.indexOf(feed.id) >=0).forEach((key:string) => {
+                delete this.loadingFeedCache[key]
+            });
+        }
+        let key = this.loadingCacheKey(id,loadMode);
+        let observable: Observable<EntityVersion> = null;
+        if(!force && this.loadingFeedCache[key]){
+            console.log("return cache ",key)
+            observable = this.loadingFeedCache[key]
+        } else {
+            observable  = <Observable<EntityVersion>> this.http.get(url);
+            this.loadingFeedCache[key] = observable;
+        }
 
-        let observable  = <Observable<EntityVersion>> this.http.get(url);
         observable.subscribe((entityVersion:EntityVersion) => {
             let feed:Feed = <Feed>entityVersion.entity;
             feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.DEPLOYED;
@@ -844,7 +871,7 @@ export class DefineFeedService {
             }
             loadFeedSubject.next(feedModel.copy());
         }, error1 => {
-            if(load) {
+            if(load && alertOnError) {
                 this._dialogService.openAlert({
                     title:"Error loading feed",
                     message: "There was an error attempting to load the feed "
