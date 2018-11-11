@@ -434,14 +434,24 @@ public class DataSourceController extends AbstractCatalogController {
                                @QueryParam("catalog") final String catalogName, 
                                @QueryParam("schema") final String schemaName) {
         log.entry(dataSourceId, catalogName, schemaName);
-
-        return metadataService.read(() -> {
-            // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, false);
-            final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
-
-            return Response.ok(log.exit(tables)).build();
+        //read as the user to see if they can access the datasource
+        boolean hasAccess = metadataService.read(() -> {
+           return findDataSource(dataSourceId, true) != null;
         });
+
+        if(hasAccess) {
+            return metadataService.read(() -> {
+                // List tables
+                final DataSource dataSource = findDataSource(dataSourceId, false);
+                final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
+
+                return Response.ok(log.exit(tables)).build();
+            },MetadataAccess.SERVICE);
+        }
+        else {
+            log.debug("Access denied accessing datasource : {}", dataSourceId);
+            throw new ForbiddenException(getMessage("catalog.datasource.forbidden"));
+        }
     }
 
     private List<DataSetTable> doListTables(@QueryParam("catalog") String catalogName, @QueryParam("schema") String schemaName, DataSource dataSource) {
@@ -475,29 +485,39 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("filter") String catalogOrSchemaName) {
 
-        List<DataSetTable> tableList = metadataService.read(() -> {
+        List<DataSetTable> tableList = new ArrayList<>();
+        //read as the user to see if they can access the datasource
+        boolean hasAccess = metadataService.read(() -> {
             // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, false);
-
-            final List<DataSetTable> tables;
-            try {
-                log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
-                tables = tableManager.listTables(dataSource, catalogOrSchemaName);
-            } catch (final Exception e) {
-                if (log.isErrorEnabled()) {
-                    log.error("Failed to list tables for [" + catalogOrSchemaName + "] : " + e, e);
-                }
-                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
-                    .message(getMessage("catalog.datasource.listTablesFilter.error", catalogOrSchemaName))
-                    .url(request.getRequestURI())
-                    .setDeveloperMessage(e)
-                    .buildError();
-                throw new InternalServerErrorException(Response.serverError().entity(status).build());
-            }
-            return tables;
-
-
+            return findDataSource(dataSourceId, true) != null;
         });
+
+        if(hasAccess) {
+
+         tableList = metadataService.read(() -> {
+                // List tables
+                final DataSource dataSource = findDataSource(dataSourceId, false);
+
+                final List<DataSetTable> tables;
+                try {
+                    log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
+                    tables = tableManager.listTables(dataSource, catalogOrSchemaName);
+                } catch (final Exception e) {
+                    if (log.isErrorEnabled()) {
+                        log.error("Failed to list tables for [" + catalogOrSchemaName + "] : " + e, e);
+                    }
+                    final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                        .message(getMessage("catalog.datasource.listTablesFilter.error", catalogOrSchemaName))
+                        .url(request.getRequestURI())
+                        .setDeveloperMessage(e)
+                        .buildError();
+                    throw new InternalServerErrorException(Response.serverError().entity(status).build());
+                }
+                return tables;
+
+
+            }, MetadataAccess.SERVICE);
+        }
 
         return Response.ok(log.exit(tableList)).build();
     }
