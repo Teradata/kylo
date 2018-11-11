@@ -127,9 +127,9 @@ public class FeedImportDatasourceUtil {
 
     public static void populateFeedDatasourceIdsProperty(FeedMetadata metadata){
         //fill the datasourceIds array will catalog datasets and datasources for backwards compatability
-        List<String> catalogDataSources =metadata.getDataTransformation().getCatalogDataSourceIds();
+        List<String> catalogDataSources =metadata.getDataTransformation() != null ? metadata.getDataTransformation().getCatalogDataSourceIds() : null;
         List<DataSet> catalogDataSets = metadata.getSourceDataSets();
-        List<String> datasourceIds = metadata.getDataTransformation().getDatasourceIds();
+        List<String> datasourceIds = metadata.getDataTransformation() != null ? metadata.getDataTransformation().getDatasourceIds() : null;
 
         final  List<String> ids  = datasourceIds != null ? datasourceIds : new ArrayList<>();
         if(catalogDataSets != null){
