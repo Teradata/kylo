@@ -111,11 +111,17 @@ public class FeedImportDatasourceUtil {
             }
 
         }
-        //update the catalogDataSourceIds and the metadata.datasourceids with the new ids
-        List<String> newIds = metadata.getDataTransformation().getCatalogDataSourceIds().stream().map(id -> replacements.containsKey(id) ? replacements.get(id) : id).collect(Collectors.toList());
-        metadata.getDataTransformation().setCatalogDataSourceIds(newIds);
-        List<String> updatedDatasourceIds = metadata.getDataTransformation().getDatasourceIds().stream().map(id -> replacements.containsKey(id) ? replacements.get(id) : id).collect(Collectors.toList());
-        metadata.getDataTransformation().setDatasourceIds(updatedDatasourceIds);
+        if(metadata.getDataTransformation() != null && metadata.getDataTransformation().getCatalogDataSourceIds() != null) {
+            //update the catalogDataSourceIds and the metadata.datasourceids with the new ids
+            List<String> newIds = metadata.getDataTransformation().getCatalogDataSourceIds().stream().map(id -> replacements.containsKey(id) ? replacements.get(id) : id).collect(Collectors.toList());
+            metadata.getDataTransformation().setCatalogDataSourceIds(newIds);
+        }
+        if(metadata.getDataTransformation() != null && metadata.getDataTransformation().getDatasourceIds() != null) {
+            List<String>
+                updatedDatasourceIds =
+                metadata.getDataTransformation().getDatasourceIds().stream().map(id -> replacements.containsKey(id) ? replacements.get(id) : id).collect(Collectors.toList());
+            metadata.getDataTransformation().setDatasourceIds(updatedDatasourceIds);
+        }
 
     }
 
