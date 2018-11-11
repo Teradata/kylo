@@ -108,17 +108,18 @@
               <div *ngIf="feed.table.tableSchema.fields.length >0">
                 <form [formGroup]="defineTableForm">
                   <div fxLayout="row" fxFlex="100" class="push-bottom-xs">
-                    <div fxFlex="25">Name</div>
+                    <div fxFlex="15">Name</div>
                     <div fxFlex="5"></div>
-                    <div fxFlex="25">Data Type</div>
-                    <div fxFlex="10">
+                    <div fxFlex="55">Data Type</div>
+                    <div fxFlex="5"></div>
+                    <div fxFlex="5">
                       <a href="" (click)="onIndexCheckAllChange()">Index</a>
                     </div>
-                    <div fxFlex="10">
+                    <div fxFlex="5">
                       <a href="" (click)="onProfileCheckAllChange()">Profile</a>
                     </div>
-                    <div fxFlex="10" *ngIf="!tablePermissions.tableLocked">Remove</div>
-                    <div fxFlex="6"></div>
+                    <div fxFlex="5"></div>
+                    <div fxFlex="5" style="margin-right:6px"></div>
                   </div>
                   <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
                     <ng-template let-row="row"
@@ -130,7 +131,7 @@
                                  tdVirtualScrollRow>
                       <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
 
-                        <mat-form-field fxFlex="25">
+                        <mat-form-field fxFlex="15">
                           <input matInput [class.strike]="row.deleted" [formControlName]="'name_'+row._id" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
                           <mat-error *ngIf="hasTableFormError('name',row,'required')">
                             Feed name is required
@@ -146,9 +147,9 @@
                           </mat-error>
                         </mat-form-field>
                         <div fxFlex="5"></div>
-                        <div fxLayout="row" fxFlex="25">
+                        <div fxLayout="row" fxFlex="55">
 
-                          <mat-form-field>
+                          <mat-form-field style="width:100%">
                             <mat-select [formControlName]="'dataType_'+row._id" [(ngModel)]="row.derivedDataType" (change)="onDataTypeChange(row)">
                               <mat-option *ngFor="let dataType of availableDefinitionDataTypes" [value]="dataType">
                                 {{dataType}}
@@ -159,38 +160,34 @@
                             </mat-error>
                           </mat-form-field>
 
-                          <mat-form-field fxFlex="30" *ngIf="row.derivedDataType == 'decimal'">
+                          <mat-form-field fxFlex="30" *ngIf="row.derivedDataType == 'decimal'"  class="push-left-sm">
                             <input matInput [formControlName]="'precisionScale_'+row._id" placeholder="10,0" required [(ngModel)]="row.precisionScale">
                             <mat-error *ngIf="hasTableFormError('precisionScale',row,'precisionScale')">
                               Precision value is invalid. It must be in the format of #,# (i.e. 10,2)
                             </mat-error>
                           </mat-form-field>
                         </div>
-
-
-                        <div fxFlex="10" class="push-top-sm">
+                        <div fxFlex="5"></div>
+                        <div fxFlex="5" class="push-top-sm">
                           <mat-checkbox [formControlName]="'index_'+row._id" (change)="onIndexChange(row)"></mat-checkbox>
                         </div>
 
-                        <div fxFlex="10" class="push-top-sm">
+                        <div fxFlex="5" class="push-top-sm">
                           <mat-checkbox [formControlName]="'profile_'+row._id" (change)="onProfileChange(row)"></mat-checkbox>
                         </div>
 
-                        <div fxFlex="10" *ngIf="!tablePermissions.tableLocked">
-                          <button mat-icon-button style="margin-top:-2px" [disabled]="!tablePermissions.canRemoveFields || row.deleted"
+                        <div fxFlex="5" >
+                          <button mat-icon-button style="margin-top:-2px" [disabled]="!tablePermissions.canRemoveFields || row.deleted" *ngIf="!tablePermissions.tableLocked"
                                   (click)="removeColumn(index)">
                             <mat-icon class="tc-grey-500">delete</mat-icon>
                           </button>
                         </div>
 
-                        <div fxFlex="10">
+                        <div fxFlex="5">
                           <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1">
                             <mat-icon class="grey">undo</mat-icon>
                           </button>
                         </div>
-
-                        <div fxFlex></div>
-
                       </div>
 
                     </ng-template>
