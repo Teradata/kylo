@@ -3,9 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.catalog.datasource;
 
+import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.catalog.JcrDataSetSparkParameters;
+import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnector;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 
 /*-
@@ -155,6 +157,14 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
         JcrAccessControlUtil.setPermissions(this.dataSource.getNode(), principal, summaryPrivs);
         JcrDataSetSparkParameters params = (JcrDataSetSparkParameters) this.dataSource.getSparkParameters();
         JcrAccessControlUtil.setPermissions(params.getNode(), principal, detailPrivs);
+
+        //grant read to the datasource connector if the user has access to the datasource
+        if(!actions.isEmpty()) {
+            JcrConnector connector = (JcrConnector) dataSource.getConnector();
+            if(connector != null) {
+                connector.getAllowedActions().enable(principal, ConnectorAccessControl.ACCESS_CONNECTOR);
+            }
+        }
     }
     
     @Override
