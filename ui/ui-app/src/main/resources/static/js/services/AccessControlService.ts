@@ -5,6 +5,7 @@ import 'kylo-services-module';
 import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
 import {UserGroupService} from "./UserGroupService";
+import {EntityAccessControlService} from "../feed-mgr/shared/entity-access-control/EntityAccessControlService";
 
 export class AccessControlService extends AccessConstants {
  /**
@@ -99,7 +100,7 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                 if(!angular.isArray(requiredPermissions)){
                     requiredPermissions = [requiredPermissions];
                 }
-
+                console.log("CHECK HAS ENTITY ACCESS FOR ",requiredPermissions,"check" , entity.allowedActions)
                 return this.hasAnyAction(requiredPermissions, entity.allowedActions);
             }
             isFutureState=(state: any)=>{
@@ -152,7 +153,7 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                             if(angular.isArray(requiredPermissions)){
 
                                 //find the first match
-                                 valid = requiredPermissions.length ==0 || this.hasAnyAction(requiredPermissions,allowedActions)
+                                 valid = requiredPermissions.length ==0 || this.hasAllActions(requiredPermissions,allowedActions)
                             }
                             else {
                                 valid = this.hasAction(requiredPermissions,allowedActions);
@@ -261,6 +262,22 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                         });
                 }
                 return this.AVAILABLE_ACTIONS_;
+            }
+            /**
+             * Determines if any name in array of names is included in the allowed actions it will return true, otherwise false
+             *
+             * @param names an array of names
+             * @param actions An array of allowed actions
+             * @returns {boolean}
+             */
+            hasAllActions= (names: any, actions: any)=>{
+                if (names == "" || names == null || names == undefined || (angular.isArray(names) && names.length == 0)) {
+                    return true;
+                }
+                var valid = _.every(names,(name: any)=>{
+                    return this.hasAction(name.trim(), actions);
+                });
+                return valid;
             }
             /**
              * Determines if any name in array of names is included in the allowed actions it will return true, otherwise false

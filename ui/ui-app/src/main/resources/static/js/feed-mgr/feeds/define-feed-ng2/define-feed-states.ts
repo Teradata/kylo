@@ -145,7 +145,10 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".wrangler",
         url: "/:feedId/wrangler",
-        component: DefineFeedStepWranglerComponent
+        component: DefineFeedStepWranglerComponent,
+        data:{
+            permissions:AccessConstants.UI_STATES.FEED_STEP_WRANGLER.permissions
+        }
     },
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME + ".datasources",

@@ -330,6 +330,7 @@ export default class AccessConstants {
         SERVICE_LEVEL_ASSESSMENTS: {state: "service-level-assessments", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_LEVEL_ASSESSMENT: {state: "service-level-assessment", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         ADMIN_CONNECTORS:{state:"catalog.admin-connectors",permissions:[AccessConstants.ADMIN_CONNECTORS]},
-        ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTORS]}
+        ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTORS]},
+        FEED_STEP_WRANGLER:{state:"feed-definition.section.wrangler",permissions:[AccessConstants.DATASOURCE_ACCESS, AccessConstants.FEEDS_ACCESS]}
     }
 }
