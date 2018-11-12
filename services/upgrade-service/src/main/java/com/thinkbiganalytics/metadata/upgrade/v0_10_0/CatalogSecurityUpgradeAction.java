@@ -23,10 +23,11 @@ package com.thinkbiganalytics.metadata.upgrade.v0_10_0;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
-import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.AccessControlConfigurator;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
@@ -91,6 +92,10 @@ public class CatalogSecurityUpgradeAction implements UpgradeAction {
     @Override
     public void upgradeTo(final KyloVersion targetVersion) {
         log.info("Setting up catalog access control: {}", targetVersion);
+        Session session = JcrMetadataAccess.getActiveSession();
+        
+        JcrUtil.getOrCreateNode(JcrUtil.getNode(session, SecurityPaths.PROTOTYPES), "connector", "tba:allowedActions");
+        JcrUtil.getOrCreateNode(JcrUtil.getNode(session, SecurityPaths.ROLES), "connector", "tba:rolesFolder");
         
         // Define the new catalog actions both when upgrading or during a fresh install.
         //@formatter:off
@@ -114,7 +119,6 @@ public class CatalogSecurityUpgradeAction implements UpgradeAction {
         // The CreateDefaultUsersGroupsAction will have already granted these during a fresh install.
         if (upgrading) {
             try {
-                Session session = JcrMetadataAccess.getActiveSession();
                 session.save();
                 
                 if (session.nodeExists("/metadata/security/prototypes/services/accessFeedsSupport/accessDatasources")) {

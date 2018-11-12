@@ -102,7 +102,7 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
                                 .ifPresent(actions -> dsrc.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
                         } else {
                             actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
-                                .ifPresent(actions -> dsrc.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                                .ifPresent(actions -> dsrc.disableAccessControl(JcrMetadataAccess.getActiveUser()));
                         }
                         
                         return dsrc;
@@ -169,15 +169,15 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
         return JcrDataSource.NODE_TYPE;
     }
 
-    private String generateSystemName(String title) {
-        return JcrUtil.toSystemName(title);
-    }
-
     @Override
     public Optional<DataSource> findByNifiControlerServiceId(final String serviceId) {
         final String query = startBaseQuery()
             .append(" WHERE e.[tba:nifiControllerServiceId] = '").append(serviceId.replaceAll("'", "''")).append("'")
             .toString();
         return Optional.ofNullable(findFirst(query));
+    }
+    
+    public String generateSystemName(String title) {
+        return JcrUtil.toSystemName(title);
     }
 }

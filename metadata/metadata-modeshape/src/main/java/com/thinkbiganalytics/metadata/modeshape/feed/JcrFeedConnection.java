@@ -67,12 +67,22 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
         }
     }
     
+    public void setDatasource(JcrDatasource datasource) {
+        this.removeProperty(DATA_SET);
+        this.setProperty(DATASOURCE, datasource);
+    }
+    
     public Optional<DataSet> getDataSet() {
         if (JcrPropertyUtil.hasProperty(getNode(), DATA_SET)) {
             return Optional.of(JcrUtil.getReferencedObject(getNode(), DATA_SET, JcrDataSet.class));
         } else {
             return Optional.empty();
         }
+    }
+    
+    public void setDataSet(JcrDataSet dataSet) {
+        this.removeProperty(DATASOURCE);
+        this.setProperty(DATA_SET, dataSet);
     }
     
     @Override

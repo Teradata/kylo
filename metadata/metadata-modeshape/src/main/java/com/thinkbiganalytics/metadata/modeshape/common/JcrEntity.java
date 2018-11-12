@@ -43,7 +43,8 @@ import javax.jcr.RepositoryException;
 //public abstract class JcrEntity<I extends Serializable> extends JcrObject implements ExtensibleEntity<I> {
 public abstract class JcrEntity<I extends Serializable> extends JcrObject implements TaggableMixin {
 
-    public static final String OWNER = "jcr:createdBy";
+    public static final String OWNER = "tba:owner";
+    public static final String DEFAULT_OWNER = "jcr:createdBy";
 
     /**
      *
@@ -68,7 +69,8 @@ public abstract class JcrEntity<I extends Serializable> extends JcrObject implem
 
     public Principal getOwner(){
         String name = getProperty(OWNER, null);
-        return name != null ? new UsernamePrincipal(getProperty(OWNER, String.class)) : null;
+        name = name == null ? getProperty(DEFAULT_OWNER, null) : name;
+        return name != null ? new UsernamePrincipal(name) : null;
     }
 
 

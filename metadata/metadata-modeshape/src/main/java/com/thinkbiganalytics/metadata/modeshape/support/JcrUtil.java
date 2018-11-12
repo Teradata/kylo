@@ -43,6 +43,7 @@ import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -209,6 +210,20 @@ public class JcrUtil {
         Path currentPath = path(node);
         Path newPath = currentPath.getParent().resolve(newName);
         return moveNode(node, newPath);
+    }
+    
+    public static Node workspaceMoveNode(Node node, Path newPath) {
+        try {
+            Session session = node.getSession();
+            String path = newPath.toAbsolutePath().toString();
+            session.getWorkspace().move(node.getPath(), path);
+            return session.getNode(path);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to move node to path: " + newPath, e);
+        }
     }
 
     public static Node moveNode(Node node, Path newPath) {
@@ -613,6 +628,26 @@ public class JcrUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
+    }
+    
+    public static void addMixins(Node node, NodeType... mixins) {
+        Arrays.stream(mixins).forEach(mixin -> {
+            try {
+                node.addMixin(mixin.getName());
+            } catch (Exception e) {
+                throw new MetadataRepositoryException("Failed to add mixins to node: " + Arrays.toString(mixins), e);
+            }
+        });
+    }
+    
+    public static void removeMixins(Node node, NodeType... mixins) {
+        Arrays.stream(mixins).forEach(mixin -> {
+            try {
+                node.removeMixin(mixin.getName());
+            } catch (Exception e) {
+                throw new MetadataRepositoryException("Failed to remove mixins from node: " + Arrays.toString(mixins), e);
+            }
+        });
     }
 
 

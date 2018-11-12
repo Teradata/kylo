@@ -818,18 +818,15 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot remove a property without a provided name");
             }
             
-            Collection<Value> values;
-            
             if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toCollection(collectionSupplier));
+                Collection<Value> values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toCollection(collectionSupplier));
+                Value existingVal = createValue(node.getSession(), value, values.stream().anyMatch(v -> v.getType() == PropertyType.WEAKREFERENCE));
+                boolean result = values.remove(existingVal);
+                node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+                return result;
             } else {
-                values = collectionSupplier.get();
+                return false;
             }
-            
-            Value existingVal = createValue(node.getSession(), value, values.stream().anyMatch(v -> v.getType() == PropertyType.WEAKREFERENCE));
-            boolean result = values.remove(existingVal);
-            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
-            return result;
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
             throw new AccessControlException(e.getMessage());

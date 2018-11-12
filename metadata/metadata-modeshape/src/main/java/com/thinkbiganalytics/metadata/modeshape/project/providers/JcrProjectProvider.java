@@ -138,7 +138,7 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
                         .ifPresent(actions -> newProject.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
                 } else {
                     this.actionsProvider.getAvailableActions(AllowedActions.PROJECTS)
-                        .ifPresent(actions -> newProject.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                        .ifPresent(actions -> newProject.disableAccessControl(JcrMetadataAccess.getActiveUser()));
                 }
 
                 return newProject;

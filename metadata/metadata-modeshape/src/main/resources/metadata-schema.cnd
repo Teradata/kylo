@@ -170,7 +170,8 @@
 [tba:allowableAction] > nt:hierarchyNode, mix:title
     + * (tba:allowableAction)
 
-[tba:accessControlled] mixin
+[tba:accessControlled] > mix:created mixin
+    - tba:owner (STRING)        // Defaults to jcr:createdBy if this is not set
     + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
     + tba:roleMemberships (tba:roleMembership) sns
 
@@ -431,7 +432,7 @@
 [tba:DataSetSparkParamsSupplier] mixin
     + tba:sparkParams (tba:DataSetSparkParams) = tba:DataSetSparkParams autocreated mandatory
 
-[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconable, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
+[tba:Connector] > tba:entity, mix:title, tba:Iconable, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:isActive (BOOLEAN) = true
     - tba:pluginId (STRING) mandatory
     + dataSources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory
@@ -439,14 +440,14 @@
 [tba:ConnectorDataSources]
     + * (tba:DataSource) 
 
-[tba:DataSource] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
+[tba:DataSource] > tba:entity, mix:title, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:nifiControllerServiceId (STRING)
     + dataSets (tba:DataSets) = tba:DataSets autocreated mandatory
     
 [tba:DataSets]
     + * (tba:DataSet) 
 
-[tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
+[tba:DataSet] > tba:entity, mix:title, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:paramsHashCode (LONG) = 0
     - tba:mimeType (STRING)
     - tba:feedSources (WEAKREFERENCE) multiple

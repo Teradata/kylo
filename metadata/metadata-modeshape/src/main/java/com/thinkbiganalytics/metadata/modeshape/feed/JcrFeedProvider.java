@@ -492,7 +492,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                     .ifPresent(actions -> feed.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             } else {
                 this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                    .ifPresent(actions -> feed.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                    .ifPresent(actions -> feed.disableAccessControl(JcrMetadataAccess.getActiveUser()));
             }
 
             addPostFeedChangeAction(feed, ChangeType.CREATE);

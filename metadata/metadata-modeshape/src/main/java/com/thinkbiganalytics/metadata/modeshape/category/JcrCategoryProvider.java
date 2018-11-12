@@ -141,7 +141,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
                     .ifPresent(actions -> category.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), catRoles, feedRoles));
             } else {
                 this.actionsProvider.getAvailableActions(AllowedActions.CATEGORY)
-                    .ifPresent(actions -> category.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                    .ifPresent(actions -> category.disableAccessControl(JcrMetadataAccess.getActiveUser()));
             }
         }
 

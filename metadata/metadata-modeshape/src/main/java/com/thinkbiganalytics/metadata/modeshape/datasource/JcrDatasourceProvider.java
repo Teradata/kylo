@@ -337,7 +337,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                         .ifPresent(actions -> parent.get().enableAccessControl((JcrAllowedActions) actions, owner, roles));
                 } else {
                     actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
-                        .ifPresent(actions -> parent.get().disableAccessControl((JcrAllowedActions) actions, owner));
+                        .ifPresent(actions -> parent.get().disableAccessControl(owner));
                 }
             }
 
@@ -377,7 +377,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                         .ifPresent(actions -> ((JcrUserDatasource) datasource).enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
                 } else {
                     actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
-                        .ifPresent(actions -> ((JcrUserDatasource) datasource).disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                        .ifPresent(actions -> ((JcrUserDatasource) datasource).disableAccessControl(JcrMetadataAccess.getActiveUser()));
                 }
             }
 

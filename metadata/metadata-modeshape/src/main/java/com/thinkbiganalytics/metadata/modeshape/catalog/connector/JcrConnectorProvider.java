@@ -97,7 +97,7 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
                     .ifPresent(actions -> conn.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             } else {
                 actionsProvider.getAvailableActions(AllowedActions.CONNECTOR)
-                    .ifPresent(actions -> conn.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                    .ifPresent(actions -> conn.disableAccessControl(JcrMetadataAccess.getActiveUser()));
             }
             return conn;
         }

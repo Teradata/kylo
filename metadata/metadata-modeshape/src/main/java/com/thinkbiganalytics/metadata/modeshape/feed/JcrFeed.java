@@ -607,35 +607,35 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
         }
     }
 
-    protected JcrFeedSource ensureFeedSource(JcrDatasource datasource) {
+    public JcrFeedSource ensureFeedSource(JcrDatasource datasource) {
         return getFeedDetails().map(d -> d.ensureFeedSource(datasource)).orElse(null);
     }
     
-    protected JcrFeedSource ensureFeedSource(JcrDataSet dataSet, boolean isSample) {
+    public JcrFeedSource ensureFeedSource(JcrDataSet dataSet, boolean isSample) {
         return getFeedDetails().map(d -> d.ensureFeedSource(dataSet, isSample)).orElse(null);
     }
 
-    protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
+    public JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
         return getFeedDetails().map(d -> d.ensureFeedDestination(datasource)).orElse(null);
     }
     
-    protected JcrFeedDestination ensureFeedDestination(JcrDataSet dataSet) {
+    public JcrFeedDestination ensureFeedDestination(JcrDataSet dataSet) {
         return getFeedDetails().map(d -> d.ensureFeedDestination(dataSet)).orElse(null);
     }
 
-    protected void removeFeedSource(JcrFeedSource source) {
+    public void removeFeedSource(JcrFeedSource source) {
         getFeedDetails().ifPresent(d -> d.removeFeedSource(source));
     }
 
-    protected void removeFeedDestination(JcrFeedDestination dest) {
+    public void removeFeedDestination(JcrFeedDestination dest) {
         getFeedDetails().ifPresent(d -> d.removeFeedDestination(dest));
     }
 
-    protected void removeFeedSources() {
+    public void removeFeedSources() {
         getFeedDetails().ifPresent(d -> d.removeFeedSources());
     }
 
-    protected void removeFeedDestinations() {
+    public void removeFeedDestinations() {
         getFeedDetails().ifPresent(d -> d.removeFeedDestinations());
     }
 
