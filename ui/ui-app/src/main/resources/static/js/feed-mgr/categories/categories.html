@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">  <!-- | orderBy:'name' | filter: searchQuery track by $index.--> 
+        <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
             <mat-card *ngFor="let category of filteredCategories" style="width:400px;max-width:400px;max-height:121px;height:121px" flex="initial" flex-gt-md="initial" flex-gt-sm="50"
                     (click)="editCategory(category)">
                 <mat-card-title layout-align="space-between center">

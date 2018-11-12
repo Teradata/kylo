@@ -26,7 +26,7 @@
 
   <form #slaForm="ngForm" (change)="onChange(slaForm)">
     <div class="layout-padding-left-right-16">
-      <span class="md-subhead">Conditions</span>
+      <span class="md-subhead">{{"FEED_MGR.SLA.CONDITIONS"| translate}}</span>
 
       <div *ngFor="let rule of editSla.rules; let i = index; let last = last" layout="column" class="layout-padding">
         <div layout="row">
@@ -51,7 +51,7 @@
       </div>
 
       <div *ngIf="addingSlaCondition == false" layout="row">
-        <button class="md-primary md-button md-kylo-theme md-ink-ripple" (click)="onAddNewCondition()">Add Condition</button>
+        <button class="md-primary md-button md-kylo-theme md-ink-ripple" (click)="onAddNewCondition()">{{"FEED_MGR.SLA.ADD_CONDITION"| translate}}</button>
         <span flex></span>
       </div>
 
@@ -80,7 +80,7 @@
         <div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" layout="column" class="layout-padding-left-right">
           <div class="error md-title bold layout-padding-left" layout="row">
             <div class="layout-padding-left">
-              <ng-md-icon icon="warning" size="20" class="error">WARNING</ng-md-icon>
+              <ng-md-icon icon="warning" size="20" class="error">{{"FEED_MGR.SLA.WARNING"| translate}}</ng-md-icon>
             </div>
             <span>{{"views.service-level-agreement-form.Errors-found" | translate}}</span>
           </div>
@@ -134,7 +134,7 @@
       </div>
 
       <div layout="column" class="layout-padding-top">
-        <span class="md-subhead">Description</span>
+        <span class="md-subhead">{{"FEED_MGR.SLA.DESCRIPTION"| translate}}</span>
         <div class="layout-padding-top-bottom">
 
         </div>
@@ -142,20 +142,20 @@
         <div class="layout-padding">
 
           <mat-form-field style="display:block" class="md-block condensed" >
-            <mat-label>Name</mat-label>
+            <mat-label>{{"FEED_MGR.SLA.NAME"| translate}}</mat-label>
             <input matInput  #slaName="ngModel" name="slaName" type="text" [(ngModel)]="editSla.name" md-placeholder="SLA name" [disabled]="!allowEdit" (change)="onNameChange($event)"
                   required/>
             <mat-hint align="start">
-              <span [hidden]="!slaName.errors?.required || slaName.pristine" class="tc-red-600">This field is required.</span>
+              <span [hidden]="!slaName.errors?.required || slaName.pristine" class="tc-red-600">{{"FEED_MGR.SLA.FIELD_REQUIRED"| translate}}</span>
             </mat-hint>
           </mat-form-field>
 
           <mat-form-field style="display:block" class="md-block condensed">
-            <mat-label>Description</mat-label>
-            <input matInput  #slaDescription="ngModel" name="slaDescription" type="text" [(ngModel)]="editSla.description" md-placeholder="SLA Description" [disabled]="!allowEdit" (change)="onDescriptionChange($event)"
+            <mat-label>{{"FEED_MGR.SLA.DESCRIPTION"| translate}}</mat-label>
+            <input matInput  #slaDescription="ngModel" name="slaDescription" type="text" [(ngModel)]="editSla.description" placeholder="{{'FEED_MGR.SLA.SLA_DESCRIPTION'| translate}}" [disabled]="!allowEdit" (change)="onDescriptionChange($event)"
                   required/>
             <mat-hint align="start">
-              <span [hidden]="!slaDescription.errors?.required || slaDescription.pristine" class="tc-red-600">This field is required.</span>
+              <span [hidden]="!slaDescription.errors?.required || slaDescription.pristine" class="tc-red-600">{{"FEED_MGR.SLA.FIELD_REQUIRED"| translate}}</span>
             </mat-hint>
           </mat-form-field>
 

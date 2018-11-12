@@ -3,18 +3,18 @@
                             [editable]="isEditable" [isValid]="myForm.$valid" [allowEdit]="allowEdit">
     <readonly-section>
       <div layout="row" class="layout-padding-top-bottom">
-        <span flex="25" class="property-name">Field Name</span>
+        <span flex="25" class="property-name">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.FIELD_NAME" | translate}}</span>
         <div flex>{{model.field.name}}</div>
       </div>
       <div layout="row" class="layout-padding-top-bottom">
-        <span flex="25" class="property-name">Data Type</span>
+        <span flex="25" class="property-name">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.DATA_TYPE" | translate}}</span>
         <div flex>
           {{model.field.derivedDataType}}
           <span *ngIf="model.field.derivedDataType == 'decimal' && model.field.precisionScale">({{model.field.precisionScale}})</span>
         </div>
       </div>
       <div layout="row" class="layout-padding-top-bottom">
-        <span flex="25" class="property-name">Tags</span>
+        <span flex="25" class="property-name">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.TAGS" | translate}}</span>
 
         <mat-chip-list #chipList>
           <mat-chip *ngFor="let tag of model.field.tags">
@@ -24,7 +24,7 @@
 
       </div>
       <div layout="row" class="layout-padding-top-bottom">
-        <span flex="25" class="property-name">Rules</span>
+        <span flex="25" class="property-name">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.RULES" | translate}}</span>
         <div flex>
           <ul class="layout-padding-left-16" style="margin:0">
             <li *ngFor="let rule of getAllFieldPolicies(model)">{{rule.name}}</li>
@@ -33,16 +33,16 @@
       </div>
     </readonly-section>
     <editable-section *ngIf = "editModel.field">
-      <p style="margin: 0 0 32px 0;">These properties will be applied to a field when this domain type is selected:</p>
+      <p style="margin: 0 0 32px 0;">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.PROPERTIES_DESCRIPTION" | translate}}</p>
 
       <mat-form-field class="md-block" style="margin-bottom: 18px; width:100%">
-        <input matInput name="fieldName" placeholder='Field Name' [(ngModel)]="editModel.field.name"/>
+        <input matInput name="fieldName" placeholder='{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.FIELD_NAME" | translate}}' [(ngModel)]="editModel.field.name"/>
       </mat-form-field>
 
       <div layout="row" style="margin-top:-18px">
         <div flex class="md-block">
-          <mat-select name="derivedDataType" [(ngModel)]="editModel.field.derivedDataType" placeholder="Data Type" (change)="onDataTypeChange()">
-            <mat-option value=""><em>None</em></mat-option>
+          <mat-select name="derivedDataType" [(ngModel)]="editModel.field.derivedDataType" placeholder="{{'FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.DATA_TYPE' | translate}}" (change)="onDataTypeChange()">
+            <mat-option value=""><em>{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.NONE" | translate}}</em></mat-option>
             <mat-option *ngFor="let dataType of availableDefinitionDataTypes" value="{{dataType}}" aria-label="{{dataType}}">
               {{dataType}}
             </mat-option>
@@ -52,13 +52,13 @@
           </div> -->
         </div>
         <mat-form-field flex="10" *ngIf="editModel.field.derivedDataType == 'decimal'">
-          <mat-label>Precision</mat-label>
+          <mat-label>{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.PRECISION" | translate}}</mat-label>
           <input matInput name="precisionScale" [(ngModel)]="editModel.field.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale">
         </mat-form-field>
       </div>
 
       <div class="block layout-padding-top-bottom flex-gt-sm">
-          <mat-label class="label-small md-container-ignore">Tags</mat-label>
+          <mat-label class="label-small md-container-ignore">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.TAGS" | translate}}</mat-label>
 
           <td-chips [chipAddition]="true"
                   [chipRemoval]="true"
@@ -75,7 +75,7 @@
 
       <div layout="column" style="margin:18px 0">
         <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
-          <span class="md-input-label" style="font-size: 11px;" flex="25">Rules </span>
+          <span class="md-input-label" style="font-size: 11px;" flex="25">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.RULES" | translate}} </span>
           <div style="color:#2D78B1;">
             <button class="icon-btn md-button md-kylo-theme md-ink-ripple" style="padding-left:2px;padding-right:2px;">
               <mat-icon (click)="showFieldRuleDialog(editModel)" style="fill:#2D78B1;">add_circle_outline</mat-icon>
@@ -83,8 +83,8 @@
             ADD
           </div>
           <div *ngIf="hasFieldPolicies(editModel)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
-            <span *ngIf="editModel.fieldPolicy.standardization.length > 0">{{editModel.fieldPolicy.standardization.length}} Standardizers</span>
-            <span *ngIf="editModel.fieldPolicy.validation.length > 0">{{editModel.fieldPolicy.validation.length}} Validators</span>
+            <span *ngIf="editModel.fieldPolicy.standardization.length > 0">{{editModel.fieldPolicy.standardization.length}} {{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.STANDARDIZERS" | translate}}</span>
+            <span *ngIf="editModel.fieldPolicy.validation.length > 0">{{editModel.fieldPolicy.validation.length}} {{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.VALIDATORS" | translate}}</span>
           </div>
         </div>
       </div>

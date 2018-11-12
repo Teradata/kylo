@@ -27,6 +27,7 @@ import { DatasourcesDetailsComponent, SaveDatasourceDialogComponent } from "./Da
 import { CommonModule } from "@angular/common";
 import { KyloCommonModule } from "../../common/common.module";
 import * as angular from "angular";
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({ 
     declarations: [  
@@ -58,6 +59,7 @@ import * as angular from "angular";
         FormsModule,
         MatSnackBarModule,
         ReactiveFormsModule,
+        TranslateModule.forChild(),
         UIRouterModule.forChild({states: datasourcesStates})
     ],
     providers : [

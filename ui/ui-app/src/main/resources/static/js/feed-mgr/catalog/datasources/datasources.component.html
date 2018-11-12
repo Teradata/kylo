@@ -1,7 +1,7 @@
 <ng-container *tdLoading="'DataSourcesComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
   <ng-container *ngIf="datasources && datasources.length > 0">
     <mat-card>
-      <td-search-box placeholder="Search data sources" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
+      <td-search-box placeholder="{{'FEED_MGR.CATALOG.DATASOURCES.SEARCH_DATASOURCES_PLACEHOLDER'| translate}}" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
       <mat-divider></mat-divider>
       <mat-nav-list>
         <ng-template let-datasource let-last="last" ngFor [ngForOf]="filteredDatasources">
@@ -12,8 +12,8 @@
             <h4 matLine>{{datasource.title}}</h4>
             <span></span>
             <div *ngIf="isEditable(datasource)" class="action-icons" fxLayout="row" style="visibility: hidden;">
-              <mat-icon (click)="editDatasource($event, datasource)" title="Edit">mode_edit</mat-icon>
-              <mat-icon (click)="deleteDatasource($event, datasource)" title="Delete">delete</mat-icon>
+              <mat-icon (click)="editDatasource($event, datasource)" title="{{'FEED_MGR.CATALOG.DATASOURCES.EDIT'| translate}}">mode_edit</mat-icon>
+              <mat-icon (click)="deleteDatasource($event, datasource)" title="{{'FEED_MGR.CATALOG.DATASOURCES.DELETE'| translate}}">delete</mat-icon>
             </div>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>

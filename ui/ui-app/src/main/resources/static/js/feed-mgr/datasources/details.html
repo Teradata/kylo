@@ -3,9 +3,9 @@
   <mat-card flex="70">
       <mat-card-title>
           <mat-toolbar style="background: none;">
-              <div class="card-title">Data Source Details</div>
+              <div class="card-title">{{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_DETAILS" | translate}}</div>
               <span flex></span>
-              <ng-md-icon icon="{{model.icon}}" ng-style="{'fill':model.iconColor}" style="padding-right:16px;" size="30"></ng-md-icon>
+              <ng-md-icon icon="{{model.icon}}" [ngStyle]="{'fill':model.iconColor}" style="padding-right:16px;" size="30"></ng-md-icon>
           </mat-toolbar>
       </mat-card-title>
       <mat-card-body>
@@ -14,80 +14,80 @@
                                 [editable]="isDetailsEditable" [isValid]="datasourceDetailsForm.form.valid" [allowEdit]="allowEdit">
           <readonly-section>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Name</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_NAME" | translate}}</span>
               <div flex>{{model.name}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Description</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_DESCRIPTION" | translate}}</span>
               <div flex>{{model.description}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Type</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_TYPE" | translate}}</span>
               <div flex>{{model.type}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database Connection URL</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_CONNECTION" | translate}}</span>
               <div flex>{{model.databaseConnectionUrl}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database Driver Class Name</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_DRIVER_CLASS" | translate}}</span>
               <div flex>{{model.databaseDriverClassName}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database Driver Location(s)</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_DRIVER_LOCATION" | translate}}</span>
               <div flex>{{model.databaseDriverLocation}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-              <span flex="25" class="property-name">Database User</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_USER" | translate}}</span>
               <div flex>{{model.databaseUser}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom" ngFor="(key,list) of model.references" *ngIf="model.references">
-              <span flex="25" class="property-name">{{key}} references</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.KEY_REFERENCES" | translate : key}}</span>
               <div flex>{{list.length}}</div>
             </div>
             <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
-              <span flex="25" class="property-name">Icon</span>
+              <span flex="25" class="property-name">{{"FEED_MGR.DATASOURCE.DETAILS.ICON" | translate}}</span>
 
               <div layout="column">
-                  <ng-md-icon icon="{{model.icon}}" ng-style="{'fill':model.iconColor}" style="margin:inherit" size="45"></ng-md-icon>
+                  <ng-md-icon icon="{{model.icon}}" [ngStyle]="{'fill':model.iconColor}" style="margin:inherit" size="45"></ng-md-icon>
               </div>
             </div>
           </readonly-section>
           <editable-section>
               <mat-form-field class="block">
-                <mat-label>Name</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_NAME" | translate}}</mat-label>
                 <input matInput required [(ngModel)]="editModel.name" name="datasourceName"/>
                 <mat-error *ngIf="isDataSourceNameEmpty()">Data Source name is required.</mat-error>
                 <mat-error *ngIf="isDataSourceNameDuplicate()">Data Source name is already in use.</mat-error>
               </mat-form-field>
 
               <mat-form-field class="block">
-                <mat-label>Description</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_DESCRIPTION" | translate}}</mat-label>
                 <input matInput [(ngModel)]="editModel.description" name="description"/>
               </mat-form-field>
 
               <mat-form-field class="block">
-                <mat-label>Database Connection URL</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_CONNECTION" | translate}}</mat-label>
                 <input matInput required [(ngModel)]="editModel.databaseConnectionUrl" name="connectionURL"/>
               </mat-form-field>
 
               <mat-form-field class="block">
-                <mat-label>Database Driver Class Name</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_DRIVER_CLASS" | translate}}</mat-label>
                 <input matInput required [(ngModel)]="editModel.databaseDriverClassName" name="driverClassName"/>
               </mat-form-field>
 
               <mat-form-field class="block">
-                <mat-label>Database Driver Location(s)</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_DRIVER_LOCATION" | translate}}</mat-label>
                 <input matInput [(ngModel)]="editModel.databaseDriverLocation" name="driverLocation"/>
               </mat-form-field>
 
               <mat-form-field class="block">
-                <mat-label>Database User</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.DATABASE_USER" | translate}}</mat-label>
                 <input matInput autocomplete="new-password" [(ngModel)]="editModel.databaseUser" name="databaseUser"/>
               </mat-form-field>
 
               <mat-form-field class="block">
-                <mat-label>Password</mat-label>
+                <mat-label>{{"FEED_MGR.DATASOURCE.DETAILS.PASSWORD" | translate}}</mat-label>
                 <input matInput type="password" autocomplete="new-password" [(ngModel)]="editModel.password" (change)="onPasswordChange()" name="password"/>
               </mat-form-field>
 
@@ -101,7 +101,9 @@
                 <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
                   <span class="mat-input-label" style="font-size: 11px;" flex="25">Icon </span>
                   <ng-md-icon icon="{{editModel.icon}}" size="45" style="margin:inherit;" ng-style="{'fill': editModel.iconColor}"></ng-md-icon>
-                  <button mat-button color="primary" (click)="showIconPicker()" style="margin-left:35px;">Change Icon</button>
+                  <button mat-button color="primary" (click)="showIconPicker()" style="margin-left:35px;">
+                      {{"FEED_MGR.DATASOURCE.DETAILS.CHANGE_ICON" | translate}}
+                  </button>
                 </div>
               </div>
           </editable-section>
@@ -124,13 +126,13 @@
             <mat-list-item>
               <div layout="row" layout-fill>
                 <div flex="50" class="mat-list-item-text hint">
-                  Name
+                  {{"FEED_MGR.DATASOURCE.DETAILS.DATASOURCE_NAME" | translate}}
                 </div>
                 <div flex="10" class="mat-list-item-text hint">
-                  Active
+                    {{"FEED_MGR.DATASOURCE.DETAILS.ACTIVE" | translate}}
                 </div>
                 <div flex="40" class="mat-list-item-text hint">
-                  Last Modified
+                    {{"FEED_MGR.DATASOURCE.DETAILS.LAST_MODIFIED" | translate}}
                 </div>
               </div>
             </mat-list-item>
@@ -149,7 +151,7 @@
             </mat-list-item>
           </mat-list>
           <div *ngIf="model.sourceForFeeds == null || model.sourceForFeeds.length === 0">
-            There are no feeds associated with this data source.
+           {{"FEED_MGR.DATASOURCE.DETAILS.NO_FEEDS_ASSOCIATED" | translate}}
           </div>
         </readonly-section>
       </vertical-section-layout>

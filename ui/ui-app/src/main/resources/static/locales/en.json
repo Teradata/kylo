@@ -119,8 +119,130 @@
 
         "overview.data-confidence-details-dialog.data-confidence-details": "Data Confidence Details",
         "overview.data-confidence-details-dialog.no-jobs-found": "No jobs found matching your criteria",
-        "overview.data-confidence-details-dialog.end-time": "End Time:"
+        "overview.data-confidence-details-dialog.end-time": "End Time:",
+
+        "MAIN": {
+            "ACCESS_DENIED.NO_ACCESS": "You are unable to access ",
+            "HOME": {
+                "WELCOME": "Welcome to Kylo",
+                "MENU_OPTION": "Select a menu option on the left"
+            }
+        }
         
+    },
+    "FEED_MGR": {
+        "SLA": {
+            "CONDITIONS": "Conditions",
+            "ADD_CONDITION": "Add Condition",
+            "WARNING": "WARNING",
+            "DESCRIPTION": "Description",
+            "NAME": "Name",
+            "FIELD_REQUIRED": "This field is required.",
+            "SLA_DESCRIPTION": "SLA Description",
+            "EMAIL_TEMPLATES": {
+                "SLA_TEMPLATE": "Service Level Agreement Email Templates",
+                "WARNING": "Warning.  The SLA email plugin was not found.  This template will not be applied.",
+                "EMAIL_PLUGIN_DESCRIPTION": "Please consult with your administrator about configuring the SLA email plugin.",
+                "TEMPLATE_NAME": "Template Name",
+                "SUBJECT": "Subject",
+                "SLA_NAME_DECRIPTION": "Supports Velocity and Template Variables (i.e. $sla.name will resolve to the SLA name)",
+                "DISABLED_SLA": "If the template has related SLA's it cannot be disabled.",
+                "LOAD_EXAMPLE_TEMPLATE": "Load Example Template",
+                "DEFAULT_TEMPLATE": "The default template will be used for SLA emails when a template has not yet been assigned to the SLA. There is only one default template.",
+                "TEMPLATE_VARIABLES": "Template Variables",
+                "RELATED_SLA": "Related SLA's",
+                "PREVIEW": "Preview",
+                "ENABLED": "Enabled",
+                "DEFAULT": "Default",
+                "BODY": "Body",
+                "TEMPLATE_ERROR": "Error sending template",
+                "SEND_TEMPLATE": "Successfully sent template to {{value}}",
+                "VELOCITY_TEMPLATE": "Velocity Template"
+            }
+
+        },
+        "CATEGORIES": {
+            "DETAILS": {
+                "INDEXING_ALLOWED": "Indexing Allowed",
+                "SYSTEM_NAME_REQUIRED": "A category system name is required.",
+                "INVALID": "Invalid, must not contain other than alpha-numeric and underscores.",
+                "EXISTING_CATEGORY": "There is an existing category with that system name.",
+                "RESERVED_CATEGORY": "That category is reserved. Please choose another category.",
+                "CHANGE_SYSTEM_NAME": "Let me change system name"
+            }
+        },
+        "CATALOG": {
+            "CONNECTORS": {
+                "SEARCH_CONNECTORS_PLACEHOLDER": "Search connectors"
+            },
+            "DATASOURCE": {
+                "WRANGLE_DATA": "Wrangle Data",
+                "API": {
+                    "HOME": "Home",
+                    "SEARCH_HERE": "Search here"
+                }
+            },
+            "DATASOURCES": {
+                "SEARCH_DATASOURCES_PLACEHOLDER": "Search data sources",
+                "EDIT": "Edit",
+                "DELETE": "Delete"
+            }
+        },
+        "DATASOURCE": {
+            "SAVING_DIALOG": {
+                "SAVING_DATASOURCE_NAME": "Saving {{value}}",
+                "SAVING_DATASOURCE": "Saving the data source. Hang tight.",
+                "SAVING": "Saving data source"
+            },
+            "DETAILS": {
+                "DATASOURCE_DETAILS": "Data Source Details",
+                "DATASOURCE_NAME": "Name",
+                "DATASOURCE_DESCRIPTION": "Description",
+                "DATASOURCE_TYPE": "Type",
+                "DATABASE_CONNECTION": "Database Connection URL",
+                "DATABASE_DRIVER_CLASS": "Database Driver Class Name",
+                "DATABASE_DRIVER_LOCATION": "Database Driver Location(s)",
+                "DATABASE_USER": "Database User",
+                "KEY_REFERENCES": "{{value}} references",
+                "ICON": "Icon",
+                "NAME_REQUIRED": "Data Source name is required.",
+                "NAME_IN_USE": "Data Source name is already in use.",
+                "PASSWORD": "Password",
+                "CHANGE_ICON": "Change Icon",
+                "ACTIVE": "Active",
+                "LAST_MODIFIED": "Last Modified",
+                "NO_FEEDS_ASSOCIATED": " There are no feeds associated with this data source."
+            }
+        },
+        "DOMAIN_TYPES": {
+            "FILTER_TYPES_PLACEHOLDER": "Filter Types",
+            "DETAILS": {
+                "DOMAIN_TYPE_DETAILS": "Domain Type Details",
+                "MATCHERS": {
+                    "COLUMN_NAME": "Column Name",
+                    "SAMPLE_VALUES": "Sample Values",
+                    "DESCRIPTION": "This domain type will be automatically applied to columns of new feeds if those columns match the regular expressions below:",
+                    "REGEX_FLAG_LABEL": "Open expression flags menu"
+                },
+                "METADATA": {
+                    "NAME": "Name",
+                    "DESCRIPTION": "Description",
+                    "ICON": "Icon",
+                    "CHANGE_ICON": "Change Icon"
+                },
+                "RULES": {
+                    "FIELD_NAME":"Field Name",
+                    "DATA_TYPE": "Data Type",
+                    "TAGS": "Tags",
+                    "RULES": "Rules",
+                    "PROPERTIES_DESCRIPTION": "These properties will be applied to a field when this domain type is selected:",
+                    "STANDARDIZERS": "Standardizers",
+                    "VALIDATORS": "Validators",
+                    "PRECISION": "Precision",
+                    "NONE": "None"
+                }
+            }
+        }
     },
     "view.main.update":"Update",
     "view.main.status": "Status",
@@ -378,7 +500,7 @@
     "views.feed-schedule.Minutes": "Minutes",
     "views.feed-schedule.Seconds": "Seconds",
     "views.feed-schedule.Saving": "Saving...",
-    "views.feed-saving-dialog.Saving": "Saving",
+    "views.feed-SAVING_DIALOG.Saving": "Saving",
     "views.feed-stats-charts.LR": "Last Refreshed",
     "views.feed-stats-charts.EM": "Error Messages",
     "views.feed-stats-charts.Filter": "Filter",

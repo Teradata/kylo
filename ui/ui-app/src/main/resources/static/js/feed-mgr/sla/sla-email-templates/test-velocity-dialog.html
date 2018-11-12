@@ -17,32 +17,32 @@
   limitations under the License.
   #L%
   -->
-<div mat-dialog aria-label="Velocity Template">
+<div aria-label="{{'FEED_MGR.SLA.EMAIL_TEMPLATES.VELOCITY_TEMPLATE'| translate}}" mat-dialog>
   <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
     <div class="md-toolbar-tools">
       <h4>
-        <span>Preview</span>
+        <span>{{"FEED_MGR.SLA.EMAIL_TEMPLATES.PREVIEW"| translate}}</span>
       </h4>
       <span flex></span>
     </div>
   </mat-toolbar>
   <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
     <div layout="column" *ngIf="resolvedTemplate.sendTest == false">
-      <div class="md-title">Subject</div>
+      <div class="md-title">{{"FEED_MGR.SLA.EMAIL_TEMPLATES.SUBJECT"| translate}}</div>
       <div class="layout-padding-top-bottom" [innerHTML]="resolvedTemplateSubject"></div>
 
       <mat-divider></mat-divider>
-      <div class="md-title layout-padding-top">Body</div>
+      <div class="md-title layout-padding-top">{{"FEED_MGR.SLA.EMAIL_TEMPLATES.BODY"| translate}}</div>
       <div class="layout-padding-top-bottom" [innerHTML]="resolvedTemplateBody"></div>
     </div>
 
     <div layout="column" *ngIf="resolvedTemplate.sendTest == true && resolvedTemplate.success == false">
-      <div class="md-title">Error sending template</div>
+      <div class="md-title">{{"FEED_MGR.SLA.EMAIL_TEMPLATES.TEMPLATE_ERROR"| translate}}</div>
       <div>{{resolvedTemplate.exceptionMessage}}</div>
     </div>
 
     <div layout="column" *ngIf="resolvedTemplate.sendTest == true && resolvedTemplate.success == true">
-      <div class="md-title">Successfully sent template to {{emailAddress}}</div>
+      <div class="md-title">{{"FEED_MGR.SLA.EMAIL_TEMPLATES.SEND_TEMPLATE"| translate: emailAddress}}</div>
     </div>
 
   </mat-dialog-content>

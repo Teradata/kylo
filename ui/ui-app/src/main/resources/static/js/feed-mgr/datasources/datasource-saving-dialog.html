@@ -17,18 +17,18 @@
   limitations under the License.
   #L%
   -->
-<div mat-dialog aria-label="Saving data source">
+<div aria-label="{{'FEED_MGR.DATASOURCE.SAVING_DIALOG.SAVING' | translate}}" mat-dialog>
     <mat-toolbar style="background-color:white;color: rgba(0, 0, 0, 0.54);">
       <div class="md-toolbar-tools">
         <h4>
           <ng-md-icon size="24" md-icon icon="save" aria-label="Registering Template" style="fill:#3483BA"></ng-md-icon>
-          <span>Saving {{datasourceName}}</span>
+          <span>{{"FEED_MGR.DATASOURCE.SAVING_DIALOG.SAVING_DATASOURCE_NAME" | translate : datasourceName}}</span>
         </h4>
         <span flex></span>
       </div>
     </mat-toolbar>
     <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-      <div class="md-subhead">Saving the data source. Hang tight.</div>
+      <div class="md-subhead">{{"FEED_MGR.DATASOURCE.SAVING_DIALOG.SAVING_DATASOURCE" | translate}}</div>
       <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
       </div>

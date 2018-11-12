@@ -2,9 +2,9 @@
 <vertical-section-layout [allowEdit]="allowEdit && !isNew" section-title='{{"views.category-access-control.AC" | translate}}' (on-save-edit)="onSave" (on-edit)="onEdit" keepEditableAfterSave="true" [editable]="isEditable" [isValid]="isValid">
   <readonly-section>
     <div>{{"views.category-access-control.CR" | translate}}</div>
-    <entity-access-control entity="model" entity-type="category" the-form="categoryAccessControlForm" read-only="true"></entity-access-control>
+    <entity-access-control entity="model" entity-type="category" the-form="categoryAccessControlForm" [readonly]="true"></entity-access-control>
     <div>{{"views.category-access-control.RIbF" | translate}}</div>
-    <entity-access-control entity="model" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="categoryAccessControlForm" read-only="true"></entity-access-control>
+    <entity-access-control entity="model" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="categoryAccessControlForm" [readonly]="true"></entity-access-control>
     <div>{{"views.category-access-control.index.control" | translate}}</div>
     <div layout="row" layout-padding>
       <div flex="40" style="align-self:center;">
@@ -16,7 +16,7 @@
       <div flex class="">
         <mat-checkbox
             [(ngModel)]="model.allowIndexing"
-            aria-label="Indexing Allowed"
+            aria-label="{{'FEED_MGR.CATEGORIES.DETAILS.INDEXING_ALLOWED' | translate}}"
             ng-true-value=true
             ng-false-value=false
             [disabled]="true"
@@ -42,7 +42,7 @@
       <div flex class="">
         <mat-checkbox
             [(ngModel)]="editModel.allowIndexing"
-            aria-label="Indexing Allowed"
+            aria-label="{{'FEED_MGR.CATEGORIES.DETAILS.INDEXING_ALLOWED' | translate}}"
             ng-true-value=true
             ng-false-value=false
             [disabled]="false"
