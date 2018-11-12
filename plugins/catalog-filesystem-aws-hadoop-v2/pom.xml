@@ -20,7 +20,7 @@
     <dependency>
       <!-- needed to ensure correct version is used -->
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
+      <artifactId>aws-java-sdk</artifactId>
       <version>${aws.java.sdk.version}</version>
       <exclusions>
         <exclusion>
@@ -28,12 +28,6 @@
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-s3</artifactId>
-      <version>${aws.java.sdk.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

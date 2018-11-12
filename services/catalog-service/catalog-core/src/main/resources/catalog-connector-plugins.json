@@ -38,13 +38,10 @@
       {
         "key": "path",
         "label": "Path",
-        "hint":"Supply a location to upload to. For example 'file:/var/upload' ",
+        "hint": "Supply a location to upload to. For example 'file:/var/upload', 'hdfs://master:8020/var/upload', or 's3a://kylo-upload/'",
         "validators": [
           {
-            "type": "url",
-            "params": {
-              "protocol": "file:"
-            }
+            "type": "url"
           }
         ]
       }
