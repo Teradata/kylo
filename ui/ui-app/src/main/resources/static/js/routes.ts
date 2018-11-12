@@ -176,7 +176,7 @@ class Route {
                 });
             }
         })
-    $stateProvider.state({
+        $stateProvider.state({
             name: 'users.**',
             url: '/users',
             lazyLoad: (transition: any) => {
@@ -545,24 +545,28 @@ class Route {
             }
         });
 
-        $stateProvider.state({
-            name: 'access-denied',
-            url: '/access-denied',
-            params: {attemptedState: null},
-            views: {
-                "content": {
-                    // templateUrl: "./main/access-denied.html",
-                    component: 'acessDeniedController',
-                    //controllerAs:'vm'
+
+        $stateProvider
+            .state('access-denied', {
+                url: '/access-denied',
+                views: {
+                    "content": {
+                        component: 'accessDeniedController',
+                    }
+                },
+                lazyLoad: ($transition$: any) => {
+                    const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+                    return import(/* webpackChunkName: "accessDenied.module" */ './main/AccessDeniedController')
+                        .then(mod => {
+                            console.log('imported access denied controller', mod);
+                            $ocLazyLoad.load(mod);
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load access denied controller, " + err);
+                        });
                 }
-            },
-            resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
-                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                    // you can lazy load files for an existing module
-                    return $ocLazyLoad.load('main/AccessDeniedController');
-                }]
-            }
-        });
+            });
+
     }
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
