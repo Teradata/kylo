@@ -1,5 +1,5 @@
 <div *ngIf="!enabled">
-  <span>Entity access control is not enabled for Kylo.</span>
+  <span>{{'SHARED.ENTITY_ACCESS_CONTROL.EAC_NOT_ENABLED' | translate}}</span>
 </div>
 <div layout-padding *ngIf="enabled">
   <div layout="row" *ngIf="allowOwnerChange">
@@ -22,11 +22,11 @@
                   </span>
         </md-item-template>
         <md-not-found>
-          No users matching "{{ownerAutoComplete.searchText}}" were found.
+          {{'SHARED.ENTITY_ACCESS_CONTROL.NO_MATCHING_USER_PART1' | translate}}"{{ownerAutoComplete.searchText}}"{{'SHARED.ENTITY_ACCESS_CONTROL.NO_MATCHING_USER_PART2' | translate}}
         </md-not-found>
         <div class="hint"> {{"views.entity-access-control.DefAUser" | translate}} </div>
         <div ng-messages="theForm.owner.$error">
-          <div ng-message="required">Required.</div>
+          <div ng-message="required">{{'views.common.required.text' | translate}}</div>
         </div>
       </md-autocomplete>
 

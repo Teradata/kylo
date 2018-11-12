@@ -3,7 +3,7 @@
             <md-tabs md-dynamic-height md-center-tabs="true" md-border-bottom md-selected="vm.selectedStepIndex" md-no-ink-bar="true" md-no-ink="true"  sticky-tabs >
                 <md-tab >
                     <md-tab-label >
-                       <div class="{{vm.steps[0].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[0].icon}}" size="{{vm.steps[0].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[0].iconStyle}"></ng-md-icon> Select Template</div>
+                       <div class="{{vm.steps[0].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[0].icon}}" size="{{vm.steps[0].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[0].iconStyle}"></ng-md-icon> {{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-register-select-template step-index="0"></thinkbig-register-select-template>
@@ -11,7 +11,7 @@
                 </md-tab>
                 <md-tab ng-disabled="vm.steps[1].disabled" >
                     <md-tab-label >
-                        <div class="{{vm.steps[1].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[1].icon}}" size="{{vm.steps[1].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[1].iconStyle}"></ng-md-icon> Input Properties</div>
+                        <div class="{{vm.steps[1].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[1].icon}}" size="{{vm.steps[1].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[1].iconStyle}"></ng-md-icon> {{'FEEDMGR.TEMPLATES.STEPPER.INPUT_PROP' | translate}}</div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-register-processor-properties ng-if="vm.selectedStepIndex == 1" card-title="Input Properties" processor-properties-field-name="input" step-index="1"></thinkbig-register-processor-properties>
@@ -19,7 +19,7 @@
                 </md-tab>
                 <md-tab ng-disabled="vm.steps[2].disabled">
                     <md-tab-label>
-                       <div  class="{{vm.steps[2].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[2].icon}}" size="{{vm.steps[2].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[2].iconStyle}"></ng-md-icon> Additional Properties</div>
+                       <div  class="{{vm.steps[2].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[2].icon}}" size="{{vm.steps[2].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[2].iconStyle}"></ng-md-icon> {{'FEEDMGR.TEMPLATES.STEPPER.ADDITIONAL_PROP' | translate}}</div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-register-processor-properties ng-if="vm.selectedStepIndex == 2" card-title="Additional Properties" processor-properties-field-name="additional" step-index="2"></thinkbig-register-processor-properties>
@@ -27,7 +27,7 @@
                 </md-tab>
                 <md-tab ng-disabled="vm.steps[3].disabled">
                     <md-tab-label>
-                        <div  class="{{vm.steps[3].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[3].icon}}" size="{{vm.steps[3].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[3].iconStyle}"></ng-md-icon>Access Control</div>
+                        <div  class="{{vm.steps[3].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[3].icon}}" size="{{vm.steps[3].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[3].iconStyle}"></ng-md-icon>{{'FEEDMGR.TEMPLATES.STEPPER.ACCESS_CONTROL' | translate}}</div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-template-access-control ng-if="vm.selectedStepIndex == 3" card-title="Access Control" step-index="3"></thinkbig-template-access-control>
@@ -35,7 +35,7 @@
                 </md-tab>
                 <md-tab ng-disabled="vm.steps[4].disabled">
                     <md-tab-label >
-                       <div class="{{vm.steps[4].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[4].icon}}" size="{{vm.steps[4].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[4].iconStyle}"></ng-md-icon> Register</div>
+                       <div class="{{vm.steps[4].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[4].icon}}" size="{{vm.steps[4].iconSize}}" style="fill-rule:evenodd" ng-style="{'fill':vm.steps[4].iconStyle}"></ng-md-icon> {{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-register-complete-registration step-index="4" ng-if="vm.selectedStepIndex == 4"></thinkbig-register-complete-registration>

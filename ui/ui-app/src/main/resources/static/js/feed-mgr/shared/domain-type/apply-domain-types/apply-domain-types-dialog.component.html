@@ -1,7 +1,7 @@
-<h2 mat-dialog-title>Apply Domain Types</h2>
+<h2 mat-dialog-title>{{'SHARED.APPLY_DOMAIN_TYPE.APPLY_DOMAIN_TYPE' | translate}}</h2>
 
 <mat-dialog-content class="mat-typography">
-    <div style="padding-bottom: 12px;">The detected domain type will overwrite the name or data type of one or more columns. Please deselect any column that should be not changed:</div>
+    <div style="padding-bottom: 12px;">{{'SHARED.APPLY_DOMAIN_TYPE.COLOUMN_DESELECT' | translate}}</div>
 
     <td-data-table
         #dataTable
@@ -23,12 +23,12 @@
 
     </td-data-table>
     <div  *ngIf="!dataTable.hasData" fxLayout="row" fxLayoutAlign="center center">
-      <h3>No results to display.</h3>
+      <h3>{{'views.main.no-results' | translate}}</h3>
     </div>
 
 </mat-dialog-content>
 
 <mat-dialog-actions>
-  <button  mat-raised-button  (click)="cancel()">Cancel</button>
-  <button  mat-raised-button color="primary" (click)="hide()">Apply</button>
+  <button  mat-raised-button  (click)="cancel()">{{'view.main.cancel' | translate}}</button>
+  <button  mat-raised-button color="primary" (click)="hide()">{{views.query-table-header.filter-apply' | translate}}</button>
 </mat-dialog-actions>

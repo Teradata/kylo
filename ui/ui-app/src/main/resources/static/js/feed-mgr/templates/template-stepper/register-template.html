@@ -22,31 +22,31 @@
     <mat-horizontal-stepper [linear]="true" #stepper>
         <mat-step [stepControl]="firstFormGroup">
             <form [formGroup]="firstFormGroup">
-                <ng-template matStepLabel>Select Template</ng-template>
+                <ng-template matStepLabel>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</ng-template>
                 <thinkbig-register-select-template [(formGroup)]="firstFormGroup" [stepper]="stepper" (onCancelStepper)="cancelStepper()"></thinkbig-register-select-template>
             </form>
         </mat-step>
         <mat-step [stepControl]="secondFormGroup">
             <form [formGroup]="secondFormGroup">
-                <ng-template matStepLabel>Input Properties</ng-template>
+                <ng-template matStepLabel>{{'FEEDMGR.TEMPLATES.STEPPER.INPUT_PROP' | translate}}</ng-template>
                 <thinkbig-register-processor-properties  [(formGroup)]="secondFormGroup" [stepIndex]="1" cardTitle="Input Properties" processorPropertiesFieldName="input"></thinkbig-register-processor-properties>
             </form>
         </mat-step>
         <mat-step [stepControl]="thirdFormGroup">
             <form [formGroup]="thirdFormGroup">
-                <ng-template matStepLabel>Additional Properties</ng-template>
+                <ng-template matStepLabel>{{'FEEDMGR.TEMPLATES.STEPPER.ADDITIONAL_PROP' | translate}}</ng-template>
                 <thinkbig-register-processor-properties [(formGroup)]="thirdFormGroup" [stepIndex]="2" cardTitle="Additional Properties" processorPropertiesFieldName="additional"></thinkbig-register-processor-properties> 
             </form>
         </mat-step>
         <mat-step [stepControl]="fourthFormGroup">
             <form [formGroup]="firstFormGroup">
-                <ng-template matStepLabel>Access Control</ng-template>
+                <ng-template matStepLabel>{{'FEEDMGR.TEMPLATES.STEPPER.ACCESS_CONTROL' | translate}}</ng-template>
                 <thinkbig-template-access-control [stepIndex]="3" cardTitle="Access Control"></thinkbig-template-access-control>
             </form>
         </mat-step>
         <mat-step [stepControl]="fifthFormGroup">
             <form [formGroup]="fifthFormGroup">
-                <ng-template matStepLabel>Register</ng-template>
+                <ng-template matStepLabel>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</ng-template>
                 <thinkbig-register-complete-registration [(formGroup)]="fifthFormGroup" [stepIndex]="4"></thinkbig-register-complete-registration>
             </form>
         </mat-step>

@@ -27,7 +27,7 @@
     </mat-select>
     <mat-hint *ngIf="selectedPolicyRule != undefined">{{selectedPolicyRule.description}}</mat-hint>
   </mat-form-field>
-  <a href="javascript:void(0)" style="margin-left:10px" *ngIf="showAdvancedOptions" (click)="toggleAdvancedOptions()">Advanced Formatting Options</a>
+  <a href="javascript:void(0)" style="margin-left:10px" *ngIf="showAdvancedOptions" (click)="toggleAdvancedOptions()">{{'SHARED.ENTITY_ACCESS_CONTROL.ADVANCED_FORMATTING_OPTIONS' | translate}}</a>
 
   <div class="layout-padding-indent-20" *ngIf="expandAdvancedOptions == true">
     <policy-input-form [formGroup]="policyForm" [(rule)]="selectedPolicyRule" [mode]="ruleMode" [feed]="feed"></policy-input-form>

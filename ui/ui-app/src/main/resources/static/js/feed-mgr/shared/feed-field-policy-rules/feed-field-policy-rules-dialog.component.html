@@ -84,10 +84,10 @@
 
     <span fxFlex=""></span>
     <button mat-raised-button (click)="onCancelClick()">
-        Cancel
+        {{'view.main.cancel' | translate}}
     </button>
     <button mat-raised-button color="primary" (click)="done()" [disabled]="!pendingEdits || !policyFormIsValid">
-       Done
+        {{'view.main.done' | translate}}
     </button>
 </mat-dialog-actions>
 

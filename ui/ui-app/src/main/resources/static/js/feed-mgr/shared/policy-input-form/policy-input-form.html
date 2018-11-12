@@ -47,7 +47,7 @@
                 {{property.errorMessage}}
               </mat-hint>
               <mat-error *ngIf="formGroup.controls[property.formKey].errors?.multipleEmails">
-                Emails are not valid
+                {{'SHARED.NIFI_PROPERTY_INPUT.EMAILS_NOT_VALID' | translate}}
               </mat-error>
             
             </mat-form-field>
@@ -66,12 +66,12 @@
               </mat-hint>
       
               <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
-                This field is required
+                {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
               </mat-error>
     
               <div *ngIf="!formGroup.controls[property.formKey].valid">
                 <div *ngIf="formGroup.controls[property.formKey].hasError('cronExpression')">
-                  Invalid Cron Expression
+                  {{'SHARED.NIFI_PROPERTY_INPUT.INVALID_CRON' | translate}}
                 </div>
               </div>
             </mat-form-field>
@@ -90,19 +90,19 @@
               {{property.errorMessage}}
             </mat-hint>
             <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
-              This field is required
+              {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
             </mat-error>
     
           </mat-form-field>
 
           <ng-container *ngIf="property.type == 'regex'">
-            <span>Test your Regex Pattern</span>
+            <span>{{'SHARED.NIFI_PROPERTY_INPUT.TEST_REGEX' | translate}}</span>
             <mat-form-field class="md-block condensed-medium ">
               <mat-label>Sample String</mat-label>
               <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" [(ngModel)]="property.regexSampleString" md-placeholder="Sample String" [required]="property.required" [disabled]="!rule.editable"/>
     
               <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
-                  This field is required
+                {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
                 </mat-error>
             </mat-form-field>
             <div>
@@ -126,7 +126,7 @@
            
             <mat-hint *ngIf="property.hint">{{property.hint}}</mat-hint>
             <mat-error *ngIf="property.invalid == true" >
-              This field is required
+              {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
             </mat-error>
 
           </ng-container>

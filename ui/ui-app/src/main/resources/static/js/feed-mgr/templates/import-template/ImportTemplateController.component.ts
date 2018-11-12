@@ -18,6 +18,9 @@ import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import { ObjectUtils } from "../../../common/utils/object-utils";
+import { TranslateService } from "@ngx-translate/core";
+import { TdDialogService } from "@covalent/core/dialogs";
+import { MatDialog } from "@angular/material/dialog";
 
 export function invalidConnection(connectionMap: any, connection: any): ValidatorFn {
 
@@ -250,7 +253,8 @@ export class ImportTemplateController {
                 private registerTemplateService: RegisterTemplateServiceFactory,
                 private $state: StateService,
                 private http: HttpClient,
-                @Inject("$injector") private $injector: any) {
+                private translate : TranslateService,
+                private _tdDialogService : TdDialogService) {
 
         if (this.$state.params.template) {
             this.templateParam = this.$state.params.template;
@@ -334,13 +338,13 @@ export class ImportTemplateController {
                 this.additionalInputNeeded = true;
                 this.importResultIcon = "error";
                 this.importResultIconColor = "#FF0000";
-                this.message = "Unable to import the template";
+                this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.UNABLE_TO_IMPORT');
                 if (responseData.reusableFlowOutputPortConnectionsNeeded) {
                     this.importResultIcon = "warning";
                     this.importResultIconColor = "#FF9901";
                     this.noReusableConnectionsFound = false;
                     this.reusableTemplateInputPortsNeeded = true;
-                    this.message = "Additional connection information needed";
+                    this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.ADDITIONAL_INFO_REQ');
                     //show the user the list and allow them to configure and save it.
 
                     //add button that will make these connections
@@ -363,7 +367,7 @@ export class ImportTemplateController {
                 if (responseData.remoteProcessGroupInputPortsNeeded) {
                     this.importResultIcon = "warning";
                     this.importResultIconColor = "#FF9901";
-                    this.message = "Remote input port assignments needed";
+                    this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.REMOTE_PORTS_ASSIGNMENT_REQUIRED');
                     this.remoteProcessGroupInputPortsNeeded = true;
                     //reset the value on the importResult that will be uploaded again
                     this.remoteProcessGroupInputPortNames = responseData.remoteProcessGroupInputPortNames;
@@ -407,10 +411,10 @@ export class ImportTemplateController {
                     this.importResultIcon = "check_circle";
                     this.importResultIconColor = "#009933";
                     if (responseData.zipFile == true) {
-                        this.message = "Successfully imported and registered the template " + responseData.templateName;
+                        this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.SUCCESSFULLY_IMPOTED_AND_REGISTERED',{name:responseData.templateName});
                     }
                     else {
-                        this.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
+                        this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.SUCCESSFULLY_IMPORTED',{name : responseData.templateName});
                     }
                     this.resetImportOptions();
                 }
@@ -418,14 +422,14 @@ export class ImportTemplateController {
                     if (responseData.success) {
                         this.resetImportOptions();
                         this.showReorderList = responseData.zipFile;
-                        this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                        this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.SUCCESSFULLY_IMPOTED_AND_REGISTERED_WITH_ERRORS',{registered: responseData.zipFile == true ? "and registered " : "", name : responseData.templateName});
                         this.importResultIcon = "warning";
                         this.importResultIconColor = "#FF9901";
                     }
                     else {
                         this.importResultIcon = "error";
                         this.importResultIconColor = "#FF0000";
-                        this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        this.message = this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.MESSAGES.FAILED_TO_IMPORT',{registered: responseData.zipFile == true ? "and registered " : "", name : responseData.templateName});
                     }
                 }
             }
@@ -622,38 +626,37 @@ export class ImportTemplateController {
                 return port.inputPortName
             }).join(",");
             
-            var confirm = this.$injector.get("$mdDialog").confirm()
-                .title('Warning You are about to delete template items.')
-                .htmlContent('The following \'remote input ports\' exist, but are not selected to be imported:<br/><br/> <b>' + names
-                    + '</b>. <br/><br/>Continuing will result in these remote input ports being \ndeleted from the parent NiFi canvas. <br/><br/>Are you sure you want to continue?<br/>')
-                .ariaLabel('Removal of Input Ports detected')
-                .ok('Please do it!')
-                .cancel('Cancel and Review');
 
-            this.$injector.get("$mdDialog").show(confirm).then(() => {
-                let option = ImportComponentType.REMOTE_INPUT_PORT
-                this.importComponentOptions[ImportComponentType[option]].userAcknowledged = true;
-                this.importTemplate();
-            }, () => {
-                //do nothing
-            });
 
-        }
-        else {
-            if (this.importResult.remoteProcessGroupInputPortNames.length == 0) {
-                var confirm = this.$injector.get("$mdDialog").confirm()
-                    .title('No remote input ports selected')
-                    .htmlContent('You have not selected any input ports to be exposed as \'remote input ports\'.<br/> Are you sure you want to continue?<br/>')
-                    .ariaLabel('No Remote Input Ports Selected')
-                    .ok('Please do it!')
-                    .cancel('Cancel and Review');
-
-                this.$injector.get("$mdDialog").show(confirm).then(() => {
+            this._tdDialogService.openConfirm({
+                title : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.DELETE_TITLE'),
+                message : 'The following \'remote input ports\' exist, but are not selected to be imported:<br/><br/> <b>' + names
+                          + '</b>. <br/><br/>Continuing will result in these remote input ports being \ndeleted from the parent NiFi canvas. <br/><br/>Are you sure you want to continue?<br/>',
+                ariaLabel : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.DELETE_ARIA_LABEL'),
+                acceptButton : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.DELETE_TITLE.ACCEPT_BUTTON'),
+                cancelButton : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.DELETE_TITLE.CANCEL_BUTTON')
+            }).afterClosed().subscribe((accept : boolean) => {
+                if(accept){
                     let option = ImportComponentType.REMOTE_INPUT_PORT
                     this.importComponentOptions[ImportComponentType[option]].userAcknowledged = true;
                     this.importTemplate();
-                }, () => {
-                    //do nothing
+                }
+            });
+        }
+        else {
+            if (this.importResult.remoteProcessGroupInputPortNames.length == 0) {
+                this._tdDialogService.openConfirm({
+                    title : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.NO_PORT_TITLE'),
+                    message : 'You have not selected any input ports to be exposed as \'remote input ports\'.<br/> Are you sure you want to continue?<br/>',
+                    ariaLabel : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.NO_PORT_ARIA_LABEL'),
+                    acceptButton : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.DELETE_TITLE.ACCEPT_BUTTON'),
+                    cancelButton : this.translate.instant('FEEDMGR.TEMPLATES.IMPORT.WARN_DIALOG.DELETE_TITLE.CANCEL_BUTTON')
+                }).afterClosed().subscribe((accept : boolean) => {
+                    if(accept){
+                        let option = ImportComponentType.REMOTE_INPUT_PORT
+                        this.importComponentOptions[ImportComponentType[option]].userAcknowledged = true;
+                        this.importTemplate();
+                    }
                 });
             }
             else {

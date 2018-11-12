@@ -1,18 +1,18 @@
-<h2 mat-dialog-title>Overwrite Field Details for {{data.column.field.name}}</h2>
+<h2 mat-dialog-title [translate]="'SHARED.APPLY_DOMAIN_TYPE.OVERWRITE_FIELD_DETAILS' | translate" [translateParams]="{fieldName:data.column.field.name}"></h2>
 <mat-dialog-content class="mat-typography">
-  Applying the domain type {{data.domainType.title}} will overwrite the current field with the following properties:
-
+  {{'SHARED.APPLY_DOMAIN_TYPE.APPLYING_WARN_PART1' | translate}}{{data.domainType.title}}{{'SHARED.APPLY_DOMAIN_TYPE.APPLYING_WARN_PART2' | translate}}
+ 
   <ul>
-    <li *ngIf="data.domainType.field.name">Field Name: {{data.domainType.field.name}}</li>
+    <li *ngIf="data.domainType.field.name">{{'SHARED.APPLY_DOMAIN_TYPE.FIELDNAME' | translate}} {{data.domainType.field.name}}</li>
     <li *ngIf="data.domainType.field.derivedDataType != null">Data Type: {{data.domainType.field.derivedDataType}}</li>
-    <li>Standardizers: {{data.column.standardizerList}}</li>
-    <li>Validators: {{data.column.validatorList}}</li>
-    <li>Tags: {{data.column.tagList}}</li>
+    <li>{{'SHARED.APPLY_DOMAIN_TYPE.STANDARDIZERS' | translate}} {{data.column.standardizerList}}</li>
+    <li>{{'SHARED.APPLY_DOMAIN_TYPE.VALIDATORS' | translate}} {{data.column.validatorList}}</li>
+    <li>{{'SHARED.APPLY_DOMAIN_TYPE.TAGS' | translate}} {{data.column.tagList}}</li>
   </ul>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-button (click)="cancel()">{{'view.main.cancel' | translate}}</button>
   <span fxFlex=""></span>
-  <button mat-button  color="primary" (click)="apply()">Apply</button>
+  <button mat-button  color="primary" (click)="apply()">{{views.query-table-header.filter-apply' | translate}}</button>
 </mat-dialog-actions>

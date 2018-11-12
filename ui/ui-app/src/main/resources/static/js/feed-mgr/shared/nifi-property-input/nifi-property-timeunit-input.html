@@ -20,11 +20,11 @@
 <div layout="column" layout-fill layout-align="start start" class="layout-padding-top-bottom">
 <div layout="row" layout-fill layout-align="start start">
 <md-input-container class="md-block condensed">
-<label>Source Retention Period</label>
+<label>{{'SHARED.NIFI_PROPERTY_INPUT.SOURCE_RETENTION_PERIOD' | translate}}</label>
     <input ng-model="units" />
 </md-input-container>
 <md-input-container class="md-block condensed">
-    <label>Period</label>
+    <label>{{'SHARED.NIFI_PROPERTY_INPUT.PERIOD' | translate}}</label>
 <md-select ng-model="timePeriod"  >
     <md-option ng-repeat="timePeriod in vm.timePeriods" value="{{timePeriod}}">
         {{timePeriod}}

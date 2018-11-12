@@ -24,7 +24,7 @@
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
                 <div flex class="card-title">{{cardTitle}}</div>
-                <div class="card-sub-header">{{stepNumber}} of 5</div>
+                <div class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before : stepNumber, after: 5}"></div>
             </div>
         </mat-card-title>
 
@@ -47,9 +47,9 @@
                                 <div class="register-template-property md-padding" layout="column" layout-fill>
                                     <h3 [ngClass]="{'md-warn':property.sensitive}">{{property.key}}</h3>
                                     
-                                    <mat-hint *ngIf="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</mat-hint>
+                                    <mat-hint *ngIf="property.propertyDescriptor.sensitive">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_SENSETIVE' | translate}}</mat-hint>
                                     <mat-hint *ngIf="property.propertyDescriptor.required">
-                                        This is a NiFi required field. You need to either allow the user to input data, or supply a default value.
+                                        {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_REQUIRED | translate}}
                                     </mat-hint>
                                     <mat-hint>
                                         {{property.propertyDescriptor.description}}
@@ -60,7 +60,7 @@
 
                                             <div *ngIf="property.propertyDescriptor.allowableValues != null">
                                                 <mat-form-field md-no-float class="md-block">
-                                                    <mat-label>Default Value</mat-label>
+                                                    <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DV' | translate}}</mat-label>
                                                     <mat-select [(ngModel)]="property.value" name="property"
                                                                placeholder="Default Value"
                                                                [ngModelOptions]="{standalone: true}">
@@ -76,7 +76,7 @@
                                             <div *ngIf="property.propertyDescriptor.allowableValues == null && property.selected == true">
  
                                                 <mat-form-field style="height:30px;margin-bottom:5px;" class="md-block">
-                                                    <mat-label>Default Value (Supports Expressions)</mat-label>
+                                                    <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DVSE' | translate}}</mat-label>
                                                     <input *ngIf="!property.userEditable && property.propertyDescriptor.required"
                                                            matInput 
                                                            name="propertyInput"
@@ -122,11 +122,11 @@
                                                     <md-input-container md-no-float class="md-block layout-margin-top-minus-7">
                                                         <div layout="row">
                                                         <div style="color:#0288d1; background-color:#0288d126" class="layout-padding-left-4 layout-padding-right-4">
-                                                            <ng-md-icon icon="info" style="fill:#0288d1" size="20"></ng-md-icon>NiFi template has a different value: <b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
+                                                            <ng-md-icon icon="info" style="fill:#0288d1" size="20"></ng-md-icon>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_TEMPLATE_DV' | translate}}<b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
                                                         </div>
                                                         <div class="layout-padding-left-4">
                                                             <ng-md-icon icon="replay" style="fill:#0288d1" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple"></ng-md-icon>
-                                                            <md-tooltip>Accept value from NiFi template [{{property.registrationChangeInfo.valueFromNewerNiFiTemplate}}] to replace current value of [{{ property.value }}]</md-tooltip>
+                                                            <md-tooltip [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO | translate" [translateParams]="{from:property.registrationChangeInfo.valueFromNewerNiFiTemplate,to:property.value}"></md-tooltip>
                                                         </div>
                                                         </div>
                                                     </md-input-container>
@@ -142,7 +142,7 @@
                                                         <mat-checkbox aria-label="Set as empty string"
                                                                      [checked]="property.value == ''"
                                                                      (click)="toggleSetAsEmptyString(property)">
-                                                            Set as empty string
+                                                                     {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SET_EMPTY' | translate}}
                                                         </mat-checkbox>
                                                     </div>
                                                 </div>
@@ -153,7 +153,7 @@
                                                                      [(ngModel)]="property.userEditable"
                                                                      name="userEditable"
                                                                      [ngModelOptions]="{standalone: true}">
-                                                          Allow user input
+                                                                     {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.ALLOW_INPUT' | translate}}
                                                         </mat-checkbox>
                                                     </div>
                                                 </div>
@@ -175,7 +175,7 @@
 
                                                 <mat-form-field style="height:30px;margin-bottom:5px; padding-left:10px;"
                                                     class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                    <mat-label>True Value</mat-label>
+                                                    <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.TRUE_VALUE' | translate}}</mat-label>
                                                     <input matInput 
                                                         name="property"
                                                         placeholder="true"
@@ -188,7 +188,7 @@
                                               <mat-form-field
                                                     style="height:30px;margin-bottom:5px; padding-left:10px;"
                                                     class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
-                                                    <mat-label>False Value</mat-label>
+                                                    <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FALSE_VALUE' | translate}}</mat-label>
                                                     <input matInput 
                                                         name="property"
                                                         placeholder="false"
@@ -223,7 +223,7 @@
                                                                          [(ngModel)]="property.sensitive"
                                                                          [disabled]="property.propertyDescriptor.sensitive"
                                                                          [ngModelOptions]="{standalone: true}">
-                                                                Sensitive
+                                                                         {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SENSITIVE' | translate}}
                                                             </mat-checkbox>
                                                         </div>
                                                     </div>
@@ -237,7 +237,7 @@
                                                                          [(ngModel)]="property.required"
                                                                          [ngModelOptions]="{standalone: true}"
                                                                          [disabled]="property.propertyDescriptor.required">
-                                                                Required
+                                                                         {{'views.properties-admin.Required' | translate}}
                                                             </mat-checkbox>
                                                         </div>
                                                     </div>
@@ -258,8 +258,8 @@
             </ng-container>
 
             <div>
-                <button mat-button matStepperPrevious (click)="stepper.previous()">PREVIOUS STEP</button>
-                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">CONTINUE TO STEP 3</button>
+                <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
+                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} 3</button>
             </div>
 
         </mat-card-content>
@@ -270,15 +270,15 @@
                  id="property-legend-{{processorPropertiesFieldName}}"
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
         <mat-card-title>
-            <div class="card-title">Filter</div>
-            <mat-hint>Showing {{allProperties.length}} properties</mat-hint>
+            <div class="card-title">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FILTER' | translate}}</div>
+            <mat-hint [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SHOWING_PROPS' | translate" [translateParams]="{number:allProperties.length}"></mat-hint>
         </mat-card-title>
 
         <mat-card-content style="padding-left:25px;">
             <mat-checkbox name="selectedItems" [(ngModel)]="showOnlySelected" aria-label="Show Selected" (change)="onShowOnlySelected()" style="margin-left:-9px">
-                Show only selected
+                {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SHOW_ONLY_SELECTED' | translate}}
             </mat-checkbox>
-            <div class="md-primary left-aligned md-subheader md-kylo-theme layout-padding-left">Jump to a group</div>
+            <div class="md-primary left-aligned md-subheader md-kylo-theme layout-padding-left">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.JUMP_TO_GROUP' | translate}}</div>
 
             <div md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
                      layout-align="start start" layout="column" md-item-size="30">

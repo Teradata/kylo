@@ -5,6 +5,7 @@ import { RestUrlService } from '../../services/RestUrlService';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ObjectUtils } from '../../../common/utils/object-utils';
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-template-order',
@@ -45,7 +46,8 @@ export class TemplateOrderController {
     constructor(private RestUrlService: RestUrlService, 
                 private registerTemplateService: RegisterTemplateServiceFactory,
                 private http: HttpClient,
-                private snackBar: MatSnackBar) {
+                private snackBar: MatSnackBar,
+                private translate : TranslateService) {
 
     }
     saveOrder() {
@@ -57,16 +59,16 @@ export class TemplateOrderController {
 
         var successFn = (response: any) => {
             //toast created!!!
-            var message = 'Saved the template order';
+            var message = this.translate.instant("FEEDMGR.TEMPLATES.ORDER.ORDER_SAVED");
             this.message = message;
-            this.snackBar.open(message,"OK",{
+            this.snackBar.open(message,this.translate.instant("view.main.ok"),{
                 duration : 3000
             });
         }
         var errorFn = (err: any) => {
-            var message = 'Error ordering templates ' + err;
+            var message = this.translate.instant("FEEDMGR.TEMPLATES.ORDER.ERROR_IN_SAVE", {error : err}) ;
             this.message = message;
-            this.snackBar.open(message,"OK",{
+            this.snackBar.open(message,this.translate.instant("view.main.ok"),{
                 duration : 3000
             });
         }

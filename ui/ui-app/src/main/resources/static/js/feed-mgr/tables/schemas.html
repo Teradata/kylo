@@ -29,7 +29,7 @@
     <body-section>
       <div ng-if="vm.loading">
         <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-        <span class="md-body-2 layout-padding-left">Loading schemas</span>
+        <span class="md-body-2 layout-padding-left">{{'FEEDMGR.LOADING_SCHEMAS' | translate}}</span>
       </div>
 
       <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
@@ -47,7 +47,7 @@
                 <div layout="row" class="column-title column-title-bottom">
                   <ng-md-icon icon="grid_on" size="20" hide-xs style="fill:orange">
                   </ng-md-icon>
-                  <span>Schema</span>
+                  <span>{{'FEEDMGR.SCHEMA' | translate}}</span>
                 </div>
 
               </div>
@@ -55,7 +55,7 @@
             <md-divider ng-if="!$last"></md-divider>
           </md-list-item>
           <md-list-item ng-show="vm.loading == false && vm.schemas.length ==0" class="md-list-item with-padding">
-            No results found
+            {{'views.common.Nrf' | translate}}
           </md-list-item>
           <md-divider></md-divider>
           <md-list-item layout-align="end center" layout-row class="pagination-list-item">
@@ -79,7 +79,7 @@
           <table md-table md-progress="vm.deferred.promise">
             <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
             <tr md-row>
-              <th md-column name="Schema" md-order-by="schema">Schema</th>
+              <th md-column name="Schema" md-order-by="schema">{{'FEEDMGR.SCHEMA' | translate}}</th>
             </tr>
             </thead>
             <tbody md-body>

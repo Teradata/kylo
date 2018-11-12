@@ -2,7 +2,7 @@
   <form name="overwriteFieldForm" ng-cloak>
     <md-toolbar>
       <div class="md-toolbar-tools">
-        <h2>Overwrite Field Details for {{field.name}}</h2>
+        <h2 [translate]="'SHARED.APPLY_DOMAIN_TYPE.OVERWRITE_FIELD_DETAILS' | translate" [translateParams]="{fieldName:field.name}"></h2>
         <span flex></span>
         <md-button class="md-icon-button" ng-click="cancel()">
           <ng-md-icon icon="close" size="20"></ng-md-icon>
@@ -12,21 +12,21 @@
 
     <md-dialog-content>
       <div class="md-dialog-content">
-        Applying the domain type {{domainType.title}} will overwrite the current field with the following properties:
+        {{'SHARED.APPLY_DOMAIN_TYPE.APPLYING_WARN_PART1' | translate}}{{domainType.title}}{{'SHARED.APPLY_DOMAIN_TYPE.APPLYING_WARN_PART2' | translate}}
 
         <ul>
-          <li ng-if="domainType.field.name">Field Name: {{domainType.field.name}}</li>
-          <li ng-if="domainType.field.derivedDataType != null">Data Type: {{domainType.field.derivedDataType}}</li>
-          <li>Standardizers: {{standardizerList}}</li>
-          <li>Validators: {{validatorList}}</li>
-          <li>Tags: {{tagList}}</li>
+          <li ng-if="domainType.field.name">{{'SHARED.APPLY_DOMAIN_TYPE.FIELDNAME' | translate}}{{domainType.field.name}}</li>
+          <li ng-if="domainType.field.derivedDataType != null">{{'SHARED.APPLY_DOMAIN_TYPE.DATATYPE' | translate}}{{domainType.field.derivedDataType}}</li>
+          <li>{{'SHARED.APPLY_DOMAIN_TYPE.STANDARDIZERS' | translate}}{{standardizerList}}</li>
+          <li>{{'SHARED.APPLY_DOMAIN_TYPE.VALIDATORS' | translate}}{{validatorList}}</li>
+          <li>{{'SHARED.APPLY_DOMAIN_TYPE.TAGS' | translate}}{{tagList}}</li>
         </ul>
       </div>
     </md-dialog-content>
 
     <md-dialog-actions layout="row">
-      <md-button ng-click="cancel()">Cancel</md-button>
-      <md-button class="md-raised md-primary" ng-click="hide()">Apply</md-button>
+      <md-button ng-click="cancel()">{{'view.main.cancel' | translate}}</md-button>
+      <md-button class="md-raised md-primary" ng-click="hide()">{{views.query-table-header.filter-apply' | translate}}</md-button>
     </md-dialog-actions>
   </form>
 </md-dialog>

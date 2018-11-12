@@ -2,6 +2,7 @@ import * as _ from "underscore";
 import * as $ from "jquery";
 import { Injectable, Inject } from '@angular/core';
 import { ObjectUtils } from '../../../common/utils/object-utils';
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable()
 export class PolicyInputFormService {
@@ -18,7 +19,7 @@ export class PolicyInputFormService {
         this.init();
     }
 
-    constructor(@Inject("$injector") private $injector: any) {
+    constructor(@Inject("$injector") private $injector: any, private translate : TranslateService) {
 
             this.init();
     }
@@ -158,7 +159,7 @@ export class PolicyInputFormService {
                     prop.selectableValues = newSelectableValues;
 
                     if (prop.selectableValues.length == 0) {
-                        prop.errorMessage = "No feeds available.  You don't have access to modify any feeds.";
+                        prop.errorMessage = this.translate.instant('SHARED.POLICY_INPUT_FORM.NO_FEEDS_AVAILABLE');
                     }
                 }
             });
@@ -215,10 +216,10 @@ export class PolicyInputFormService {
                 this.$injector.get("$mdDialog").alert()
                     .parent($(document.body))
                     .clickOutsideToClose(true)
-                    .title('Input Errors')
-                    .textContent('Some of the form fields are invalid.  Please fix all validation errors prior to saving')
-                    .ariaLabel('Alert Input Sla errors')
-                    .ok('Got it!')
+                    .title(this.translate.instant('SHARED.POLICY_INPUT_FORM.INPUT_ERRORS'))
+                    .textContent(this.translate.instant('SHARED.POLICY_INPUT_FORM.INVALID_FORM_FIELDS'))
+                    .ariaLabel(this.translate.instant('SHARED.POLICY_INPUT_FORM.ALERT_INPUT_SLA_ERROR'))
+                    .ok(this.translate.instant('views.main.got-it'))
             );
         }
 

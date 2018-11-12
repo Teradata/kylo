@@ -1,16 +1,15 @@
-<h2 mat-dialog-title>Data Type Conflict</h2>
+<h2 mat-dialog-title>{{'SHARED.APPLY_DOMAIN_TYPE.DATATYPE_CONFLICT' | translate}}</h2>
 <mat-dialog-content>
-   <h2>Remove domain type from field?</h2>
+   <h2>{{'SHARED.APPLY_DOMAIN_TYPE.REMOVE_DT' | translate}}</h2>
     <div>
-      <p>The {{data.columnDef.name}} field uses the {{data.domainType.title}} domain type which expects the {{data.propertyName}} to be {{data.propertyValue}}. You can keep the domain type associated with this field or
-        remove it.</p>
-    </div>
+      <p [translate]="'SHARED.APPLY_DOMAIN_TYPE.COLOUMN_FIELD_DESC' | translate" [translateParams]="{columnName:columnDef.name, domainType:domainType.title, propertyName:propertyName,propertyValue:propertyValue }"></p>
+    </div> 
 </mat-dialog-content>
 
 <mat-dialog-actions>
 
   <span fxFlex=""></span>
-    <button mat-raised-button (click)="cancel()">Cancel</button>
-    <button mat-raised-button (click)="keep()">Keep</button>
-    <button mat-raised-button color="primary" (click)="remove()">Remove</button>
+    <button mat-raised-button (click)="cancel()">{{'view.main.cancel' | translate}}</button>
+    <button mat-raised-button (click)="keep()">{{'view.main.keep' | translate}}</button>
+    <button mat-raised-button color="primary" (click)="remove()">{{'views.entity-access-control.Remove' translate}}</button>
 </mat-dialog-actions>

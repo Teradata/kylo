@@ -16,6 +16,7 @@ import {UiComponentsService} from '../../../services/UiComponentsService';
 import {EntityAccessControlService} from '../../../shared/entity-access-control/EntityAccessControlService';
 import {TemplateDeleteDialog} from './template-delete-dialog.component';
 import { ObjectUtils } from "../../../../common/utils/object-utils";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-register-select-template',
@@ -134,7 +135,8 @@ export class RegisterSelectTemplateController implements OnInit {
                 private snackBar: MatSnackBar,
                 private _dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
-                private http: HttpClient) {
+                private http: HttpClient,
+                private translate : TranslateService) {
     }
 
     // setup the Stepper types
@@ -173,7 +175,7 @@ export class RegisterSelectTemplateController implements OnInit {
                 this.allowAccessControl = accessResponse.allowAccessControl;
                 if (!accessResponse.isValid) {
                     //PREVENT access
-                    this.errorMessage = "Access Denied.  You are unable to edit the template. ";
+                    this.errorMessage = this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.ACCESS_DENIED');
                 }
                 else {
                     if (!this.allowAccessControl) {
@@ -191,7 +193,7 @@ export class RegisterSelectTemplateController implements OnInit {
 
         }, (err: any) => {
             this.registerTemplateService.resetModel();
-            this.errorMessage = (ObjectUtils.isDefined(err.data) && ObjectUtils.isDefined(err.data.message)) ? err.data.message : "An Error was found loading this template.  Please ensure you have access to edit this template."
+            this.errorMessage = (ObjectUtils.isDefined(err.data) && ObjectUtils.isDefined(err.data.message)) ? err.data.message : this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.ERROR_FOUND')
             this.loadingTemplate = false;
             this.hideProgress();
         });
@@ -219,9 +221,9 @@ export class RegisterSelectTemplateController implements OnInit {
         this._dialogService.openAlert({
             message: msg,
             viewContainerRef: this._viewContainerRef,
-            title: "Error deleting the template",
-            closeButton: 'Got it!',
-            ariaLabel: "Error deleting the template",
+            title: this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.ERROR_IN_DELETION'),
+            closeButton: this.translate.instant('views.common.dialog.gotIt'),
+            ariaLabel: this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.ERROR_IN_DELETION'),
             closeOnNavigation: true,
             disableClose: false
         });
@@ -234,7 +236,7 @@ export class RegisterSelectTemplateController implements OnInit {
                 if (response.data && response.data.status == 'success') {
                     this.model.state = "DELETED";
 
-                    this.snackBar.open("Successfully deleted the template ", "OK", {duration: 3000});
+                    this.snackBar.open(this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.DELETION_SUCCESSFUL'), this.translate.instant('view.main.ok'), {duration: 3000});
                     this.registerTemplateService.resetModel();
                     this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
                 }
@@ -284,10 +286,10 @@ export class RegisterSelectTemplateController implements OnInit {
         msg += ObjectUtils.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
 
         this._dialogService.openAlert({
-            ariaLabel: "Error publishing the template to repository",
-            closeButton: "Got it!",
+            ariaLabel: this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.ERROR_IN_PUBLISHING'),
+            closeButton: this.translate.instant('views.common.dialog.gotIt'),
             message: msg,
-            title: "Error publishing the template to repository"
+            title: this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.ERROR_IN_PUBLISHING')
         });
     }
 

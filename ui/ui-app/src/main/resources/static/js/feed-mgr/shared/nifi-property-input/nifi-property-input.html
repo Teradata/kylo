@@ -68,11 +68,11 @@
 </div>
 
 <div ng-messages="theForm[property.formKey].$error" md-auto-hide="false">
-  <div ng-message="required">This field is required.</div>
+  <div ng-message="required">{{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}</div>
 </div>
 
 <div class="hint">{{property.propertyDescriptor.description}}</div>
 
 <md-tooltip md-direction="left" ng-if="property.sensitive">
-  This is a sensitive property.
+    {{'SHARED.NIFI_PROPERTY_INPUT.SENSITIVE_PROP' | translate}}
 </md-tooltip>

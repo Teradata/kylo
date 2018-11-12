@@ -23,7 +23,7 @@
   
       <div layout="row">
         <ng-md-icon icon="done_all" size="50" style="fill:#EF8E43"></ng-md-icon>
-        <div class="md-headline" style="padding-left:40px;padding-top:40px;">Congratulations! Your template has been successfully registered/updated.</div>
+        <div class="md-headline" style="padding-left:40px;padding-top:40px;">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.CONGRATULATIONS_MESSAGE' | translate}}</div>
       </div>
       <span>{{message}}</span>
       <span flex style="padding-top:40px;"></span>
@@ -35,7 +35,7 @@
     <div *ngIf="error != null" layout-align="center center" layout-fill style="background-color:#ffffff">
       <div layout="row">
         <ng-md-icon icon="error" size="50" style="fill:#FF9901"></ng-md-icon>
-        <div class="md-headline" style="padding-left:40px;padding-top:40px;"> Errors were found while registering the template. Please go back and fix</div>
+        <div class="md-headline" style="padding-left:40px;padding-top:40px;">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.ERROR_IN_REGISTERING_MESSAGE' | translate}}</div>
       </div>
       <span>{{message}}</span>
     </div>

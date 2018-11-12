@@ -1,15 +1,14 @@
 <md-dialog arial-label="Data type conflict" style="max-width:600px;">
   <md-dialog-content class="md-dialog-content">
-    <h2 class="md-title">Remove domain type from field?</h2>
+    <h2 class="md-title">{{'SHARED.APPLY_DOMAIN_TYPE.REMOVE_DT' | translate}}</h2>
     <div class="md-dialog-content-body">
-      <p>The {{columnDef.name}} field uses the {{domainType.title}} domain type which expects the {{propertyName}} to be {{propertyValue}}. You can keep the domain type associated with this field or
-        remove it.</p>
+      <p [translate]="'SHARED.APPLY_DOMAIN_TYPE.COLOUMN_FIELD_DESC' | translate" [translateParams]="{columnName:columnDef.name, domainType:domainType.title, propertyName:propertyName,propertyValue:propertyValue }"></p>
     </div>
   </md-dialog-content>
 
   <md-dialog-actions layout="row">
-    <md-button ng-click="cancel()">Cancel</md-button>
-    <md-button ng-click="keep()">Keep</md-button>
-    <md-button class="md-raised md-primary" ng-click="remove()">Remove</md-button>
+    <md-button ng-click="cancel()">{{'view.main.cancel' | translate}}</md-button>
+    <md-button ng-click="keep()">{{'view.main.keep' | translate}}</md-button>
+    <md-button class="md-raised md-primary" ng-click="remove()">{{'views.entity-access-control.Remove' translate}}</md-button>
   </md-dialog-actions>
 </md-dialog>

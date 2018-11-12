@@ -217,18 +217,18 @@ export class CategoryDefinition {
             this.CategoriesService.delete(this.editModel).then( () => {
                 this.systemNameEditable = false;
                 this.CategoriesService.reload();
-                this.snackBar.open('Successfully deleted the category ' + name, 'OK', {duration : 3000});
+                this.snackBar.open(this.translate.instant('FEEDMGR.category.deleted') + name, this.translate.instant('view.main.ok'), {duration : 3000});
                 //redirect
                 this.StateService.FeedManager().Category().navigateToCategories();
             }, (err:any) => {
                 this._tdDialogService.openAlert({
-                    message : 'Unable to delete the category ' + name + ". " + err.message,
-                    title : 'Unable to delete the category',
-                    ariaLabel : 'Unable to delete the category',
-                    closeButton : "Got it!",
+                    message : this.translate.instant('FEEDMGR.category.dialog.delete.failed.message',{entity: name, message: err.message}),
+                    title : this.translate.instant('views.common.delete.failure.title'),
+                    ariaLabel : this.translate.instant('views.common.delete.failure',{entity:'Category'}),
+                    closeButton : this.translate.instant('views.common.dialog.gotIt'),
                     disableClose : false
                 });
-            });
+            }); 
         };
 
         /**

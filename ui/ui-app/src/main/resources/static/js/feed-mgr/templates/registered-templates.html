@@ -42,7 +42,7 @@
                 </span>
               <span *ngIf="row.updateAvailable" title="Update available from Repository">
                                       <ng-md-icon icon="update" size="20" style="fill:#F08C38"> </ng-md-icon>
-                                      Update Available
+                                      {{'FEEDMGR.TEMPLATES.CHANGE_ORDER' | translate}}
                                     </span>
             </div>
         </ng-template>
@@ -59,7 +59,7 @@
         <ng-template tdDataTableTemplate="export" let-value="value" let-row="row" let-column="column">
             <a href="{{row.exportUrl}}" style="display:flex;" class="md-button md-kylo-theme md-ink-ripple layout-align-center-stretch" layout-align="center">
                 <mat-icon size="20" style="color:#F08C38; margin-top:5px;">launch</mat-icon>
-                <div style="padding-left:10px;">Export</div>
+                <div style="padding-left:10px;">{{'views.feed-details.Export' | translate}}</div>
             </a>
         </ng-template>
 

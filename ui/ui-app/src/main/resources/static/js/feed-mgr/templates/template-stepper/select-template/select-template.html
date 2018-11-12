@@ -24,8 +24,8 @@
 
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
-                <div class="card-title" flex>Select Template</div>
-                <h2 class="card-sub-header">1 of 5</h2>
+                <div class="card-title" flex>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</div>
+                <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before:1,after:5}"></h2>
             </div>
         </mat-card-title>
 
@@ -49,7 +49,7 @@
         </div>
 
         <div layout="column" *ngIf="!model.reusableTemplate">
-            <div class="md-subhead left-aligned">Target Table Options</div>
+            <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.SELECT.TARGET_TABLE_OPTS' | translate}}</div>
 
             <div class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
                 <div [(ngModel)]="model.templateTableOption" flex layout="row" (change)="onTableOptionChange()" required="true" ngDefaultControl>
@@ -65,8 +65,8 @@
         <br/><br/><br/>
 
         <div>
-            <button (click)="cancelStepper()" mat-button matStepperPrevious>CANCEL</button>
-            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">CONTINUE TO STEP 2</button>
+            <button (click)="cancelStepper()" mat-button matStepperPrevious>{{'view.main.cancel' | translate}}</button>
+            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP' | translate" [translateParams]="{number:2}"></button>
         </div>
 
     </mat-card-content>
@@ -77,17 +77,17 @@
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
         <mat-card-title>
             <div class="card-title">
-                Template
+                {{'FEEDMGR.TEMPLATES.STEPPER.TEMPLATE_STRING' | translate}}
                 <mat-menu #mdMenu="matMenu">
                     <div *ngIf="!model.loading">
                         <div *ngIf="allowAdmin">
-                            <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" (click)="disableTemplate()">Disable</button>
-                            <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" (click)="enableTemplate()">Enable</button>
-                            <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item (click)="confirmDeleteTemplate()">Delete</button>
+                            <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" (click)="disableTemplate()">{{'view.main.disable' | translate}}</button>
+                            <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" (click)="enableTemplate()">{{'view.main.enable' | translate}}</button>
+                            <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item (click)="confirmDeleteTemplate()">{{'view.main.delete' | translate}}</button>
                         </div>
                         <div *ngIf="allowExport && model.id != null && registeredTemplateId != null">
                             <button *ngFor="let item of templateNavigationLinks" style="text-align:left" (click)="templateNavigationLink(item)" class="mat-primary mat-link">{{item.linkText}}</button>
-                            <a mat-menu-item href="{{model.exportUrl}}">Export</a>
+                            <a mat-menu-item href="{{model.exportUrl}}">{{'view.main.export' | translate}}</a>
                         </div>
                     </div>
                 </mat-menu>
@@ -105,7 +105,7 @@
 
         <mat-card-content class="card-layout-body mat-padding">
             <div layout="column" class="layout-padding-top" *ngIf="model.loading">
-                Loading Template ...
+                {{'FEEDMGR.TEMPLATES.STEPPER.SELECT.LOADING' | translate}}
             </div>
             <div layout="column" class="layout-padding-top" *ngIf="!model.loading">
                 <mat-progress-linear mode="indeterminate" *ngIf="enabling || disabling"></mat-progress-linear>
@@ -113,17 +113,17 @@
                 <div layout="column" class="layout-padding-top-bottom" >
                     <span [ngClass]="{'enabled':model.state == 'ENABLED','disabled':model.state != 'ENABLED'}">
                         <ng-md-icon icon="{{model.stateIcon}}" size="20" *ngIf="model.state != 'NOT REGISTERED'"></ng-md-icon> {{model.state}}</span>
-                        <mat-hint>State</mat-hint>
+                        <mat-hint>{{'views.feed-details.State' | translate}}</mat-hint>
                 </div>
 
                 <div layout="column" class="layout-padding-top-bottom">
                     <span>{{model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
-                    <mat-hint>Last Updated</mat-hint>
+                    <mat-hint>{{'feeds.feed-table.last-updated' | translate}}</mat-hint>
                 </div>
 
                 <div layout="column" class="layout-padding-top-bottom">
                     <span>{{model.feedsCount}}</span>
-                    <mat-hint>Feeds</mat-hint>
+                    <mat-hint>{{'views.main.feeds' | translate}}</mat-hint>
                 </div>
             </div>
 
