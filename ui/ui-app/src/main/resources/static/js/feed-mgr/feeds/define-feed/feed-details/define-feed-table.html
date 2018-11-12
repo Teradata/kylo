@@ -58,7 +58,7 @@
                     <md-radio-group ng-model="vm.model.table.method" layout="row">
                       <md-radio-button aria-label="Select option" ng-repeat="method in vm.tableCreateMethods"
                                        ng-value="method.type"
-                                       aria-label="{{method.name}}"
+                                       attr.aria-label="{{method.name}}"
                                        ng-click="vm.updateSelectedMethod(method.type)">
                         {{method.name}}
                       </md-radio-button>
@@ -230,7 +230,7 @@
                           <md-input-container class="md-block condensed" flex-gt-sm>
                             <md-select ng-model="partition.columnDef" placeholder="Source Field" ng-change="vm.onPartitionSourceFieldChange(partition)" name="partition_sourceField{{partition._id}}"
                                        required>
-                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter:{deleted:false} track by field._id" ng-value="field" aria-label="{{field.name}}">
+                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter:{deleted:false} track by field._id" ng-value="field" attr.aria-label="{{field.name}}">
                                 {{field.name}}
                               </md-option>
                             </md-select>
@@ -243,7 +243,7 @@
                           <md-input-container class="md-block condensed" flex-gt-sm>
                             <md-select ng-model="partition.formula" placeholder="Partition Formula" ng-change="vm.onPartitionFormulaChange(partition)" name="partition_formula{{partition._id}}"
                                        required>
-                              <md-option ng-repeat="formula in vm.partitionFormulas | orderBy:'toString()' | filterPartitionFormula:partition" value="{{formula}}" aria-label="{{formula}}">
+                              <md-option ng-repeat="formula in vm.partitionFormulas | orderBy:'toString()' | filterPartitionFormula:partition" value="{{formula}}" attr.aria-label="{{formula}}">
                                 {{formula}}()
                               </md-option>
                             </md-select>
@@ -359,7 +359,7 @@
           <span>Sample field values</span>
           <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
                       <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">
-                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" ng-value="data" aria-label="{{data}}">
+                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" ng-value="data" attr.aria-label="{{data}}">
                           {{data}}
                         </md-option>
                       </md-select>

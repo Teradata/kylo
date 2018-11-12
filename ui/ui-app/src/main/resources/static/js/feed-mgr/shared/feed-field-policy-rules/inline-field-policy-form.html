@@ -22,7 +22,7 @@
 
   <md-input-container class="md-block layout-padding-top-bottom" style="margin-top:0px;">
     <label class="md-container-ignore label-small layout-padding-top">{{vm.selectLabel}}</label>
-    <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onRuleTypeChange()" aria-label="{{vm.selectLabel}}">
+    <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onRuleTypeChange()" attr.aria-label="{{vm.selectLabel}}">
       <md-option ng-value="opt" ng-repeat="opt in vm.options">{{ opt.name }}</md-option>
     </md-select>
     <span class="hint">{{vm.field.description}}</span>

@@ -12,7 +12,7 @@
   <div flex="10" class="md-list-item-text">
     <md-select ng-model="policy.domainTypeId" md-selected-html="vm.getDomainTypePlaceholder(policy.domainTypeId)" ng-change="vm.onDomainTypeChange(policy)" style="margin:0;width:70px">
       <md-option ng-value=""><em>None</em></md-option>
-      <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
+      <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" attr.aria-label="{{domainType.title}}">
         <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon> {{domainType.title}}
       </md-option>
     </md-select>

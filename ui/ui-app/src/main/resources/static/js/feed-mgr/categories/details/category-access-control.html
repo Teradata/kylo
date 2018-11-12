@@ -16,7 +16,7 @@
       <div flex class="">
         <mat-checkbox
             [(ngModel)]="model.allowIndexing"
-            aria-label="{{'FEED_MGR.CATEGORIES.DETAILS.INDEXING_ALLOWED' | translate}}"
+            attr.aria-label="{{'FEED_MGR.CATEGORIES.DETAILS.INDEXING_ALLOWED' | translate}}"
             ng-true-value=true
             ng-false-value=false
             [disabled]="true"
@@ -42,7 +42,7 @@
       <div flex class="">
         <mat-checkbox
             [(ngModel)]="editModel.allowIndexing"
-            aria-label="{{'FEED_MGR.CATEGORIES.DETAILS.INDEXING_ALLOWED' | translate}}"
+            attr.aria-label="{{'FEED_MGR.CATEGORIES.DETAILS.INDEXING_ALLOWED' | translate}}"
             ng-true-value=true
             ng-false-value=false
             [disabled]="false"

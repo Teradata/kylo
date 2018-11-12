@@ -37,7 +37,7 @@
             <md-radio-group ng-model="vm.inputProcessorId" layout="row">
               <md-radio-button ng-repeat="inputProcessor in vm.inputProcessors"
                                ng-value="inputProcessor.processorId"
-                               aria-label="{{inputProcessor.name}}">
+                               attr.aria-label="{{inputProcessor.name}}">
                 {{inputProcessor.name}}
                 <div class="hint" ng-if="vm.model.inputProcessor.config.comments != ''">{{vm.inputProcessor.config.comments}}</div>
               </md-radio-button>

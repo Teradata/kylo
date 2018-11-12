@@ -79,7 +79,7 @@
                 <div class="md-subhead">{{"views.feed-nifi-properties.CaFI" | translate}}</div>
                 <div class="layout-padding-indent" style="padding-top:8px;">
                     <md-radio-group ng-model="vm.editModel.inputProcessorId" layout="row" disabled="true">
-                        <md-radio-button ng-repeat="inputProcessor in vm.model.inputProcessors" ng-value="inputProcessor.processorId" aria-label="{{inputProcessor.name}}" disabled>
+                        <md-radio-button ng-repeat="inputProcessor in vm.model.inputProcessors" ng-value="inputProcessor.processorId" attr.aria-label="{{inputProcessor.name}}" disabled>
                             {{inputProcessor.name}}
                             <div class="hint" ng-if="vm.model.inputProcessor.config.comments != ''">{{vm.inputProcessor.config.comments}}</div>
                         </md-radio-button>

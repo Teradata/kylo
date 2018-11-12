@@ -151,7 +151,7 @@
                                   ng-change="vm.onChangeMergeStrategy()">
                     <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
                                      ng-value="strategy.type"
-                                     aria-label="{{strategy.name}}"
+                                     attr.aria-label="{{strategy.name}}"
                                      ng-disabled="strategy.disabled">
                       {{strategy.name}}
                       <div class="hint">{{strategy.hint}}</div>
@@ -234,7 +234,7 @@
           <span>{{"views.define-feed-data-processing.DP24" | translate}}</span>
           <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
                       <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data">
-                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" value="{{data}}" aria-label="{{data}}">
+                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" value="{{data}}" attr.aria-label="{{data}}">
                           {{data}}
                         </md-option>
                       </md-select>

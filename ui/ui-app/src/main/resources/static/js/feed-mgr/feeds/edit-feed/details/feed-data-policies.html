@@ -333,7 +333,7 @@
       <md-radio-group ng-model="vm.editModel.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top" name="targetMergeStrategy" ng-change="vm.onChangeMergeStrategy()">
         <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
                          ng-value="strategy.type"
-                         aria-label="{{strategy.name}}"
+                         attr.aria-label="{{strategy.name}}"
                          ng-disabled="strategy.disabled">
           {{strategy.name}}
           <div class="hint">{{strategy.hint}}</div>

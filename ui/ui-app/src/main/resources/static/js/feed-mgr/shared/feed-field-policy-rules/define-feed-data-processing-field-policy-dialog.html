@@ -58,7 +58,7 @@
                 <mat-radio-group name="optionType" [(ngModel)]="selectedOptionType" layout="row" *ngIf="optionTypes != null" class="layout-padding-top">
                     <mat-radio-button aria-label="Select option type" *ngFor="let optionType of optionTypes"
                                     value="optionType.type"
-                                    aria-label="{{optionType.name}}"
+                                    attr.aria-label="{{optionType.name}}"
                                     (click)="onChangedOptionType(optionType.type)">
                         {{optionType.name}}
                     </mat-radio-button>

@@ -17,12 +17,11 @@
   limitations under the License.
   #L%
   -->
-  <!-- aria-label="{{'OPS-MGR.overview.service-details'| translate}}" -->
-<div mat-dialog >
+<div mat-dialog attr.aria-label="{{'OPS-MGR.overview.service-details'| translate}}">
   <mat-toolbar style="color: rgb(255,255,255);">
     <div class="md-toolbar-tools" style="background-color: rgb(52,131,186);">
       <h4>
-        <ng-md-icon size="24" md-icon icon="settings" aria-label="{{'OPS-MGR.overview.data-confidence-details-dialog.data-confidence-details'| translate}}" ></ng-md-icon>
+        <ng-md-icon size="24" md-icon icon="settings" attr.aria-label="{{'OPS-MGR.overview.data-confidence-details-dialog.data-confidence-details'| translate}}" ></ng-md-icon>
         <!-- apply pipe titleCase on status -->
         <span>{{"OPS-MGR.overview.data-confidence"| translate}} - {{jobs.length}} {{status}} </span>
       </h4>

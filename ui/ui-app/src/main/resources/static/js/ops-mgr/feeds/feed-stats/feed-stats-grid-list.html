@@ -124,7 +124,7 @@
     <div>
     <md-input-container class="md-block layout-padding-top-bottom">
       <label class="md-container-ignore label-small layout-padding-top">{{"OPS-MGR.feeds.feed-stats-grid.processor-metric"| translate}}</label>
-      <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="{{'OPS-MGR.feeds.feed-stats-grid.rule-type'| translate}}">
+      <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" attr.aria-label="{{'OPS-MGR.feeds.feed-stats-grid.rule-type'| translate}}">
         <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
       </md-select>
     </md-input-container>
