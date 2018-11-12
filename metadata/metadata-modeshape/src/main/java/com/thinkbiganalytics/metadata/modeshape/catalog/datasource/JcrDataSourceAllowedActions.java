@@ -140,7 +140,7 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
                 summaryPrivs.add(Privilege.JCR_ALL); 
             } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS) || action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
                 detailPrivs.add(Privilege.JCR_READ); 
-                summaryPrivs.add(Privilege.JCR_READ); 
+                summaryPrivs.add(Privilege.JCR_READ);
             }
 // TODO: Re-enable equivalent below after proper, catalog data source-specific roles and permissions are created.
 //        } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
@@ -159,11 +159,8 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
         JcrAccessControlUtil.setPermissions(params.getNode(), principal, detailPrivs);
 
         //grant read to the datasource connector if the user has access to the datasource
-        if(!actions.isEmpty()) {
-            JcrConnector connector = (JcrConnector) dataSource.getConnector();
-            if(connector != null) {
-                connector.getAllowedActions().enable(principal, ConnectorAccessControl.ACCESS_CONNECTOR);
-            }
+        if(summaryPrivs.contains(Privilege.JCR_READ)) {
+            dataSource.getConnector().getAllowedActions().enable(principal, ConnectorAccessControl.ACCESS_CONNECTOR);
         }
     }
     

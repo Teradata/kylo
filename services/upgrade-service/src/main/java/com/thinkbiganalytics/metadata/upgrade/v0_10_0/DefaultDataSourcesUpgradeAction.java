@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -51,6 +52,7 @@ import javax.inject.Inject;
  */
 @Component("defaultDataSourcesUpgradeAction0.10.0")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
+@Order(UpgradeAction.LATE_ORDER + 10)
 public class DefaultDataSourcesUpgradeAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultDataSourcesUpgradeAction.class);
