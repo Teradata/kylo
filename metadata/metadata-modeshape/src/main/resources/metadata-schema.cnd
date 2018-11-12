@@ -47,6 +47,8 @@
  *                      allowedActions
  *                  "datasource"
  *                      allowedActions
+ *                  "connector"
+ *                      allowedActions
  *              "services"
  *                  allowedActions
  *              "roles"
@@ -160,6 +162,7 @@
     + template (tba:allowedActions) = tba:allowedActions autocreated mandatory
     + category (tba:allowedActions) = tba:allowedActions autocreated mandatory
  	+ datasource (tba:allowedActions) = tba:allowedActions autocreated mandatory
+ 	+ connector (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:allowedActions] > nt:hierarchyNode
     + * (tba:allowableAction)
@@ -178,6 +181,7 @@
     + template (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
     + category (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
  	+ datasource (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+ 	+ connector (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
 
 [tba:rolesFolder] > nt:folder
     + * (tba:securityRole)

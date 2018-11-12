@@ -28,6 +28,7 @@ import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
+import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -36,9 +37,6 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProv
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
-import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnectorProvider;
-import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
-import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSourceProvider;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
@@ -62,7 +60,7 @@ import javax.annotation.Nonnull;
 @Configuration
 public class JcrTestConfig {
 
-    @Bean(name="repositoryConfiguationResource")
+    @Bean(name = "repositoryConfiguationResource")
     public Resource repositoryConfigurationResource() {
         return new ClassPathResource("/test-metadata-repository.json");
     }
@@ -78,17 +76,17 @@ public class JcrTestConfig {
     public LoginConfiguration restModeShapeLoginConfiguration() {
         return Mockito.mock(LoginConfiguration.class);
     }
-    
+
     @Bean
     public ConnectorProvider connectorProvider() {
         return Mockito.mock(ConnectorProvider.class);
     }
-    
+
     @Bean
     public DataSourceProvider dataSourceProvider() {
         return Mockito.mock(DataSourceProvider.class);
     }
-    
+
     @Bean
     public DataSetProvider dataSetProvider() {
         return Mockito.mock(DataSetProvider.class);
@@ -166,6 +164,13 @@ public class JcrTestConfig {
                                 .action(ProjectAccessControl.EDIT_PROJECT)
                                 .action(ProjectAccessControl.DELETE_PROJECT)
                                 .action(ProjectAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.CONNECTOR)
+                                .action(ConnectorAccessControl.ACCESS_CONNECTOR)
+                                .action(ConnectorAccessControl.EDIT_CONNECTOR)
+                                .action(ConnectorAccessControl.ACTIVATE_CONNECTOR)
+                                .action(ConnectorAccessControl.CHANGE_PERMS)
+                                .action(ConnectorAccessControl.CREATE_DATA_SOURCE)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);
