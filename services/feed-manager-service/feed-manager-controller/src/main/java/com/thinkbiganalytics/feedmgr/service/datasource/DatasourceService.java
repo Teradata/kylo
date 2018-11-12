@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,11 +26,9 @@ import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
-import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.spring.FileResourceService;
@@ -45,7 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -73,7 +71,7 @@ public class DatasourceService implements PostMetadataConfigAction {
     private Map<String, FeedLineageStyle> feedLineageStyleMap;
 
     @Inject
-    private DatasourceProvider datasourceProvider;
+    private DataSourceProvider dataSourceProvider;
 
     @PostConstruct
     private void init() {
@@ -197,12 +195,9 @@ public class DatasourceService implements PostMetadataConfigAction {
      */
     @Nonnull
     private Set<String> getControllerServiceIds() {
-        final DatasourceCriteria criteria = datasourceProvider.datasetCriteria().type(UserDatasource.class);
-        return datasourceProvider.getDatasources(criteria).stream()
-            .map(UserDatasource.class::cast)
-            .map(UserDatasource::getDetails).filter(Optional::isPresent).map(Optional::get)
-            .filter(JdbcDatasourceDetails.class::isInstance).map(JdbcDatasourceDetails.class::cast)
-            .map(JdbcDatasourceDetails::getControllerServiceId).filter(Optional::isPresent).map(Optional::get)
+        return dataSourceProvider.findAll().stream()
+            .map(DataSource::getNifiControllerServiceId)
+            .filter(Objects::nonNull)
             .collect(Collectors.toSet());
     }
 }
