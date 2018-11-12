@@ -21,6 +21,7 @@ export default class AccessConstants {
      */
     public static CATEGORIES_EDIT: string = "editCategories";
 
+
     /**
      * Allows access to data sources.
      * @type {string}
@@ -234,7 +235,11 @@ export default class AccessConstants {
 
     public static ACCESS_CONNECTOR: string = "accessConnectors";
 
-    public static ADMIN_CONNECTOR_ACCESS: string = "adminConnectors";
+    public static ADMIN_CONNECTORS: string = "adminConnectors";
+
+    public static ACCESS_CATALOG:string = "accessCatalog"
+
+    public static EDIT_DATASOURCES:string = "editDatasources";
 
     public static ENTITY_ACCESS = {
         CATEGORY: {
@@ -292,12 +297,13 @@ export default class AccessConstants {
         VISUAL_QUERY: {state: "visual-query", permissions: [AccessConstants.VISUAL_QUERY_ACCESS]},
         SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [AccessConstants.SLA_ACCESS]},
         SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: [AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE]},
-        CATALOG: {state: "catalog", permissions: [AccessConstants.TABLES_ACCESS]},
+        CATALOG: {state: "catalog", permissions: [AccessConstants.ACCESS_CATALOG]},
         SCHEMAS: {state: "schemas", permissions: [AccessConstants.TABLES_ACCESS]},
         TABLES: {state: "schemas-schema", permissions: [AccessConstants.TABLES_ACCESS]},
         TABLE: {state: "schemas-schema-table", permissions: [AccessConstants.TABLES_ACCESS]},
         DATASOURCES: {state: "datasources", permissions: [AccessConstants.DATASOURCE_ACCESS]},
         DATASOURCE_DETAILS: {state: "datasource-details", permissions: [AccessConstants.DATASOURCE_ACCESS]},
+        EDIT_DATASOURCES:{state:"catalog.connectors",permissions:[AccessConstants.EDIT_DATASOURCES]},
         REGISTERED_TEMPLATES: {state: "registered-templates", permissions: [AccessConstants.TEMPLATES_ACCESS]},
         REGISTER_NEW_TEMPLATE: {state: "register-new-template", permissions: [AccessConstants.TEMPLATES_EDIT]},
         REGISTER_TEMPLATE: {state: "register-template", permissions: [AccessConstants.TEMPLATES_EDIT]},
@@ -323,7 +329,7 @@ export default class AccessConstants {
         SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_LEVEL_ASSESSMENTS: {state: "service-level-assessments", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_LEVEL_ASSESSMENT: {state: "service-level-assessment", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
-        ADMIN_CONNECTORS:{state:"catalog.admin-connectors",permissions:[AccessConstants.ADMIN_CONNECTOR_ACCESS]},
-        ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTOR_ACCESS]}
+        ADMIN_CONNECTORS:{state:"catalog.admin-connectors",permissions:[AccessConstants.ADMIN_CONNECTORS]},
+        ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTORS]}
     }
 }

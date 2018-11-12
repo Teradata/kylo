@@ -15,6 +15,7 @@ import {RemoteFilesRouterModule} from "./datasource/files/remote-files.module";
 import {TablesRouterModule} from "./datasource/tables/tables.module";
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
+import AccessConstants from "../../constants/AccessConstants";
 
 export function resolveConnectors(catalog: CatalogService, state: StateService, loading: TdLoadingService) {
     loading.register(ConnectorsComponent.LOADER);
@@ -104,7 +105,8 @@ export const catalogStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: "Catalog"
+            displayName: "Catalog",
+            permissions:AccessConstants.UI_STATES.CATALOG.permissions
         }
     },
     {
@@ -117,7 +119,10 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: resolveConnectors
             }
-        ]
+        ],
+        data:{
+            permissions:AccessConstants.UI_STATES.EDIT_DATASOURCES.permissions
+        }
     },
     {
         name: "catalog.new-datasource",
@@ -139,7 +144,10 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: resolvePluginOfConnector
             }
-        ]
+        ],
+        data:{
+            permissions:AccessConstants.UI_STATES.EDIT_DATASOURCES.permissions
+        }
     },
     {
         name: "catalog.datasources",
@@ -151,7 +159,11 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: resolveDatasources
             }
-        ]
+        ],
+        data:{
+            permissions:AccessConstants.UI_STATES.DATASOURCES.permissions
+
+        }
     },
     {
         name: "catalog.datasource",
@@ -168,7 +180,11 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: resolveDatasourceConnectorPlugin
             }
-        ]
+        ],
+        data:{
+            permissions:AccessConstants.UI_STATES.DATASOURCES.permissions
+
+        }
     },
     {
         name: "catalog.admin-connectors",
@@ -180,7 +196,11 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: resolveConnectors
             }
-        ]
+        ],
+        data:{
+            permissions:AccessConstants.UI_STATES.ADMIN_CONNECTORS.permissions
+
+        }
     },
     {
         name: "catalog.admin-connector",
@@ -192,7 +212,11 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: resolveConnector
             }
-        ]
+        ],
+        data:{
+            permissions:AccessConstants.UI_STATES.ADMIN_CONNECTORS.permissions
+
+        }
     },
 
 

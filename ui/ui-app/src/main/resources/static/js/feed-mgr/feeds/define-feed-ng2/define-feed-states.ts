@@ -27,6 +27,7 @@ import {FeedVersionsComponent} from "./summary/versions/feed-versions.component"
 import {SlaListComponent} from "../../sla/list/sla-list.componment";
 import {SlaDetailsComponent} from "../../sla/details/sla-details.componment";
 import {Observable} from "rxjs/Observable";
+import AccessConstants from "../../../constants/AccessConstants";
 
 const resolveFeed = {
     token: 'feed',
@@ -55,7 +56,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         component:ImportFeedComponent,
         data: {
             breadcrumbRoot: true,
-            displayName: ""
+            displayName: "",
+            permissions:AccessConstants.UI_STATES.IMPORT_FEED.permissions
         }
     },
     {
@@ -88,7 +90,10 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: resolveParams
             }
-        ]
+        ],
+        data: {
+            permissions:AccessConstants.default.UI_STATES.FEED_DETAILS.permissions
+        }
     },
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".deployed-setup-guide",
@@ -111,7 +116,10 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 token: 'refresh',
                 resolveFn: resolveFalse
             }
-        ]
+        ],
+        data: {
+            permissions:AccessConstants.default.UI_STATES.FEED_DETAILS.permissions
+        }
     },
 
     {
