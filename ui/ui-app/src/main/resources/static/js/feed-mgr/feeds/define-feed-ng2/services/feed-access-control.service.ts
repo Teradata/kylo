@@ -49,7 +49,7 @@ constructor(@Inject("AccessControlService") private accessControlService:AccessC
                     let allowExport = this.accessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
                     let allowStart = allowEditAccess;
                     let datasourceAccess = true;
-                    if(feed.sourceDataSets) {
+                    if(Array.isArray(feed.sourceDataSets) && feed.sourceDataSets.length > 0) {
                         datasourceAccess = _.every(feed.sourceDataSets, (ds:SparkDataSet) => !_.isUndefined(ds.dataSource) && !_.isUndefined(ds.dataSource.id)) && allowDatasourceAccess;
                     }
 
