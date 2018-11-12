@@ -454,17 +454,37 @@ public class NifiIntegrationRestController {
                   })
     public Response getTableNames(@PathParam("serviceId") String serviceId, @QueryParam("serviceName") @DefaultValue("") String serviceName, @QueryParam("schema") String schema,
                                   @QueryParam("tableName") String tableName) {
-        final DataSource dataSource = metadataService.read(() -> dataSourceProvider.findByNifiControlerServiceId(serviceId).map(catalogTransform.dataSourceToRestModel()).orElse(null));
+        // Find data source for controller service
+        final String dataSourceId = metadataService.read(() -> {
+            if (accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES)) {
+                return dataSourceProvider.findByNifiControlerServiceId(serviceId).map(ds -> ds.getId().toString()).orElse(null);
+            } else {
+                return null;
+            }
+        });
+
+        // List table names
         final List<String> tables;
 
-        if (dataSource != null) {
-            log.info("Query for Table Names against data source: {}", dataSource);
-            try {
-                tables = catalogTableManager.getTableNames(dataSource, schema, tableName);
-            } catch (final SQLException e) {
-                log.error("Unable to list table names for data source: {}", dataSource.getId(), e);
-                throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
-            }
+        if (dataSourceId != null) {
+            log.info("Query for Table Names against data source: {}", dataSourceId);
+
+            tables = metadataService.read(() -> {
+                final DataSource dataSource = dataSourceProvider.find(dataSourceProvider.resolveId(dataSourceId))
+                    .map(catalogTransform.dataSourceToRestModel(true, false))
+                    .orElse(null);
+                if (dataSource != null) {
+                    try {
+                        return catalogTableManager.getTableNames(dataSource, schema, tableName);
+                    } catch (final SQLException e) {
+                        log.error("Unable to list table names for data source: {}", dataSourceId, e);
+                        throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
+                    }
+                } else {
+                    log.error("Data source not found: {}", dataSourceId);
+                    throw new InternalServerErrorException("Unable to connect to data source. Data source not found.");
+                }
+            }, MetadataAccess.SERVICE);
         } else {
             log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
             tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
