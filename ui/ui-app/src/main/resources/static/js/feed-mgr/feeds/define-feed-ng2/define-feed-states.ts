@@ -92,7 +92,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             }
         ],
         data: {
-            permissions:AccessConstants.default.UI_STATES.FEED_DETAILS.permissions
+            permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
         }
     },
     {
@@ -118,7 +118,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             }
         ],
         data: {
-            permissions:AccessConstants.default.UI_STATES.FEED_DETAILS.permissions
+            permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
         }
     },
 
