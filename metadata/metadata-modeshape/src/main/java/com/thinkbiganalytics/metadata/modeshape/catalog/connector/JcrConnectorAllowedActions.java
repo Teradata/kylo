@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 
 import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 
@@ -35,7 +36,9 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
@@ -133,6 +136,27 @@ public class JcrConnectorAllowedActions extends JcrAllowedActions {
         });
         
         JcrAccessControlUtil.setPermissions(this.connector.getNode(), principal, priveleges);
+        this.ensureDataSourceConnectorAccess();
+    }
+
+    /**
+     * Users with access to datasources always need access to the connector.
+     * This will ensure any user with a membership to ACCESS_DATASOURCE will get the required ACCESS_CONNECTOR access to the connector
+     */
+    private void ensureDataSourceConnectorAccess() {
+      Set<Principal> principalsWithAccess =  connector.getAllowedActions().getPrincipalsAllowedAny(ConnectorAccessControl.ACCESS_CONNECTOR);
+       this.connector.getDataSources()
+            .stream()
+            .flatMap( ds -> ds.getRoleMemberships().stream())
+            .filter(h -> h.getMembers() != null
+                         && !h.getMembers().isEmpty()
+                         && h.getRole().getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE))
+            .flatMap(h -> h.getMembers().stream())
+            .filter(principal -> !principalsWithAccess.contains(principal))
+            .forEach(principal -> {
+                //add back in the ACCESS_CONNECTOR
+                connector.getAllowedActions().enable(principal,ConnectorAccessControl.ACCESS_CONNECTOR);
+            });
     }
 
 }
