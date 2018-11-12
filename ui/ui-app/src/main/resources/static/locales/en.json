@@ -128,6 +128,8 @@
     "view.main.resume": "RESUME",
     "view.main.links": "Links",
     "view.main.cancel": "Cancel",
+    "view.main.done":"Done",
+    "view.main.keep":"Keep",
     "view.main.export": "Export",
     "view.main.overwrite":"Overwrite",
     "view.main.ok": "Ok",
@@ -1451,6 +1453,53 @@
         "category.def.sys.name.desc.not.customizable.has.feeds":"Cannot be customised because Category has Feeds",
         "category.def.sys.name.desc.now.editable":"System name is now editable",
         "category.def.sys.name.desc.not.customizable.auto.generated":"Auto generated from Category Name, can be customised"        
+    },
+    "SHARED":{
+        "APPLY_DOMAIN_TYPE":{
+            "OVERWRITE_FIELD_DETAILS":"Overwrite Field Details for {{fieldName}}",
+            "APPLYING_WARN_PART1":"Applying the domain type ",
+            "APPLYING_WARN_PART2":" will overwrite the current field with the following properties:",
+            "FIELDNAME":"Field Name: ",
+            "DATATYPE":"Data Type: ",
+            "STANDARDIZERS":"Standardizers: ",
+            "VALIDATORS":"Validators: ",
+            "TAGS":"Tags: ",
+            "APPLY_DOMAIN_TYPE":"Apply domain types",
+            "COLOUMN_DESELECT":"The detected domain type will overwrite the name or data type of one or more columns. Please deselect any column that should be not changed:",
+            "REMOVE_DT":"Remove domain type from field?",
+            "COLOUMN_FIELD_DESC":"The {{columnName}} field uses the {{domainType}} domain type which expects the {{propertyName}} to be {{propertyValue}}. You can keep the domain type associated with this field or remove it.",
+            "DATATYPE_CONFLICT":"Data Type Conflict"
+        },
+        "ENTITY_ACCESS_CONTROL":{
+            "DIALOG":{
+                "ACFOR":"Access Control for ",
+                "IFMS":"Index feed metadata and schema",
+                "IFMS_HINT":"Index metadata and schema for the feed in a search engine. (Unchecking will disable indexing of feed's metadata and schema, and also delete the feed's existing metadata and schema from index.)"
+            },
+            "EAC_NOT_ENABLED":"Entity access control is not enabled for Kylo.",
+            "NO_MATCHING_USER_PART1":"No users matching ",
+            "NO_MATCHING_USER_PART2":" were found",
+            "ADVANCED_FORMATTING_OPTIONS":"Advanced Formatting Options"
+        },
+        "POLICY_INPUT_FORM":{
+            "NO_FEEDS_AVAILABLE":"No feeds available.  You don't have access to modify any feeds.",
+            "INVALID_FORM_FIELDS":"Some of the form fields are invalid.  Please fix all validation errors prior to saving",
+            "INPUT_ERRORS":"Input Errors",
+            "ALERT_INPUT_SLA_ERROR":"Alert Input Sla errors"
+        },
+        "HQL_EDITOR":{
+            "ERROR_BROWSING_DATA":"Error browsing the data",
+            "CANNOT_BROWSE_TABLE":"Cannot browse the table"
+        },
+        "NIFI_PROPERTY_INPUT":{
+            "FIELD_REQUIRED":"This field is required.",
+            "SENSITIVE_PROP":"This is a sensitive property.",
+            "SOURCE_RETENTION_PERIOD":"Source Retention Period",
+            "PERIOD":"Period",
+            "EMAILS_NOT_VALID":"Emails are not valid",
+            "INVALID_CRON":"Invalid Cron Expression",
+            "TEST_REGEX":"Test your Regex Pattern"
+        }
     },
     "utils.singlespace": " ",
     "utils.notApplicable": "NA"

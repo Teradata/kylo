@@ -187,10 +187,10 @@ export class HqlEditorController {
                 this.$mdDialog.alert()
                     .parent(angular.element(document.querySelector('#hqlEditorContainer')))
                     .clickOutsideToClose(true)
-                    .title('Cannot browse the table')
-                    .textContent('Error Browsing the data ')
-                    .ariaLabel('Error browsing the data')
-                    .ok('Got it!')
+                    .title(this.$filter('translate')('SHARED.HQL_EDITOR.CANNOT_BROWSE_TABLE'))
+                    .textContent(this.$filter('translate')('SHARED.HQL_EDITOR.ERROR_BROWSING_DATA'))
+                    .ariaLabel(this.$filter('translate')('SHARED.HQL_EDITOR.ERROR_BROWSING_DATA'))
+                    .ok(this.$filter('translate')('views.main.got-it'))
                 //.targetEvent(ev)
             );
         });

@@ -27,7 +27,7 @@
     </md-select>
     <span class="hint">{{vm.field.description}}</span>
   </md-input-container>
-  <a href="" style="margin-left:10px" ng-if="vm.showAdvancedOptions" ng-click="vm.toggleAdvancedOptions()">Advanced Formatting Options</a>
+  <a href="" style="margin-left:10px" ng-if="vm.showAdvancedOptions" ng-click="vm.toggleAdvancedOptions()">{{'SHARED.ENTITY_ACCESS_CONTROL.ADVANCED_FORMATTING_OPTIONS' | translate}}</a>
 
   <div class="layout-padding-indent-20" ng-if="vm.expandAdvancedOptions == true">
     <thinkbig-policy-input-form the-form="vm.policyForm" rule="vm.field" mode="vm.ruleMode" feed="vm.feed"></thinkbig-policy-input-form>

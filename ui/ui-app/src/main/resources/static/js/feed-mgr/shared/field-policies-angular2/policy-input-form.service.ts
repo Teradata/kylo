@@ -5,6 +5,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {Feed} from "../../model/feed/feed.model";
 import { ObjectUtils } from '../../../common/utils/object-utils';
+import { TranslateService } from "@ngx-translate/core";
 
 @Injectable()
 export class PolicyInputFormService {
@@ -18,7 +19,7 @@ export class PolicyInputFormService {
      */
     private CURRENT_FEED_DEFAULT_VALUE :string = "#currentFeed";
 
-    constructor(private http: HttpClient, private dialog: MatDialog,private _dialogService: TdDialogService) {
+    constructor(private http: HttpClient, private dialog: MatDialog,private _dialogService: TdDialogService,private translate: TranslateService) {
 
     }
 
@@ -110,7 +111,7 @@ export class PolicyInputFormService {
                     prop.selectableValues = newSelectableValues;
 
                     if( prop.selectableValues.length ==0){
-                        prop.errorMessage = "No feeds available.  You don't have access to modify any feeds.";
+                        prop.errorMessage = this.translate.instat('SHARED.POLICY_INPUT_FORM.NO_FEEDS_AVAILABLE');
                     }
                 }
             });
@@ -167,8 +168,8 @@ export class PolicyInputFormService {
 
         if (!validForm && showErrorDialog) {
             this._dialogService.openAlert({
-                message:'Some of the form fields are invalid.  Please fix all validation errors prior to saving',
-                title:'Input Errors'
+                message:this.translate.instant('SHARED.POLICY_INPUT_FORM.INVALID_FORM_FIELDS'),
+                title:this.translate.instant('SHARED.POLICY_INPUT_FORM.INPUT_ERRORS')
             })
         }
 

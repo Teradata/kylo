@@ -3,7 +3,7 @@
   <form name="theForm">
     <mat-toolbar>
       <div class="md-toolbar-tools">
-        <h2>Access Control for {{entityTitle}}</h2>
+        <h2>{{'SHARED.ENTITY_ACCESS_CONTROL.DIALOG.ACFOR' | translate}}{{entityTitle}}</h2>
         <span flex></span>
         <button class="md-icon-button" (click)="onCancel()">
           <ng-md-icon icon="close" size="20"></ng-md-icon>
@@ -16,9 +16,9 @@
         <entity-access-control entity="entity" [entityType]="{{entityType}}" model="model" [theForm]="theForm" [queryForEntityAccess]="true"></entity-access-control>
         <div layout="row" layout-padding>
           <div flex="40" style="align-self:center;">
-            <span>Index feed metadata and schema</span>
+            <span>{{'SHARED.ENTITY_ACCESS_CONTROL.DIALOG.IFMS' | translate}}</span>
             <div class="hint">
-              Index metadata and schema for the feed in a search engine. (Unchecking will disable indexing of feed's metadata and schema, and also delete the feed's existing metadata and schema from index.)
+              {{'SHARED.ENTITY_ACCESS_CONTROL.DIALOG.IFMS_HINT' | translate}}
             </div>
           </div>
           <div flex class="">
@@ -37,10 +37,10 @@
     <mat-dialog-actions layout="row" layout-align="start stretch" flex>
       <span flex></span>
       <button (click)="onCancel($event)">
-        Cancel
+        {{'view.main.cancel' | translate}}
       </button>
       <button class="md-raised md-primary" (click)="onSave($event)" [disabled]="preconditionForm.$invalid">
-        Done
+        {{'view.main.done' | translate}}
       </button>
     </mat-dialog-actions>
   </form>
