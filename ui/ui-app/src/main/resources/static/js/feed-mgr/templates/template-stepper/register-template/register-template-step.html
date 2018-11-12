@@ -22,7 +22,7 @@
     <mat-card-title>
         <div layout="row" layout-align="space-between-center" flex>
             <div class="card-title" flex>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.COMPLETE_AND_REGISTER' | translate}}</div>
-            <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before:5,after:5}"></h2>
+            <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER'" [translateParams]="{before:5,after:5}"></h2>
         </div>
     </mat-card-title>
 
@@ -77,7 +77,7 @@
                     <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_OPTIONS' | translate}}</div>
                     <div layout="row" *ngFor="let connection of model.reusableTemplateConnections">
                         <div layout="column" flex="50">
-                            <span [translate]="'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.CONNECTION_FROM' | translate" [translateParams]="{entity:connection.feedOutputPortName}"></span>
+                            <span [translate]="'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.CONNECTION_FROM'" [translateParams]="{entity:connection.feedOutputPortName}"></span>
                         </div>
                         <div layout="column" flex="50">
                             <mat-form-field class="md-block condensed">

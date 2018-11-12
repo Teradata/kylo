@@ -175,7 +175,7 @@
               </div>
 
               <div *ngIf="reusableTemplateImportOption.properties && reusableTemplateImportOption.properties.length > 0" flex layout="column">
-                <div class="layout-padding-bottom" [translate]="'FEEDMGR.TEMPLATES.IMPORT.NEEDFUL_PROPERTIES_WITH_COUNT' | translate" [translateParams]="{Length:reusableTemplateImportOption.properties.length}">
+                <div class="layout-padding-bottom" [translate]="'FEEDMGR.TEMPLATES.IMPORT.NEEDFUL_PROPERTIES_WITH_COUNT'" [translateParams]="{Length:reusableTemplateImportOption.properties.length}">
                 </div>
 
                 <div *ngFor="let prop of reusableTemplateImportOption.properties" layout="column" layout-align="start start">
@@ -281,7 +281,7 @@
               <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_OPTIONS' | translate}}</div>
               <div layout="row" *ngFor="let connection of importResult.reusableTemplateConnections">
                 <div layout="column" flex="50">
-                  <span [translate]="'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_FROM' | translate" [translateParams]="{outputPortName:connection.feedOutputPortName}"></span>
+                  <span [translate]="'FEEDMGR.TEMPLATES.IMPORT.CONNECTION_FROM'" [translateParams]="{outputPortName:connection.feedOutputPortName}"></span>
                 </div>
                 <div layout="column" flex="50">
                   <div class="md-block condensed">

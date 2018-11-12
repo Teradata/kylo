@@ -24,7 +24,7 @@
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
                 <div flex class="card-title">{{cardTitle}}</div>
-                <div class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before : stepNumber, after: 5}"></div>
+                <div class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER'" [translateParams]="{before : stepNumber, after: 5}"></div>
             </div>
         </mat-card-title>
 
@@ -126,7 +126,7 @@
                                                         </div>
                                                         <div class="layout-padding-left-4">
                                                             <ng-md-icon icon="replay" style="fill:#0288d1" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple"></ng-md-icon>
-                                                            <md-tooltip [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO | translate" [translateParams]="{from:property.registrationChangeInfo.valueFromNewerNiFiTemplate,to:property.value}"></md-tooltip>
+                                                            <md-tooltip [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO'" [translateParams]="{from:property.registrationChangeInfo.valueFromNewerNiFiTemplate,to:property.value}"></md-tooltip>
                                                         </div>
                                                         </div>
                                                     </md-input-container>
@@ -271,7 +271,7 @@
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
         <mat-card-title>
             <div class="card-title">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FILTER' | translate}}</div>
-            <mat-hint [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SHOWING_PROPS' | translate" [translateParams]="{number:allProperties.length}"></mat-hint>
+            <mat-hint [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SHOWING_PROPS'" [translateParams]="{number:allProperties.length}"></mat-hint>
         </mat-card-title>
 
         <mat-card-content style="padding-left:25px;">

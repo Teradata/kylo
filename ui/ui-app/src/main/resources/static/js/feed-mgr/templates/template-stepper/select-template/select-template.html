@@ -25,7 +25,7 @@
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
                 <div class="card-title" flex>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</div>
-                <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER' | translate" [translateParams]="{before:1,after:5}"></h2>
+                <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER'" [translateParams]="{before:1,after:5}"></h2>
             </div>
         </mat-card-title>
 
@@ -66,7 +66,7 @@
 
         <div>
             <button (click)="cancelStepper()" mat-button matStepperPrevious>{{'view.main.cancel' | translate}}</button>
-            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP' | translate" [translateParams]="{number:2}"></button>
+            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP'" [translateParams]="{number:2}"></button>
         </div>
 
     </mat-card-content>
