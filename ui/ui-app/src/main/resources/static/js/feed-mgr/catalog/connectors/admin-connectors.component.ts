@@ -26,7 +26,7 @@ export class AdminConnectorsComponent extends ConnectorsComponent {
     public ngOnInit() {
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowAccess = this.accessControlService.hasAction(AccessControlService.ADMIN_CONNECTOR_ACCESS, actionSet.actions);
+                this.allowAccess = this.accessControlService.hasAction(AccessControlService.ADMIN_CONNECTORS, actionSet.actions);
                 if(this.allowAccess) {
                     this.filter();
                 }
