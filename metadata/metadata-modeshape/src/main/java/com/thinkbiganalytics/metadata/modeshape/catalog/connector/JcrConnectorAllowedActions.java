@@ -144,12 +144,14 @@ public class JcrConnectorAllowedActions extends JcrAllowedActions {
         }
         
         JcrAccessControlUtil.setPermissions(this.connector.getNode(), principal, privileges);
-        this.ensureDataSourceConnectorAccess();
+        // this.ensureDataSourceConnectorAccess();
+        //update children entity access
     }
 
     /**
      * Users with access to datasources always need access to the connector.
-     * This will ensure any user with a membership to ACCESS_DATASOURCE will get the required ACCESS_CONNECTOR access to the connector
+     * This will ensure any user with a m
+     * embership to ACCESS_DATASOURCE will get the required ACCESS_CONNECTOR access to the connector
      */
     private void ensureDataSourceConnectorAccess() {
       Set<Principal> principalsWithAccess =  connector.getAllowedActions().getPrincipalsAllowedAny(ConnectorAccessControl.ACCESS_CONNECTOR);
