@@ -294,7 +294,7 @@ export default class AccessConstants {
         USERS_DETAILS: {state: "user-details", permissions: [AccessConstants.USERS_ACCESS]},
         GROUPS: {state: "groups", permissions: [AccessConstants.USERS_GROUPS_ACCESS]},
         GROUP_DETAILS: {state: "group-details", permissions: [AccessConstants.USERS_GROUPS_ACCESS]},
-        VISUAL_QUERY: {state: "visual-query", permissions: [AccessConstants.VISUAL_QUERY_ACCESS]},
+        VISUAL_QUERY: {state: "visual-query", permissions: [AccessConstants.VISUAL_QUERY_ACCESS, AccessConstants.DATASOURCE_ACCESS]},
         SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [AccessConstants.SLA_ACCESS]},
         SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: [AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE]},
         CATALOG: {state: "catalog", permissions: [AccessConstants.ACCESS_CATALOG]},
