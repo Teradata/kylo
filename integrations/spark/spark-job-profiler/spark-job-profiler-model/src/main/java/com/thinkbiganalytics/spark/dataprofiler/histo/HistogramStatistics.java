@@ -26,6 +26,7 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.DoubleFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.StructField;
@@ -58,12 +59,18 @@ public class HistogramStatistics implements ColumnStatistics, Serializable {
         try {
             if (isNumeric(columnField)) {
 
-                Tuple2<double[], long[]> histogram = javaRDD.mapToDouble(new DoubleFunction<Row>() {
+                Tuple2<double[], long[]> histogram = javaRDD.filter(new Function<Row, Boolean>() {
                     @Override
-                    public double call(Row row) throws Exception {
-                        return Double.parseDouble(row.get(columnIndex).toString());
+                    public Boolean call(Row row) throws Exception {
+                        return !row.isNullAt(columnIndex);
                     }
-                }).histogram(bins);
+                }).mapToDouble(new DoubleFunction<Row>() {
+                        @Override
+                        public double call(Row row) throws Exception {
+                            return Double.parseDouble(row.get(columnIndex).toString());
+                        }
+                    }).histogram(bins);
+                }
 
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonHisto = mapper.writeValueAsString(histogram);

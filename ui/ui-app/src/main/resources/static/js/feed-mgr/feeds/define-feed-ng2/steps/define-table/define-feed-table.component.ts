@@ -482,6 +482,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     onSchemaPanelCollapsed() {
         this.schemaPanelExpanded = false;
+
+        // Set merge strategy state if primary key is available
+        let pkSet = _.any(this.feed.table.tableSchema.fields, (value, index) => {
+            return (value.primaryKey);
+        });
+        let pkMergeStrategy = _.find(this.mergeStrategies, (value,index) => {
+            return (value.type == 'PK_MERGE');
+        }
+        if (pkMergeStrategy != undefined) {
+            pkMergeStrategy.disabled = !pkSet;
+        }
     }
 
     /**
@@ -492,7 +503,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      * @param columnDef
      */
     onNameFieldChange(columnDef: TableColumnDefinition, index: number) {
-        console.log("Field name change", columnDef, index)
         columnDef.replaceNameSpaces();
         this.onFieldChange(columnDef);
 
