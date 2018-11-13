@@ -133,8 +133,11 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public List<? extends DataSource> getDataSources() {
-        Node dsNode = JcrUtil.getNode(getNode(), DATASOURCES);
+        Node dsNode = getDataSourcesNode();
         return JcrUtil.getJcrObjects(dsNode, JcrDataSource.class);
+    }
+    public Node getDataSourcesNode(){
+        return JcrUtil.getNode(getNode(), DATASOURCES);
     }
     
     public static class ConnectorId extends JcrEntity.EntityId implements Connector.ID {

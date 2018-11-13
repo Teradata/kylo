@@ -158,6 +158,14 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
         JcrDataSetSparkParameters params = (JcrDataSetSparkParameters) this.dataSource.getSparkParameters();
         JcrAccessControlUtil.setPermissions(params.getNode(), principal, detailPrivs);
 
+        //allow user to create datasource nodes under this connector
+        if(summaryPrivs.contains(Privilege.JCR_READ) || summaryPrivs.contains(Privilege.JCR_ALL)){
+            JcrAccessControlUtil.setPermissions(this.dataSource.getDataSetsNode(),principal,Privilege.JCR_ALL);
+        }
+        else {
+            JcrAccessControlUtil.removePermissions(this.dataSource.getDataSetsNode(),principal,Privilege.JCR_ALL);
+        }
+
         //grant read to the datasource connector if the user has access to the datasource
         if(summaryPrivs.contains(Privilege.JCR_READ)) {
             dataSource.getConnector().getAllowedActions().enable(principal, ConnectorAccessControl.ACCESS_CONNECTOR);

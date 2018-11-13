@@ -122,20 +122,28 @@ public class JcrConnectorAllowedActions extends JcrAllowedActions {
     }
 
     protected void updateEntityAccess(Principal principal, Set<? extends Action> actions) {
-        Set<String> priveleges = new HashSet<>();
+        Set<String> privileges = new HashSet<>();
 
         // Collect all JCR privilege changes based on the specified actions.
         actions.forEach(action -> {
             if (action.implies(ConnectorAccessControl.CHANGE_PERMS)) {
-                Collections.addAll(priveleges, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
+                Collections.addAll(privileges, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
             } else if (action.implies(ConnectorAccessControl.EDIT_CONNECTOR)) {
-                priveleges.add(Privilege.JCR_ALL);
+                privileges.add(Privilege.JCR_ALL);
             } else if (action.implies(ConnectorAccessControl.ACCESS_CONNECTOR)) {
-                priveleges.add(Privilege.JCR_READ);                
+                privileges.add(Privilege.JCR_READ);
             }
         });
+
+        // allow user to create datasets under this datasource
+        if(privileges.contains(Privilege.JCR_READ) || privileges.contains(Privilege.JCR_ALL)){
+            JcrAccessControlUtil.setPermissions(this.connector.getDataSourcesNode(),principal,Privilege.JCR_ALL);
+        }
+        else {
+            JcrAccessControlUtil.removePermissions(this.connector.getDataSourcesNode(),principal,Privilege.JCR_ALL);
+        }
         
-        JcrAccessControlUtil.setPermissions(this.connector.getNode(), principal, priveleges);
+        JcrAccessControlUtil.setPermissions(this.connector.getNode(), principal, privileges);
         this.ensureDataSourceConnectorAccess();
     }
 
