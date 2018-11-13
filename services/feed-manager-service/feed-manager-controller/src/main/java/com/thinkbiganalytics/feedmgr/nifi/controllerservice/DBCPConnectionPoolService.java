@@ -557,6 +557,17 @@ public class DBCPConnectionPoolService {
         return validationQuery;
     }
 
+    /**
+     * Parse a controll service for its connection properties
+     * @param controllerServiceDTO
+     * @return
+     */
+    public PoolingDataSourceService.DataSourceProperties parseControllerService(ControllerServiceDTO controllerServiceDTO){
+        ControllerServicePropertiesRequest request = ControllerServicePropertiesRequest.newRequest(controllerServiceDTO);
+        Map<String, String> properties = controllerServiceDTO.getProperties();
+        return getDataSourceProperties(properties, request);
+    }
+
 
     private TableSchema describeTableForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
 
