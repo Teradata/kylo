@@ -70,7 +70,6 @@ public class HistogramStatistics implements ColumnStatistics, Serializable {
                             return Double.parseDouble(row.get(columnIndex).toString());
                         }
                     }).histogram(bins);
-                }
 
                 ObjectMapper mapper = new ObjectMapper();
                 String jsonHisto = mapper.writeValueAsString(histogram);
