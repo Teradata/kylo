@@ -642,6 +642,8 @@
     "views.FeedActivityDirective.Date": "Date",
 
     "views.kylo-options.Logout": "Logout",
+    "views.kylo-options.DocsThisVersion": "Docs (This Version)",
+    "views.kylo-options.DocsLatestVersion": "Docs (Latest Version)",
     "views.kylo-options.AK": "About Kylo",
 
     "views.TableController.Tables": "Tables",
@@ -920,6 +922,10 @@
     },
 
     "FeedDefinition":{
+        "AccessControl": {
+          "AccessControlIssues":"Access Control Issues",
+          "EditNoDatasourceAccess": "Unable to edit this feed. You need access to additional datasources in order to edit the feed"
+        },
         "Steps":{
             "Source":{
                "Name":"Source",

@@ -3,9 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.catalog.datasource;
 
+import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.catalog.JcrDataSetSparkParameters;
+import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnector;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 
 /*-
@@ -138,7 +140,7 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
                 summaryPrivs.add(Privilege.JCR_ALL); 
             } else if (action.implies(DatasourceAccessControl.ACCESS_DETAILS) || action.implies(DatasourceAccessControl.ACCESS_DATASOURCE)) {
                 detailPrivs.add(Privilege.JCR_READ); 
-                summaryPrivs.add(Privilege.JCR_READ); 
+                summaryPrivs.add(Privilege.JCR_READ);
             }
 // TODO: Re-enable equivalent below after proper, catalog data source-specific roles and permissions are created.
 //        } else if (action.implies(DatasourceAccessControl.EDIT_DETAILS)) {
@@ -155,6 +157,19 @@ public class JcrDataSourceAllowedActions extends JcrAllowedActions {
         JcrAccessControlUtil.setPermissions(this.dataSource.getNode(), principal, summaryPrivs);
         JcrDataSetSparkParameters params = (JcrDataSetSparkParameters) this.dataSource.getSparkParameters();
         JcrAccessControlUtil.setPermissions(params.getNode(), principal, detailPrivs);
+
+        //allow user to create datasource nodes under this connector
+        if(summaryPrivs.contains(Privilege.JCR_READ) || summaryPrivs.contains(Privilege.JCR_ALL)){
+            JcrAccessControlUtil.setPermissions(this.dataSource.getDataSetsNode(),principal,Privilege.JCR_ALL);
+        }
+        else {
+            JcrAccessControlUtil.removePermissions(this.dataSource.getDataSetsNode(),principal,Privilege.JCR_ALL);
+        }
+
+        //grant read to the datasource connector if the user has access to the datasource
+        if(summaryPrivs.contains(Privilege.JCR_READ)) {
+            dataSource.getConnector().getAllowedActions().enable(principal, ConnectorAccessControl.ACCESS_CONNECTOR);
+        }
     }
     
     @Override

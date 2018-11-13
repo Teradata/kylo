@@ -79,6 +79,11 @@ export class FeedAccessControl {
     allowSlaAccess:boolean;
     allowExport:boolean;
     allowStart:boolean;
+    /**
+     * Access to the feed.sourceDataSet
+     */
+    datasourceAccess:boolean;
+    accessMessage:string;
     public constructor(init?: Partial<FeedAccessControl>) {
         Object.assign(this, init);
     }
@@ -86,6 +91,8 @@ export class FeedAccessControl {
     static NO_ACCESS = new FeedAccessControl();
 
     allAccess(){
+        this.accessMessage = '';
+        this.datasourceAccess = true;
         this.allowEdit = true;
         this.allowChangePermissions = true;
         this.allowAdmin = true;

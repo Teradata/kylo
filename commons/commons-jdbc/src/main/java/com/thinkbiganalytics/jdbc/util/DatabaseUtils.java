@@ -4,7 +4,7 @@ package com.thinkbiganalytics.jdbc.util;
  * #%L
  * kylo-commons-jdbc
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.thinkbiganalytics.jdbc.util;
  * limitations under the License.
  * #L%
  */
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -22,16 +22,13 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
-import com.thinkbiganalytics.metadata.core.feed.BaseFeed;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
-import com.thinkbiganalytics.metadata.jpa.feed.security.JpaFeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionProvider;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 import com.thinkbiganalytics.test.security.WithMockJaasUser;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -45,12 +42,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-import java.util.stream.StreamSupport;
-
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringJUnit4ClassRunner.class)

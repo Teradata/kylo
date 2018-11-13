@@ -11,6 +11,17 @@
     </md-menu-item>
     <md-menu-divider></md-menu-divider>
     <md-menu-item layout="column">
+      <md-button ng-click="$ctrl.openDocs(true)">
+        <span style="float:left;">{{"views.kylo-options.DocsThisVersion" | translate}}</span>
+      </md-button>
+    </md-menu-item>
+    <md-menu-item layout="column">
+      <md-button ng-click="$ctrl.openDocs(false)">
+        <span style="float:left;">{{"views.kylo-options.DocsLatestVersion" | translate}}</span>
+      </md-button>
+    </md-menu-item>
+    <md-menu-divider></md-menu-divider>
+    <md-menu-item layout="column">
       <md-button ng-click="$ctrl.aboutKylo()" md-prevent-menu-close="md-prevent-menu-close">
         <span style="float:left;">{{"views.kylo-options.AK" | translate}}</span>
       </md-button>

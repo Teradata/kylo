@@ -27,7 +27,8 @@ import {FeedVersionsComponent} from "./summary/versions/feed-versions.component"
 import {SlaListComponent} from "../../sla/list/sla-list.componment";
 import {SlaDetailsComponent} from "../../sla/details/sla-details.componment";
 import {Observable} from "rxjs/Observable";
-
+import AccessConstants from "../../../constants/AccessConstants";
+import {AccessDeniedComponent} from "../../../common/access-denied/access-denied.component";
 const resolveFeed = {
     token: 'feed',
     deps: [StateService, DefineFeedService],
@@ -55,7 +56,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         component:ImportFeedComponent,
         data: {
             breadcrumbRoot: true,
-            displayName: ""
+            displayName: "",
+            permissions:AccessConstants.UI_STATES.IMPORT_FEED.permissions
         }
     },
     {
@@ -88,7 +90,10 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: resolveParams
             }
-        ]
+        ],
+        data: {
+            permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
+        }
     },
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".deployed-setup-guide",
@@ -111,7 +116,22 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 token: 'refresh',
                 resolveFn: resolveFalse
             }
-        ]
+        ],
+        data: {
+            permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
+        }
+    },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".access-denied",
+        url: "/:feedId/access-denied",
+        params:{feedId:null, attemptedState:null},
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: resolveParams
+            }],
+        component: AccessDeniedComponent
     },
 
     {
@@ -137,7 +157,11 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".wrangler",
         url: "/:feedId/wrangler",
-        component: DefineFeedStepWranglerComponent
+        component: DefineFeedStepWranglerComponent,
+        data:{
+            permissions:AccessConstants.UI_STATES.FEED_STEP_WRANGLER.permissions,
+            accessRedirect:FEED_DEFINITION_SECTION_STATE_NAME+".access-denied"
+        }
     },
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME + ".datasources",

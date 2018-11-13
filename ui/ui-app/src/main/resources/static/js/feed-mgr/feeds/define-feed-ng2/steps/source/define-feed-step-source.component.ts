@@ -85,7 +85,7 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
     public isFormValid(){
         let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
         const inputFormValid= (this.feedPropertyNiFiComponent.inputProcessor && this.feedPropertyNiFiComponent.inputProcessor.form.valid);
-        return inputControl.valid && inputFormValid
+        return inputControl.valid && inputFormValid && this.feedPropertyNiFiComponent.formGroup.dirty;
     }
 
     public applyUpdatesToFeed(): (Observable<any> | boolean | null) {

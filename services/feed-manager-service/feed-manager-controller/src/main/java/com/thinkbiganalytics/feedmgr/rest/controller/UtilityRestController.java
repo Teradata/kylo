@@ -124,10 +124,11 @@ public class UtilityRestController {
             for (Date date : dates) {
                 dateStrings.add(format.format(date));
             }
-
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            /* NOTE: swallows parse exceptions so the UI shows an empty list of fire times,
+                 other more severe exceptions will yield 500 */
         }
+
         return Response.ok(dateStrings).build();
     }
 

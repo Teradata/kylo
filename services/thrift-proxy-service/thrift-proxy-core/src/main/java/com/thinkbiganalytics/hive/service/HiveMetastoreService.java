@@ -266,6 +266,11 @@ public class HiveMetastoreService {
 
     public TableSchema getTable(String schema, String table) throws DataAccessException {
 
+        // Must use JDBC metadata for user impersonation
+        if (userImpersonationEnabled) {
+            return hiveService.getTableSchema(schema, table);
+        }
+
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME, c.TYPE_NAME "
                        + "FROM COLUMNS_V2 c "
                        + "JOIN  SDS s on s.CD_ID = c.CD_ID "

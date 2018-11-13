@@ -194,7 +194,7 @@ export default class SideNav implements ng.IComponentController {
         // links.push({sref: "explorer", type: "link", icon: "find_in_page", text: "Explorer"});
         links.push({sref: "sla",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
         links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
-        links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
+        links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.CATALOG.permissions});
         this.addExtensionLinks(this.MENU_KEY.FEED_MGR, links);
         var menu = ({type:'toggle', 
                 text: this.$filter('translate')('views.main.feed-manage'),
@@ -332,7 +332,7 @@ export default class SideNav implements ng.IComponentController {
     buildAdminMenu: any=()=>{
         
         let links: any[] = [];
-        links.push({sref: "catalog.admin-connectors", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.catalogConnectors'), defaultActive: false, permission: AccessConstants.DATASOURCE_ADMIN});
+        links.push({sref: "catalog.admin-connectors", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.catalogConnectors'), defaultActive: false, permission: AccessConstants.ADMIN_CONNECTORS});
         links.push({sref: "domain-types", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: AccessConstants.FEEDS_ADMIN});
         links.push({sref: "business-metadata", type:'link', icon: "business", text: this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
         links.push({sref: "registered-templates",type:'link', icon: "layers", text: this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});

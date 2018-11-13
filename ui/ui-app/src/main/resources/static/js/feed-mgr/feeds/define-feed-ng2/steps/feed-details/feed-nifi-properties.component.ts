@@ -333,7 +333,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
         if (this.isShowAdditionalProperties()) {
             this.ensureFeedInputProcessor()
 
-            let inputName = this.feed.inputProcessor.name;
+            let inputName = this.feed.inputProcessor != undefined ? this.feed.inputProcessor.name : undefined;
             let inputProcessorRelationships = this.feed.registeredTemplate.inputProcessorRelationships;
             let downstreamProcessors = inputProcessorRelationships != undefined ? inputProcessorRelationships[inputName] : undefined;
             const inputRenderProcessors = selected ? this.getInputRenderProcessors(selected) : null;

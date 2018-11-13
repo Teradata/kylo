@@ -218,9 +218,11 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         if(importOption.properties == undefined){
             return [];
         }
-        return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties &&
+        return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties && (
             Object.keys(property.additionalProperties).indexOf("legacyTableDataSource") >=0 &&
-            (property.additionalProperties["legacyTableDataSource"] == "true" ||property.additionalProperties["legacyTableDataSource"] == true));
+            (property.additionalProperties["legacyTableDataSource"] == "true" ||property.additionalProperties["legacyTableDataSource"] == true)) ||
+            (Object.keys(property.additionalProperties).indexOf("dataset") &&
+            (property.additionalProperties["dataset"] == "true" ||property.additionalProperties["dataset"] == true)));
     }
 
     public findDataSourcePropertiesFilter(importOption:ImportComponentOption): ImportProperty[]{
@@ -228,8 +230,11 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
             return [];
         }
         return  importOption.properties.filter((property:ImportProperty) => property.additionalProperties &&
-            Object.keys(property.additionalProperties).indexOf("legacyQueryDataSource") >=0 &&
-            (property.additionalProperties["legacyQueryDataSource"] == "true" ||property.additionalProperties["legacyQueryDataSource"] == true));
+            (Object.keys(property.additionalProperties).indexOf("legacyQueryDataSource") >=0 &&
+            (property.additionalProperties["legacyQueryDataSource"] == "true" ||property.additionalProperties["legacyQueryDataSource"] == true)) ||
+            (Object.keys(property.additionalProperties).indexOf("catalogDataSource") &&
+            (property.additionalProperties["catalogDataSource"] == "true" ||property.additionalProperties["dataset"] == true)));
+
     }
 
     /**
@@ -419,7 +424,6 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 var count = 0;
                 var errorMap: any = {"FATAL": [], "WARN": []};
                 this.importResult = responseData;
-                //if(responseData.templateResults.errors) {
                 if (responseData.template.controllerServiceErrors) {
                     //angular.forEach(responseData.templateResults.errors, function (processor) {
                     _.each(responseData.template.controllerServiceErrors, (processor: any) => {
@@ -505,7 +509,8 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         //generate a new upload key for status tracking
         this.uploadKey = this.importService.newUploadKey();
 
-        let category = this.category;
+        let category = this.categoryAutoComplete.getCategoryValue();
+
         var params = {
             uploadKey: this.uploadKey,
             categorySystemName: category != undefined ? category.systemName : "",
@@ -710,7 +715,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 //add these to the canvas
                 let preview = response.previews[0];
                 let dataSet =preview.toSparkDataSet();
-                this.catalogService.createDataSet(dataSet).subscribe((ds:SparkDataSet) => {
+                this.catalogService.createDataSetWithTitle(dataSet).subscribe((ds:SparkDataSet) => {
                     //find or create dataset then
                     console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet, ds)
                     let valid = true;

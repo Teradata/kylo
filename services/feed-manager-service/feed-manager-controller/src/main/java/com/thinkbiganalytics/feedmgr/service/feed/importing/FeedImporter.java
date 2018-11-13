@@ -455,6 +455,16 @@ public class FeedImporter {
         final ImportComponentOption componentOption = importFeedOptions.findImportComponentOption(ImportComponent.USER_DATASOURCES);
         if (componentOption.getProperties().isEmpty()) {
             componentOption.setProperties(FeedImportDatasourceUtil.buildDatasourceAssignmentProperties(metadata, availableDatasources));
+            //add in any catalogDataSourceIds
+            if(metadata.getDataTransformation().getCatalogDataSourceIds() != null && !metadata.getDataTransformation().getCatalogDataSourceIds().isEmpty()){
+                final Set<String> catalogDataSources = metadataAccess.read(
+                    () -> catalogDataSourceProvider.findAll().stream()
+                        .map(com.thinkbiganalytics.metadata.api.catalog.DataSource::getId)
+                        .map(Object::toString)
+                        .collect(Collectors.toSet())
+                );
+                componentOption.getProperties().addAll(FeedImportDatasourceUtil.buildCatalogDatasourceAssignmentProperties(metadata,catalogDataSources));
+            }
         }
 
         // Update feed with re-mapped data sources
@@ -503,6 +513,28 @@ public class FeedImporter {
                             return false;
                         }
                     }
+                    if(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.CATALOG_DATASOURCE_KEY) != null && "true".equalsIgnoreCase(property.getAdditionalPropertyValue(FeedImportDatasourceUtil.CATALOG_DATASOURCE_KEY))){
+                        String datasourceId = property.getAdditionalPropertyValue("datasourceId");
+                        String catalogDataSourceId = property.getPropertyValue();
+                        com.thinkbiganalytics.kylo.catalog.rest.model.DataSource dataSource = metadataAccess.read(() -> {
+                            return catalogDataSourceProvider.find(catalogDataSourceProvider.resolveId(catalogDataSourceId))
+                                .map(catalogDataSource -> catalogModelTransform.dataSourceToRestModel().apply(catalogDataSource)).orElse(null);
+                        });
+
+                        if(dataSource != null){
+                            List<String> newIds = metadata.getDataTransformation().getCatalogDataSourceIds().stream().map(id -> id.equalsIgnoreCase(datasourceId) ? catalogDataSourceId : id ).collect(Collectors.toList());
+                            metadata.getDataTransformation().setCatalogDataSourceIds(newIds);
+                            String script = metadata.getDataTransformation().getDataTransformScript();
+                            script = script.replaceAll(datasourceId,catalogDataSourceId);
+                            metadata.getDataTransformation().setDataTransformScript(script);
+                            chartModelReplacements.put(datasourceId, catalogDataSourceId);
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+
+                    }
                     else {
                         //Shouldnt get here now!!
                        // ImportUtil.replaceDatasource(metadata, property.getProcessorId(), property.getPropertyValue());
@@ -518,7 +550,9 @@ public class FeedImporter {
             if(datasetIds != null) {
                 metadata.setSourceDataSetIds(datasetIds.stream().collect(Collectors.joining(",")));
             }
+            FeedImportDatasourceUtil.ensureConnectionKeysMatch(metadata);
             FeedImportDatasourceUtil.replaceChartModelReferences(metadata, chartModelReplacements);
+            FeedImportDatasourceUtil.populateFeedDatasourceIdsProperty(metadata);
             statusMessage.update("Validated data sources.", true);
         } else {
             statusMessage.update("Validation Error. Additional properties are needed before uploading the feed.", false);
@@ -663,6 +697,7 @@ public class FeedImporter {
                     .withImportComponent(ImportComponent.USER_DATA_SETS)
                     .asValid(matchingDataSet != null)
                     .withAdditionalProperties(datasetAdditionalProperties.get(incomingDataSet.getId()))
+                    .putAdditionalProperty("dataset", "true")
                     .build();
                 dataSetProperties.add(property);
                 componentOption.setValidForImport(property.isValid());

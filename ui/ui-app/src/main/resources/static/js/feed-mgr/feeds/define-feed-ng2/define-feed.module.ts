@@ -27,6 +27,7 @@ import {CovalentCommonModule} from '@covalent/core/common';
 import {CovalentDataTableModule} from "@covalent/core/data-table";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {CovalentLayoutModule} from "@covalent/core/layout";
+import {CovalentExpansionPanelModule} from "@covalent/core/expansion-panel";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMediaModule} from "@covalent/core/media";
 import {CovalentMessageModule} from "@covalent/core/message";
@@ -224,6 +225,7 @@ export function createCompilerFn(c: CompilerFactory) {
         CovalentNotificationsModule,
         CovalentVirtualScrollModule,
         CovalentDynamicFormsModule,
+        CovalentExpansionPanelModule,
         CronExpressionPreviewModule,
         FlexLayoutModule,
         KyloCommonModule,

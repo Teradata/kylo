@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.v2.elasticsearch;
  * #L%
  */
 
+
 import com.thinkbiganalytics.hashing.InsecureHashingMessageUtil;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 

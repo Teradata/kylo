@@ -7,8 +7,17 @@ import {Feed} from "../../../model/feed/feed.model";
     template:`
       <div fxLayout="row" fxLayoutAlign="space-between" *ngIf="feed != undefined">
         <button mat-raised-button button color="accent" (click)="edit()" *ngIf="showEditLink">Edit</button>
-        <button mat-button color="accent" (click)="cancelEdit()" *ngIf="showCancelLink && feed.canEdit() &&  !feed.readonly ">Cancel</button>
+        <button mat-button (click)="cancelEdit()" *ngIf="showCancelLink && feed.canEdit() &&  !feed.readonly ">Cancel</button>     
       </div>
+        <div *ngIf="feed && feed.accessControl && feed.accessControl.accessMessage != ''">
+          <button mat-button color="tc-grey-500" [matMenuTriggerFor]="accessMessageMenu" >
+            <mat-icon >warning</mat-icon>
+            {{"FeedDefinition.AccessControl.AccessControlIssues" | translate}}
+          </button>
+          <mat-menu #accessMessageMenu="matMenu">
+            {{feed.accessControl.accessMessage | translate}}
+          </mat-menu>
+        </div>
     `
     }
 )

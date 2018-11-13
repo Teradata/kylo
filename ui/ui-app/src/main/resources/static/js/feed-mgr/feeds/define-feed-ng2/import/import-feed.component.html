@@ -292,6 +292,7 @@
                 <mat-select placeholder="Select a source" [formControlName]="prop.propertyKey" required>
                   <mat-option [value]="datasource.id" *ngFor="let datasource of catalogDataSources">{{datasource.title}}</mat-option>
                 </mat-select>
+                <mat-hint [matTooltip]="prop.additionalProperties.query" *ngIf="prop && prop.additionalProperties && prop.additionalProperties.query" class="text-truncate">{{prop.additionalProperties.query}}</mat-hint>
               </mat-form-field>
             </mat-list-item>
           </mat-list>

@@ -1,5 +1,5 @@
 import {Component, Injector, Input, OnInit} from "@angular/core";
-import {HttpBackend, HttpClient} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {AbstractControl, AsyncValidatorFn, FormControl, ValidationErrors} from '@angular/forms';
 import {catchError, map} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
@@ -20,10 +20,8 @@ export class CronExpressionPreviewComponent implements OnInit {
     nextDates: any;
     private restUrlService: any;
     private labelNotAvailable: string;
-    private http: HttpClient;
 
-    constructor(private $$angularInjector: Injector, httpBackend: HttpBackend, private translateService: TranslateService) {
-        this.http = new HttpClient(httpBackend);
+    constructor(private $$angularInjector: Injector, private http: HttpClient, private translateService: TranslateService) {
         this.restUrlService = $$angularInjector.get("RestUrlService");
         this.labelNotAvailable = this.translateService.instant('views.cron-expression-preview.PreviewNotAvailable');
     }

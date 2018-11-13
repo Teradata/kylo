@@ -20,7 +20,7 @@
       <div *ngFor="let sla of serviceLevelAgreements; last as isLast;">
         <mat-list-item>
           <sla-row [sla]="sla" fxFlex></sla-row>
-        </mat-list-item>>
+        </mat-list-item>
         <mat-divider [inset]="true" *ngIf="!isLast"></mat-divider>
       </div>
     </mat-list>

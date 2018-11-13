@@ -35,6 +35,27 @@ export default class KyloOptions implements ng.IComponentController {
         $mdOpenMenu(ev);
     };
 
+    openDocs(thisVersion:boolean) {
+        const THIS_DOCS_URL_PREFIX = "https://kylo.readthedocs.io/en/v";
+        const LATEST_DOCS_URL_PREFIX = "https://kylo.readthedocs.io/en/latest";
+        const TRAILING_SLASH = "/";
+        const URL = "/proxy/v1/about/version";
+
+        if (thisVersion) {
+            this.$http({
+                method: "GET",
+                url: URL
+            }).then(function success(response: any) {
+                window.open(THIS_DOCS_URL_PREFIX + response.data + TRAILING_SLASH);
+            }, function failure(response: any) {
+                console.log("Could not determine this Kylo version. Will open docs for latest version");
+                window.open(LATEST_DOCS_URL_PREFIX + TRAILING_SLASH);
+            });
+        } else {
+            window.open(LATEST_DOCS_URL_PREFIX + TRAILING_SLASH);
+        }
+    }
+
     aboutKylo() {
         this.AboutKyloService.showAboutDialog();
         if (this.selectedOption) {

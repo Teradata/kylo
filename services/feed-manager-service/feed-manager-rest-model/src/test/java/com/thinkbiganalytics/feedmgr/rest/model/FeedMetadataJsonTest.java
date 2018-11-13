@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.springframework.beans.BeanUtils;
@@ -31,10 +32,14 @@ import org.springframework.core.io.Resource;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  *Test Feed deserialization
@@ -73,16 +78,42 @@ public class FeedMetadataJsonTest {
         String str = list.toString();
         m.getDataTransformation().setCatalogDataSourceIds(list);
         Object obj = null;
+        Object obj2 = null;
         try {
             obj = org.apache.commons.beanutils.BeanUtils.getProperty(m, "dataTransformation.catalogDataSourceIds");
+            obj2 = PropertyUtils.getProperty(m,"dataTransformation.catalogDataSourceIds");
         } catch (Exception e) {
             //    throw new RuntimeException(e);
         }
         if(obj != null){
             System.out.println(obj.toString());
-
+        }
+        if(obj2 != null){
+           if(isCollectionOfStrings(obj2)){
+               System.out.println(stringCollectionToString((Collection<String>)obj2));
+           }
+            System.out.println(obj2.toString());
         }
 
+    }
+
+    private String stringCollectionToString(Collection<String> collection){
+        return collection.stream().collect(Collectors.joining(","));
+    }
+
+    private boolean isCollectionOfStrings(Object obj) {
+
+        if (obj instanceof Collection) {
+           return (boolean) ((Collection) obj).stream().findFirst().map(o -> {
+                if (o instanceof String) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }).orElse(false);
+        } else {
+            return false;
+        }
     }
 
 }

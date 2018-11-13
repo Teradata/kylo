@@ -14,7 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-util</artifactId>
+      <artifactId>kylo-commons-spring</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

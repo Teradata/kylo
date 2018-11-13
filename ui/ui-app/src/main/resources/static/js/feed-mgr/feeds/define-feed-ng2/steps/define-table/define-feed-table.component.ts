@@ -47,6 +47,7 @@ import {DatasetPreviewStepperSavedEvent} from "../../../../catalog-dataset-previ
 import {DefineFeedSourceSampleService} from "./source-sample/define-feed-source-sample.service";
 import {CatalogService} from "../../../../catalog/api/services/catalog.service";
 import {Common} from '../../../../../../lib/common/CommonTypes';
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
 
 const moduleName = require('../../../define-feed/module-name');
 
@@ -164,6 +165,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     profileCheckAll: CheckAll;
 
+    skippedSourceSample:boolean = false;
 
     /**
      *
@@ -183,6 +185,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     catalogBrowserOpen:boolean = false;
 
+    schemaPanelExpanded:boolean = true;
 
 
     @ViewChild('virtualScroll')
@@ -292,6 +295,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         if(this.feed.isDataTransformation() || (this.feed.hasBeenDeployed() && this.feed.sampleDataSet == undefined)){
             this.showSourceSample = false;
+        }
+        if (this.feed.sampleDataSet == undefined && !this.skippedSourceSample) {
+            this.showSourceSampleCatalog = true;
         }
     }
 
@@ -468,6 +474,14 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             }
         }
 
+    }
+
+    onSchemaPanelExpanded() {
+        this.schemaPanelExpanded = true;
+    }
+
+    onSchemaPanelCollapsed() {
+        this.schemaPanelExpanded = false;
     }
 
     /**
@@ -819,7 +833,32 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         if($event.skip){
             //mark it in the metadata
             this.step.addProperty(SKIP_SOURCE_CATALOG_KEY,true);
+            this.skippedSourceSample = true;
         }
+    }
+
+    onSchemaPanelEdit($event:any) {
+        //$event.preventDefault();
+        //this.schemaPanelExpanded = true;
+    }
+
+    onSchemaPanelCancel($event:any) {
+        //$event.preventDefault();
+        //this.schemaPanelExpanded = false;
+    }
+
+    onSchemaPanelSave($event:any) {
+        $event.preventDefault();
+        this.registerLoading();
+        this.defineFeedService.saveFeed(this.feed, false,this.step).subscribe((response: SaveFeedResponse) => {
+            this.defineFeedService.openSnackBar("Saved", 1500);
+            this.resolveLoading();
+            this.step.clearDirty();
+            this.schemaPanelExpanded = false;
+        }, error1 => {
+            this.resolveLoading()
+            this.defineFeedService.openSnackBar("Error saving feed ", 3000);
+        })
     }
 
     onSampleSourceSaved(previewEvent: DatasetPreviewStepperSavedEvent) {
@@ -869,6 +908,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
            //apply the updates to this form
             this.ensureTableFields();
             this.ensurePartitionData();
+            this.feed.table.syncTableFieldPolicyNames()
             this.showSourceSampleCatalog = false;
             this.catalogBrowserOpen = false;
             if(this.virtualScroll) {

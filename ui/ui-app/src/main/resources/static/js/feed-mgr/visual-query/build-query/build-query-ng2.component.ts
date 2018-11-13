@@ -603,6 +603,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             // Determine next node ID
             this.nextNodeID = Math.max(node.id + 1, this.nextNodeID);
         });
+        this.ensureConnectionKeys(chartDataModel);
+
 
         // Create view model
         this.chartViewModel = new FlowChart.ChartViewModel(chartDataModel);
@@ -703,7 +705,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.sql = this.getSQLModel();
             this.model.$selectedColumnsAndTables = this.selectedColumnsAndTables;
             //mark the datasourceId if its not a catalog datasource
-            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && this.availableCatalogSqlDataSourceIds.indexOf(id) <0);
+            this.model.datasourceIds = this.selectedDatasourceIds.filter(id => this.nativeDataSourceIds.indexOf(id.toUpperCase()) < 0 && (this.availableCatalogSqlDataSourceIds != undefined && this.availableCatalogSqlDataSourceIds.indexOf(id) <0));
             this.model.catalogDataSourceIds = this.selectedCatalogDatsSourceIds;
             this.model.$catalogDataSources = this.getCatalogDataSources();
             this.model.$datasources = this.datasourcesService.filterArrayByIds(this.selectedDatasourceIds, this.availableDatasources);
@@ -791,6 +793,43 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     };
 
+    ensureConnectionKeys(chartDataModel:FlowChart.ChartDataModel) {
+        if (chartDataModel.nodes) {
+            let nodeMap = {}
+        chartDataModel.nodes.forEach(node => nodeMap[node.id] = node);
+        if (chartDataModel.connections && chartDataModel.connections.length > 0) {
+            try {
+                chartDataModel.connections.forEach(connection => {
+
+                    let sourceKey = connection["joinKeys"]["sourceKey"]
+                    let destKey = connection["joinKeys"]["destKey"]
+
+                    let sourceId = connection["source"]["nodeID"];
+                    let destId = connection["dest"]["nodeID"];
+                    let sourceNode = nodeMap[sourceId];
+                    let destNode = nodeMap[destId];
+                    let srcFields: string[] = <string[]>(<any[]>sourceNode["nodeAttributes"]["attributes"]).map(attr => attr["name"])
+                    let destFields: string[] = <string[]>(<any[]>destNode["nodeAttributes"]["attributes"]).map(attr => attr["name"])
+                    let validSource = srcFields.indexOf(sourceKey) >= 0;
+                    let validDest = destFields.indexOf(destKey) >= 0;
+                    if (!validSource && !validDest) {
+                        validSource = srcFields.indexOf(destKey) >= 0;
+                        validDest = destFields.indexOf(sourceKey) >= 0;
+                        if (validSource && validDest) {
+                            //flip them
+                            connection["joinKeys"]["sourceKey"] = destKey;
+                            connection["joinKeys"]["destKey"] = sourceKey;
+                        }
+                    }
+                })
+            }catch(err){
+                console.error("error assessing connection keys ",err)
+            }
+
+        }
+        }
+    }
+
     /**
      * Adds utility functions to a node data model.
      *
@@ -798,6 +837,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      */
     prepareNode(node: any) {
         const self = this;
+
+        if(node.name){
+            //strip any "`" chars from the node name
+            node.name = node.name.replace(/`/g,"");
+        }
         /**
          * Indicates if all of the attributes are selected.
          *
@@ -889,11 +933,6 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     };
 
     private addDataSetToCanvas(datasourceId: string, nodeName: string, tableSchema: TableSchema, dataset?: SparkDataSet) {
-        //
-        // Template for a new node.
-        //
-
-
         const coord = this.getNewXYCoord();
 
         _.each(tableSchema.fields, (field: SchemaField) => {
@@ -902,6 +941,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 field.dataTypeWithPrecisionAndScale = field.nativeDataType.toLowerCase();
             }
         });
+        //strip any "`" chars from the node name
+        nodeName = nodeName.replace(/`/g,"");
         const newNodeDataModel: any = {
             name: nodeName,
             id: this.nextNodeID++,
@@ -1081,6 +1122,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.model && !changes.model.firstChange) {
+            this.initModelAttributes();
             // Setup the flowchart Model
             this.setupFlowChartModel();
             this.addPreviewDataSets();
@@ -1090,12 +1132,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         }
     }
 
-    /**
-     * Finish initializing after data-bound properties are initialized.
-     */
-    ngOnInit(): void {
-        //init the form objects
-        this.initFormComponents();
+    private initModelAttributes(){
 
         if (this.model.$selectedDatasourceId == null && this.model.datasourceIds && this.model.datasourceIds.length > 0) {
             this.model.$selectedDatasourceId = this.model.datasourceIds[0];
@@ -1109,6 +1146,16 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.advancedMode = false;
             this.advancedModeText = "Advanced Mode";
         }
+    }
+
+    /**
+     * Finish initializing after data-bound properties are initialized.
+     */
+    ngOnInit(): void {
+        //init the form objects
+        this.initFormComponents();
+
+        this.initModelAttributes();
         this.autoCompleteEnabledCheck();
 
         // Wait for query engine to load

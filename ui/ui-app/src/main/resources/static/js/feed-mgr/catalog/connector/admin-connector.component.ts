@@ -45,7 +45,7 @@ export class AdminConnectorComponent implements OnInit {
     }
 
     private setPermissions(actionSet:any){
-        let adminAccess = this.accessControlService.hasAction(AccessControlService.ADMIN_CONNECTOR_ACCESS, actionSet.actions);
+        let adminAccess = this.accessControlService.hasAction(AccessControlService.ADMIN_CONNECTORS, actionSet.actions);
         let entityAccess = this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CONNECTOR.CHANGE_CONNECTOR_PERMISSIONS, this.connector,
             EntityAccessControlService.entityRoleTypes.CONNECTOR);
         this.allowAdmin = adminAccess && entityAccess;

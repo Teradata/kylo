@@ -66,6 +66,13 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         super.applyUpdatesToFeed();
         this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
         this.feed.dataTransformation.catalogDataSourceIds = this.feed.dataTransformation.$catalogDataSources.map(ds => ds.id);
+
+        let datasetIds = this.feed.dataTransformation.datasets ? this.feed.dataTransformation.datasets.map(ds => ds.id): [];
+        //put all the legacy datsourceids, datasetids, and catalogdatasourceids in the dataTransformation.datasourceIds property.
+        // this is for backwards compatibility for 0.9.1 and earlier templates
+        let allIds :string[] = [];
+        allIds= allIds.concat(this.feed.dataTransformation.datasourceIds || [],this.feed.dataTransformation.catalogDataSourceIds, datasetIds);
+        this.feed.dataTransformation.datasourceIds = allIds;
         if (this.feed.table.schemaChanged) {
             this.dialogService.openAlert({
                 title: 'Error saving feed.  Table Schema Changed.',

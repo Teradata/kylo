@@ -61,6 +61,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.AccessDeniedException;
 import java.security.Principal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -434,14 +435,24 @@ public class DataSourceController extends AbstractCatalogController {
                                @QueryParam("catalog") final String catalogName, 
                                @QueryParam("schema") final String schemaName) {
         log.entry(dataSourceId, catalogName, schemaName);
-
-        return metadataService.read(() -> {
-            // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, false);
-            final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
-
-            return Response.ok(log.exit(tables)).build();
+        //read as the user to see if they can access the datasource
+        boolean hasAccess = metadataService.read(() -> {
+           return findDataSource(dataSourceId, true) != null;
         });
+
+        if(hasAccess) {
+            return metadataService.read(() -> {
+                // List tables
+                final DataSource dataSource = findDataSource(dataSourceId, false);
+                final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
+
+                return Response.ok(log.exit(tables)).build();
+            },MetadataAccess.SERVICE);
+        }
+        else {
+            log.debug("Access denied accessing datasource : {}", dataSourceId);
+            throw new ForbiddenException(getMessage("catalog.datasource.forbidden"));
+        }
     }
 
     private List<DataSetTable> doListTables(@QueryParam("catalog") String catalogName, @QueryParam("schema") String schemaName, DataSource dataSource) {
@@ -475,29 +486,38 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("filter") String catalogOrSchemaName) {
 
-        List<DataSetTable> tableList = metadataService.read(() -> {
-            // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, false);
-
-            final List<DataSetTable> tables;
-            try {
-                log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
-                tables = tableManager.listTables(dataSource, catalogOrSchemaName);
-            } catch (final Exception e) {
-                if (log.isErrorEnabled()) {
-                    log.error("Failed to list tables for [" + catalogOrSchemaName + "] : " + e, e);
-                }
-                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
-                    .message(getMessage("catalog.datasource.listTablesFilter.error", catalogOrSchemaName))
-                    .url(request.getRequestURI())
-                    .setDeveloperMessage(e)
-                    .buildError();
-                throw new InternalServerErrorException(Response.serverError().entity(status).build());
-            }
-            return tables;
-
-
+        List<DataSetTable> tableList = new ArrayList<>();
+        //read as the user to see if they can access the datasource
+        boolean hasAccess = metadataService.read(() -> {
+            return findDataSource(dataSourceId, true) != null;
         });
+
+        if(hasAccess) {
+
+         tableList = metadataService.read(() -> {
+                // List tables
+                final DataSource dataSource = findDataSource(dataSourceId, false);
+
+                final List<DataSetTable> tables;
+                try {
+                    log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
+                    tables = tableManager.listTables(dataSource, catalogOrSchemaName);
+                } catch (final Exception e) {
+                    if (log.isErrorEnabled()) {
+                        log.error("Failed to list tables for [" + catalogOrSchemaName + "] : " + e, e);
+                    }
+                    final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                        .message(getMessage("catalog.datasource.listTablesFilter.error", catalogOrSchemaName))
+                        .url(request.getRequestURI())
+                        .setDeveloperMessage(e)
+                        .buildError();
+                    throw new InternalServerErrorException(Response.serverError().entity(status).build());
+                }
+                return tables;
+
+
+            }, MetadataAccess.SERVICE);
+        }
 
         return Response.ok(log.exit(tableList)).build();
     }
@@ -528,54 +548,90 @@ public class DataSourceController extends AbstractCatalogController {
         // TODO Verify user has access to data source
         // Require admin permission if the results should include unencrypted credentials.
         accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+        DataSetWithTableSchema dataSetWithTableSchema = null;
+        boolean hasAccess = false;
+        try {
+            //ensure the user can read teh datasource
 
-        DataSetWithTableSchema dataSetWithTableSchema = metadataService.commit(() -> {
-            // List tables
-            final DataSource dataSource = findDataSource(dataSourceId, false);
-            TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
-            if (tableSchema != null) {
-                DataSet dataSet = new DataSet();
-                //assign the datasource to this dataset with encrypted credentials
-                DataSource encryptedSource = findDataSource(dataSourceId, true);
-                dataSet.setDataSource(encryptedSource);
-                String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(),tableSchema.getName());
-                dataSet.setTitle(fullTableName);
+            DataSource encryptedSource = metadataService.read(() -> {
+                return findDataSource(dataSourceId, true);
+            });
+            hasAccess = encryptedSource != null;
 
-                DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
-                List<String> paths = defaultDataSetTemplate.getPaths();
-                String format = defaultDataSetTemplate.getFormat();
 
-                Map<String, String> options = defaultDataSetTemplate.getOptions();
-                if (options == null) {
-                    options = new HashMap<>();
-                }
-                if (paths == null) {
-                    paths = new ArrayList<>();
-                }
-                if ("hive".equalsIgnoreCase(format.toLowerCase())) {
-                    paths.add(fullTableName);
-                }
-                options.put("dbtable", fullTableName);
+            if(hasAccess) {
+                //fetch the datasource as a service account to get the creds.
+                DataSource dataSource = metadataService.read(() -> {
+                    return findDataSource(dataSourceId, false);
+                }, MetadataAccess.SERVICE);
 
-                dataSet.setFormat(format);
-                dataSet.setPaths(paths);
-                dataSet.setOptions(options);
+                //describe the datasource and table
 
-                DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptCredentials);
-                return new DataSetWithTableSchema(dataSet1, tableSchema);
-            } else {
-                if (log.isErrorEnabled()) {
-                    log.error("Failed to describe tables for schema [" + schema + "], table [" + tableName + "], dataSource [" + dataSourceId + "] ");
-                }
+                TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
+
+                //create the dataset as a service account.  if we get here the user has access to view the data source
+
+               // dataSetWithTableSchema = metadataService.commit(() -> {
+                    // List tables
+
+                    if (tableSchema != null) {
+                        DataSet dataSet = new DataSet();
+                        //assign the datasource to this dataset with encrypted credentials
+                        dataSet.setDataSource(encryptedSource);
+                        String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(), tableSchema.getName());
+                        dataSet.setTitle(fullTableName);
+
+                        DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
+                        List<String> paths = defaultDataSetTemplate.getPaths();
+                        String format = defaultDataSetTemplate.getFormat();
+
+                        Map<String, String> options = defaultDataSetTemplate.getOptions();
+                        if (options == null) {
+                            options = new HashMap<>();
+                        }
+                        if (paths == null) {
+                            paths = new ArrayList<>();
+                        }
+                        if ("hive".equalsIgnoreCase(format.toLowerCase())) {
+                            paths.add(fullTableName);
+                        }
+                        options.put("dbtable", fullTableName);
+
+                        dataSet.setFormat(format);
+                        dataSet.setPaths(paths);
+                        dataSet.setOptions(options);
+
+                        DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptCredentials);
+                        dataSetWithTableSchema = new DataSetWithTableSchema(dataSet1, tableSchema);
+                    } else {
+                        if (log.isErrorEnabled()) {
+                            log.error("Failed to describe tables for schema [" + schema + "], table [" + tableName + "], dataSource [" + dataSourceId + "] ");
+                        }
+                        final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                            .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
+                            .url(request.getRequestURI())
+                            .buildError();
+                        throw new InternalServerErrorException(Response.serverError().entity(status).build());
+                    }
+
+
+               // });
+            }
+            else {
+                //no acceess
                 final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
-                    .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
+                    .message(getMessage("catalog.datasource.forbidden"))
                     .url(request.getRequestURI())
                     .buildError();
                 throw new InternalServerErrorException(Response.serverError().entity(status).build());
             }
-
-
-        });
+        }catch (Exception e){
+            final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
+                .url(request.getRequestURI())
+                .buildError();
+            throw new InternalServerErrorException(Response.serverError().entity(status).build());
+        }
 
         return Response.ok(dataSetWithTableSchema).build();
     }
