@@ -28,7 +28,7 @@ import {SlaListComponent} from "../../sla/list/sla-list.componment";
 import {SlaDetailsComponent} from "../../sla/details/sla-details.componment";
 import {Observable} from "rxjs/Observable";
 import AccessConstants from "../../../constants/AccessConstants";
-
+import {AccessDeniedComponent} from "../../../common/access-denied/access-denied.component";
 const resolveFeed = {
     token: 'feed',
     deps: [StateService, DefineFeedService],
@@ -121,6 +121,18 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
         }
     },
+    {
+        name: FEED_DEFINITION_SECTION_STATE_NAME+".access-denied",
+        url: "/:feedId/access-denied",
+        params:{feedId:null, attemptedState:null},
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: resolveParams
+            }],
+        component: AccessDeniedComponent
+    },
 
     {
         name: FEED_DEFINITION_SECTION_STATE_NAME+".feed-permissions",
@@ -147,7 +159,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         url: "/:feedId/wrangler",
         component: DefineFeedStepWranglerComponent,
         data:{
-            permissions:AccessConstants.UI_STATES.FEED_STEP_WRANGLER.permissions
+            permissions:AccessConstants.UI_STATES.FEED_STEP_WRANGLER.permissions,
+            accessRedirect:FEED_DEFINITION_SECTION_STATE_NAME+".access-denied"
         }
     },
     {

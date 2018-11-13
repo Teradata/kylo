@@ -164,6 +164,19 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                 return valid;
 
             };
+
+            /**
+             * Find the missing actions required for a given transition
+             * @param transition
+             */
+            findMissingPermissions = (requiredPermissions: string[])=>{
+                let missingPermissions = [];
+                var allowedActions = this.cachedUserAllowedActions[this.DEFAULT_MODULE];
+                    if(requiredPermissions != null) {
+                        missingPermissions  = this.findMissingActions(requiredPermissions, allowedActions)
+                    }
+                    return missingPermissions
+             };
             /**
              * Gets the current user from the server
              * @returns {*}
@@ -262,6 +275,15 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                         });
                 }
                 return this.AVAILABLE_ACTIONS_;
+            }
+            findMissingActions= (names: any, actions: any)=>{
+                if (names == "" || names == null || names == undefined || (angular.isArray(names) && names.length == 0)) {
+                    return [];
+                }
+                var missing = _.filter(names,(name: any)=>{
+                    return !this.hasAction(name.trim(), actions);
+                });
+                return missing;
             }
             /**
              * Determines if any name in array of names is included in the allowed actions it will return true, otherwise false

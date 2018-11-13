@@ -614,7 +614,11 @@ class Route {
                 else {
                     if (!accessControlService.hasAccess(trans)) {
                         if (trans.to().name != 'access-denied') {
-                            return $state.target("access-denied", {attemptedState: trans.to()});
+                            let redirect = "access-denied";
+                            if(trans.to().data) {
+                                redirect = trans.to().data.accessRedirect != undefined ? trans.to().data.accessRedirect : "access-denied";
+                            }
+                            return $state.target(redirect, {attemptedState: trans.to()});
                         }
                     }
                     else {
