@@ -569,7 +569,8 @@ public class DataSourceController extends AbstractCatalogController {
 
                 TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
 
-                //create the dataset
+                //create the dataset as a service account.  if we get here the user has access to view the data source
+
                 dataSetWithTableSchema = metadataService.commit(() -> {
                     // List tables
 
@@ -614,7 +615,7 @@ public class DataSourceController extends AbstractCatalogController {
                     }
 
 
-                });
+                }, MetadataAccess.SERVICE);
             }
         }catch (Exception e){
             final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
