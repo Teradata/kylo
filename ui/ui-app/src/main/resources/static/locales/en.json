@@ -1614,7 +1614,7 @@
         "SETTINGS":"Settings",
         "DATA_SETS":"Data sets",
         "SCHEMA_PARSE_SETTINGS":"Schema Parse Settings",
-        "DRAG_DROP_HERE":"Drag and drop here",
+        "DRAG_DROP_HERE":"Drag and drop here"
     },
     "SHARED":{
         "APPLY_DOMAIN_TYPE":{
