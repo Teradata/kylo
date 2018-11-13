@@ -35,6 +35,7 @@ const devServer = {
             '/login',
             '/logout',
             '/proxy',
+            '/js/plugin',
             '/api-docs'
         ],
         target: 'http://localhost:8400',
