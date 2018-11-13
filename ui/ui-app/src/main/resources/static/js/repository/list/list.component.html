@@ -1,7 +1,7 @@
 <div fxLayout="row" class="centered">
     <mat-card fxFlex="65%">
       <div fxLayout="row" fxLayoutAlign="center">
-        <span style="padding-top: 20px; padding-right: 20px;" class="card-title">{{"REPOSITORY.dialog.list.search" | translate}}</span>
+        <span style="padding-top: 20px; padding-right: 20px;" class="card-title">{{"REPOSITORY.DIALOG.LIST.SEARCH" | translate}}</span>
         <mat-form-field style="padding-top: 10px;" class="search-form" fxFlex="78%">
           <input placeholder="{{'view.main.filter'| translate}}" matInput (keyup)="search($event.target.value)" />
         </mat-form-field>
@@ -9,7 +9,7 @@
       <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
       <div *ngIf="!loading && templates.length === 0" fxLayout="column" fxLayoutAlign="center center">
         <br>
-        <span>{{"REPOSITORY.dialog.list.no-repository-available" | translate}}</span>
+        <span>{{"REPOSITORY.DIALOG.LIST.NO_REPOSITORY_AVALAIBLE" | translate}}</span>
         <br>
         <span *ngIf="errorMsg !== ''" class="tc-red-700">{{errorMsg}}<br></span>
       </div>
@@ -29,7 +29,7 @@
         </ng-container>
 
         <ng-container matColumnDef="repositoryName">
-          <mat-header-cell *matHeaderCellDef mat-sort-header> {{"REPOSITORY.dialog.list.repository" | translate}} </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header> {{"REPOSITORY.DIALOG.LIST.REPOSITORY" | translate}} </mat-header-cell>
           <mat-cell *matCellDef="let element"> {{element.repository.name}} </mat-cell>
         </ng-container>
 
@@ -39,17 +39,17 @@
 
             <button mat-button color="primary" (click)="downloadTemplate(element)">
               <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">{{"REPOSITORY.dialog.list.download" | translate}}</span>
+              <span class="md-body-2">{{"REPOSITORY.DIALOG.LIST.DOWNLOAD" | translate}}</span>
             </button>
 
             <button mat-button *ngIf="!element.installed" color="primary" (click)="importTemplate(element)">
               <ng-md-icon icon="file-import" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">{{"REPOSITORY.dialog.list.import" | translate}}</span>
+              <span class="md-body-2">{{"REPOSITORY.DIALOG.LIST.IMPORT" | translate}}</span>
             </button>
 
             <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
               <ng-md-icon icon="done" size="20" style="fill:#F08C38"></ng-md-icon>
-              <span class="md-body-2">{{"REPOSITORY.dialog.list.import" | translate}}</span>
+              <span class="md-body-2">{{"REPOSITORY.DIALOG.LIST.IMPORT" | translate}}</span>
             </button>
 
             <button mat-button color="primary" *ngIf="element.installed && element.updateAvailable" (click)="importTemplate(element)">

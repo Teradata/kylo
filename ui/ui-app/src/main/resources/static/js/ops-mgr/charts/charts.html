@@ -20,7 +20,7 @@
 <div flex fxLayout="row">
     <mat-card fxFlex="80">
         <mat-card-title style="white-space:nowrap" class="card-title">
-            {{"OPS-MGR.charts.pivot-title"| translate}}
+            {{"OPS_MGR.CHARTS.PIVOT_TITLE"| translate}}
         </mat-card-title>
         <mat-card-content>
             <div *ngIf="loading" style="width:100%">
@@ -34,7 +34,7 @@
     </mat-card>
     <mat-card fxFlex="20" style="height: 100%;" class="filter-chart">
         <mat-card-title style="white-space:nowrap" class="card-title">
-            {{"OPS-MGR.charts.filter-title"| translate}}
+            {{"OPS_MGR.CHARTS.FILTER_TITLE"| translate}}
         </mat-card-title>
         <mat-card-content>
             <div *ngIf="message != ''" [ngClass]="{'error':isWarning}" style="padding-left:25px;">
@@ -57,7 +57,7 @@
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
                         <mat-form-field>
-                            <input matInput [matDatepicker]="startPicker" placeholder="{{'OPS-MGR.charts.start-date-placeholder'| translate}}">
+                            <input matInput [matDatepicker]="startPicker" placeholder="{{'OPS_MGR.CHARTS.START_DATE_PLACEHOLDER'| translate}}">
                             <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
                             <mat-datepicker #startPicker></mat-datepicker>
                         </mat-form-field>
@@ -66,7 +66,7 @@
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
                         <mat-form-field>
-                            <input matInput [matDatepicker]="endPicker" placeholder="{{'OPS-MGR.charts.end-date-placeholder'| translate}}">
+                            <input matInput [matDatepicker]="endPicker" placeholder="{{'OPS_MGR.CHARTS.END_DATE_PLACEHOLDER'| translate}}">
                             <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
                             <mat-datepicker #endPicker></mat-datepicker>
                         </mat-form-field>

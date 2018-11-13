@@ -20,9 +20,9 @@
 <div flex fxLayout="row" fxLayout.sm="column" fxLayout.xs="column">
     <mat-card fxFlex="100" fxFlex.gt-sm="80" fxFlexOrder="1" fxFlexOrder.xs="2" fxFlexOrder.sm="2">
         <mat-card-title style="white-space:nowrap" class="card-toolbar2 card-title">
-            <div>{{"OPS-MGR.scheduler.tasks"| translate}}</div>
+            <div>{{"OPS_MGR.SCHEDULER.TASKS"| translate}}</div>
             <div fxLayout="row" class="layout-padding-top-bottom" fxLayoutAlign="space-between-center" fxFlex>
-                <div class="card-sub-header" fxFlex>{{"scheduler.internal-tasks"| translate}}</div>
+                <div class="card-sub-header" fxFlex>{{"OPS_MGR.SCHEDULER.INTERNAL_TASKS"| translate}}</div>
             </div>
         </mat-card-title>
         <mat-card-body>
@@ -46,21 +46,21 @@
                                 {{job.nextFireTimeString}}
                             </span>
                             <span class="column-title column-title-bottom">
-                                {{"OPS-MGR.scheduler.next-fire"| translate}}
+                                {{"OPS_MGR.SCHEDULER.NEXT_FIRE"| translate}}
                             </span>
                         </div>
                         <div fxFlex="15" fxLayout="column" class="item-column md-list-item-text " hide show-gt-md>
                             <span class="item-title">
                                 {{job.cronExpression}}</span>
                             <span class="column-title column-title-bottom">
-                                {{"OPS-MGR.scheduler.cron-expression"| translate}}
+                                {{"OPS_MGR.SCHEDULER.CRON_EXPRESSION"| translate}}
                             </span>
                         </div>
                         <div fxFlex="30" fxFlex.md="45" fxFlex.sm="45" fxFlex.xs="45" fxLayout="row" class="item-column md-list-item-text " *ngIf="allowAdmin">
                             <button mat-button class="border-btn" *ngIf="job.state=='RUNNING' || job.state =='SCHEDULED'" [disabled]="job.state =='PAUSED' || job.state == 'RUNNING' || schedulerDetails.status == 'PAUSED' "
-                                (click)="pauseJob(job)">{{"OPS-MGR.view.main.pause"| translate}}</button>
+                                (click)="pauseJob(job)">{{"OPS_MGR.view.main.pause"| translate}}</button>
                             <button mat-button class="border-btn" *ngIf="job.state=='PAUSED'" [disabled]="job.state =='RUNNING' || schedulerDetails.status == 'PAUSED'"
-                                (click)="resumeJob(job)">{{"OPS-MGR.view.main.resume"| translate}}</button>
+                                (click)="resumeJob(job)">{{"OPS_MGR.view.main.resume"| translate}}</button>
                             <button mat-button class="border-btn" [disabled]="job.state !='SCHEDULED' || schedulerDetails.status == 'PAUSED'" (click)="triggerJob(job)">FIRE NOW </button>
                         </div>
 
@@ -69,7 +69,7 @@
                     <mat-list-item *ngIf="group.jobs.length ==0">
                         <div fxFlex="100" fxLayout="column" class="item-column md-list-item-text ">
                             <span class="item-title">
-                                {{"OPS-MGR.scheduler.scheduler.no-tasks"| translate}}
+                                {{"OPS_MGR.SCHEDULER.NO_TASKS"| translate}}
                             </span>
                         </div>
                     </mat-list-item>
@@ -79,15 +79,15 @@
     </mat-card>
     <mat-card fxFlex.gt-sm="20" fxFlexOrder="2" fxFlexOrder.xs="1" fxFlexOrder.sm="1">
         <mat-card-title style="white-space:nowrap" class="card-title">
-            {{"OPS-MGR.scheduler.details"| translate}}
+            {{"OPS_MGR.SCHEDULER.DETAILS"| translate}}
         </mat-card-title>
         <mat-card-content flex fxLayout="column">
             <div fxLayoutAlign="center center" style="width:100%" *ngIf="allowAdmin">
                 <button mat-button class="border-btn" style="width:150px;max-width:150px;" *ngIf="schedulerDetails.status == 'RUNNING'" (click)="pauseScheduler()">
-                    {{"OPS-MGR.scheduler.pause-scheduler"| translate}}
+                    {{"OPS_MGR.SCHEDULER.PAUSE_SCHEDULER"| translate}}
                 </button>
                 <button mat-button class="border-btn" style="width:150px;max-width:150px;" *ngIf="schedulerDetails.status == 'PAUSED'" (click)="resumeScheduler()">
-                    {{"OPS-MGR.scheduler.resume-scheduler"| translate}}
+                    {{"OPS_MGR.SCHEDULER.RESUME_SCHEDULER"| translate}}
                 </button>
             </div>
 
@@ -112,7 +112,7 @@
                             {{schedulerDetails.upTime}}
                         </span>
                         <span class="column-title column-title-bottom">
-                            {{"OPS-MGR.scheduler.up-time"| translate}}
+                            {{"OPS_MGR.SCHEDULER.UP_TIME"| translate}}
                         </span>
                     </div>
                 </mat-list-item>
@@ -123,7 +123,7 @@
                             {{schedulerDetails.startTime}}
                         </span>
                         <span class="column-title column-title-bottom">
-                            {{"OPS-MGR.scheduler.start-time"| translate}}
+                            {{"OPS_MGR.SCHEDULER.START_TIME"| translate}}
                         </span>
                     </div>
                 </mat-list-item>
@@ -134,7 +134,7 @@
                             {{schedulerDetails.jobsExecuted}}
                         </span>
                         <span class="column-title column-title-bottom">
-                            {{"OPS-MGR.scheduler.tasks-executed"| translate}}
+                            {{"OPS_MGR.SCHEDULER.TASKS_EXECUTED"| translate}}
                         </span>
                     </div>
                 </mat-list-item>

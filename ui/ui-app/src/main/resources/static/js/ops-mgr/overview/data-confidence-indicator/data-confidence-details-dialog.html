@@ -17,13 +17,13 @@
   limitations under the License.
   #L%
   -->
-<div mat-dialog attr.aria-label="{{'OPS-MGR.overview.service-details'| translate}}">
+<div mat-dialog attr.aria-label="{{'OPS_MGR.OVERVIEW.SERVICE_DETAILS'| translate}}">
   <mat-toolbar style="color: rgb(255,255,255);">
     <div class="md-toolbar-tools" style="background-color: rgb(52,131,186);">
       <h4>
-        <ng-md-icon size="24" md-icon icon="settings" attr.aria-label="{{'OPS-MGR.overview.data-confidence-details-dialog.data-confidence-details'| translate}}" ></ng-md-icon>
+        <ng-md-icon size="24" md-icon icon="settings" attr.aria-label="{{'OPS_MGR.OVERVIEW.DATA_CONFIDENCE_DETAILS_DIALOG.DATA_CONFIDENCE_DETAILS'| translate}}" ></ng-md-icon>
         <!-- apply pipe titleCase on status -->
-        <span>{{"OPS-MGR.overview.data-confidence"| translate}} - {{jobs.length}} {{status}} </span>
+        <span>{{"OPS_MGR.OVERVIEW.data-confidence"| translate}} - {{jobs.length}} {{status}} </span>
       </h4>
       <span flex></span>
     </div>
@@ -34,13 +34,13 @@
         <div style="margin-bottom: 16px;" class="md-list-item-text" layout="column">
           <a href (click)="gotoJobDetails(job.executionId)">{{ job.jobName }}</a>
           <div style="line-height: 1.05; font-size: 13px;" style="white-space: pre-line">{{job.validationMessage}}</div>
-          <div style="line-height: 1.05; font-size: 12px;">{{"OPS-MGR.overview.data-confidence-details-dialog.end-time"| translate}} {{ job.endTime | date:'MM/dd/yyyy HH:mm:ss a' }}</div>
+          <div style="line-height: 1.05; font-size: 12px;">{{"OPS_MGR.OVERVIEW.DATA_CONFIDENCE_DETAILS_DIALOG.END_TIME"| translate}} {{ job.endTime | date:'MM/dd/yyyy HH:mm:ss a' }}</div>
         </div>
         <mat-divider ></mat-divider>
       </mat-list-item>
       <mat-list-item style="height: auto;" class="md-3-line" *ngIf="jobs.length == 0">
         <div class="md-list-item-text" layout="column">
-          {{"OPS-MGR.overview.data-confidence-details-dialog.no-jobs-found"| translate}}
+          {{"OPS_MGR.OVERVIEW.DATA_CONFIDENCE_DETAILS_DIALOG.NO_JOBS_FOUND"| translate}}
         </div>
       </mat-list-item>
     </mat-list>

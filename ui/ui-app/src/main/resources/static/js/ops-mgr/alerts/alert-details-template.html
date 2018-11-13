@@ -30,25 +30,25 @@
                             <span class="item-title">
                                 {{alertData.level}}
                             </span>
-                            <span class="column-title column-title-bottom">{{"OPS-MGR.alerts.details-template.level" | translate}}</span>
+                            <span class="column-title column-title-bottom">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.LEVEL" | translate}}</span>
                         </div>
 
                         <div flex="50" layout="column">
                             <span class="item-title">
                                 {{alertData.type}}
                             </span>
-                            <span class="column-title column-title-bottom">{{"OPS-MGR.alerts.details-template.type" | translate}}</span>
+                            <span class="column-title column-title-bottom">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.TYPE" | translate}}</span>
                         </div>
 
                         <div flex="30" layout="column">
                             <span class="item-title">
                                 {{alertData.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
                             </span>
-                            <span class="column-title column-title-bottom">{{"OPS-MGR.alerts.details-template.start-time" | translate}}</span>
+                            <span class="column-title column-title-bottom">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.START_TIME" | translate}}</span>
                         </div>
                     </div>
 
-                    <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS-MGR.alerts.details-template.description" | translate}}</div>
+                    <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.DESCRIPTION" | translate}}</div>
                     <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;padding-right:16px;">
                         {{alertData.description}}
                     </div>
@@ -57,13 +57,13 @@
                         <mat-divider></mat-divider>
                         <mat-list-item>
                             <div flex="60" class="item-column md-list-item-text accent-color-3">
-                                {{"OPS-MGR.alerts.details-template.comment" | translate}}
+                                {{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.COMMENT" | translate}}
                             </div>
                             <div flex="15" class="item-column md-list-item-text accent-color-3">
-                                {{"OPS-MGR.alerts.details-template.user" | translate}}
+                                {{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.USER" | translate}}
                             </div>
                             <div flex="25" class="item-column md-list-item-text accent-color-3">
-                                {{"OPS-MGR.alerts.details-template.create-time" | translate}}
+                                {{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.CREATE_TIME" | translate}}
                             </div>
                             <mat-divider></mat-divider>
                         </mat-list-item>
@@ -98,15 +98,15 @@
 
     <mat-card flex="30">
         <mat-card-title class="job-details-header" flex>
-            <div style="white-space:nowrap" class="card-title">{{"OPS-MGR.alerts.details-template.alert-summary" | translate}}</div>
+            <div style="white-space:nowrap" class="card-title">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.ALERT_SUMMARY" | translate}}</div>
             <span flex></span>
         </mat-card-title>
         <mat-card-content class="job-details-right-body">
             <div flex md-scroll-y *ngIf="!loading">
                 <div class="card-content">
-                    <button *ngIf="alertData.actionable && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="showEventDialog($event)">{{"OPS-MGR.alerts.details-template.update" | translate}}</button>
-                    <button *ngIf="alertData.cleared == false && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="hideAlert($event)">{{"OPS-MGR.alerts.details-template.hide" | translate}}</button>
-                    <button *ngIf="alertData.cleared == true && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="showAlert($event)">{{"OPS-MGR.alerts.details-template.show" | translate}}</button>
+                    <button *ngIf="alertData.actionable && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="showEventDialog($event)">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.UPDATE" | translate}}</button>
+                    <button *ngIf="alertData.cleared == false && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="hideAlert($event)">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.HIDE" | translate}}</button>
+                    <button *ngIf="alertData.cleared == true && allowAdmin" class="border-btn action-btn md-button md-kylo-theme md-ink-ripple" (click)="showAlert($event)">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.SHOW" | translate}}</button>
                 </div>
 
                 <mat-list flex layout-fill layout="column" class="list-item-table">
@@ -116,7 +116,7 @@
                                 <ng-md-icon icon="{{alertData.stateIcon}}" size="20"></ng-md-icon>
                                 {{alertData.stateText}}
                             </span>
-                            <span class="column-title column-title-bottom">{{"OPS-MGR.alerts.details-template.state" | translate}}</span>
+                            <span class="column-title column-title-bottom">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.STATE" | translate}}</span>
                         </div>
                     </mat-list-item>
                     <mat-divider></mat-divider>
@@ -125,14 +125,14 @@
                             <span class="item-title">
                                 <div kylo-timer [startTime]="alertData.createdTimeSince"></div>
                             </span>
-                            <span class="column-title column-title-bottom">{{"OPS-MGR.alerts.details-template.since" | translate}}</span>
+                            <span class="column-title column-title-bottom">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.SINCE" | translate}}</span>
                         </div>
                     </mat-list-item>
                 </mat-list>
                 <mat-divider></mat-divider>
                 <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" *ngIf="alertData.links.length >0" style="padding-left:25px">
 
-                    <div class="md-subhead layout-padding-bottom">{{"OPS-MGR.alerts.details-template.links" | translate}}</div>
+                    <div class="md-subhead layout-padding-bottom">{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.LINKS" | translate}}</div>
                     <div *ngFor="let link of alertData.links" layout="column" class="layout-padding-bottom">
                         <button class="md-primary md-link md-button md-kylo-theme md-ink-ripple layout-align-center-stretch" uiSref="{{link.value}}">{{link.label}}</button>
                     </div>

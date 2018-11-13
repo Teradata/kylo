@@ -28,7 +28,7 @@
             <div fxLayout="column">
               <div fxLayout="row" fxLayoutAlign="space-between start" layout-fill>
                 <span class="card-title right-card-title-text">{{timeFrameOptions[timeFrameOptionIndex].label}}</span>
-                <span style="margin-top: 5px;">{{"OPS-MGR.feeds.feeds-stats-charts.date-range"| translate}} {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+                <span style="margin-top: 5px;">{{"OPS_MGR.FEEDS.FEEDS_STATS_CHARTS.DATE_RANGE"| translate}} {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
               </div>
             </div>
             <div flex>
@@ -38,17 +38,17 @@
                 <span class="hint">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
               </div>
             </div>
-            <label *ngIf="isZoomed" class="hint">{{"OPS-MGR.feeds.feeds-stats-charts.zoom-level-refresh"| translate}} '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
+            <label *ngIf="isZoomed" class="hint">{{"OPS_MGR.FEEDS.FEEDS_STATS_CHARTS.ZOOM_LEVEL_REFRESH"| translate}} '{{timeFrameOptions[timeFrameOptionIndex].label}}'</label>
           </div>
           <span flex style="padding-left: 40px"></span>
           <div fxLayout="column">
             <div fxLayout="row">
               <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()">
-                <button mat-button>{{"OPS-MGR.feeds.feeds-stats-charts.refresh" | translate}}</button>
+                <button mat-button>{{"OPS_MGR.FEEDS.FEEDS_STATS_CHARTS.REFRESH" | translate}}</button>
               </div>
             </div>
             <mat-slide-toggle [color]="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
-              {{"OPS-MGR.feeds.feeds-stats-charts.auto-refresh" | translate}}
+              {{"OPS_MGR.FEEDS.FEEDS_STATS_CHARTS.AUTO_REFRESH" | translate}}
             </mat-slide-toggle>
           </div>
         </div>
@@ -75,7 +75,7 @@
               <div fxLayout="row">
                 <mat-slide-toggle class="md-primary" md-no-ink [aria-label]="'Auto Refresh'" [(ngModel)]="feedProcessorErrors.autoRefresh"
                            (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
-                  {{"OPS-MGR.feeds.feeds-stats-charts.auto-refresh" | translate}}: {{feedProcessorErrors.autoRefreshMessage}}
+                  {{"OPS_MGR.FEEDS.FEEDS_STATS_CHARTS.AUTO_REFRESH" | translate}}: {{feedProcessorErrors.autoRefreshMessage}}
                 </mat-slide-toggle>
                 <button mat-button class="md-icon-button" *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
                   <mat-icon>refresh</mat-icon>

@@ -31,6 +31,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatIconModule} from '@angular/material/icon';
 import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
+import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({
     declarations: [
@@ -74,6 +75,7 @@ import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.d
         MatNativeDateModule,
         MatButtonModule,
         MatSnackBarModule,
+        TranslateModule.forChild(),
         UIRouterModule.forChild({states: catalogStates})
     ]
 })

@@ -43,30 +43,30 @@
               <span class="item-title">
                 {{assessment.time | date:'MMM d, yyyy HH:mm:ss'}}
               </span>
-              <span class="column-title column-title-bottom">{{"OPS-MGR.sla.assessment.created"| translate}}</span>
+              <span class="column-title column-title-bottom">{{"OPS_MGR.SLA.ASSESSMENT.CREATED"| translate}}</span>
             </div>
           </div>
-          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS-MGR.sla.assessment.description"| translate}</div>
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.SLA.ASSESSMENT.DESCRIPTION"| translate}</div>
           <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
             {{assessment.agreement.description  | truncate: 500}}
           </div>
 
-          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS-MGR.sla.assessment"| translate}}</div>
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.SLA.ASSESSMENT.TITLE"| translate}}</div>
           <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
             {{assessment.message  | truncate: 500}}
           </div>
         </div>
         <div *ngIf="assessment.obligationAssessments != null && assessment.obligationAssessments.length >0" class="layout-padding-bottom layout-padding-left-16" >
-          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS-MGR.sla.assessment.assessment-details"| translate}}</div>
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.SLA.ASSESSMENT.ASSESSMENT_DETAILS"| translate}}</div>
           <div *ngFor="let obligation of assessment.obligationAssessments; let index = index;">
-            <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}. {{"OPS-MGR.sla.assessment.obligation-message"| translate}}</div>
+            <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}. {{"OPS_MGR.SLA.ASSESSMENT.OBLIGATION_MESSAGE"| translate}}</div>
             <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
               {{obligation.message | truncate: 500}}
             </div>
 
             <div *ngIf="obligation.metricAssessments != null && obligation.metricAssessments.length >0">
               <div *ngFor="let metric of obligation.metricAssessments ">
-                <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}.{{"OPS-MGR.sla.assessment.metric-message"| translate}}</div>
+                <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}.{{"OPS_MGR.SLA.ASSESSMENT.METRIC_MESSAGE"| translate}}</div>
                 <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
                   {{metric.message | truncate: 500}}
                 </div>
@@ -83,7 +83,7 @@
       <div *ngIf="loading == true" style="min-height:300px">
         <div layout="column" layout-align="center center" flex>
         <span class="md-subhead">
-          {{"OPS-MGR.sla.assessment.load-sla" | translate}}
+          {{"OPS_MGR.SLA.ASSESSMENT.LOAD_SLA" | translate}}
         </span>
 
         </div>
@@ -102,9 +102,9 @@
 
           <mat-list-item style="padding:0">
             <div layout="column" class="item-column md-list-item-text">
-              <span class="item-title" *ngIf="agreementNotFound" >{{"OPS-MGR.sla.assessment.agreement-not-found"| translate}}
+              <span class="item-title" *ngIf="agreementNotFound" >{{"OPS_MGR.SLA.ASSESSMENT.AGREEMENT_NOT_FOUND"| translate}}
               </span>
-              <button class="md-primary md-link md-button ng-scope md-kylo-theme md-ink-ripple" *ngIf="!agreementNotFound" (click)="serviceLevelAgreement()">{{"OPS-MGR.sla.assessment.button"| translate}}</button>
+              <button class="md-primary md-link md-button ng-scope md-kylo-theme md-ink-ripple" *ngIf="!agreementNotFound" (click)="serviceLevelAgreement()">{{"OPS_MGR.SLA.ASSESSMENT.BUTTON"| translate}}</button>
             </div>
           </mat-list-item>
 
@@ -117,13 +117,13 @@
 <div flex layout="column" *ngIf="assessmentNotFound == true && loading == false">
   <mat-card flex>
     <mat-card-title  flex layout>
-      <div style="white-space:nowrap" class="card-title" flex>{{"OPS-MGR.sla.assessment.sla-title"| translate}}</div>
+      <div style="white-space:nowrap" class="card-title" flex>{{"OPS_MGR.SLA.ASSESSMENT.SLA_TITLE"| translate}}</div>
     </mat-card-title>
     <mat-card-content>
       <div style="min-height:300px">
         <div layout="column" layout-align="center center" flex>
             <span class="md-subhead">
-              {{"OPS-MGR.sla.assessment.sla-not-found"| translate}}
+              {{"OPS_MGR.SLA.ASSESSMENT.SLA_NOT_FOUND"| translate}}
             </span>
         </div>
       </div>

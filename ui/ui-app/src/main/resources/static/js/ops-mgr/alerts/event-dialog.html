@@ -17,19 +17,19 @@
   limitations under the License.
   #L%
   -->
-<div mat-dialog attr.aria-label="{{'OPS-MGR.alerts.event-dialog' | translate}}">
+<div mat-dialog attr.aria-label="{{'OPS_MGR.ALERTS.EVENT_DIALOG.TITLE' | translate}}">
     <mat-dialog-content layout="column" layout-padding>
-        <h4 class="md-title" style="margin-bottom:0px;">{{"OPS-MGR.alerts.event-dialog.update-alerts"| translate}}</h4>
+        <h4 class="md-title" style="margin-bottom:0px;">{{"OPS_MGR.ALERTS.EVENT_DIALOG.UPDATE_ALERTS"| translate}}</h4>
         <form name="actionUpdateForm" layout="column">
             <mat-form-field layout="row">
                 <mat-select [(ngModel)]="state" placeholder="State" name="state">
-                    <mat-option [value]="'UNHANDLED'">{{"OPS-MGR.alerts.event-dialog.unhandled"| translate}}</mat-option>
-                    <mat-option [value]="'IN_PROGRESS'">{{"OPS-MGR.alerts.event-dialog.in-progress"| translate}}</mat-option>
-                    <mat-option [value]="'HANDLED'">{{"OPS-MGR.alerts.event-dialog.handled"| translate}}</mat-option>
+                    <mat-option [value]="'UNHANDLED'">{{"OPS_MGR.ALERTS.EVENT_DIALOG.UNHANDLED"| translate}}</mat-option>
+                    <mat-option [value]="'IN_PROGRESS'">{{"OPS_MGR.ALERTS.EVENT_DIALOG.IN_PROGRESS"| translate}}</mat-option>
+                    <mat-option [value]="'HANDLED'">{{"OPS_MGR.ALERTS.EVENT_DIALOG.HANDLED"| translate}}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field layout="row">
-                <mat-label>{{"OPS-MGR.alerts.details-template.comment"| translate}}</mat-label>
+                <mat-label>{{"OPS_MGR.ALERTS.DETAILS_TEMPLATE.COMMENT"| translate}}</mat-label>
                 <input matInput [(ngModel)]="description" name="description" size="50" flex>
             </mat-form-field>
         </form>

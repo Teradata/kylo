@@ -1,125 +1,174 @@
 {
     "REPOSITORY":{
-        "dialog.template-publish.successful-publish":"Successfully published {{value}} to repository.",
-        "dialog.template-publish.cannot-publish":"Cannot publish {{value}} : {{error}}",
-        "dialog.template-publish.overwrite":"Overwrite",
-        "dialog.template-publish.publish":"Publish",
-        "dialog.template-publish.select-repository":"Select Repository",
-        "dialog.list.search": "Search Templates",
-        "dialog.list.no-repository-available":"No Templates or Feeds available in repository.",
-        "dialog.list.repository":"Repository",
-        "dialog.list.download":"Download",
-        "dialog.list.import":"Import",
-        "dialog.list.update":"Update"
+        "DIALOG": {
+            "TEMPLATE_PUBLISH": {
+                "SUCCESSFUL_PUBLISH":"Successfully published {{value}} to repository.",
+                "CANNOT_PUBLISH":"Cannot publish {{value}} : {{error}}",
+                "OVERWRITE":"Overwrite",
+                "PUBLISH":"Publish",
+                "SELECT_REPOSITORY":"Select Repository"
+            },
+            "LIST": {
+                "SEARCH": "Search Templates",
+                "NO_REPOSITORY_AVALAIBLE":"No Templates or Feeds available in repository.",
+                "REPOSITORY":"Repository",
+                "DOWNLOAD":"Download",
+                "IMPORT":"Import"
+            }
+        }
     },
     "PLUGIN": {
-        "template-table-option.data-transformation.data-transform-properties.data-transformations": "Data Transformations",
-        "template-table-option.data-transformation.data-transform-properties.query": "Query",
-        "template-table-option.data-transformation.data-transform-properties.edit-query": "Edit Query...",
-        "template-table-option.data-transformation.data-transform-properties.edit-transformations": "Edit Transformations..."
+        "TEMPLATE_TABLE_OPTION": {
+            "DATA_TRANSFORMATION": {
+                "DATA_TRANSFORM_PROPERTIES": {
+                    "DATA_TRANSFORMATIONS": "Data Transformations",
+                    "QUERY": "Query",
+                    "EDIT_QUERY": "Edit Query...",
+                    "EDIT_TRANSFORMATIONS": "Edit Transformations..."
+                }
+            }
+        }
     },
-    "OPS-MGR": {
-        "alerts.details-template.level": "Level",
-        "alerts.details-template.type": "Type",
-        "alerts.details-template.start-time": "Start Time",
-        "alerts.details-template.description": "Description",
-        "alerts.details-template.comment": "Comment",
-        "alerts.details-template.user": "User",
-        "alerts.details-template.create-time": "Create Time",
-        "alerts.details-template.alert-summary": "Alert Summary",
-        "alerts.details-template.state": "State",
-        "alerts.details-template.since": "Since",
-        "alerts.details-template.links": "Links",
-        "alerts.details-template.update": "UPDATE",
-        "alerts.details-template.hide": "HIDE",
-        "alerts.details-template.show": "SHOW",
-        "alerts.alert-details": "Alert Details",
+    "OPS_MGR": {
+        "ALERTS": {
+            "ALERT_DETAILS": "Alert Details",
+            
+            "DETAILS_TEMPLATE": {
+                "LEVEL": "Level",
+                "TYPE": "Type",
+                "START_TIME": "Start Time",
+                "DESCRIPTION": "Description",
+                "COMMENT": "Comment",
+                "USER": "User",
+                "CREATE_TIME": "Create Time",
+                "ALERT_SUMMARY": "Alert Summary",
+                "STATE": "State",
+                "SINCE": "Since",
+                "LINKS": "Links",
+                "UPDATE": "UPDATE",
+                "HIDE": "HIDE",
+                "SHOW": "SHOW"
+            },
+            
+            "ALERTS_TABLE_TEMPLATE": {
+                "ALERT_TYPE": "Alert Type",
+                "ALERT_STATE": "Alert State",
+                "ACTIONS": "Actions"
+            },
+            
+            "EVENT_DIALOG": {
+                "TITLE": "Event dialog",
+                "UPDATE_ALERTS": "Update Alert Details",
+                "UNHANDLED":"Unhandled",
+                "IN_PROGRESS":"In Progress",
+                "HANDLED":"Handled"
+            }
+            
+        },
         
-        "alerts.alerts-table-template.alert-type": "Alert Type",
-        "alerts.alerts-table-template.alert-state": "Alert State",
-        "alerts.alerts-table-template.actions": "Actions",
-        "alerts.event-dialog": "Event dialog",
-        "alerts.event-dialog.update-alerts": "Update Alert Details",
-        "alerts.event-dialog.unhandled":"Unhandled",
-        "alerts.event-dialog.in-progress":"In Progress",
-        "alerts.event-dialog.handled":"Handled",
+        "SLA": {
+            "ASSESSMENT": {
+                "LOAD_SLA":"Loading Service Level Assessment",
+                "LINKS": "Links",
+                "AGREEMENT_NOT_FOUND": "Service Level Agreement not found",
+                "BUTTON": "Service Level Agreement",
+                "SLA_TITLE": "Service Level Assessment",
+                "SLA_NOT_FOUND": "Unable to find the service level  This assessment either doesn't exist or you do not have access to view it.",
+                "DESCRIPTION": "Service Level Agreement Description",
+                "CREATED": "Created",
+                "TITLE": "Assessment",
+                "ASSESSMENT_DETAILS": "Assessment Details",
+                "OBLIGATION_MESSAGE": "Obligation Assessment Message",
+                "METRIC_MESSAGE": "Metric Assessment Message"
+            }
+        },
 
-        "sla.assessment.load-sla":"Loading Service Level Assessment",
-        "sla.assessment.links": "Links",
-        "sla.assessment.agreement-not-found": "Service Level Agreement not found",
-        "sla.assessment.button": "Service Level Agreement",
-        "sla.assessment.sla-title": "Service Level Assessment",
-        "sla.assessment.sla-not-found": "Unable to find the service level assessment. This assessment either doesn't exist or you do not have access to view it.",
-        "sla.assessment.description": "Service Level Agreement Description",
-        "sla.assessment.created": "Created",
-        "sla.assessment": "Assessment",
-        "sla.assessment.assessment-details": "Assessment Details",
-        "sla.assessment.obligation-message": "Obligation Assessment Message",
-        "sla.assessment.metric-message": "Metric Assessment Message",
+        "SCHEDULER": {
+            "TASKS": "Tasks",
+            "INTERNAL_TASKS": "Internal Kylo tasks",
+            "NEXT_FIRE": "Next Fire",
+            "CRON_EXPRESSION": "Cron Expression",
+            "NO_TASKS": "No tasks exist for this group",
+            "DETAILS": "Scheduler Details",
+            "PAUSE_SCHEDULER": "PAUSE SCHEDULER",
+            "RESUME_SCHEDULER": "RESUME SCHEDULER",
+            "START_TIME": "Start Time",
+            "UP_TIME": "Up Time",
+            "TASKS_EXECUTED": "Tasks Executed"
+        },
 
-        "scheduler.tasks": "Tasks",
-        "scheduler.internal-tasks": "Internal Kylo tasks",
-        "scheduler.next-fire": "Next Fire",
-        "scheduler.cron-expression": "Cron Expression",
-        "scheduler.no-tasks": "No tasks exist for this group",
-        "scheduler.details": "Scheduler Details",
-        "scheduler.pause-scheduler": "PAUSE SCHEDULER",
-        "scheduler.resume-scheduler": "RESUME SCHEDULER",
-        "scheduler.start-time": "Start Time",
-        "scheduler.up-time": "Up Time",
-        "scheduler.tasks-executed": "Tasks Executed",
+        "SERVICE_HEALTH": {
+            "COMPONENT_DETAILS": "Component Details",
+            "LAST_CHECKED": "Last Checked",
+            "SERVICE_DETAILS": "Service Details"
+        },
 
-        "service-health.component-details": "Component Details",
-        "service-health.last-checked": "Last Checked",
-        "service-health.service-details": "Service Details",
+        "CHARTS": {
+            "PIVOT_TITLE": "Pivot Charts",
+            "FILTER_TITLE": "Filter Charts",
+            "START_DATE_PLACEHOLDER": "Start Date",
+            "END_DATE_PLACEHOLDER": "End Date"
+        },
+        
+        "FEEDS": {
+            "FEEDS_STATS_CHARTS": {
+                "AUTO_REFRESH": "Auto Refresh",
+                "REFRESH": "Refresh",
+                "ZOOM_LEVEL_REFRESH": "At custom zoom level, Refresh to reset to",
+                "DATE_RANGE": "Date Range:"
+            },
+                
+            "FEED_STATS_GRID": {
+                "FEED_STATISTICS": "Feed Statistics",
+                "LAST_REFRESHED": "Last Refreshed",
+                "TIME_FRAME": "Time Frame",
+                "FLOWS": "Flows",
+                "FLOW_RATE": "Flow Rate",
+                "SUCCESS_FAILURE_EVENTS": "Success/Failure Events",
+                "FAILED": "failed",
+                "PROCESSOR_DURATION": "Top {{value}} Average Processor Duration",
+                "AVERAGE_FLOW_DURATION": "Average Flow Duration",
+                "FLOW_STARTED_COMPLETED": "Flows Started/Completed",
+                "PROCESSOR_METRIC": "Processor Metric",
+                "RULE_TYPE": "Rule Type"
+            },
+                
+            "ABANDON_ALL_JOBS":{
+                "LABEL": "Abandon all jobs",
+                "FEED_LABEL": "Abandon all jobs for feed",
+                "TEXT": "Abandon all jobs for "
+            },
+               
+            "JOBS_FILTER_HELP_TEMPLATE":{
+                "FILTER_HELP": "Filter Help",
+                "FILTER_SYNTAX": "Filter Syntax",
+                "WILDCARD_HINT": "'%' is used for a wildcard when using the '=~', LIKE, operator",
+                "FIELD_OPERATOR_HINT": "If no field/operator is specified a LIKE filter on the job name will be performed",
+                "FILTER_FIELDS": "Filter Fields",
+                "FILTER_OPERATORS": "Filter Operators",
+                "FILTER_EXAMPLES": "Filter Examples"
+            }
+            
+        },
 
-        "charts.pivot-title": "Pivot Charts",
-        "charts.filter-title": "Filter Charts",
-        "charts.start-date-placeholder": "Start Date",
-        "charts.end-date-placeholder": "End Date",
+        "OVERVIEW": {
+            "JOB_STATUS": "Job Status",
+            "DATA_CONFIDENCE": "Data Confidence",
+            "FEED_STATUS": "Feed Status",
+            "SERVICES": "Services",
+            "SERVICE_DETAILS": "Services Details",
+            "SERVICE_DETAILS_DIALOG": {
+                "SERVICE_STATUS": "Service Status",
+                "NO_SERVICE_FOUND": "No services found matching your criteria",
+                "LAST_CHECKED": "Last checked:"
+            },
 
-        "feeds.feeds-stats-charts.auto-refresh": "Auto Refresh",
-        "feeds.feeds-stats-charts.refresh": "Refresh",
-        "feeds.feeds-stats-charts.zoom-level-refresh": "At custom zoom level, Refresh to reset to",
-        "feeds.feeds-stats-charts.date-range": "Date Range:",
-
-        "feeds.feed-stats-grid.feed-statistics": "Feed Statistics",
-        "feeds.feed-stats-grid.last-refreshed": "Last Refreshed",
-        "feeds.feed-stats-grid.time-frame": "Time Frame",
-        "feeds.feed-stats-grid.flows": "Flows",
-        "feeds.feed-stats-grid.flow-rate": "Flow Rate",
-        "feeds.feed-stats-grid.success-failure-events": "Success/Failure Events",
-        "feeds.feed-stats-grid.failed": "failed",
-        "feeds.feed-stats-grid.processor-duration": "Top {{value}} Average Processor Duration",
-        "feeds.feed-stats-grid.average-flow-duration": "Average Flow Duration",
-        "feeds.feed-stats-grid.flow-started-completed": "Flows Started/Completed",
-        "feeds.feed-stats-grid.processor-metric": "Processor Metric",
-        "feeds.feed-stats-grid.rule-type": "Rule Type",
-
-        "feeds.abandon-all-jobs.label": "Abandon all jobs",
-        "feeds.abandon-all-jobs.feed-label": "Abandon all jobs for feed",
-        "feeds.abandon-all-jobs.text": "Abandon all jobs for ",
-
-        "feeds.jobs-filter-help-template.filter-help": "Filter Help",
-        "feeds.jobs-filter-help-template.filter-syntax": "Filter Syntax",
-        "feeds.jobs-filter-help-template.wildcard-hint": "'%' is used for a wildcard when using the '=~', LIKE, operator",
-        "feeds.jobs-filter-help-template.field-operator-hint": "If no field/operator is specified a LIKE filter on the job name will be performed",
-        "feeds.jobs-filter-help-template.filter-fields": "Filter Fields",
-        "feeds.jobs-filter-help-template.filter-operators": "Filter Operators",
-        "feeds.jobs-filter-help-template.filter-examples": "Filter Examples",
-
-        "overview.job-status": "Job Status",
-        "overview.data-confidence": "Data Confidence",
-        "overview.feed-status": "Feed Status",
-        "overview.services": "Services",
-        "overview.service-details": "Services Details",
-        "overview.services-details-dialog.service-status": "Service Status",
-        "overview.services-details-dialog.no-service-found": "No services found matching your criteria",
-        "overview.services-details-dialog.last-checked": "Last checked:",
-
-        "overview.data-confidence-details-dialog.data-confidence-details": "Data Confidence Details",
-        "overview.data-confidence-details-dialog.no-jobs-found": "No jobs found matching your criteria",
-        "overview.data-confidence-details-dialog.end-time": "End Time:",
+            "DATA_CONFIDENCE_DETAILS_DIALOG": {
+                "DATA_CONFIDENCE_DETAILS": "Data Confidence Details",
+                "NO_JOBS_FOUND": "No jobs found matching your criteria",
+                "END_TIME": "End Time:"
+            }
+        },
 
         "MAIN": {
             "ACCESS_DENIED.NO_ACCESS": "You are unable to access ",

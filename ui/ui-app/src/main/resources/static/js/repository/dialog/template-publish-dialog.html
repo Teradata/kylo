@@ -23,15 +23,15 @@
   </div>
   <div *ngIf="success && !error" fxLayout="row">
     <ng-md-icon icon="check_circle" size="20" style="fill:green; margin-left: 0px; margin-right: 0px;"></ng-md-icon>
-    <div class="md-text">{{"REPOSITORY.dialog.template-publish.successful-publish" | translate: data.templateName}}</div>
+    <div class="md-text">{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.SUCCESSFUL_PUBLISH" | translate: data.templateName}}</div>
   </div>
   <div *ngIf="error" fxLayout="row">
     <ng-md-icon icon="error" size="20" style="fill:red; margin-left: 0px; margin-right: 0px;"></ng-md-icon>
-    <div>{{REPOSITORY.dialog.template-publish.cannot-publish" | translate: {'value': data.templateName, 'error': errorMsg} }}</div>
+    <div>{{REPOSITORY.DIALOG.TEMPLATE_PUBLISH.CANNOT_PUBLISH" | translate: {'value': data.templateName, 'error': errorMsg} }}</div>
   </div>
   <div fxLayout="row" fxLayoutAlign="space-evenly center">
     <mat-form-field>
-      <mat-select [(ngModel)]="selectedRepository" placeholder='{{"REPOSITORY.dialog.template-publish.select-repository" | translate}}'>
+      <mat-select [(ngModel)]="selectedRepository" placeholder='{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.SELECT_REPOSITORY" | translate}}'>
         <ng-container *ngFor="let repo of repositories">
             <span *ngIf="!repo.readOnly">
               <mat-option [value]="repo"><span class="md-text" title="{{repo.name}}">{{repo.name | truncate:30}}</span></mat-option>
@@ -39,14 +39,14 @@
         </ng-container>
       </mat-select>
     </mat-form-field>
-    <mat-checkbox labelPosition="before" [(ngModel)]="overwrite">{{"REPOSITORY.dialog.template-publish.overwrite" | translate}}</mat-checkbox>
+    <mat-checkbox labelPosition="before" [(ngModel)]="overwrite">{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.OVERWRITE" | translate}}</mat-checkbox>
   </div>
   <div fxLayout="row" fxLayoutAlign="end none" fxLayoutGap="10px">
     <button mat-raised-button class="right" aria-label='{{"view.main.cancel" | translate}}' (click)="close()">
-      <span class="md-body-2">{{(success || error )? '{{"view.main.close" | translate}}': '{{REPOSITORY.dialog.template-publish.cancel" | translate}}'}}</span>
+      <span class="md-body-2">{{(success || error )? '{{"view.main.close" | translate}}': '{{view.main.cancel" | translate}}'}}</span>
     </button>
     <button *ngIf="!(success || error )" mat-raised-button [disabled]="!selectedRepository" color="primary" class="right" aria-label="Publish" (click)="publishTemplate()">
-      <span class="md-body-2">{{REPOSITORY.dialog.template-publish.publish" | translate}}</span>
+      <span class="md-body-2">{{REPOSITORY.DIALOG.TEMPLATE_PUBLISH.PUBLISH" | translate}}</span>
     </button>
   </div>
 </div>
