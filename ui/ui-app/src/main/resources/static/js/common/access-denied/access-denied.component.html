@@ -5,7 +5,7 @@
   <p>You don't have access to this page</p>
   <div  *ngIf="missingPermissions.length >0" fxLayoutAlign="center center" fxLayout="column">
     <mat-divider></mat-divider>
-    <p class="tc-grey-500">The following permissions are required for you to access this page</p>
+    <p >The following permissions are required for you to access this page</p>
     <mat-list>
       <mat-list-item *ngFor="let permission of missingPermissions">
         {{permission}}

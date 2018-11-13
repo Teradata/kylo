@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, ViewChild} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {MatStepper} from "@angular/material/stepper";
 import {CatalogService} from "../../catalog/api/services/catalog.service";
@@ -11,6 +11,8 @@ import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Subject} from "rxjs/Subject";
 import {DatasetPreviewStepperService} from "./dataset-preview-stepper.service";
+import {AccessControlService} from "../../../services/AccessControlService";
+import AccessConstants from "../../../constants/AccessConstants";
 
 export class DatasetPreviewStepperSavedEvent{
     constructor(public previews:PreviewDataSet[], public singleSelection:boolean) {}
@@ -90,13 +92,18 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
      */
     singleSelection: boolean;
 
+    accessDenied:boolean;
+
+    requiredPermissions= [AccessConstants.DATASOURCE_ACCESS];
+
     feedDefintionDatasourceState = undefined;
     stateParams = undefined;
 
     constructor(private selectionService: SelectionService,
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,
-                private cd:ChangeDetectorRef) {
+                private cd:ChangeDetectorRef,
+                @Inject("AccessControlService") private accessControlService:AccessControlService) {
 
 
         this.singleSelection = this.selectionService.isSingleSelection();
@@ -215,16 +222,25 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
            this.selectionService.singleSelectionStrategy();
        }
        //get the datasources
-       this.catalogService.getDataSources().subscribe(datasources =>  {
-           datasources.forEach(ds => {
-               this.datasources.push(ds);
-           })
-           //this.datasources = datasources;
-           //manually notify the view to check for changes
-           this.catalogDatasources.search(" ")
-           this.cd.markForCheck();
-           this.loading = false;
-       })
+        //user needs access to datasource to get the
+        var allowedActions = this.accessControlService.cachedUserAllowedActions[this.accessControlService.DEFAULT_MODULE];
+
+        if(!this.accessControlService.hasAllActions(this.requiredPermissions,allowedActions)) {
+            this.accessDenied = true;
+            this.loading = false;
+        }
+        else {
+            this.catalogService.getDataSources().subscribe(datasources => {
+                datasources.forEach(ds => {
+                    this.datasources.push(ds);
+                })
+                //this.datasources = datasources;
+                //manually notify the view to check for changes
+                this.catalogDatasources.search(" ")
+                this.cd.markForCheck();
+                this.loading = false;
+            });
+        }
 
 
     }
