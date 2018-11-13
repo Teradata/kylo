@@ -461,7 +461,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         const isNull = cell.hasClass("null");
         const selection = this.$window.getSelection();
 
-        if (event.button != 0 || !(selection.extentNode.nodeName == '#text') || !(this.selectedCell == event.target || $.contains(this.selectedCell, event.target))) {
+        if (event.button != 0 || !(selection.focusNode.nodeType == 3) || !(this.selectedCell == event.target || $.contains(this.selectedCell, event.target))) {
+            selection.clear();
             return;
         }
 
