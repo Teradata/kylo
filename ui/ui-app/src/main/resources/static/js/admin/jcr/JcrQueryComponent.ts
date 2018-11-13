@@ -97,12 +97,12 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
         indexKinds: any[] = ["VALUE","ENUMERATED_VALUE","UNIQUE_VALUE","TEXT","NODE_TYPE"]
 
         registerIndex(){
-            this.showDialog(this.translate.instant('jcrquery.dialog.adding.title'), this.translate.instant('jcrquery.dialog.adding.message'));
+            this.showDialog(this.translate.instant('ADMIN.JCRQUERY.DIALOG.ADDING_TITLE'), this.translate.instant('ADMIN.JCRQUERY.DIALOG.ADDING_MESSAGE'));
             var successFn =(response: any)=> {
                 if (response) {
                     this.hideDialog();
                     this.getIndexes();
-                    this.snackBar.open(this.translate.instant("jcrquery.index.add"),this.translate.instant("views.common.ok"),{duration : 3000});
+                    this.snackBar.open(this.translate.instant("ADMIN.JCRQUERY.INDEX_ADD"),this.translate.instant("views.common.ok"),{duration : 3000});
                 }
             }
             var errorFn = (err: any)=> {
@@ -120,7 +120,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
                 var successFn = (response: any)=> {
                     if (response) {
                        this.getIndexes();
-                       this.snackBar.open(this.translate.instant("jcrquery.index.remove")+indexName,this.translate.instant("views.common.ok"),{duration : 3000})
+                       this.snackBar.open(this.translate.instant("ADMIN.JCRQUERY.INDEX_REMOVE")+indexName,this.translate.instant("views.common.ok"),{duration : 3000})
                     }
                 }
                 var errorFn =(err: any)=> {
@@ -150,16 +150,16 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
         }
 
         reindex(){
-                this.showDialog(this.translate.instant('jcrquery.dialog.reindexing.title'), this.translate.instant('jcrquery.dialog.reindexing.message'));
+                this.showDialog(this.translate.instant('ADMIN.JCRQUERY.DIALOG.REINDEXING_TITLE'), this.translate.instant('ADMIN.JCRQUERY.DIALOG.REINDEXING_MESSAGE'));
                 var successFn = (response: any)=> {
                     this.hideDialog();
                     if (response) {
-                        this.snackBar.open(this.translate.instant("jcrquery.reindex.success"),this.translate.instant("views.common.ok"),{duration : 3000});
+                        this.snackBar.open(this.translate.instant("ADMIN.JCRQUERY.REINDEX_SUCCESS"),this.translate.instant("views.common.ok"),{duration : 3000});
                     }
                 }
                 var errorFn = (err: any)=> {
                     this.hideDialog();
-                    this.snackBar.open(this.translate.instant("jcrquery.reindex.error"),this.translate.instant("views.common.ok"),{duration : 3000});
+                    this.snackBar.open(this.translate.instant("ADMIN.JCRQUERY.REINDEX_ERROR"),this.translate.instant("views.common.ok"),{duration : 3000});
                 }
 
                 var promise = this.http.post("/proxy/v1/metadata/debug/jcr-index/reindex",{},{headers : this.headers})
@@ -185,7 +185,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
                     this.errorMessage = err.developerMessage;
                 }
                 else {
-                    this.errorMessage = this.translate.instant('jcrquery.error.query.perform');
+                    this.errorMessage = this.translate.instant('ADMIN.JCRQUERY.ERROR_QUERY_PERFORM');
                 }
             };
             var promise = this.http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}}).toPromise();
@@ -201,7 +201,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
             };
             var errorFn = (err: any)=> {
                 this.indexes = [];
-                this.indexesErrorMessage = this.translate.instant('jcrquery.index.get.error') +err
+                this.indexesErrorMessage = this.translate.instant('ADMIN.JCRQUERY.ERROR_INDEX_GET') +err
             };
             var promise = this.http.get('/proxy/v1/metadata/debug/jcr-index').toPromise();
             promise.then(successFn, errorFn);

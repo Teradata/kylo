@@ -111,13 +111,13 @@ export class CategoryAccessControl {
             //this will flip the directive to read only mode and call the entity-access#init() method to requery the accesss control for this entity
             this.isEditable = false;
             this.CategoriesService.update(response);
-            this.snackBar.open(this.translate.instant('FEEDMGR.category.saved'), this.translate.instant('view.main.ok'), {duration : 3000});
+            this.snackBar.open(this.translate.instant('FEEDMGR.CATEGORY.SAVED'), this.translate.instant('view.main.ok'), {duration : 3000});
         }, (err: any) => {
             //keep editable active if an error occurred
             this.isEditable = true;
             this._tdDialogService.openAlert({
                 title : this.translate.instant('views.common.save.failed.title'),
-                message : this.translate.instant('FEEDMGR.category.dialog.save.failed.message',{entity: model.name, message: err.message}),
+                message : this.translate.instant('FEEDMGR.CATEGORY.DIALOG.SAVE_FAILED_MESSAGE',{entity: model.name, message: err.message}),
                 ariaLabel : this.translate.instant('views.common.save.failed',{entity:'Category'}),
                 closeButton : this.translate.instant('views.common.dialog.gotIt'),
                 disableClose : false 

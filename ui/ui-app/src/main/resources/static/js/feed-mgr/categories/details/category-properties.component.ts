@@ -94,7 +94,7 @@ export class CategoryProperties {
         }, (err: any) => {
             this._tdDialogService.openAlert({
                 title : this.translate.instant('views.common.save.failed.title'),
-                message : this.translate.instant('FEEDMGR.category.dialog.save.failed.message',{entity: model.name, message: err.message}),
+                message : this.translate.instant('FEEDMGR.CATEGORY.DIALOG.SAVE_FAILED_MESSAGE',{entity: model.name, message: err.message}),
                 ariaLabel : this.translate.instant('views.common.save.failed',{entity:'Category'}),
                 closeButton : this.translate.instant('views.common.dialog.gotIt'),
                 disableClose : false 

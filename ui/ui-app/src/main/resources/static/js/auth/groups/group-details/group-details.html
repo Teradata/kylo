@@ -22,7 +22,7 @@
     <mat-card flex="70">
         <mat-card-title>
             <mat-toolbar style="background: none;">
-                <div class="card-title">{{"AUTH.group.details.title" | translate}}</div>
+                <div class="card-title">{{"AUTH.GROUP.DETAILS_TITLE" | translate}}</div>
                 <span flex></span>
                 <mat-icon style="padding-right: 16px" size="30">group</mat-icon>
             </mat-toolbar>
@@ -33,7 +33,7 @@
                     (on-cancel-edit)="onCancel()" [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
-                            <span flex="25" class="property-name">{{"AUTH.group.details.groupName" | translate}}</span>
+                            <span flex="25" class="property-name">{{"AUTH.GROUP.DETAILS_GROUPNAME" | translate}}</span>
 
                             <div flex>
                                 {{model.systemName}}
@@ -56,13 +56,13 @@
                     </readonly-section>
                     <editable-section>
                         <mat-form-field class="block" *ngIf="model.systemName === null">
-                            <mat-label>{{"AUTH.group.details.groupName" | translate}}</mat-label>
+                            <mat-label>{{"AUTH.GROUP.DETAILS_GROUPNAME" | translate}}</mat-label>
                             <input matInput name="systemName" type="text" [(ngModel)]="editModel.systemName" />
-                            <mat-error *ngIf="isgroupNameEmpty()">{{"AUTH.group.details.groupName.required" | translate}}</mat-error>
-                            <mat-error *ngIf="isgroupNameDuplicate()">{{"AUTH.group.details.groupName.inUse" | translate}}</mat-error>
+                            <mat-error *ngIf="isgroupNameEmpty()">{{"AUTH.GROUP.DETAILS_GROUPNAME_REQUIRED" | translate}}</mat-error>
+                            <mat-error *ngIf="isgroupNameDuplicate()">{{"AUTH.GROUP.DETAILS_GROUPNAME_INUSE" | translate}}</mat-error>
                         </mat-form-field>
                         <div layout="row" class="layout-padding-top-bottom" *ngIf="model.systemName !== null">
-                            <span flex="25" class="property-name">{{"AUTH.group.details.groupName" | translate}}</span>
+                            <span flex="25" class="property-name">{{"AUTH.GROUP.DETAILS_GROUPNAME" | translate}}</span>
                             <div flex>
                                 {{editModel.systemName}}
                             </div>
@@ -120,7 +120,7 @@
                         </mat-list-item>
                     </mat-list>
                     <div *ngIf="loading || model.systemName === null || model.memberCount === 0">
-                        {{"AUTH.group.details.noUser.warn" | translate}}
+                        {{"AUTH.GROUP.DETAILS_NOUSER_WARN" | translate}}
                     </div>
                 </readonly-section>
             </vertical-section-layout>

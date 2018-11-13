@@ -10,7 +10,7 @@
       </div>
       <div class="card-title-text">{{connector.title}}</div>
     </mat-card-title>
-    <mat-card-subtitle>{{datasource ? "'FEEDMGR.connector.component.edit.existing' | translate" : "'FEEDMGR.connector.component.create.new' | translate"}} '{{connector.title}}' {{'views.common.data.source' | translate}}</mat-card-subtitle>
+    <mat-card-subtitle>{{datasource ? "'FEEDMGR.CONNECTOR.EDIT_EXISTING' | translate" : "'FEEDMGR.CONNECTOR.CREATE_NEW' | translate"}} '{{connector.title}}' {{'views.common.data.source' | translate}}</mat-card-subtitle>
     <mat-divider></mat-divider>
 
     <mat-card-content>
@@ -48,8 +48,8 @@
 
 
               <mat-error *ngIf="getControl(element).hasError('required')">{{'views.common.required.text' | translate}}</mat-error>
-              <mat-error *ngIf="getControl(element).hasError('url')">{{'FEEDMGR.connector.component.invalid.url' | translate}}</mat-error>
-              <mat-error *ngIf="getControl(element).hasError('url-protocol')">{{'FEEDMGR.connector.component.invalid.url.protocol' | translate}}</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url')">{{'FEEDMGR.CONNECTOR.INVALID_URL' | translate}}</mat-error>
+              <mat-error *ngIf="getControl(element).hasError('url-protocol')">{{'FEEDMGR.CONNECTOR.INVALID_URL_PROTOCOL' | translate}}</mat-error>
               <mat-hint *ngIf="element.hint">{{element.hint}}</mat-hint>
             </mat-form-field>
           </ng-template>

@@ -96,7 +96,7 @@ export class CategoryFeedProperties {
                 this.snackBar.open('Saved the Category','OK', {duration : 3000});
             }, (err:any) => {
                 this._tdDialogService.openAlert({
-                    message : this.translate.instant('FEEDMGR.category.dialog.save.failed.message',{entity: model.name, message: err.message}),
+                    message : this.translate.instant('FEEDMGR.CATEGORY.DIALOG.SAVE_FAILED_MESSAGE',{entity: model.name, message: err.message}),
                     title : this.translate.instant('views.common.save.failed.title'),
                     ariaLabel : this.translate.instant('views.common.save.failed',{entity:'Category'}),
                     closeButton : this.translate.instant('views.common.dialog.gotIt'),

@@ -14,8 +14,8 @@
           </span>
         </div>
         <div *ngIf="selectedTotal() > 0" class="selected-items" >
-          {{selectedHere()}} {{'FEEDMGR.browser.component.items.selected' | translate}}
-          <a class="mat-accent" (click)="openSelectionDialog()" class="cursor-pointer">{{selectedTotal()}} {{'FEEDMGR.browser.component.items.total' | translate}}</a>
+          {{selectedHere()}} {{'FEEDMGR.BROWSER.ITEMS_SELECTED' | translate}}
+          <a class="mat-accent" (click)="openSelectionDialog()" class="cursor-pointer">{{selectedTotal()}} {{'FEEDMGR.BROWSER.ITEMS_TOTAL' | translate}}</a>
         </div>
       </li>
     </ol>

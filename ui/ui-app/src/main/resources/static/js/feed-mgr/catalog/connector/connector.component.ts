@@ -134,7 +134,7 @@ export class ConnectorComponent {
             if (optionsMapper) {
                 optionsMapper.mapFromModelToUi(this.datasource, this.controls);
             } else {
-                this.showSnackBar(this.translate.instant('FEEDMGR.connector.component.unknown.ui.options',
+                this.showSnackBar(this.translate.instant('FEEDMGR.CONNECTOR.UNKNOWN_UI_OPTIONS',
                                 {mapper:this.plugin.optionsMapperId,connector:this.connector.title}));
                 return;
             }
@@ -197,7 +197,7 @@ export class ConnectorComponent {
     getDataSourceFromUi(): DataSource | undefined {
         const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
         if (!optionsMapper) {
-            this.showSnackBar(this.translate.instant('FEEDMGR.connector.component.unknown.ui.options',
+            this.showSnackBar(this.translate.instant('FEEDMGR.CONNECTOR.UNKNOWN_UI_OPTIONS',
                                 {mapper:this.plugin.optionsMapperId,connector:this.connector.title}));
             return undefined;
         }

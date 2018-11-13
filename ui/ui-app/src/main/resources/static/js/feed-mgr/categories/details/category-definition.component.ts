@@ -131,25 +131,25 @@ export class CategoryDefinition {
             // console.log("this.hasFeeds() = " + this.hasFeeds());
 
             if (!this.isNewCategory() && !this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.customizable');
+                return this.translate.instant('FEEDMGR.CATEGORY.DEFINITION_SYSTEM_NAME.CUSTOMIZABLE');
             }
             if (!this.isNewCategory() && !this.isSystemNameEditable() && this.hasFeeds()) {
-                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.not.customizable.has.feeds');
+                return this.translate.instant('FEEDMGR.CATEGORY.DEFINITION_SYSTEM_NAME.NOT_CUSTOMIZABLE_HAS_FEEDS');
             }
             if (!this.isNewCategory() && this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.now.editable');
+                return this.translate.instant('FEEDMGR.CATEGORY.DEFINITION_SYSTEM_NAME.NOW_EDITABLE');
             }
             if (!this.isNewCategory() && this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be both editable and have feeds!
             }
             if (this.isNewCategory() && !this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.not.customizable.auto.generated');
+                return this.translate.instant('FEEDMGR.CATEGORY.DEFINITION_SYSTEM_NAME.NOT_CUSTOMIZABLE_AUTO_GENERATED');
             }
             if (this.isNewCategory() && !this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be new and already have feeds
             }
             if (this.isNewCategory() && this.isSystemNameEditable() && this.hasNoFeeds()) {
-                return this.translate.instant('FEEDMGR.category.def.sys.name.desc.now.editable');
+                return this.translate.instant('FEEDMGR.CATEGORY.DEFINITION_SYSTEM_NAME.NOW_EDITABLE');
             }
             if (this.isNewCategory() && this.isSystemNameEditable() && this.hasFeeds()) {
                 return ""; //invalid state, cannot be new with feeds
@@ -217,12 +217,12 @@ export class CategoryDefinition {
             this.CategoriesService.delete(this.editModel).then( () => {
                 this.systemNameEditable = false;
                 this.CategoriesService.reload();
-                this.snackBar.open(this.translate.instant('FEEDMGR.category.deleted') + name, this.translate.instant('view.main.ok'), {duration : 3000});
+                this.snackBar.open(this.translate.instant('FEEDMGR.CATEGORY.DELETED') + name, this.translate.instant('view.main.ok'), {duration : 3000});
                 //redirect
                 this.StateService.FeedManager().Category().navigateToCategories();
             }, (err:any) => {
                 this._tdDialogService.openAlert({
-                    message : this.translate.instant('FEEDMGR.category.dialog.delete.failed.message',{entity: name, message: err.message}),
+                    message : this.translate.instant('FEEDMGR.CATEGORY.DIALOG.DELETE_FAILED_MESSAGE',{entity: name, message: err.message}),
                     title : this.translate.instant('views.common.delete.failure.title'),
                     ariaLabel : this.translate.instant('views.common.delete.failure',{entity:'Category'}),
                     closeButton : this.translate.instant('views.common.dialog.gotIt'),
