@@ -17,6 +17,12 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-schema-discovery-model2</artifactId>
       <version>${project.version}</version>
     </dependency>

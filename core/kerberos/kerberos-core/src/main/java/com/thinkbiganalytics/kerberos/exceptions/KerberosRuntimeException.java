@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.functions;
+package com.thinkbiganalytics.kerberos.exceptions;
 
 /*-
  * #%L
- * kylo-commons-util
+ * kylo-kerberos-core
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,20 +20,21 @@ package com.thinkbiganalytics.functions;
  * #L%
  */
 
+public class KerberosRuntimeException extends RuntimeException {
 
+    public KerberosRuntimeException() {
+        super();
+    }
 
-import java.util.Objects;
-import java.util.function.Function;
+    public KerberosRuntimeException(String s) {
+        super(s);
+    }
 
-@FunctionalInterface
-public interface QuintFunction<P1, P2, P3, P4, P5, R> {
+    public KerberosRuntimeException(String s, Throwable throwable) {
+        super(s, throwable);
+    }
 
-    R apply(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
-
-    default <V> QuintFunction<P1, P2, P3, P4, P5, V> andThen(
-        Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
-        return (P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) -> after.apply(apply(p1, p2, p3, p4, p5));
+    public KerberosRuntimeException(Throwable throwable) {
+        super(throwable);
     }
 }
-

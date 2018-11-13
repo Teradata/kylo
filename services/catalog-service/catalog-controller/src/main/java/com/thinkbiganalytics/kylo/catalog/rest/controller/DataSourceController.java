@@ -21,8 +21,10 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.exceptions.ExceptionTransformer;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.hive.exceptions.ThriftConnectionException;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
@@ -53,6 +55,7 @@ import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.data.domain.Page;
@@ -110,7 +113,11 @@ public class DataSourceController extends AbstractCatalogController {
     public static final String BASE = "/v1/catalog/datasource";
 
     public enum CredentialMode {NONE, EMBED, ATTACH}
-    
+
+    static final ExceptionTransformer<ThriftConnectionException> exceptionTransformer =
+        new ExceptionTransformer<>(
+            ThriftConnectionException.class, SQLException.class, TTransportException.class);
+
     @Inject
     private AccessController accessController;
 
@@ -207,7 +214,7 @@ public class DataSourceController extends AbstractCatalogController {
         ConnectorTab connectorTab = tabs.get(0);
         String sref = connectorTab.getSref();
         DataSource decrypted = modelTransform.decryptOptions(dataSource);
-        
+
         if (".browse".equals(sref)) {
             doListFiles(DataSourceUtil.getPaths(decrypted).orElseThrow(IllegalStateException::new).get(0), decrypted);
         } else if (".connection".equals(sref)) {
@@ -319,8 +326,8 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 400, message = "", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response getDataSources(@QueryParam("connector") final String connectorId, 
-                                   @QueryParam("filter") final String filter, 
+    public Response getDataSources(@QueryParam("connector") final String connectorId,
+                                   @QueryParam("filter") final String filter,
                                    @QueryParam("limit") final Integer limit,
                                    @QueryParam("start") final Integer start,
                                    @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
@@ -340,7 +347,7 @@ public class DataSourceController extends AbstractCatalogController {
         return metadataService.read(() -> {
             // Require admin permission if the results should include unencrypted credentials.
             accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
-            
+
             Page<com.thinkbiganalytics.metadata.api.catalog.DataSource> domainPage = dataSourceProvider.findPage(pageRequest, filter);
             final Page<DataSource> page = domainPage.map(modelTransform.convertDataSourceToRestModel(true, encryptCredentials));
 
@@ -368,7 +375,7 @@ public class DataSourceController extends AbstractCatalogController {
         final Set<DataSource> datasources = metadataService.read(() -> {
             // Require admin permission if the results should include unencrypted credentials.
             accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
-            
+
             return dataSourceProvider.findAll().stream().filter(ds -> pluginList.contains(ds.getConnector().getPluginId()))
                 .map(modelTransform.dataSourceToRestModel(true, encryptCredentials))
                 .collect(Collectors.toSet());
@@ -410,6 +417,10 @@ public class DataSourceController extends AbstractCatalogController {
             log.debug("Catalog exception when accessing path: {}: {}", path, e, e);
             throw new BadRequestException(getMessage(e));
         } catch (final Exception e) {
+            if( exceptionTransformer.causesInChain(e) ) {
+                throw new ThriftConnectionException(e);
+            }
+
             if (log.isErrorEnabled()) {
                 log.error("Failed to list data source files at path " + path + ": " + e, e);
             }
@@ -431,25 +442,24 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list tables", response = RestResponseStatus.class)
                   })
-    public Response listTables(@PathParam("id") final String dataSourceId, 
-                               @QueryParam("catalog") final String catalogName, 
+    public Response listTables(@PathParam("id") final String dataSourceId,
+                               @QueryParam("catalog") final String catalogName,
                                @QueryParam("schema") final String schemaName) {
         log.entry(dataSourceId, catalogName, schemaName);
         //read as the user to see if they can access the datasource
         boolean hasAccess = metadataService.read(() -> {
-           return findDataSource(dataSourceId, true) != null;
+            return findDataSource(dataSourceId, true) != null;
         });
 
-        if(hasAccess) {
+        if (hasAccess) {
             return metadataService.read(() -> {
                 // List tables
                 final DataSource dataSource = findDataSource(dataSourceId, false);
                 final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
 
                 return Response.ok(log.exit(tables)).build();
-            },MetadataAccess.SERVICE);
-        }
-        else {
+            }, MetadataAccess.SERVICE);
+        } else {
             log.debug("Access denied accessing datasource : {}", dataSourceId);
             throw new ForbiddenException(getMessage("catalog.datasource.forbidden"));
         }
@@ -462,6 +472,10 @@ public class DataSourceController extends AbstractCatalogController {
             log.debug("List tables for catalog:{} schema:{}", catalogName, schemaName);
             tables = tableManager.listCatalogsOrTables(dataSource, catalogName, schemaName);
         } catch (final Exception e) {
+            if( exceptionTransformer.causesInChain(e) ) {
+                throw new ThriftConnectionException(e);
+            }
+
             if (log.isErrorEnabled()) {
                 log.error("Failed to list tables for catalog [" + catalogName + "] schema [" + schemaName + "]: " + e, e);
             }
@@ -492,9 +506,9 @@ public class DataSourceController extends AbstractCatalogController {
             return findDataSource(dataSourceId, true) != null;
         });
 
-        if(hasAccess) {
+        if (hasAccess) {
 
-         tableList = metadataService.read(() -> {
+            tableList = metadataService.read(() -> {
                 // List tables
                 final DataSource dataSource = findDataSource(dataSourceId, false);
 
@@ -503,6 +517,10 @@ public class DataSourceController extends AbstractCatalogController {
                     log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
                     tables = tableManager.listTables(dataSource, catalogOrSchemaName);
                 } catch (final Exception e) {
+                    if( exceptionTransformer.causesInChain(e) ) {
+                        throw new ThriftConnectionException(e);
+                    }
+
                     if (log.isErrorEnabled()) {
                         log.error("Failed to list tables for [" + catalogOrSchemaName + "] : " + e, e);
                     }
@@ -526,9 +544,9 @@ public class DataSourceController extends AbstractCatalogController {
     /**
      * Gets the schema of the specified table using the specified data source.
      *
-     * @param idStr     the data source id
-     * @param tableName the table name
-     * @param schema    the schema name, or {@code null} to search all schemas
+     * @param dataSourceId the data source id
+     * @param tableName    the table name
+     * @param schema       the schema name, or {@code null} to search all schemas
      * @return the table and field details
      */
     @POST
@@ -541,8 +559,8 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
                   })
-    public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId, 
-                                           @PathParam("tableName") final String tableName, 
+    public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId,
+                                           @PathParam("tableName") final String tableName,
                                            @QueryParam("schema") final String schema,
                                            @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         // TODO Verify user has access to data source
@@ -558,8 +576,7 @@ public class DataSourceController extends AbstractCatalogController {
             });
             hasAccess = encryptedSource != null;
 
-
-            if(hasAccess) {
+            if (hasAccess) {
                 //fetch the datasource as a service account to get the creds.
                 DataSource dataSource = metadataService.read(() -> {
                     return findDataSource(dataSourceId, false);
@@ -571,53 +588,51 @@ public class DataSourceController extends AbstractCatalogController {
 
                 //create the dataset as a service account.  if we get here the user has access to view the data source
 
-               // dataSetWithTableSchema = metadataService.commit(() -> {
-                    // List tables
+                // dataSetWithTableSchema = metadataService.commit(() -> {
+                // List tables
 
-                    if (tableSchema != null) {
-                        DataSet dataSet = new DataSet();
-                        //assign the datasource to this dataset with encrypted credentials
-                        dataSet.setDataSource(encryptedSource);
-                        String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(), tableSchema.getName());
-                        dataSet.setTitle(fullTableName);
+                if (tableSchema != null) {
+                    DataSet dataSet = new DataSet();
+                    //assign the datasource to this dataset with encrypted credentials
+                    dataSet.setDataSource(encryptedSource);
+                    String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(), tableSchema.getName());
+                    dataSet.setTitle(fullTableName);
 
-                        DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
-                        List<String> paths = defaultDataSetTemplate.getPaths();
-                        String format = defaultDataSetTemplate.getFormat();
+                    DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
+                    List<String> paths = defaultDataSetTemplate.getPaths();
+                    String format = defaultDataSetTemplate.getFormat();
 
-                        Map<String, String> options = defaultDataSetTemplate.getOptions();
-                        if (options == null) {
-                            options = new HashMap<>();
-                        }
-                        if (paths == null) {
-                            paths = new ArrayList<>();
-                        }
-                        if ("hive".equalsIgnoreCase(format.toLowerCase())) {
-                            paths.add(fullTableName);
-                        }
-                        options.put("dbtable", fullTableName);
-
-                        dataSet.setFormat(format);
-                        dataSet.setPaths(paths);
-                        dataSet.setOptions(options);
-
-                        DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptCredentials);
-                        dataSetWithTableSchema = new DataSetWithTableSchema(dataSet1, tableSchema);
-                    } else {
-                        if (log.isErrorEnabled()) {
-                            log.error("Failed to describe tables for schema [" + schema + "], table [" + tableName + "], dataSource [" + dataSourceId + "] ");
-                        }
-                        final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
-                            .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
-                            .url(request.getRequestURI())
-                            .buildError();
-                        throw new InternalServerErrorException(Response.serverError().entity(status).build());
+                    Map<String, String> options = defaultDataSetTemplate.getOptions();
+                    if (options == null) {
+                        options = new HashMap<>();
                     }
+                    if (paths == null) {
+                        paths = new ArrayList<>();
+                    }
+                    if ("hive".equalsIgnoreCase(format.toLowerCase())) {
+                        paths.add(fullTableName);
+                    }
+                    options.put("dbtable", fullTableName);
 
+                    dataSet.setFormat(format);
+                    dataSet.setPaths(paths);
+                    dataSet.setOptions(options);
 
-               // });
-            }
-            else {
+                    DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptCredentials);
+                    dataSetWithTableSchema = new DataSetWithTableSchema(dataSet1, tableSchema);
+                } else {
+                    if (log.isErrorEnabled()) {
+                        log.error("Failed to describe tables for schema [" + schema + "], table [" + tableName + "], dataSource [" + dataSourceId + "] ");
+                    }
+                    final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                        .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
+                        .url(request.getRequestURI())
+                        .buildError();
+                    throw new InternalServerErrorException(Response.serverError().entity(status).build());
+                }
+
+                // });
+            } else {
                 //no acceess
                 final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
                     .message(getMessage("catalog.datasource.forbidden"))
@@ -625,7 +640,11 @@ public class DataSourceController extends AbstractCatalogController {
                     .buildError();
                 throw new InternalServerErrorException(Response.serverError().entity(status).build());
             }
-        }catch (Exception e){
+        } catch (Exception e) {
+            if( exceptionTransformer.causesInChain(e) ) {
+                throw new ThriftConnectionException(e);
+            }
+
             final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
                 .message(getMessage("catalog.datasource.describeTable.error", tableName, schema))
                 .url(request.getRequestURI())
@@ -658,6 +677,10 @@ public class DataSourceController extends AbstractCatalogController {
 
             return Response.ok(log.exit(credentials)).build();
         } catch (final Exception e) {
+            if( exceptionTransformer.causesInChain(e) ) {
+                throw new ThriftConnectionException(e);
+            }
+
             log.error("Failed to retrieve credentials for datasource [{}] encrypted={}: " + e, dataSourceId, encrypted, e);
 
             final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
@@ -709,7 +732,7 @@ public class DataSourceController extends AbstractCatalogController {
         return metadataService.read(() -> {
             // Require admin permission if the results should include unencrypted credentials.
             accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
-            
+
             com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(id);
             return dataSourceProvider.find(dsId)
                 .map(modelTransform.dataSourceToRestModel(true, encryptCredentials))

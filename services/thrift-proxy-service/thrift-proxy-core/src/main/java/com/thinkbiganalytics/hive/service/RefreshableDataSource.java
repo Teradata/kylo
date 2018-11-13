@@ -2,9 +2,9 @@ package com.thinkbiganalytics.hive.service;
 
 /*-
  * #%L
- * thinkbig-thrift-proxy-core
+ * kylo-thrift-proxy-core
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ package com.thinkbiganalytics.hive.service;
  * #L%
  */
 
+
 import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -38,37 +38,44 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import javax.inject.Inject;
 import javax.sql.DataSource;
 
-/**
- */
+
 public class RefreshableDataSource implements DataSource {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshableDataSource.class);
 
-    public static enum UsernameCase {
-        AS_SPECIFIED,LOWER_CASE,UPPER_CASE;
-    }
-
     private static final String DEFAULT_DATASOURCE_NAME = "DEFAULT";
+
     String propertyPrefix;
-    @Autowired
-    Environment env;
+
+    private Environment env;
+
     private ConcurrentHashMap<String, DataSource> datasources = new ConcurrentHashMap<>();
+
     private AtomicBoolean isRefreshing = new AtomicBoolean(false);
-    @Inject
-    @Qualifier("kerberosHiveConfiguration")
+
+
     private KerberosTicketConfiguration kerberosTicketConfiguration;
 
-    @Inject
     protected UsernameCaseStrategyUtil usernameCaseStrategyUtil;
 
-    public RefreshableDataSource(String propertyPrefix) {
+    public RefreshableDataSource(KerberosTicketConfiguration kerberosTicketConfiguration,
+                                 UsernameCaseStrategyUtil usernameCaseStrategyUtil,
+                                 Environment env, String propertyPrefix) {
+        Validate.notNull(kerberosTicketConfiguration);
+        Validate.notNull(usernameCaseStrategyUtil);
+        Validate.notNull(env);
+        Validate.notNull(propertyPrefix);
+
+        this.kerberosTicketConfiguration = kerberosTicketConfiguration;
+        this.usernameCaseStrategyUtil = usernameCaseStrategyUtil;
+        this.env = env;
         this.propertyPrefix = propertyPrefix;
     }
 
@@ -118,12 +125,13 @@ public class RefreshableDataSource implements DataSource {
                 }
                 return valid;
             }, kerberosTicketConfiguration);
-        } catch(Exception e) {
+        } catch (Exception e) {
             // The utility method throws a Runtime Exception so we need to re-throw it as a SQL Exception in our case
             throw new SQLException(e);
         }
         return isValidConnection;
     }
+
 
     private Connection getConnectionForValidation() throws SQLException {
         if (getDataSource() == null) {
@@ -131,6 +139,7 @@ public class RefreshableDataSource implements DataSource {
         }
         return KerberosUtil.getConnectionWithOrWithoutKerberos(getDataSource(), kerberosTicketConfiguration);
     }
+
 
     private Connection testAndRefreshIfInvalid() throws SQLException {
 
@@ -142,6 +151,7 @@ public class RefreshableDataSource implements DataSource {
         return getConnectionForValidation();
     }
 
+
     private Connection testAndRefreshIfInvalid(String username, String password) throws SQLException {
 
         try {
@@ -152,17 +162,18 @@ public class RefreshableDataSource implements DataSource {
         return getConnectionForValidation();
     }
 
+
     @Override
     public Connection getConnection() throws SQLException {
         return testAndRefreshIfInvalid();
-
-
     }
+
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
         return testAndRefreshIfInvalid(username, password);
     }
+
 
     private DataSource getDataSource() {
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
@@ -226,18 +237,14 @@ public class RefreshableDataSource implements DataSource {
         String username = userName;
         if (proxyUser && propertyPrefix.equals(UsernameCaseStrategyUtil.hiveDatasourcePrefix)) {
             UsernameCaseStrategyUtil.UsernameCaseStrategy usernameCaseStrategy = usernameCaseStrategyUtil.getHiveUsernameCaseStrategy();
-            String proxyUsername = UsernameCaseStrategyUtil.convertUsernameCase(principal,usernameCaseStrategy);
+            String proxyUsername = UsernameCaseStrategyUtil.convertUsernameCase(principal, usernameCaseStrategy);
             url = url + ";hive.server2.proxy.user=" + proxyUsername;
         }
 
         log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
 
-
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
         return ds;
     }
-
-
-
 
 }

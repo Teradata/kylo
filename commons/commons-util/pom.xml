@@ -27,6 +27,12 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-ext -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-ext</artifactId>
+    </dependency>
+
 
     <!-- Testing -->
     <dependency>
@@ -34,11 +40,13 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
       <scope>test</scope>
     </dependency>
+
 
   </dependencies>
 
