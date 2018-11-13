@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 import com.thinkbiganalytics.metadata.api.catalog.security.ConnectorAccessControl;
 import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 
 /*-
@@ -144,29 +145,9 @@ public class JcrConnectorAllowedActions extends JcrAllowedActions {
         }
         
         JcrAccessControlUtil.setPermissions(this.connector.getNode(), principal, privileges);
-        // this.ensureDataSourceConnectorAccess();
         //update children entity access
+        this.connector.getDataSources().stream().forEach(ds ->{
+            ((JcrDataSource)ds).updateRolePermissions(principal);
+        });
     }
-
-    /**
-     * Users with access to datasources always need access to the connector.
-     * This will ensure any user with a m
-     * embership to ACCESS_DATASOURCE will get the required ACCESS_CONNECTOR access to the connector
-     */
-    private void ensureDataSourceConnectorAccess() {
-      Set<Principal> principalsWithAccess =  connector.getAllowedActions().getPrincipalsAllowedAny(ConnectorAccessControl.ACCESS_CONNECTOR);
-       this.connector.getDataSources()
-            .stream()
-            .flatMap( ds -> ds.getRoleMemberships().stream())
-            .filter(h -> h.getMembers() != null
-                         && !h.getMembers().isEmpty()
-                         && h.getRole().getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE))
-            .flatMap(h -> h.getMembers().stream())
-            .filter(principal -> !principalsWithAccess.contains(principal))
-            .forEach(principal -> {
-                //add back in the ACCESS_CONNECTOR
-                connector.getAllowedActions().enable(principal,ConnectorAccessControl.ACCESS_CONNECTOR);
-            });
-    }
-
 }

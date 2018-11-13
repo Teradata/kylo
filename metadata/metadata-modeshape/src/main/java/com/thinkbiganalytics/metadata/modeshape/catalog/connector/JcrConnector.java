@@ -134,7 +134,7 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     @Override
     public List<? extends DataSource> getDataSources() {
         Node dsNode = getDataSourcesNode();
-        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.class);
+        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.NODE_TYPE,JcrDataSource.class);
     }
     public Node getDataSourcesNode(){
         return JcrUtil.getNode(getNode(), DATASOURCES);

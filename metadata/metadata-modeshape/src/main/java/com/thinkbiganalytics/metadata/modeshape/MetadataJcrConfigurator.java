@@ -172,6 +172,11 @@ public class MetadataJcrConfigurator {
             session.getRootNode().addNode("metadata/security/prototypes/datasource", "tba:allowedActions");
         }
 
+        //ensure the connector exist in prototypes
+        if (!session.getRootNode().hasNode("metadata/security/prototypes/connector")) {
+            session.getRootNode().addNode("metadata/security/prototypes/connector", "tba:allowedActions");
+        }
+
         if (!session.getRootNode().hasNode("metadata/security/roles")) {
             session.getRootNode().addNode("metadata/security/roles", "tba:rolesFolder");
         }

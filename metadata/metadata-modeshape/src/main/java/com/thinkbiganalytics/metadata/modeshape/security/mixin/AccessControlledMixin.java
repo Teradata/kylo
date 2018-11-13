@@ -77,7 +77,16 @@ public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixi
         // By default there are no inherited memberships.
         return Optional.empty();
     }
-    
+
+    /**
+     * Resets permission for principal based on the current role memberships.  Useful when the actions granted
+     * to any of the roles have changed.
+     */
+    default void updateRolePermissions(Principal principal) {
+        JcrAbstractRoleMembership.enableOnly(principal,getRoleMemberships().stream(), getJcrAllowedActions());
+    }
+
+
     /**
      * Resets permission based on the current role memberships.  Useful when the actions granted
      * to any of the roles have changed.
