@@ -44,4 +44,15 @@ export class ObjectUtils {
         return new type(options);
     }
 
+    static toJson(obj : any) : any {
+        if (ObjectUtils.isUndefined(obj)) return undefined;
+        return JSON.stringify(obj);
+    }
+    static isDefined(value : any) : boolean {
+        return !ObjectUtils.isUndefined(value);
+    }
+
+    static isUndefined(value : any) : boolean {
+        return typeof value === 'undefined';
+    }
 }

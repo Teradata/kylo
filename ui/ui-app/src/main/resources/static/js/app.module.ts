@@ -104,6 +104,16 @@ const translateConfig: TranslateModuleConfig = {
                     name: 'sla-email-template.**',
                     url: '/sla-email-template',
                     loadChildren: './feed-mgr/sla/email-template/sla-email-template.module#SlaEmailTemplatesRouterModule'
+                },
+                {
+                    name: 'jcr-query.**',
+                    url: '/admin/jcr-query',
+                    loadChildren: './admin/admin.module#AdminModule'
+                },
+                {
+                    name: 'cluster.**',
+                    url: '/admin/cluster',
+                    loadChildren: './admin/admin.module#AdminModule'
                 }
             ]
         }),

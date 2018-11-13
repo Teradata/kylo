@@ -486,35 +486,6 @@ class Route {
             }
         });
 
-        $stateProvider.state('jcr-query.**', {
-            url: '/admin/jcr-query',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('jcr-query', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading admin jcr ", err);
-                    return err;
-                });
-            }
-        });
-
-
-        $stateProvider.state('cluster.**', {
-            url: '/admin/cluster',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('cluster', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading admin cluster ", err);
-                    return err;
-                });
-            }
-        });
-
         $stateProvider.state({
             name: 'projects.**',
             url: '/projects',
