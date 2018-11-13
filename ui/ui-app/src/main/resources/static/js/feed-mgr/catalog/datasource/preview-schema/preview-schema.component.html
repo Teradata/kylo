@@ -6,7 +6,7 @@
     <div fxFlex="200px" class="dataset-list">
 
       <mat-nav-list dense >
-        <h3 matSubheader>{{'FEEDMGR.data.sets' | translate}}</h3>
+        <h3 matSubheader>{{'FEEDMGR.DATA_SETS' | translate}}</h3>
         <ng-container *ngFor="let dataset of datasets">
         <mat-list-item  (click)="onDatasetSelected(dataset.key)"  [ngClass]="{'selected-dataset': dataset.key == selectedDataSet.key}">
 
@@ -43,7 +43,7 @@
                   </p>
                   <div fxLayout="row" fxLayoutAlign="start center">
                     <span fxFlex="5" ></span>
-                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">{{'FEEDMGR.settings' | translate}}</button>
+                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">{{'FEEDMGR.SETTINGS' | translate}}</button>
 
                   </div>
 
@@ -54,10 +54,10 @@
 
                   <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedDataSet.allowsRawView">
                     <span fxFlex="5" ></span>
-                    <mat-slide-toggle [checked]="selectedDataSetViewRaw" (change)="onToggleRaw()">{{'FEEDMGR.view.raw' | translate}}
+                    <mat-slide-toggle [checked]="selectedDataSetViewRaw" (change)="onToggleRaw()">{{'FEEDMGR.VIEW_RAW' | translate}}
                     </mat-slide-toggle>
                     <span fxFlex="5" ></span>
-                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">{{'FEEDMGR.settings' | translate}}</button>
+                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">{{'FEEDMGR.SETTINGS' | translate}}</button>
                     <span fxFlex="5" ></span>
                     <button mat-raised-button   *ngIf="showAddToCollectionButton(selectedDataSet)"  (click)="addToCollection(selectedDataSet)"><mat-icon>add</mat-icon>{{addToCollectionButtonName}}</button>
                     <button mat-raised-button  *ngIf="showRemoveFromCollectionButton(selectedDataSet)" (click)="removeFromCollection(selectedDataSet)"><mat-icon>remove</mat-icon>{{removeFromCollectionButtonName}}</button>

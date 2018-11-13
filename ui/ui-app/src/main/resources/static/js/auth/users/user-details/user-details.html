@@ -22,7 +22,7 @@
     <mat-card *ngIf="!loading" flex = "70">
         <mat-card-title>
             <mat-toolbar style="background: none;">
-                <div class="card-title">{{'AUTH.user.details.title' | translate}}</div>
+                <div class="card-title">{{'AUTH.USER.DETAILS_TITLE' | translate}}</div>
                 <span flex></span>
                 <mat-icon style="padding-right: 16px" size="30">person</mat-icon>
             </mat-toolbar>
@@ -76,7 +76,7 @@
                             <mat-label>{{'view.login.Username' | translate}}</mat-label>
                             <input matInput name="username" type="text" [(ngModel)]="editModel.systemName"/>
                             <mat-error *ngIf="isUserNameEmpty()">{{'view.login.Uir' | translate}}</mat-error>
-                            <mat-error *ngIf="isUserNameDuplicate()">{{'user.details.userName.inUse' | translate}}</mat-error>
+                            <mat-error *ngIf="isUserNameDuplicate()">{{'AUTH.USER.DETAILS_USERNAME_INUSE' | translate}}</mat-error>
                         </mat-form-field>
                         <div layout="row" class="layout-padding-top-bottom" *ngIf="model.systemName !== null">
                             <span flex="25" class="property-name">{{'view.login.Username' | translate}}</span>
@@ -106,7 +106,7 @@
                         </mat-form-field>
 
                          <mat-form-field class="block layout-padding-top-bottom flex-gt-sm">
-                            <mat-label class="label-small md-container-ignore">{{'AUTH.group.tile' | translate}}</mat-label>
+                            <mat-label class="label-small md-container-ignore">{{'AUTH.GROUP_TILE' | translate}}</mat-label>
                             <mat-chip-list name="groupsChips" #chipList [(ngModel)]="editModel.groups">
                                 <mat-chip *ngFor="let value of  editModel.groups" (remove)="removeGroup(value)">
                                    {{getGroupTitle(value)}} <mat-icon matChipRemove>cancel</mat-icon>
@@ -119,7 +119,7 @@
                                     <span >{{ getGroupTitle(group) }}</span>
                                 </mat-option>
                             </mat-autocomplete>
-                            <mat-hint *ngIf="isMissingGroup()" style="color: red">{{'user.details.noGroups.warn' | translate}}</mat-hint>
+                            <mat-hint *ngIf="isMissingGroup()" style="color: red">{{'AUTH.USER.DETAILS_NOGROUPS_WARN' | translate}}</mat-hint>
                         </mat-form-field> 
                     </editable-section>
                 </vertical-section-layout>

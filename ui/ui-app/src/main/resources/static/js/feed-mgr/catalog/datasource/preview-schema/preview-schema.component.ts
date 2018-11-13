@@ -342,7 +342,7 @@ export class PreviewSchemaComponent implements OnInit {
             }
         if(paths) {
             //TODO Move to Factory
-            this.openStatusDialog(this.translate.instant('FEEDMGR.preview.schema.dialog.examining.title'), this.translate.instant('FEEDMGR.preview.schema.dialog.examining.message'),true,false)
+            this.openStatusDialog(this.translate.instant('FEEDMGR.PREVIEW_SCHEMA.DIALOG.EXAMINING_TITLE'), this.translate.instant('FEEDMGR.PREVIEW_SCHEMA.DIALOG.EXAMINING_MESSAGE'),true,false)
 
             if (!this.datasource.connector.template.format) {
                 this.createFileBasedDataSets(paths);
@@ -369,7 +369,7 @@ export class PreviewSchemaComponent implements OnInit {
             }
         }
         else {
-            this.openStatusDialog(this.translate.instant("FEEDMGR.preview.schema.dialog.no.path.supplied"),this.translate.instant('FEEDMGR.preview.schema.dialog.please.select.item'),false,true);
+            this.openStatusDialog(this.translate.instant("FEEDMGR.PREVIEW_SCHEMA.DIALOG.NO_PATH_SUPPLIED"),this.translate.instant('FEEDMGR.PREVIEW_SCHEMA.DIALOG.PLEASE_SELECT_ITEM'),false,true);
         }
     }
 
@@ -411,7 +411,7 @@ export class PreviewSchemaComponent implements OnInit {
                     this.closeStatusDialog();
                 }
                 else {
-                    this.openStatusDialog(this.translate.instant('FEEDMGR.preview.schema.dialog.cant.process.error'),this.translate.instant('views.common.Nrf'), false,true);
+                    this.openStatusDialog(this.translate.instant('FEEDMGR.PREVIEW_SCHEMA.DIALOG.CANT_PROCESS_ERROR'),this.translate.instant('views.common.Nrf'), false,true);
                 }
             },error1 => (response:FileMetadataTransformResponse) => {
                 this.openStatusDialog(this.translate.instant("views.common.error"),this.translate.instant("views.common.error"),false,true);

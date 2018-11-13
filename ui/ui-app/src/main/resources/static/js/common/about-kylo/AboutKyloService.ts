@@ -58,7 +58,7 @@ export default class AboutKyloDialogController {
         .then((response: any) => {
             this.version = response;
         },(err: any) =>{
-            this.version = this.translate.instant('COMMON.not.available')
+            this.version = this.translate.instant('COMMON.NOT_AVAILABLE')
         });
         this.hide = () => {
             this.dialogRef.close();

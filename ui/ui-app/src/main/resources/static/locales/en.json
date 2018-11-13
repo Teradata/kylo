@@ -1343,67 +1343,83 @@
         }
     },
     "ADMIN": {
-        "cluster.cluster-test.title": "Is Kylo Clustered",
-        "cluster.cluster-test.warning": "Warning.  Only 1 member is found in the cluster.",
-        "cluster.cluster-test.ensure.request": "Please ensure your Kylo cluster configuration is configured correctly.",
-        "cluster.cluster-test.members": "Cluster Members",
-        "cluster.cluster-test.sendMessage": "Send a Message",
-        "cluster.cluster-test.sendButton": "Send",
-        "cluster.cluster-test.receivedMessage": "Received Messages",
-        "cluster.cluster-test.messageText": "Message",
-        "cluster.cluster-test.fromText": "From",
-        "cluster.cluster-test.no.messages.receivedText": "No Messages received",
-        "cluster.cluster-test.not.clustered.part1": "Kylo is not clustered.  Please follow the ",
-        "cluster.cluster-test.not.clustered.part2": "and ensure the following items are configured.",
-        "cluster.cluster-test.default.kylo.conf.text": "The default Kylo installation provides sample configuration files for the items below in the",
-        "cluster.cluster-test.modeshape.jgroups.conf": "Modeshape jgroups configuration",
-        "cluster.cluster-test.ensure.modeshape.jgroups.part1": "Ensure the correct {{fileName}} exists in the '{{filePath}}' and is configured.",
-        "cluster.cluster-test.ensure.file.configured": "Ensure the file above is configured and referenced in the {{fileName}} file.",
-        "cluster.cluster-test.kylo.job.conf.text": "Kylo jgroups configuration",
-        "cluster.cluster-test.ensure.kylo.cluster.conf.part1": "Ensure the {{fileName}} exists in the '{{filePath}}' and is configured.",
-        "cluster.cluster-test.property.kylo.ensure": "The property in the {{filePath}} exists referring to the file above: {{fileKey}} ",
-        "cluster.cluster-test.quartz.scheduler": "Quartz Scheduler",
-        "cluster.cluster-test.quartz.ensure": "Ensure the Quartz Scheduler is configured for cluster mode and the '{{fileName}}' file is in the '{{filePath}}'",
-        "cluster.dialog.sent.message": "Sent the message",
-        "cluster.dialog.error.message": "Error sending the message",
-        "jcrquery.query.return": "The query returned {{resultSize}} rows and took: {{queryTime }} ",
-        "jcrquery.explain.plan": "Explain Plan",
-        "jcrquery.existing.indexes": "Existing Indexes",
-        "jcrquery.reindex": "Re-index",
-        "jcrquery.add.index": "Add a new Index",
-        "jcrquery.index.name": "Index Name",
-        "jcrquery.kind": "Kind",
-        "jcrquery.index.node.type": "Index Node Type",
-        "jcrquery.property.name": "Property Name",
-        "jcrquery.property.type": "Property Type",
-        "jcrquery.register.index": "Register Index",
-        "jcrquery.dialog.adding.title": "Adding Index",
-        "jcrquery.dialog.adding.message": "Adding index. Please wait...",
-        "jcrquery.dialog.reindexing.title": "Reindexing",
-        "jcrquery.dialog.reindexing.message": "Reindexing. Please wait...",
-        "jcrquery.reindex.success": "Successfully reindexed",
-        "jcrquery.reindex.error": "Error reindexing",
-        "jcrquery.index.add": "Added the index",
-        "jcrquery.index.remove": "Removed the index ",
-        "jcrquery.error.query.perform": "Error performing query ",
-        "jcrquery.index.get.error": "Error getting indexes "
+        "CLUSTER" : {
+            "CLUSTER-TEST" : {
+                "TITLE": "Is Kylo Clustered",
+                "WARNING": "Warning.  Only 1 member is found in the cluster.",
+                "ENSURE" :{
+                    "REQUEST" : "Please ensure your Kylo cluster configuration is configured correctly.",
+                    "MODESHAPE_JGROUPS_PART1": "Ensure the correct {{fileName}} exists in the '{{filePath}}' and is configured.",
+                    "FILE_CONFIGURED":"Ensure the file above is configured and referenced in the {{fileName}} file.",
+                    "KYLO_CLUSTER_CONF_PART1":"Ensure the {{fileName}} exists in the '{{filePath}}' and is configured.",
+                    "PROPERTY_EXISTS":"The property in the {{filePath}} exists referring to the file above: {{fileKey}} ",
+                    "QUARTZ_SCHEDULER":"Ensure the Quartz Scheduler is configured for cluster mode and the '{{fileName}}' file is in the '{{filePath}}'"
+                },
+                "MEMBERS": "Cluster Members",
+                "SENDMESSAGE" : "Send a Message",
+                "SENDBUTTON" : "Send",
+                "RECEIVEDMESSAGE" : "Received Messages",
+                "MESSAGETEXT" : "Message",
+                "FROMTEXT" : "From",
+                "NO_MESSAGES_RECEIVED_TEXT": "No Messages received",
+                "NOT_CLUSTERED_PART1" : "Kylo is not clustered.  Please follow the ",
+                "NOT_CLUSTERED_PART2":" and ensure the following items are configured.",
+                "DEFAULT_KYLO_CONF_TEXT":"The default Kylo installation provides sample configuration files for the items below in the",
+                "MODESHAPE_JGROUPS_CONF":"Modeshape jgroups configuration",
+                "KYLO_JOB_CONF_TEXT":"Kylo jgroups configuration",
+                "QUARTZ_SCHEDULER":"Quartz Scheduler"
+            },
+            "DIALOG":{
+                "SENT_MESSAGE":"Sent the message",
+                "ERROR_MESSAGE":"Error sending the message"
+            }
+        },
+        "JCRQUERY" : {
+            "QUERY_RETURN" : "The query returned {{resultSize}} rows and took: {{queryTime }} ",
+            "EXPLAIN_PLAN" : "Explain Plan",
+            "EXISTING_INDEXES": "Existing Indexes",
+            "REINDEX": "Re-index",
+            "ADD_INDEX":"Add a new Index",
+            "INDEX_NAME":"Index Name",
+            "KIND":"Kind",
+            "INDEX_NODE_TYPE": "Index Node Type",
+            "PROPERTY_NAME":"Property Name",
+            "PROPERTY_TYPE":"Property Type",
+            "REGISTER_INDEX":"Register Index",
+            "REINDEX_SUCCESS":"Successfully reindexed",
+            "REINDEX_ERROR":"Error reindexing",
+            "INDEX_ADD":"Added the index",
+            "INDEX_REMOVE":"Removed the index ",
+            "ERROR_QUERY_PERFORM":"Error performing query ",
+            "ERROR_INDEX_GET":"Error getting indexes ",
+            "DIALOG" : {
+                "ADDING_TITLE":"Adding Index",
+                "ADDING_MESSAGE":"Adding index. Please wait...",
+                "REINDEXING_TITLE":"Reindexing",
+                "REINDEXING_MESSAGE":"Reindexing. Please wait..."
+            }
+        }
     },
     "AUTH":{
-        "group.details.title":"Group Details",
-        "group.details.groupName":"Group Name",
-        "group.details.groupName.required":"A group name is required.",
-        "group.details.groupName.inUse":"That group name is already in use.",
-        "group.details.noUser.warn":"There are no users associated with this group.",
-        "user.details.title":"User Details",
-        "user.details.userName.inUse":"That username is already in use.",
-        "group.tile":"Group",
-        "user.details.noGroups.warn":"At least one group is required."
+        "GROUP":{
+            "DETAILS_TITLE": "Group Details",
+            "DETAILS_GROUPNAME":"Group Name",
+            "DETAILS_GROUPNAME_REQUIRED":"A group name is required.",
+            "DETAILS_GROUPNAME_INUSE":"That group name is already in use.",
+            "DETAILS_NOUSER_WARN":"There are no users associated with this group.",
+            "GROUP_TILE":"Group"
+        },
+        "USER":{
+            "DETAILS_TITLE":"User Details",
+            "DETAILS_USERNAME_INUSE":"That username is already in use.",
+            "DETAILS_NOGROUPS_WARN":"At least one group is required."
+        }
     },
     "COMMON":{
-        "about.details.para":"The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.<br>It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.<br><br>For enterprise support options, please visit <a href='https://www.thinkbiganalytics.com/kylo/' target='_blank'>Think Big</a>. <br> <br>",
-        "about.details.text.area":"Copyright 2017 Teradata Corporation <br/> Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <br/> http://www.apache.org/licenses/LICENSE-2.0 <br><br>  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
-        "not.available":"Not Available",
-        "options.menu.view":"View Options"
+        "ABOUT_DETAILS_PARA":"The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.<br>It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.<br><br>For enterprise support options, please visit <a href='https://www.thinkbiganalytics.com/kylo/' target='_blank'>Think Big</a>. <br> <br>",
+        "ABOUT_DETAILS_TEXT_AREA":"Copyright 2017 Teradata Corporation <br/> Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <br/> http://www.apache.org/licenses/LICENSE-2.0 <br><br>  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
+        "NOT_AVAILABLE":"Not Available",
+        "OPTIONS_MENU_VIEW":"View Options"
 
     },
     "FEEDMGR":{
@@ -1534,47 +1550,71 @@
             },
             "UPDATE_AVAILABLE":"Update Available"
         },
+        "BUSINESS_METADATA" : {
+            "PROPERTY_DEF" : "Property Definition",
+            "FEEDS_CAT_DEFINE":"Define standard properties available to feeds and categories"
+        },
+        "CONNECTOR" : {
+            "INVALID_URL" : "Invalid Url",
+            "INVALID_URL_PROTOCOL": "Invalid Url Protocol",
+            "EDIT_EXISTING":"Edit existing",
+            "CREATE_NEW":"Create new",
+            "UNKNOWN_UI_OPTIONS":"Unknown ui options mapper {{mapper}}  for connector {{connector}}",
+            "NO_CONNECTORS":"No Connectors",
+            "SEE_KYLODOC":"There are no available connectors. See the Kylo documentation for more information."
+        },
+        "DATASOURCE_SELECTION": {
+            "DIALOG" : {
+                "SELECTED_ITEMS" : "Selected Items",
+                "ALL_PATHS":"A list of items selected on all paths"
+            }
+        },
+        "BROWSER" : {
+            "ITEMS_SELECTED" : "item(s) selected here",
+            "ITEMS_TOTAL" : "in total"
+        },
+        "PREVIEW_SCHEMA" : {
+            "DIALOG" : {
+                "EXAMINING_TITLE": "Examining file metadata",
+                "EXAMINING_MESSAGE": "Validating file metadata",
+                "CANT_PROCESS_ERROR": "Error. Cant process",
+                "NO_PATH_SUPPLIED" : "No path has been supplied",
+                "PLEASE_SELECT_ITEM":"Please select an item to preview from the catalog"
+            }
+        },
+        "CATEGORY" : {
+            "SAVED" : "Saved the Category ",
+            "DELETED" : "Successfully deleted the category ",
+            "DIALOG" : {
+                "SAVE_FAILED_MESSAGE" : "The category '{{category}}' could not be saved {{message}}",
+                "DELETE_FAILED_MESSAGE" : "The category '{{category}}' could not be deleted {{message}}"
+            },
+            "DEFINITION_SYSTEM_NAME": {
+                "CUSTOMIZABLE" : "Can be customised",
+                "NOT_CUSTOMIZABLE_HAS_FEEDS": "Cannot be customised because Category has Feeds",
+                "NOW_EDITABLE": "System name is now editable",
+                "NOT_CUSTOMIZABLE_AUTO_GENERATED":"Auto generated from Category Name, can be customised"
+            }
+        },
+        "FILE_UPLOAD" : {
+            "ADD_FILE" : "Add file",
+            "ADD_MORE_FILES" : "Add more files",
+            "FILE_EXISTS":"File already exists",
+            "DELETE_CONFIRMATION":"Are you sure you want to delete ${file.name}?"
+        },
+        "DATASOURCES" : {
+            "NO_DATASOURCE":"No Datasources",
+            "NO_DATASOURCE_SEE_KYLO_DOCS":"There are no available datasources. See the Kylo documentation for more information."
+        },
         "LOADING_SCHEMAS":"Loading schemas",
         "SCHEMA":"Schema",
-        "business.metadata.property.def":"Property Definition",
-        "business.metadata.feeds.cat.define":"Define standard properties available to feeds and categories",
-        "connector.component.invalid.url":"Invalid Url",
-        "connector.component.invalid.url.protocol":"Invalid Url Protocol",
-        "connector.component.edit.existing":"Edit existing",
-        "connector.component.create.new":"Create new",
-        "connector.component.unknown.ui.options":"Unknown ui options mapper {{mapper}}  for connector {{connector}}",
-        "connectors.no.connectors":"No Connectors",
-        "connectors.no.connectors.see.kyloDoc":"There are no available connectors. See the Kylo documentation for more information.",
-        "datasource.selection.dialog.selected.items":"Selected Items",
-        "datasource.selection.dialog.selected.items.all.paths":"A list of items selected on all paths",
-        "browser.component.items.selected":"item(s) selected here",
-        "browser.component.items.total":"in total",
-        "create.feed":"Create Feed",
-        "wrangle":"Wrangle",
-        "view.raw":"View Raw",
-        "settings":"Settings",
-        "data.sets":"Data sets",
-        "preview.schema.dialog.examining.title":"Examining file metadata",
-        "preview.schema.dialog.examining.message":"Validating file metadata",
-        "preview.schema.dialog.cant.process.error":"Error. Cant process",
-        "preview.schema.dialog.no.path.supplied":"No path has been supplied",
-        "preview.schema.dialog.please.select.item":"Please select an item to preview from the catalog",
-        "schema.parse.settings":"Schema Parse Settings",
-        "drag.drop.here":"Drag and drop here",
-        "file.upload.add.file":"Add file",
-        "file.upload.add.more.files":"Add more files",
-        "file.upload.fileExists":"File already exists",
-        "file.upload.file.delete.confirm.message":"Are you sure you want to delete ${file.name}?",
-        "datasources.noDS":"No Datasources",
-        "datasources.noDS.see.kylo.doc":"There are no available datasources. See the Kylo documentation for more information.",
-        "category.saved":"Saved the Category ",
-        "category.deleted":"Successfully deleted the category ",
-        "category.dialog.save.failed.message":"The category '{{category}}' could not be saved {{message}}",
-        "category.dialog.delete.failed.message":"The category '{{category}}' could not be deleted {{message}}",
-        "category.def.sys.name.desc.customizable":"Can be customised",
-        "category.def.sys.name.desc.not.customizable.has.feeds":"Cannot be customised because Category has Feeds",
-        "category.def.sys.name.desc.now.editable":"System name is now editable",
-        "category.def.sys.name.desc.not.customizable.auto.generated":"Auto generated from Category Name, can be customised"        
+        "CREATE_FEED":"Create Feed",
+        "WRANGLE":"Wrangle",
+        "VIEW_RAW":"View Raw",
+        "SETTINGS":"Settings",
+        "DATA_SETS":"Data sets",
+        "SCHEMA_PARSE_SETTINGS":"Schema Parse Settings",
+        "DRAG_DROP_HERE":"Drag and drop here",
     },
     "SHARED":{
         "APPLY_DOMAIN_TYPE":{

@@ -77,7 +77,7 @@ export class UploadComponent implements OnInit {
         // Delete server file
         if (file.status === FileUploadStatus.SUCCESS) {
             this.dialogs.openConfirm({
-                message: this.translate.instant('FEEDMGR.file.upload.file.delete.confirm.message',{fileName:file.name}),
+                message: this.translate.instant('FEEDMGR.FILE_UPLOAD.DELETE_CONFIRMATION',{fileName:file.name}),
                 acceptButton: this.translate.instant('view.main.delete')
             }).afterClosed().subscribe((accept: boolean) => this.deleteFile(file));
         } else {
@@ -96,7 +96,7 @@ export class UploadComponent implements OnInit {
             }
         } else if (this.files.find(file => file.name === event.name)) {
             this.dialogs.openAlert({
-                message: this.translate.instant('FEEDMGR.file.upload.fileExists')
+                message: this.translate.instant('FEEDMGR.FILE_UPLOAD.FILE_EXISTS')
             });
         } else {
             // Upload single file

@@ -27,12 +27,12 @@ export class ClusterComponent implements OnInit{
             var simpleMessage = this.simpleMessage;
             var successFn = (response: any)=> {
                 if (response &&  response.status == 'success') {
-                    this.snackBar.open(this.translate.instant('cluster.dialog.sent.message'),this.translate.instant("views.common.ok"),{duration : 3000});
+                    this.snackBar.open(this.translate.instant('ADMIN.CLUSTER.DIALOG.SENT_MESSAGE'),this.translate.instant("views.common.ok"),{duration : 3000});
                     this.sentMessages.push(simpleMessage);
                 }
             }
             var errorFn= (err: any)=> {
-                this.snackBar.open(this.translate.instant('cluster.dialog.error.message'),this.translate.instant("views.common.ok"),{duration : 3000});
+                this.snackBar.open(this.translate.instant('ADMIN.CLUSTER.DIALOG.ERROR_MESSAGE'),this.translate.instant("views.common.ok"),{duration : 3000});
             }
                var promise = this.http.post("/proxy/v1/admin/cluster/simple",this.simpleMessage)
                                             .toPromise().then(successFn, errorFn);
