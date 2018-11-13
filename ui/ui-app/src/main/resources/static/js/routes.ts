@@ -176,7 +176,7 @@ class Route {
                 });
             }
         })
-    $stateProvider.state({
+        $stateProvider.state({
             name: 'users.**',
             url: '/users',
             lazyLoad: (transition: any) => {
@@ -486,35 +486,6 @@ class Route {
             }
         });
 
-        $stateProvider.state('jcr-query.**', {
-            url: '/admin/jcr-query',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('jcr-query', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading admin jcr ", err);
-                    return err;
-                });
-            }
-        });
-
-
-        $stateProvider.state('cluster.**', {
-            url: '/admin/cluster',
-            lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('cluster', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading admin cluster ", err);
-                    return err;
-                });
-            }
-        });
-
         $stateProvider.state({
             name: 'projects.**',
             url: '/projects',
@@ -545,24 +516,28 @@ class Route {
             }
         });
 
-        $stateProvider.state({
-            name: 'access-denied',
-            url: '/access-denied',
-            params: {attemptedState: null},
-            views: {
-                "content": {
-                    // templateUrl: "./main/access-denied.html",
-                    component: 'acessDeniedController',
-                    //controllerAs:'vm'
+
+        $stateProvider
+            .state('access-denied', {
+                url: '/access-denied',
+                views: {
+                    "content": {
+                        component: 'accessDeniedController',
+                    }
+                },
+                lazyLoad: ($transition$: any) => {
+                    const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+                    return import(/* webpackChunkName: "accessDenied.module" */ './main/AccessDeniedController')
+                        .then(mod => {
+                            console.log('imported access denied controller', mod);
+                            $ocLazyLoad.load(mod);
+                        })
+                        .catch(err => {
+                            throw new Error("Failed to load access denied controller, " + err);
+                        });
                 }
-            },
-            resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
-                loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
-                    // you can lazy load files for an existing module
-                    return $ocLazyLoad.load('main/AccessDeniedController');
-                }]
-            }
-        });
+            });
+
     }
 
     runFn($rootScope: any, $state: any, $location: any, $transitions: any, $timeout: any, $q: any,
@@ -610,7 +585,11 @@ class Route {
                 else {
                     if (!accessControlService.hasAccess(trans)) {
                         if (trans.to().name != 'access-denied') {
-                            return $state.target("access-denied", {attemptedState: trans.to()});
+                            let redirect = "access-denied";
+                            if(trans.to().data) {
+                                redirect = trans.to().data.accessRedirect != undefined ? trans.to().data.accessRedirect : "access-denied";
+                            }
+                            return $state.target(redirect, {attemptedState: trans.to()});
                         }
                     }
                     else {

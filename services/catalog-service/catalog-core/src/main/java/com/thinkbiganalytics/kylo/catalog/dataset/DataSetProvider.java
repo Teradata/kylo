@@ -115,10 +115,9 @@ public class DataSetProvider {
         dataSet.setDataSource(dataSource);
         validateDataSet(dataSet);
 
-        // Create and store data set
         return metadataService.commit(() -> {
             // Require admin permission if the results should include unencrypted credentials.
-            accessController.checkPermission(AccessController.SERVICES, encryptedCredentials ? FeedServicesAccessControl.EDIT_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
+            accessController.checkPermission(AccessController.SERVICES, encryptedCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
 
             // Resolve the real data set if possible, otherwise create
             com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceMetadataProvider.resolveId(dataSource.getId());

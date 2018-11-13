@@ -569,8 +569,9 @@ public class DataSourceController extends AbstractCatalogController {
 
                 TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
 
-                //create the dataset
-                dataSetWithTableSchema = metadataService.commit(() -> {
+                //create the dataset as a service account.  if we get here the user has access to view the data source
+
+               // dataSetWithTableSchema = metadataService.commit(() -> {
                     // List tables
 
                     if (tableSchema != null) {
@@ -601,7 +602,7 @@ public class DataSourceController extends AbstractCatalogController {
                         dataSet.setOptions(options);
 
                         DataSet dataSet1 = dataSetService.findOrCreateDataSet(dataSet, encryptCredentials);
-                        return new DataSetWithTableSchema(dataSet1, tableSchema);
+                        dataSetWithTableSchema = new DataSetWithTableSchema(dataSet1, tableSchema);
                     } else {
                         if (log.isErrorEnabled()) {
                             log.error("Failed to describe tables for schema [" + schema + "], table [" + tableName + "], dataSource [" + dataSourceId + "] ");
@@ -614,7 +615,15 @@ public class DataSourceController extends AbstractCatalogController {
                     }
 
 
-                });
+               // });
+            }
+            else {
+                //no acceess
+                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                    .message(getMessage("catalog.datasource.forbidden"))
+                    .url(request.getRequestURI())
+                    .buildError();
+                throw new InternalServerErrorException(Response.serverError().entity(status).build());
             }
         }catch (Exception e){
             final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
@@ -622,13 +631,6 @@ public class DataSourceController extends AbstractCatalogController {
                 .url(request.getRequestURI())
                 .buildError();
             throw new InternalServerErrorException(Response.serverError().entity(status).build());
-        }
-       if(!hasAccess){
-                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
-                    .message(getMessage("catalog.datasource.forbidden"))
-                    .url(request.getRequestURI())
-                    .buildError();
-                throw new InternalServerErrorException(Response.serverError().entity(status).build());
         }
 
         return Response.ok(dataSetWithTableSchema).build();

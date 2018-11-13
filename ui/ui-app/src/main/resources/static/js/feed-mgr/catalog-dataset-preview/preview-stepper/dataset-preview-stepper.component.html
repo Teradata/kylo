@@ -5,8 +5,26 @@
               <div fxLayout="row" fxFlex *ngIf="displayTopActionButtons" style="margin-top:35px">
                 <button mat-button (click)="onCancel()">Cancel</button>
               </div>
-                <catalog-datasources #catalogDatasources [displayInCard]="false" (datasourceSelected)="onDatasourceSelected($event)" [datasources]="datasources" [loading]="loading"
+
+                <catalog-datasources *ngIf="!accessDenied" #catalogDatasources [displayInCard]="false" (datasourceSelected)="onDatasourceSelected($event)" [datasources]="datasources" [loading]="loading"
                                      [selectedDatasourceState]="feedDefintionDatasourceState" [stateParams]="stateParams" [readOnly]="true"></catalog-datasources>
+
+              <div fxLayout="column" fxFlex="" fxLayoutAlign="center center" *ngIf="accessDenied">
+                <ng-md-icon icon="block" class="warn push-bottom-lg" size="60"></ng-md-icon>
+                <h2 class="mat-title">Unauthorized</h2>
+                <p>You don't have access to this page</p>
+                <div  *ngIf="requiredPermissions.length >0" fxLayoutAlign="center center" fxLayout="column">
+                  <mat-divider></mat-divider>
+                  <p >The following permissions are required for you to access this page</p>
+                  <mat-list>
+                    <mat-list-item *ngFor="let permission of requiredPermissions">
+                      {{permission}}
+                    </mat-list-item>
+                  </mat-list>
+                </div>
+
+              </div>
+
               <!-- hidden form to prevent next step from being selected until datasource is chosen-->
               <form [formGroup]="chooseDataSourceForm">
                 <input type="hidden" formControlName="hiddenValidFormCheck" required >

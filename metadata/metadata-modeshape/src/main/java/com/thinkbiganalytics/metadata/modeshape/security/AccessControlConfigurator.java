@@ -214,7 +214,7 @@ public class AccessControlConfigurator {
      * Ensures that the entity-level access control is setup up for the entities introduced by the connector architecture.
      */
     public void ensureCatalogAccessControl() {
-        List<Connector> connectors = connectorProvider.findAll();
+        List<Connector> connectors = connectorProvider.findAll(true);
         List<SecurityRole> conntorRoles = this.roleProvider.getEntityRoles(SecurityRole.CONNECTOR);
         Optional<AllowedActions> connectorActions = this.actionsProvider.getAvailableActions(AllowedActions.CONNECTOR);
         

@@ -137,8 +137,12 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
      */
     @Override
     public List<? extends DataSet> getDataSets() {
-        Node setsNode = JcrUtil.getNode(getNode(), DATA_SETS);
+        Node setsNode = getDataSetsNode();
         return JcrUtil.getJcrObjects(setsNode, JcrDataSet.class);
+    }
+
+    public Node getDataSetsNode(){
+        return JcrUtil.getNode(getNode(), DATA_SETS);
     }
     
     public static class DataSourceId extends JcrEntity.EntityId implements DataSource.ID {

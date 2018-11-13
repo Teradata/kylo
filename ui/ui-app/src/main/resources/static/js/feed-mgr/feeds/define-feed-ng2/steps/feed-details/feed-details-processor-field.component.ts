@@ -328,7 +328,7 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
             _module.exports = require('@covalent/core/dialogs');
         });
         SystemJS.registerDynamic('@kylo/feed', [], true, function(_require: any, _exports: any, _module: any) {
-            _module.exports = require('../../../../../../../../../../target/classes/static/lib/bundles/kylo-feed.umd.js');
+            _module.exports = require('../../../../../../../../../../target/classes/static/lib/bundles/kylo-feed.umd.min.js');
         });
     }
 

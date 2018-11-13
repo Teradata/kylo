@@ -1,0 +1,125 @@
+<mat-card>
+  <mat-card-content>
+    <mat-tab-group>
+      <mat-tab id="jcr-query" label="Jcr Query">
+        <div fxLayout="row" fxLayoutAlign="space-between center">
+          <span class="mat-title" style="white-space: nowrap; margin-right: 20px">{{"views.common.executeQ" | translate}}</span>
+          <mat-input-container fxFlex="70" *ngIf="previousQueries.length >0" style="min-width: 400px">
+            <label>{{"views.common.previousQ" | translate}}</label>
+            <mat-select fxFlex [(ngModel)]="previousQuery" (selectionChange)="changePreviousQuery()">
+              <mat-option *ngFor="let q of previousQueries" [value]="q">
+                {{q}}
+              </mat-option>
+            </mat-select>
+          </mat-input-container>
+        </div>
+        <codemirror flex [config]="codemirrorOptions" [(ngModel)]="sql"></codemirror>
+
+        <button mat-button mat-raised-button color="accent" [disabled]="loading" (click)="executeQuery()" style="margin-top: 10px">
+          {{"views.common.executeQ" | translate}}
+        </button>
+
+        <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
+
+        <div class="browse-results" *ngIf="loading == false ">
+          <span *ngIf="queryTime != null" class="md-subhead"
+                [translate]="'ADMIN.jcrquery.query.return'" [translateParams]="{resultSize : resultSize, queryTime:queryTime}"></span><!--| timeWithMillis -->
+          <div flex *ngIf="!loading && queryExecuted" style="width:100%; max-height:600px; margin-bottom: 20px">
+            <td-data-table
+                [data]="tableData"
+                [columns]="gridOptions"
+                [sortable]="true"
+                [resizableColumns]="true">
+            </td-data-table>
+          </div>
+        </div>
+        <div layout="column" *ngIf="explainPlan != null">
+          <div class="mat-title">{{"ADMIN.jcrquery.explain.plan" | translate}}</div>
+          <div style="white-space: pre-wrap;">{{explainPlan}}</div>
+        </div>
+      </mat-tab>
+
+
+      <mat-tab id="jcr-indexes" label="Jcr indexes">
+        <div fxLayout="column">
+          <div fxLayout="row" fxLayoutAlign="space-between center">
+            <div class="mat-title">{{indexes.length}} {{"ADMIN.jcrquery.existing.indexes" | translate}}</div>
+            <button mat-button mat-raised-button color="accent" (click)="reindex()">
+              {{"ADMIN.jcrquery.reindex" | translate}}
+            </button>
+          </div>
+        </div>
+        <filtered-paginated-table-view
+            [filteredData]="filteredData"
+            [columns]="indexColumns"
+            [clickable]="false"
+            [sortable]="true"
+            [sortOrder]="sortOrder"
+            [sortBy]="sortBy"
+            [firstLast]="false"
+            [pageSize]="pageSize"
+            [filteredTotal]="filteredTotal"
+            [showToolbar]="false"
+            [allowedPageSize]="[5,10,20,50]"
+            (sortChanged)="sort($event)"
+            (pageSizeChanged)="onPageSizeChange($event)"
+        >
+          <ng-template tdDataTableTemplate="action" let-value="value" let-row="row" let-column="column">
+            <div layout="row">
+              <mat-button class="icon-btn md-icon-button auto-height" (click)="unregisterIndex(row.indexName)">
+                <mat-icon class="ng-md-icon" size="20">delete</mat-icon>
+              </mat-button>
+            </div>
+          </ng-template>
+        </filtered-paginated-table-view>
+
+        <div fxLayout="column" style="margin-top: 20px;">
+          <form #indexForm="ngForm" name="indexForm" fxLayout="column">
+
+            <span class="mat-title">{{"ADMIN.jcrquery.add.index" | translate}}</span>
+
+            <mat-form-field>
+              <input matInput name="indexName" [placeholder]='"ADMIN.jcrquery.index.name" | translate' [(ngModel)]="index.indexName" required #indexNameField="ngModel">
+              <mat-error *ngIf="indexNameField.hasError('required')">Required</mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-select name="indexKind" [placeholder]='"ADMIN.jcrquery.kind" | translate' [(ngModel)]="index.indexKind" required #indexKindField="ngModel">
+                <mat-option *ngFor="let kind of indexKinds" [value]="kind">
+                  {{kind}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="indexKindField.hasError('required')">Required</mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput name="nodeType" [placeholder]='"ADMIN.jcrquery.index.node.type" | translate' [(ngModel)]="index.nodeType" required #nodeTypeField="ngModel">
+              <mat-error *ngIf="nodeTypeField.hasError('required')">Required</mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput name="propertyName" [placeholder]='"ADMIN.jcrquery.property.name" | translate' [(ngModel)]="index.propertyName" required #propertyNameField="ngModel">
+              <mat-error *ngIf="propertyNameField.hasError('required')">Required</mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-select name="propertyType" [placeholder]='"ADMIN.jcrquery.property.type" | translate' [(ngModel)]="index.propertyType" required #propertyTypeField="ngModel">
+                <mat-option *ngFor="let type of propertyTypes" [value]="type.value">
+                  {{type.name}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="propertyTypeField.hasError('required')">Required</mat-error>
+            </mat-form-field>
+
+            <div flex="50" style="margin-top: 20px">
+              <button mat-button mat-raised-button color="accent" class="md-primary md-raised" [disabled]="loading || !indexForm.valid" (click)="registerIndex() ">
+                {{"ADMIN.jcrquery.register.index" | translate}}
+              </button>
+            </div>
+          </form>
+
+
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-card-content>
+</mat-card>
+
+

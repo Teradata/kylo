@@ -88,6 +88,7 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
             Node connNode = JcrUtil.createNode(getSession(), connPath, JcrConnector.NODE_TYPE);
             JcrConnector conn = JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
             conn.setTitle(title);
+            conn.setActive(true);
 
 
             if (this.accessController.isEntityAccessControlled()) {

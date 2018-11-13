@@ -1,0 +1,16 @@
+
+<div fxLayout="column" fxFlex="" fxLayoutAlign="center center">
+  <ng-md-icon icon="block" class="warn push-bottom-lg" size="60"></ng-md-icon>
+  <h2 class="mat-title">Unauthorized</h2>
+  <p>You don't have access to this page</p>
+  <div  *ngIf="missingPermissions.length >0" fxLayoutAlign="center center" fxLayout="column">
+    <mat-divider></mat-divider>
+    <p >The following permissions are required for you to access this page</p>
+    <mat-list>
+      <mat-list-item *ngFor="let permission of missingPermissions">
+        {{permission}}
+      </mat-list-item>
+    </mat-list>
+  </div>
+
+</div>
