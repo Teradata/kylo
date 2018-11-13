@@ -1,30 +1,19 @@
 import {ProfileOutputRow} from "..";
+import * as _ from "underscore";
 
 export class ColumnProfileHelper {
 
     static createColumnProfiles(profileData: ProfileOutputRow[]): ColumnProfile[] {
         let result: ColumnProfile[] = [];
-        profileData = profileData.sort((a:ProfileOutputRow,b:ProfileOutputRow)=>{
-           return a.columnName.localeCompare(b.columnName);
+        let profileColumns = _.groupBy(profileData, (v:ProfileOutputRow)=>{
+            return v.columnName;
         });
-        let i = 0;
-        let firstRow;
-        let lastField = null;
-        let column: ColumnProfile;
-        for (let item of profileData) {
-            if (lastField == null) {
-                lastField = item.columnName;
-                firstRow = i;
-            } else if (lastField != item.columnName || (i == profileData.length - 1)) {
-                if (lastField != '(ALL)') {
-                    let sliceTo = (i == profileData.length -1 ? i+1 : i);
-                    result.push(new ColumnProfile(lastField, profileData.slice(firstRow, i)));
-                }
-                lastField = item.columnName;
-                firstRow = i;
+
+        _.each(profileColumns, function(values:ProfileOutputRow[], key:string) {
+            if (key != '(ALL)') {
+                result.push(new ColumnProfile(key, values));
             }
-            i++;
-        }
+        });
         return result;
     }
 }
