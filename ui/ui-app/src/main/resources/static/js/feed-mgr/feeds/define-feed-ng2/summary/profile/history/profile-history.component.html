@@ -1,4 +1,5 @@
-<mat-card class="mat-typography">
+<ng-template tdLoading [tdLoadingUntil]="!loading" tdLoadingStrategy="overlay" tdLoadingType="circular" class="layout-fill">
+  <mat-card class="mat-typography">
    <mat-card-header>
     <mat-card-title>
       <mat-icon class="kylo-title-icon">{{kyloIcons_Links_profile}}</mat-icon>
@@ -9,7 +10,7 @@
 
   <mat-card-content>
     <div *ngIf="showSummary">
-      <!--<md-progress-linear md-mode="indeterminate" *ngIf="loading == true"></md-progress-linear>-->
+
       <mat-nav-list>
         <div *ngFor="let row of profileSummary; last as isLast;">
           <a mat-list-item (click)="viewProfileResults(row)" class="profile-row">
@@ -63,3 +64,5 @@
     </div>
   </mat-card-content>
 </mat-card>
+
+</ng-template>
