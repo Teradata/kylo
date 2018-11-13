@@ -489,7 +489,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         });
         let pkMergeStrategy = _.find(this.mergeStrategies, (value,index) => {
             return (value.type == 'PK_MERGE');
-        }
+        });
         if (pkMergeStrategy != undefined) {
             pkMergeStrategy.disabled = !pkSet;
         }
