@@ -22,7 +22,9 @@ package com.thinkbiganalytics.metadata.modeshape.support;
 
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -163,7 +165,11 @@ public abstract class NodeModificationInvocationHandler implements InvocationHan
                     Object[] propValues = Arrays.stream(values).map(v -> {
                         if(propertyType == PropertyType.WEAKREFERENCE || propertyType == PropertyType.REFERENCE){
                             //just store the node id.  user might not have access to the entire collection
-                            return v;
+                            try {
+                            return v.getString();
+                            } catch (RepositoryException e) {
+                                throw new MetadataRepositoryException("Failed to access property type", e);
+                            }
                         }
                         else {
                             try {
