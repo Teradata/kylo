@@ -37,6 +37,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
@@ -158,11 +159,18 @@ public abstract class NodeModificationInvocationHandler implements InvocationHan
                 Property prop = this.wrappedNode.getProperty((String) args[0]);
                 if (prop.isMultiple()) {
                     Value[] values = prop.getValues();
+                    final int propertyType = prop.getType();
                     Object[] propValues = Arrays.stream(values).map(v -> {
-                        try {
-                            return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
-                        } catch (AccessDeniedException e) {
-                            throw new AccessControlException("Unauthorized to access property: " + args[0]);
+                        if(propertyType == PropertyType.WEAKREFERENCE || propertyType == PropertyType.REFERENCE){
+                            //just store the node id.  user might not have access to the entire collection
+                            return v;
+                        }
+                        else {
+                            try {
+                                return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
+                            } catch (AccessDeniedException e) {
+                                throw new AccessControlException("Unauthorized to access property: " + args[0]);
+                            }
                         }
                     }).toArray();
                     Object[] argValues = (Object[]) args[1];
