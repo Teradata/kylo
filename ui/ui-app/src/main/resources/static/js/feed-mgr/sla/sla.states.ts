@@ -49,7 +49,7 @@ export const slaStates: Ng2StateDeclaration[] = [
             }
         ],
         data: {
-            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
+            permissionsKey:"EDIT_SERVICE_LEVEL_AGREEMENTS"
         }
     },
     {
@@ -64,7 +64,7 @@ export const slaStates: Ng2StateDeclaration[] = [
             }
         ],
         data: {
-            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
+            permissionsKey:"EDIT_SERVICE_LEVEL_AGREEMENTS"
         }
     }
 ];
