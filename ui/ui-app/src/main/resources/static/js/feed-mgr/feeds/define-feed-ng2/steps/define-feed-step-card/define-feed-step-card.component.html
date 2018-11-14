@@ -1,4 +1,4 @@
-<div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+<div color="accent" *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
   <!-- if this page has more than 1 card and its not disabled show all the content -->
   <ng-content select="feed-step-custom-content" *ngIf="!singleCardView && disabledDependsUponStep == null "></ng-content>
 
