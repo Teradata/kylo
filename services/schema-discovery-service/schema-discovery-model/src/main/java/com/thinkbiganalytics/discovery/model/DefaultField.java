@@ -54,6 +54,9 @@ public class DefaultField implements Field {
 
     private boolean createdTracker;
 
+    private boolean deleted;
+
+
     /**
      * The original name of the column prior to it getting changed (if at all)
      */
@@ -239,5 +242,13 @@ public class DefaultField implements Field {
 
     public void setOrigDataType(String origDataType) {
         this.origDataType = origDataType;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

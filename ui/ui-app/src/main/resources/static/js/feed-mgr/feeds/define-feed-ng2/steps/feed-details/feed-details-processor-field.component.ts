@@ -77,6 +77,7 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         if(this.forms[this.processor.id] == undefined){
             this.forms[this.processor.id] = new FormGroup({});
         }
+        this.processor.formGroup = this.forms[this.processor.id]
     }
 
     /**
@@ -86,6 +87,8 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
     getProcessorForm(){
         this._ensureProcessorForm();
         return this.forms[this.processor.id];
+
+
     }
 
     ngOnChanges(changes: SimpleChanges): void {

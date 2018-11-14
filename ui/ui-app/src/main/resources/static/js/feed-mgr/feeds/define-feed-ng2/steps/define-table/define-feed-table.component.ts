@@ -296,7 +296,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         if(this.feed.isDataTransformation() || (this.feed.hasBeenDeployed() && this.feed.sampleDataSet == undefined)){
             this.showSourceSample = false;
         }
-        if (this.feed.sampleDataSet == undefined && !this.skippedSourceSample) {
+        if (this.feed.sampleDataSet == undefined && !this.skippedSourceSample && this.feed.table.feedDefinitionTableSchema.fields.length ==0) {
             this.showSourceSampleCatalog = true;
         }
     }
@@ -410,7 +410,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.indexCheckAll.toggleAll();
         let checked = this.indexCheckAll.isChecked;
             //update the form values
-            this.feed.table.fieldPolicies.forEach(fieldPolicy => {
+            this.feed.table.feedDefinitionFieldPolicies.forEach(fieldPolicy => {
                 let ctrl = this.tableFormControls.getFormControl(this.defineTableForm,"index",fieldPolicy.field);
                 ctrl.setValue(checked);
                 fieldPolicy.index = checked;
@@ -422,7 +422,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.profileCheckAll.toggleAll();
         let checked = this.profileCheckAll.isChecked;
         //update the form values
-        this.feed.table.fieldPolicies.forEach(fieldPolicy => {
+        this.feed.table.feedDefinitionFieldPolicies.forEach(fieldPolicy => {
             let ctrl = this.tableFormControls.getFormControl(this.defineTableForm,"profile",fieldPolicy.field);
             ctrl.setValue(checked);
             fieldPolicy.profile = checked;
@@ -484,7 +484,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.schemaPanelExpanded = false;
 
         // Set merge strategy state if primary key is available
-        let pkSet = _.any(this.feed.table.tableSchema.fields, (value, index) => {
+        let pkSet = _.any(this.feed.table.feedDefinitionTableSchema.fields, (value, index) => {
             return (value.primaryKey);
         });
         let pkMergeStrategy = _.find(this.mergeStrategies, (value,index) => {
@@ -518,7 +518,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.feed.table.syncFieldPolicy(columnDef,index);
 
         // Check if column data type matches domain data type
-        var policy = <TableFieldPolicy>this.feed.table.fieldPolicies[index];
+        var policy = <TableFieldPolicy>this.feed.table.feedDefinitionFieldPolicies[index];
         var domainType = policy.$currentDomainType;
 
         if (policy.domainTypeId && domainType.field && columnDef.$allowDomainTypeConflict !== true) {
@@ -558,7 +558,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     onFieldPoliciesClicked(selectedColumn:SelectedColumn){
 
-        let fieldPolicy: TableFieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == selectedColumn.field.name );
+        let fieldPolicy: TableFieldPolicy = this.feed.table.feedDefinitionFieldPolicies.find(policy => policy.fieldName == selectedColumn.field.name );
         if(fieldPolicy) {
             this.feedFieldPolicyRulesDialogService.openDialog(this.feed, fieldPolicy).subscribe((result:any) => {
                   this.selectedColumn.update()
@@ -637,7 +637,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     private _selectColumn(columnDef:TableColumnDefinition){
         let fieldPolicy = columnDef.fieldPolicy;
         if(fieldPolicy == undefined) {
-            fieldPolicy = this.feed.table.fieldPolicies.find(policy => policy.fieldName == columnDef.name);
+            fieldPolicy = this.feed.table.feedDefinitionFieldPolicies.find(policy => policy.fieldName == columnDef.name);
         }
         this.selectedColumn = new SelectedColumn(columnDef, fieldPolicy);
         this.selectedColumn.setDomainType(this.availableDomainTypes);
@@ -666,7 +666,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         // Detect domain types
         var data: ApplyDomainTypesData = {domainTypes: [], fields: []};
 
-        this.feed.table.tableSchema.fields.forEach((field: TableColumnDefinition, index: number) => {
+        this.feed.table.feedDefinitionTableSchema.fields.forEach((field: TableColumnDefinition, index: number) => {
             var domainType = this.domainTypesService.detectDomainType(field, this.availableDomainTypes);
             if (domainType !== null) {
                 if (this.domainTypesService.matchesField(domainType, field)) {
@@ -786,10 +786,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
     private ensureTableFields(){
-        if (this.feed.table.tableSchema.fields && this.feed.table.tableSchema.fields.length > 0) {
+        if (this.feed.table.feedDefinitionTableSchema.fields && this.feed.table.feedDefinitionTableSchema.fields.length > 0) {
             //ensure data types
 
-       this.feed.table.tableSchema.fields.forEach((columnDef: TableColumnDefinition) => {
+       this.feed.table.feedDefinitionTableSchema.fields.forEach((columnDef: TableColumnDefinition) => {
                 // add exotic data type to available columns if needed
                 if ($.inArray(columnDef.derivedDataType, this.availableDefinitionDataTypes) == -1) {
                     this.availableDefinitionDataTypes.push(columnDef.derivedDataType);
@@ -824,7 +824,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     @deprecated
      */
     private syncFeedsColumns() {
-        _.each(this.feed.table.tableSchema.fields, (columnDef: TableColumnDefinition) => {
+        _.each(this.feed.table.feedDefinitionTableSchema.fields, (columnDef: TableColumnDefinition) => {
             columnDef.initFeedColumn()
         });
     }

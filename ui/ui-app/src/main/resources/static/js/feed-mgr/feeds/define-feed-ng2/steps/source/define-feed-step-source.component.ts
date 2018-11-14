@@ -15,7 +15,7 @@ import {DefineFeedService, FeedEditStateChangeEvent} from "../../services/define
 import {FeedLoadingService} from "../../services/feed-loading-service";
 import {FeedSideNavService} from "../../services/feed-side-nav.service";
 import {AbstractFeedStepComponent} from "../AbstractFeedStepComponent";
-import {FeedNifiPropertiesComponent} from "../feed-details/feed-nifi-properties.component";
+import {FeedNifiPropertiesComponent, NiFiPropertiesProcessorsChangeEvent} from "../feed-details/feed-nifi-properties.component";
 import {SKIP_SOURCE_CATALOG_KEY} from "../../../../model/feed/feed.model";
 import {PreviewFileDataSet} from "../../../../catalog/datasource/preview-schema/model/preview-file-data-set";
 import {FormGroupUtil} from "../../../../../services/form-group-util";
@@ -34,6 +34,8 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
      * the parent form group for everything
      */
     sourceForm: FormGroup;
+
+    private inputChanged:boolean = false;
 
     /**
      * Form Group for the source properties
@@ -84,8 +86,13 @@ export class DefineFeedStepSourceComponent extends AbstractFeedStepComponent {
     }
     public isFormValid(){
         let inputControl = this.feedPropertyNiFiComponent.inputProcessorControl;
-        const inputFormValid= (this.feedPropertyNiFiComponent.inputProcessor && this.feedPropertyNiFiComponent.inputProcessor.form.valid);
-        return inputControl.valid && inputFormValid && this.feedPropertyNiFiComponent.formGroup.dirty;
+        const inputFormValid= (this.feedPropertyNiFiComponent.inputProcessor && this.feedPropertyNiFiComponent.inputProcessor.form.valid && (this.feedPropertyNiFiComponent.inputProcessor.formGroup ? this.feedPropertyNiFiComponent.inputProcessor.formGroup.valid : true));
+        return inputControl.valid && inputFormValid && (this.feedPropertyNiFiComponent.formGroup.dirty || this.inputChanged);
+    }
+
+
+    public onInputProcessorChanged($event:any) {
+        this.inputChanged = true;
     }
 
     public applyUpdatesToFeed(): (Observable<any> | boolean | null) {

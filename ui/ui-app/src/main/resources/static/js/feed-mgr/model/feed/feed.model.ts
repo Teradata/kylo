@@ -483,7 +483,7 @@ export class Feed implements KyloObject, KyloFeed {
 
     update(model: Partial<Feed>): void {
         //keep the internal ids saved for the table.tableSchema.fields and table.partitions
-        let oldFields = <TableColumnDefinition[]>this.table.tableSchema.fields;
+        let oldFields = <TableColumnDefinition[]>this.table.feedDefinitionTableSchema.fields;
         let oldPartitions = this.table.partitions;
         let oldUserProperties = this.userProperties;
         this.updateNonNullFields(model);
@@ -702,7 +702,7 @@ export class Feed implements KyloObject, KyloFeed {
         copy.originalTableSchema = undefined;
 
         //only do this if the schema could have changed (i.e. never been deployed)
-        if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
+        if (copy.table && copy.table.feedDefinitionFieldPolicies && copy.table.feedDefinitionTableSchema && copy.table.feedDefinitionTableSchema.fields) {
             //if the sourceSchema is not defined then set it to match the target
             let addSourceSchemaFields: boolean = copy.table.sourceTableSchema.fields.length == 0;
             let addFeedSchemaFields =  copy.table.feedTableSchema.fields.length == 0;
@@ -729,7 +729,7 @@ export class Feed implements KyloObject, KyloFeed {
              */
             var sourceFields: TableColumnDefinition[] = [];
 
-            copy.table.tableSchema.fields.forEach((columnDef: TableColumnDefinition, idx: number) => {
+            copy.table.feedDefinitionTableSchema.fields.forEach((columnDef: TableColumnDefinition, idx: number) => {
 
                 let sourceField: TableColumnDefinition = columnDef.copy();
                 let feedField: TableColumnDefinition = columnDef.copy();
@@ -755,7 +755,7 @@ export class Feed implements KyloObject, KyloFeed {
                     columnDef.prepareForSave();
                     tableFields.push(columnDef);
 
-                    let policy = copy.table.fieldPolicies[idx];
+                    let policy = copy.table.feedDefinitionFieldPolicies[idx];
                     if (policy) {
                         policy.feedFieldName = feedField.name;
                         policy.name = columnDef.name;
@@ -903,7 +903,8 @@ export class Feed implements KyloObject, KyloFeed {
             if (TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.table.feedTableSchema.fields = feedColumns;
                 this.table.tableSchema.fields = targetColumns;
-                this.table.fieldPolicies = targetColumns.map(field => {
+                this.table.feedDefinitionTableSchema.fields = targetColumns;
+                this.table.feedDefinitionFieldPolicies = targetColumns.map(field => {
                     let policy = TableFieldPolicy.forName(field.name);
                     policy.field = field;
                     field.fieldPolicy = policy;
@@ -963,7 +964,8 @@ export class Feed implements KyloObject, KyloFeed {
             if (TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.table.feedTableSchema.fields = [];
                 this.table.tableSchema.fields = [];
-                this.table.fieldPolicies = [];
+                this.table.feedDefinitionTableSchema.fields = [];
+                this.table.feedDefinitionFieldPolicies = [];
             }
         }
     }
@@ -973,7 +975,7 @@ export class Feed implements KyloObject, KyloFeed {
     validateSchemaDidNotChange(fields?:TableColumnDefinition[]| SchemaField[]){
         var valid = true;
         if(fields == undefined && this.table){
-            fields = this.table.tableSchema.fields
+            fields = this.table.feedDefinitionTableSchema.fields
         }
         //if we are editing we need to make sure we dont modify the originalTableSchema
         if(this.hasBeenDeployed() && this.originalTableSchema && fields) {

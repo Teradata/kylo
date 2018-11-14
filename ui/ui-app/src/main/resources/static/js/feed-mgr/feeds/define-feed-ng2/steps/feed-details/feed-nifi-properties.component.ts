@@ -51,6 +51,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
     @Output()
     processorsChange = new EventEmitter<NiFiPropertiesProcessorsChangeEvent>()
 
+    @Output()
+    inputProcessorChanged = new EventEmitter<ProcessorRef>()
+
     @Input()
     formGroup: FormGroup;
 
@@ -86,6 +89,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             this.inputProcessor = value;
             this.form.setControl(0, (value != null) ? value.form : new FormControl());
             this.updateProcessors();
+            this.inputProcessorChanged.emit(value)
         });
     }
 
@@ -291,6 +295,8 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             if (!hasVisibleProcessors) {
                 this.noPropertiesExist = true;
             }
+            console.log('this.inputProcessor',this.inputProcessor.formGroup)
+
             this.updatedFormControls.emit();
             this.processorsChange.emit(new NiFiPropertiesProcessorsChangeEvent(this.mode, this.feed, this.inputProcessors, this.nonInputProcessors, this.noPropertiesExist));
         }

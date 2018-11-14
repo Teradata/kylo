@@ -10,6 +10,7 @@ import {TableOptions} from "./feed.model";
 import {FeedTableSchema} from "./feed-table-schema.model";
 import {KyloObject} from "../../../../lib/common/common.model";
 import {SchemaField} from "../schema-field";
+import {CloneUtil} from "../../../common/utils/clone-util";
 
 
    export class FeedTableDefinition  implements KyloObject{
@@ -21,7 +22,8 @@ import {SchemaField} from "../schema-field";
 
         tableSchema: FeedTableSchema
         sourceTableSchema: SourceTableSchema
-        feedTableSchema: FeedTableSchema
+        feedTableSchema: FeedTableSchema;
+        feedDefinitionTableSchema:FeedTableSchema;
         method: string;
         existingTableName: string;
         structured: boolean;
@@ -30,6 +32,7 @@ import {SchemaField} from "../schema-field";
         targetFormat: string;
         feedTblProperties: string;
         fieldPolicies: TableFieldPolicy[]
+        feedDefinitionFieldPolicies:TableFieldPolicy[];
         partitions: TableFieldPartition[]
         options: TableOptions
         sourceTableIncrementalDateField: string
@@ -49,6 +52,7 @@ import {SchemaField} from "../schema-field";
                 this.tableSchema= new FeedTableSchema(),
                 this.sourceTableSchema= new SourceTableSchema(),
                 this.feedTableSchema = new FeedTableSchema(),
+                this.feedDefinitionTableSchema = new FeedTableSchema(),
                 this.method= 'SAMPLE_FILE',
                 this.existingTableName= null,
                 this.structured= false,
@@ -59,6 +63,7 @@ import {SchemaField} from "../schema-field";
                 this.targetFormat= 'STORED AS ORC',
                 this.feedTblProperties= '',
                 this.fieldPolicies= [],
+                this.feedDefinitionFieldPolicies = [],
                 this.partitions= [],
                 this.options= {compress: false, compressionFormat: 'NONE', auditLogging: true, encrypt: false, trackHistory: false},
             this.sourceTableIncrementalDateField= null
@@ -67,7 +72,7 @@ import {SchemaField} from "../schema-field";
         update(oldFields:TableColumnDefinition[], oldPartitions:TableFieldPartition[]){
 
             let tableFieldMap: { [key: string]: TableColumnDefinition; } = {};
-            this.tableSchema.fields.forEach((field: TableColumnDefinition, index: number) => {
+            this.feedDefinitionTableSchema.fields.forEach((field: TableColumnDefinition, index: number) => {
                 field._id = (<TableColumnDefinition> oldFields[index])._id;
                 tableFieldMap[field.name] = field;
             });
@@ -92,10 +97,10 @@ import {SchemaField} from "../schema-field";
         public ensureObjectTypes() {
 
             this.tableSchema = ObjectUtils.getAs(this.tableSchema,FeedTableSchema);
-
+            this.feedDefinitionTableSchema = this.feedDefinitionTableSchema ? ObjectUtils.getAs(this.feedDefinitionTableSchema,FeedTableSchema) : CloneUtil.deepCopy(this.tableSchema);
             //ensure the table fields are correct objects
             let tableFieldMap: { [key: string]: TableColumnDefinition; } = {};
-            this.tableSchema.fields.forEach((field: TableColumnDefinition) => {
+            this.feedDefinitionTableSchema.fields.forEach((field: TableColumnDefinition) => {
                 tableFieldMap[field.name] = field;
             });
 
@@ -113,33 +118,38 @@ import {SchemaField} from "../schema-field";
 
             this.sourceTableSchema = ObjectUtils.getAs(this.sourceTableSchema,SourceTableSchema);
             this.feedTableSchema = ObjectUtils.getAs(this.feedTableSchema,FeedTableSchema);
+
             this.ensureTableFieldPolicyTypes();
 
         }
 
+        private fieldPolicyAsObject(policy:any,isTarget:boolean) {
+            let policyObj =  ObjectUtils.getAs(policy,TableFieldPolicy, TableFieldPolicy.OBJECT_TYPE);
+            let columnDef = isTarget ? this.getTargetColumnFieldByName(policyObj.fieldName) : this.getColumnDefinitionByName(policyObj.fieldName);
+            policyObj.field = columnDef;
+            columnDef.fieldPolicy = policyObj;
+            return policyObj;
+        }
+
         ensureTableFieldPolicyTypes(){
-            let fieldPolicies = this.fieldPolicies.map((policy: any) => {
-                let policyObj =  ObjectUtils.getAs(policy,TableFieldPolicy, TableFieldPolicy.OBJECT_TYPE);
-                let columnDef = this.getColumnDefinitionByName(policyObj.fieldName);
-                policyObj.field = columnDef;
-               columnDef.fieldPolicy = policyObj;
-                return policyObj;
-            });
-            this.fieldPolicies = fieldPolicies;
+
+            this.feedDefinitionFieldPolicies = this.feedDefinitionFieldPolicies && this.feedDefinitionFieldPolicies.length >0 ?this.feedDefinitionFieldPolicies : this.fieldPolicies;
+            this.feedDefinitionFieldPolicies = this.feedDefinitionFieldPolicies.map((policy: any) => this.fieldPolicyAsObject(policy,false));
+            this.fieldPolicies = this.fieldPolicies.map((policy: any) => this.fieldPolicyAsObject(policy,true));
 
         }
 
         syncFieldPolicy(columnDef: TableColumnDefinition, index: number){
             var name = columnDef.name;
             if (name != undefined) {
-                this.fieldPolicies[index].name = name;
-                this.fieldPolicies[index].fieldName = name;
-                this.fieldPolicies[index].field = columnDef;
-                columnDef.fieldPolicy = this.fieldPolicies[index];
+                this.feedDefinitionFieldPolicies[index].name = name;
+                this.feedDefinitionFieldPolicies[index].fieldName = name;
+                this.feedDefinitionFieldPolicies[index].field = columnDef;
+                columnDef.fieldPolicy = this.feedDefinitionFieldPolicies[index];
             }
             else {
-                if (this.fieldPolicies[index].field) {
-                    this.fieldPolicies[index].field == null;
+                if (this.feedDefinitionFieldPolicies[index].field) {
+                    this.feedDefinitionFieldPolicies[index].field == null;
                     columnDef.fieldPolicy = undefined;
                 }
             }
@@ -147,12 +157,12 @@ import {SchemaField} from "../schema-field";
         
 
         syncTableFieldPolicyNames():void{
-            this.tableSchema.fields.forEach((columnDef: TableColumnDefinition, index: number) => {
+            this.feedDefinitionTableSchema.fields.forEach((columnDef: TableColumnDefinition, index: number) => {
               this.syncFieldPolicy(columnDef, index);
             });
             //remove any extra columns in the policies
-            while (this.fieldPolicies.length > this.tableSchema.fields.length) {
-                this.fieldPolicies.splice(this.tableSchema.fields.length, 1);
+            while (this.feedDefinitionFieldPolicies.length > this.feedDefinitionTableSchema.fields.length) {
+                this.feedDefinitionFieldPolicies.splice(this.feedDefinitionTableSchema.fields.length, 1);
             }
         }
 
@@ -170,8 +180,8 @@ import {SchemaField} from "../schema-field";
                    return field;
                }
            })
-           this.tableSchema.fields = newFields;
-           this.fieldPolicies = (policies != null && policies.length > 0) ? policies : newFields.map(field => TableFieldPolicy.forName(field.name));
+           this.feedDefinitionTableSchema.fields = newFields;
+           this.feedDefinitionFieldPolicies = (policies != null && policies.length > 0) ? policies : newFields.map(field => TableFieldPolicy.forName(field.name));
 
        }
 
@@ -188,11 +198,11 @@ import {SchemaField} from "../schema-field";
        addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) :TableColumnDefinition{
 
            //add to the fields
-           let newColumn = this.tableSchema.addColumn(columnDef);
+           let newColumn = this.feedDefinitionTableSchema.addColumn(columnDef);
 
            // when adding a new column this is also called to synchronize the field policies array with the columns
            let policy = TableFieldPolicy.forName(newColumn.name);
-           this.fieldPolicies.push(policy);
+           this.feedDefinitionFieldPolicies.push(policy);
            newColumn.fieldPolicy = policy;
            policy.field = columnDef;
            this.sourceTableSchema.fields.push(newColumn.copy());
@@ -203,7 +213,7 @@ import {SchemaField} from "../schema-field";
        }
 
        undoColumn(index: number):TableColumnDefinition {
-           var columnDef = <TableColumnDefinition> this.tableSchema.fields[index];
+           var columnDef = <TableColumnDefinition> this.feedDefinitionTableSchema.fields[index];
            columnDef.history.pop();
            let prevValue = columnDef.history[columnDef.history.length - 1];
            columnDef.undo(prevValue);
@@ -211,6 +221,10 @@ import {SchemaField} from "../schema-field";
        };
 
        getColumnDefinitionByName(name:string) :TableColumnDefinition{
+           return <TableColumnDefinition> this.feedDefinitionTableSchema.fields.find(columnDef =>  columnDef.name == name);
+       }
+
+       getTargetColumnFieldByName(name:string) :TableColumnDefinition {
            return <TableColumnDefinition> this.tableSchema.fields.find(columnDef =>  columnDef.name == name);
        }
 
@@ -232,7 +246,7 @@ import {SchemaField} from "../schema-field";
         * @param index
         */
        removeColumn(index: number) :TableColumnDefinition{
-           var columnDef = <TableColumnDefinition> this.tableSchema.fields[index];
+           var columnDef = <TableColumnDefinition> this.feedDefinitionTableSchema.fields[index];
            columnDef.deleteColumn();
            return columnDef;
 

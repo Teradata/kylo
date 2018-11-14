@@ -47,11 +47,11 @@ export class TableForm {
             validForm = this.defineFeedTableForm.$valid;
         }
         let valid = this.model.templateId != null && this.model.table.method != null && this.model.table.tableSchema.name != null && this.model.table.tableSchema.name != ''
-            && this.model.table.tableSchema.fields.length > 0;
+            && this.model.table.feedDefinitionTableSchema.fields.length > 0;
 
         if (valid) {
             //ensure we have at least 1 field (not deleted) assigned to the model)
-            var validFields = _.filter(this.model.table.tableSchema.fields, (field: any) => {
+            var validFields = _.filter(this.model.table.feedDefinitionTableSchema.fields, (field: any) => {
                 return field.deleted == undefined || field.deleted == false;
             });
             valid = validFields.length > 0;
@@ -67,7 +67,7 @@ export class TableForm {
     }
     validateUniqueFeedName(columnDef:TableColumnDefinition){
         //update all columns at all times, because column removal may fix not unique name error on other columns
-        var columnsByName = _.groupBy(this.model.table.tableSchema.fields, (column: TableColumnDefinition) => {
+        var columnsByName = _.groupBy(this.model.table.feedDefinitionTableSchema.fields, (column: TableColumnDefinition) => {
             //we'll disregard "not unique" name for all empty names and all deleted columns, i.e. put them into single group
             if (column.isDeleted()) {
                 return "";
@@ -132,7 +132,7 @@ export class TableForm {
         //Validate the Partition names are unique respective to the other fields
 
         //an array of column names
-        var columnNames = _.map(this.model.table.tableSchema.fields, (columnDef: TableColumnDefinition) => {
+        var columnNames = _.map(this.model.table.feedDefinitionTableSchema.fields, (columnDef: TableColumnDefinition) => {
             return columnDef.name;
         });
         var countPartitionNames = {};

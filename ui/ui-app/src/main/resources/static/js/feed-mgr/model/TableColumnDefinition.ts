@@ -189,6 +189,11 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
             this.dataTypeDisplay = this.getDataTypeDisplay();
         }
         if(this.history.length == 0){
+            if(this.deleted){
+                let undoDeleted = new ColumnDefinitionHistoryRecord(this);
+                undoDeleted.deleted = false;
+                this.history.push(undoDeleted);
+            }
             this.addHistoryItem();
         }
         if(this.dataTypeDisplay == undefined) {

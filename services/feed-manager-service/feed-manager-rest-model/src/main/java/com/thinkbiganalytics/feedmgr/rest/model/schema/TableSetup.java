@@ -63,9 +63,23 @@ public class TableSetup {
     @JsonSerialize(as = DefaultTableSchema.class)
     @JsonDeserialize(as = DefaultTableSchema.class)
     private TableSchema feedTableSchema;
+
+    /**
+     * The schema used to create the feed (shows the fields that have been removed, modified, etc)
+     */
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
+    private TableSchema feedDefinitionTableSchema;
+
     private String method;
     private String description = "";
     private List<FieldPolicy> fieldPolicies;
+
+    /**
+     * Policies defined during feed definition
+     */
+    private List<FieldPolicy> feedDefinitionFieldPolicies;
+
     private List<PartitionField> partitions;
     private String tableType;
     @MetadataField
@@ -635,5 +649,14 @@ public class TableSetup {
 
     public void setStructured(boolean structured) {
         this.structured = structured;
+    }
+
+
+    public List<FieldPolicy> getFeedDefinitionFieldPolicies() {
+        return feedDefinitionFieldPolicies;
+    }
+
+    public void setFeedDefinitionFieldPolicies(List<FieldPolicy> feedDefinitionFieldPolicies) {
+        this.feedDefinitionFieldPolicies = feedDefinitionFieldPolicies;
     }
 }

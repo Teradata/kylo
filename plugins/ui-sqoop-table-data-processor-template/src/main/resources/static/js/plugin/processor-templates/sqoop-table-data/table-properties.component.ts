@@ -331,7 +331,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         this.selectedTable = event.option.value;
 
         if (this.tableProperty && this.tableControl.value != null) {
-            let needsDescribe = (!this.model.cloned || this.model.table.tableSchema.fields.length == 0);
+            let needsDescribe = (!this.model.cloned || this.model.table.feedDefinitionTableSchema.fields.length == 0);
 
             if (this.useTableNameOnly) {
                 needsDescribe = needsDescribe || (this.model.cloned && this.tableProperty.value != this.tableControl.value.tableName);
@@ -354,7 +354,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
 
     private setupClonedFeedTableFields() {
         this.databaseConnectionError = false;
-        this.tableSchema = this.model.table.tableSchema;
+        this.tableSchema = this.model.table.feedDefinitionTableSchema;
         this.tableFields = this.tableSchema.fields;
         this.originalTableFields = this.model.table.sourceTableSchema;
         this.tableFieldsDirty = false;
