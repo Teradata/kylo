@@ -106,7 +106,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
         data: {
             breadcrumbRoot: true,
             displayName: "Catalog",
-            permissions:AccessConstants.UI_STATES.CATALOG.permissions
+            permissionsKey:"CATALOG"
         }
     },
     {
@@ -121,7 +121,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ],
         data:{
-            permissions:AccessConstants.UI_STATES.EDIT_DATASOURCES.permissions
+            permissionsKey: "EDIT_DATASOURCES"
         }
     },
     {
@@ -146,7 +146,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ],
         data:{
-            permissions:AccessConstants.UI_STATES.EDIT_DATASOURCES.permissions
+            permissionsKey:"EDIT_DATASOURCES"
         }
     },
     {
@@ -161,7 +161,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ],
         data:{
-            permissions:AccessConstants.UI_STATES.DATASOURCES.permissions
+            permissionsKey:"DATASOURCES"
 
         }
     },
@@ -182,8 +182,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ],
         data:{
-            permissions:AccessConstants.UI_STATES.DATASOURCES.permissions
-
+            permissionsKey:"DATASOURCES"
         }
     },
     {
@@ -198,8 +197,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ],
         data:{
-            permissions:AccessConstants.UI_STATES.ADMIN_CONNECTORS.permissions
-
+            permissionsKey:"ADMIN_CONNECTORS"
         }
     },
     {
@@ -214,8 +212,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ],
         data:{
-            permissions:AccessConstants.UI_STATES.ADMIN_CONNECTORS.permissions
-
+            permissionsKey:"ADMIN_CONNECTORS"
         }
     },
 

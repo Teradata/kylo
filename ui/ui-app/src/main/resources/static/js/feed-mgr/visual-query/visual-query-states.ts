@@ -3,6 +3,7 @@ import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 
 import AccessConstants from "../../constants/AccessConstants";
 import {VisualQueryStepperComponent} from "./visual-query-stepper.component"
+import {CloneUtil} from "../../common/utils/clone-util";
 
 export const visualQueryStates: Ng2StateDeclaration[] = [
     {
@@ -24,7 +25,7 @@ export const visualQueryStates: Ng2StateDeclaration[] = [
         data: {
             breadcrumbRoot: true,
             displayName: "Wrangler",
-            permissions: AccessConstants.UI_STATES.VISUAL_QUERY.permissions
+            permissionsKey:"VISUAL_QUERY"
         }
     }
 ];

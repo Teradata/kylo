@@ -34,12 +34,6 @@ export default class AccessConstants {
     public static DATASOURCE_ADMIN = "adminDatasources";
 
     /**
-     * Allows access to repository.
-     * @type {string}
-     */
-    public static REPOSITORY_ACCESS: string = "accessRepository";
-
-    /**
      * Allows creating and editing new data sources.
      * @type {string}
      */
@@ -313,7 +307,7 @@ export default class AccessConstants {
         DOMAIN_TYPES: {state: "domain-types", permissions: [AccessConstants.FEEDS_ADMIN]},
         DOMAIN_TYPE_DETAILS: {state: "domain-type-details", permissions: [AccessConstants.FEEDS_ADMIN]},
         JCR_ADMIN: {state: "jcr-query", permissions: [AccessConstants.ADMIN_METADATA]},
-        REPOSITORY: {state: "repository", permissions: [AccessConstants.REPOSITORY_ACCESS]},
+        REPOSITORY: {state: "repository", permissions: [AccessConstants.TEMPLATES_IMPORT]},
         //Ops Manager
         ALERTS: {state: "alerts", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         ALERT_DETAILS: {state: "alert-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
@@ -332,5 +326,15 @@ export default class AccessConstants {
         ADMIN_CONNECTORS:{state:"catalog.admin-connectors",permissions:[AccessConstants.ADMIN_CONNECTORS]},
         ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTORS]},
         FEED_STEP_WRANGLER:{state:"feed-definition.section.wrangler",permissions:[AccessConstants.DATASOURCE_ACCESS, AccessConstants.FEEDS_ACCESS]}
+    }
+
+    public static getStatePermissions(key:string){
+       let state:any = AccessConstants.UI_STATES[key];
+       if(state != undefined && state.permissions){
+           return state.permissions;
+       }
+       else {
+           return [];
+       }
     }
 }

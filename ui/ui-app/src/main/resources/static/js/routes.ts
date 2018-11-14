@@ -562,8 +562,10 @@ class Route {
             return typeof value;
         };
 
-        var onStartOfTransition = (trans: any) => {
 
+
+        var checkAccess = (trans: any) => {
+            console.log("check access for ", trans.to(), ' is accessControlService.initialized ? ',accessControlService.initialized, 'is Future: ',accessControlService.isFutureState(trans.to().name));
             if (!accessControlService.isFutureState(trans.to().name)) {
                 //if we havent initialized the user yet, init and defer the transition
                 if (!accessControlService.initialized) {
@@ -572,7 +574,13 @@ class Route {
                         //if not allowed, go to access-denied
                         if (!accessControlService.hasAccess(trans)) {
                             if (trans.to().name != 'access-denied') {
-                                defer.resolve($state.target("access-denied", {attemptedState: trans.to()}));
+                                console.log("REDIRECT TO 'access-denied!!!! ", trans.to());
+                                let redirect = "access-denied";
+                                if(trans.to().data) {
+                                    redirect = trans.to().data.accessRedirect != undefined ? trans.to().data.accessRedirect : "access-denied";
+                                }
+
+                                defer.resolve($state.target(redirect, {attemptedState: trans.to()}));
                             }
                         }
                         else {
@@ -585,6 +593,7 @@ class Route {
                 else {
                     if (!accessControlService.hasAccess(trans)) {
                         if (trans.to().name != 'access-denied') {
+                            console.log("REDIRECT TO 'access-denied!!!! ", trans.to());
                             let redirect = "access-denied";
                             if(trans.to().data) {
                                 redirect = trans.to().data.accessRedirect != undefined ? trans.to().data.accessRedirect : "access-denied";
@@ -602,10 +611,20 @@ class Route {
             }
         }
 
+        var onBeforeTransition = (trans: any) => {
+            return checkAccess(trans);
+        }
+
+
         /**
          * Add a listener to the start of every transition to do Access control on the page
          * and redirect if not authorized
-         */
+         *
+
+           var onStartOfTransition = (trans: any) => {
+            return checkAccess(trans);
+        }
+
         $transitions.onStart({}, (trans: any) => {
             if (AngularModuleExtensionService.isInitialized()) {
                 return onStartOfTransition(trans);
@@ -614,6 +633,21 @@ class Route {
                 var defer = $q.defer();
                 $q.when(AngularModuleExtensionService.registerModules(), () => {
                     defer.resolve(onStartOfTransition(trans));
+                });
+                return defer.promise;
+            }
+
+        });
+         */
+
+        $transitions.onBefore({}, (trans: any) => {
+            if (AngularModuleExtensionService.isInitialized()) {
+                return onBeforeTransition(trans);
+            }
+            else {
+                var defer = $q.defer();
+                $q.when(AngularModuleExtensionService.registerModules(), () => {
+                    defer.resolve(onBeforeTransition(trans));
                 });
                 return defer.promise;
             }

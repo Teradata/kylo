@@ -17,7 +17,8 @@ export const repositoryStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: "Resource Repository"
+            displayName: "Resource Repository",
+            permissionsKey: "IMPORT_TEMPLATE"
         }
     },
     {
@@ -37,7 +38,7 @@ export const repositoryStates: Ng2StateDeclaration[] = [
         data: {
             breadcrumbRoot: false,
             displayName: "Import Template",
-            permissions: AccessConstants.TEMPLATES_IMPORT
+            permissionsKey: "IMPORT_TEMPLATE"
         }
     },
     {

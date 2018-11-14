@@ -19,13 +19,17 @@ export const slaEmailTemplateStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: ""
+            displayName: "",
+            permissionsKey:"SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES"
         }
     },
     {
         name: SLA_EMAIL_TEMPLATE_ROOT_STATE+".list",
         url: "/list",
-        component: SlaEmailTemplatesComponent
+        component: SlaEmailTemplatesComponent,
+        data: {
+            permissionsKey:"SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES"
+        }
     },
     {
         name: SLA_EMAIL_TEMPLATE_ROOT_STATE+".edit",
@@ -38,7 +42,10 @@ export const slaEmailTemplateStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: resolveTemplateId
             }
-        ]
+        ],
+        data: {
+            permissionsKey:"SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES"
+        }
     }
 ];
 export function resolveParams(state: StateService) {

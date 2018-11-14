@@ -57,7 +57,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         data: {
             breadcrumbRoot: true,
             displayName: "",
-            permissions:AccessConstants.UI_STATES.IMPORT_FEED.permissions
+            permissionsKey:"IMPORT_FEED"
         }
     },
     {
@@ -92,7 +92,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             }
         ],
         data: {
-            permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
+            permissionsKey:"FEED_DETAILS"
         }
     },
     {
@@ -118,7 +118,7 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
             }
         ],
         data: {
-            permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
+            permissionsKey:"FEED_DETAILS"
         }
     },
     {
@@ -159,8 +159,8 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         url: "/:feedId/wrangler",
         component: DefineFeedStepWranglerComponent,
         data:{
-            permissions:AccessConstants.UI_STATES.FEED_STEP_WRANGLER.permissions,
-            accessRedirect:FEED_DEFINITION_SECTION_STATE_NAME+".access-denied"
+            permissionsKey:"FEED_STEP_WRANGLER",
+            accessRedirect:"feed-definition.section.access-denied",
         }
     },
     {
@@ -225,6 +225,18 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
         name: FEED_OVERVIEW_STATE_NAME,
         url: "/:feedId/overview",
         component: OverviewComponent
+    },
+    {
+        name: FEED_DEFINITION_SUMMARY_STATE_NAME+".access-denied",
+        url: "/access-denied",
+        params:{attemptedState:null},
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: resolveParams
+            }],
+        component: AccessDeniedComponent
     },
     {
         name: FEED_DEFINITION_SUMMARY_STATE_NAME+".setup-guide",
@@ -422,7 +434,11 @@ export const defineFeedStates: Ng2StateDeclaration[] = [
                 resolveFn: resolveParams
             },
             resolveFeed
-        ]
+        ],
+        data:{
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS",
+            accessRedirect:"feed-definition.summary.access-denied",
+        }
     },
     {
         name: FEED_DEFINITION_SUMMARY_STATE_NAME+".sla.list",

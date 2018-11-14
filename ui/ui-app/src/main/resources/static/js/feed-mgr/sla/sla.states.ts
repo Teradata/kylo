@@ -18,7 +18,8 @@ export const slaStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: ""
+            displayName: "",
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
         }
     },
     {
@@ -31,7 +32,10 @@ export const slaStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: resolveParams
             }
-        ]
+        ],
+        data: {
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
+        }
     },
     {
         name: SLA_ROOT_STATE+".new",
@@ -43,7 +47,10 @@ export const slaStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: resolveParams
             }
-        ]
+        ],
+        data: {
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
+        }
     },
     {
         name: SLA_ROOT_STATE+".edit",
@@ -55,7 +62,10 @@ export const slaStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: resolveParams
             }
-        ]
+        ],
+        data: {
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
+        }
     }
 ];
 

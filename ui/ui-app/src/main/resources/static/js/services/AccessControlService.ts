@@ -142,6 +142,9 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                         return true;
                     }
                     var requiredPermissions = data.permissions || null;
+                    if(requiredPermissions == null && data.permissionsKey) {
+                        requiredPermissions = AccessControlService.getStatePermissions(data.permissionsKey);
+                    }
                     //if its a future lazy loaded state, allow it
                     if (this.isFutureState(toStateName)) {
                         valid = true;
