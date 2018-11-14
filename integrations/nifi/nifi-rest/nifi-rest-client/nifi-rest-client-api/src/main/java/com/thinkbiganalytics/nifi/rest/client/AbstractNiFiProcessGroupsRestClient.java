@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 
 /**
@@ -41,6 +42,13 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
      * REST client for communicating with NiFi
      */
     protected final NiFiRestClient client;
+
+    /**
+     * Cache of the last known root process group id used to make lookups to root fast
+     */
+    @Nullable
+    private ProcessGroupDTO lastRootProcessGroup;
+
 
     public AbstractNiFiProcessGroupsRestClient(NiFiRestClient client) {
         this.client = client;
@@ -64,10 +72,29 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
         }
     }
 
+    public boolean isRoot(String processGroupId){
+        boolean match = false;
+        if(this.lastRootProcessGroup != null){
+            match = this.lastRootProcessGroup.getId().equalsIgnoreCase(processGroupId);
+        }
+        if(!match){
+            ProcessGroupDTO root = findRoot();
+            if(root != null) {
+                match = root.getId().equalsIgnoreCase(processGroupId);
+            }
+        }
+        return match;
+    }
+
     @Nonnull
     @Override
     public ProcessGroupDTO findRoot() {
-        return findById("root", true, true).orElseThrow(IllegalStateException::new);
+
+        ProcessGroupDTO root = findById("root", true, true).orElseThrow(IllegalStateException::new);
+        if(root != null){
+            this.lastRootProcessGroup = root;
+        }
+        return root;
     }
 
     /**

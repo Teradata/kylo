@@ -114,8 +114,9 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
                     }
                 }
 
-
-                if (connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equals(inputPort.getId()))) {
+                boolean isRootProcessGroup = client.processGroups().isRoot(processGroupId);
+                //always update root input portsgroups as they will be needed to be running if used by Remote Process Groups
+                if (!isRootProcessGroup && (connectionDTOS == null || connectionDTOS.isEmpty() || connectionDTOS.stream().noneMatch(connectionDTO -> connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equals(inputPort.getId())))) {
                     log.warn("System will not start the input port [{}] [{}] in the process group [{}] since there are no upstream connections to it ", inputPort.getId(), inputPort.getName(),
                              processGroupId);
                     update = false;

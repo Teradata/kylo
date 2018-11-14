@@ -155,7 +155,7 @@ public class NiFiObjectCache {
 
             Optional<ProcessGroupDTO> group = restClient.getNiFiRestClient().processGroups().findByName("root", temporaryInspectionGroupName, false, false);
             if (!group.isPresent()) {
-                temporaryTemplateInspectionGroup = restClient.getNiFiRestClient().processGroups().create("root", temporaryInspectionGroupName);
+                temporaryTemplateInspectionGroup = restClient.getNiFiRestClient().processGroups().create("root", temporaryInspectionGroupName, -230d,-360d);
             } else {
                 temporaryTemplateInspectionGroup = group.get();
             }
