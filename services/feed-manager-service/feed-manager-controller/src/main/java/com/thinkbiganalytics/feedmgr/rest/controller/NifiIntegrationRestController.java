@@ -454,37 +454,17 @@ public class NifiIntegrationRestController {
                   })
     public Response getTableNames(@PathParam("serviceId") String serviceId, @QueryParam("serviceName") @DefaultValue("") String serviceName, @QueryParam("schema") String schema,
                                   @QueryParam("tableName") String tableName) {
-        // Find data source for controller service
-        final String dataSourceId = metadataService.read(() -> {
-            if (accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES)) {
-                return dataSourceProvider.findByNifiControlerServiceId(serviceId).map(ds -> ds.getId().toString()).orElse(null);
-            } else {
-                return null;
-            }
-        });
-
-        // List table names
+        final Optional<DataSource> dataSource = findDataSourceForControllerServiceId(serviceId);
         final List<String> tables;
 
-        if (dataSourceId != null) {
-            log.info("Query for Table Names against data source: {}", dataSourceId);
-
-            tables = metadataService.read(() -> {
-                final DataSource dataSource = dataSourceProvider.find(dataSourceProvider.resolveId(dataSourceId))
-                    .map(catalogTransform.dataSourceToRestModel(true, false))
-                    .orElse(null);
-                if (dataSource != null) {
-                    try {
-                        return catalogTableManager.getTableNames(dataSource, schema, tableName);
-                    } catch (final SQLException e) {
-                        log.error("Unable to list table names for data source: {}", dataSourceId, e);
-                        throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
-                    }
-                } else {
-                    log.error("Data source not found: {}", dataSourceId);
-                    throw new InternalServerErrorException("Unable to connect to data source. Data source not found.");
-                }
-            }, MetadataAccess.SERVICE);
+        if (dataSource.isPresent()) {
+            log.info("Query for Table Names against data source: {}", dataSource.get().getId());
+            try {
+                tables = catalogTableManager.getTableNames(dataSource.get(), schema, tableName);
+            } catch (final SQLException e) {
+                log.error("Unable to list table names for data source: {}", dataSource.get().getId(), e);
+                throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
+            }
         } else {
             log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
             tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
@@ -504,15 +484,15 @@ public class NifiIntegrationRestController {
                   })
     public Response describeTable(@PathParam("serviceId") String serviceId, @PathParam("tableName") String tableName, @QueryParam("serviceName") @DefaultValue("") String serviceName,
                                   @QueryParam("schema") String schema) {
-        final DataSource dataSource = metadataService.read(() -> dataSourceProvider.findByNifiControlerServiceId(serviceId).map(catalogTransform.dataSourceToRestModel()).orElse(null));
+        final Optional<DataSource> dataSource = findDataSourceForControllerServiceId(serviceId);
         final TableSchema tableSchema;
 
-        if (dataSource != null) {
+        if (dataSource.isPresent()) {
             log.info("Describe Table {} against data source: {}", tableName, dataSource);
             try {
-                tableSchema = catalogTableManager.describeTable(dataSource, schema, tableName);
+                tableSchema = catalogTableManager.describeTable(dataSource.get(), schema, tableName);
             } catch (final SQLException e) {
-                log.error("Unable to list table names for data source: {}", dataSource.getId(), e);
+                log.error("Unable to list table names for data source: {}", dataSource.get().getId(), e);
                 throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
             }
         } else {
@@ -633,5 +613,28 @@ public class NifiIntegrationRestController {
         return Response.ok(ports).build();
     }
 
+    /**
+     * Finds and decrypts the data source for the specified controller service.
+     */
+    @Nonnull
+    private Optional<DataSource> findDataSourceForControllerServiceId(@Nonnull final String controllerServiceId) {
+        // Find data source id using user permissions
+        final String dataSourceId = metadataService.read(() -> {
+            if (accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES)) {
+                return dataSourceProvider.findByNifiControlerServiceId(controllerServiceId).map(ds -> ds.getId().toString()).orElse(null);
+            } else {
+                return null;
+            }
+        });
 
+        // Retrieve data source with decrypted credentials
+        if (dataSourceId != null) {
+            return metadataService.read(
+                () -> dataSourceProvider.find(dataSourceProvider.resolveId(dataSourceId))
+                    .map(catalogTransform.dataSourceToRestModel(true, false)),
+                MetadataAccess.SERVICE);
+        } else {
+            return Optional.empty();
+        }
+    }
 }
