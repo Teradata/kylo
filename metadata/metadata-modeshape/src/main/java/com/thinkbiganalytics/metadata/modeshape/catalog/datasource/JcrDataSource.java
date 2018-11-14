@@ -41,10 +41,12 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 /**
  *
@@ -137,8 +139,17 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
      */
     @Override
     public List<? extends DataSet> getDataSets() {
-        Node setsNode = getDataSetsNode();
-        return JcrUtil.getJcrObjects(setsNode, JcrDataSet.NODE_TYPE, JcrDataSet.class);
+        try {
+            Node dsNode = getDataSetsNode();
+            NodeType type = JcrUtil.getNodeType(getNode().getSession(), JcrDataSet.NODE_TYPE);
+            return JcrUtil.getJcrObjects(dsNode, type, JcrDataSet.class);
+        }catch (RepositoryException e){
+            log.error("Unablt to get datasets for datasource ",e);
+            return Collections.emptyList();
+        }
+
+
+
     }
 
     public Node getDataSetsNode(){

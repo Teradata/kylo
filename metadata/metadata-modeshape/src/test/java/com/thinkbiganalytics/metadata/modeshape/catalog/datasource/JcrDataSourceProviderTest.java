@@ -164,9 +164,10 @@ public class JcrDataSourceProviderTest extends AbstractTestNGSpringContextTests 
         }, MetadataAccess.SERVICE);
     }
     
-    @Test(dependsOnMethods="testDelete")
+    @Test(dependsOnMethods = "testCreate")
     public void testConnectorHasDataSources() {
         metadata.read(() -> {
+
             Optional<Connector> conn = this.connProvider.find(this.connId);
             
             assertThat(conn).isNotNull().isPresent();

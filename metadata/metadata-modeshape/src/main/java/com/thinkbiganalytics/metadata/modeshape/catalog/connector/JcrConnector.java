@@ -42,12 +42,15 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 /**
  *
@@ -133,8 +136,14 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
      */
     @Override
     public List<? extends DataSource> getDataSources() {
-        Node dsNode = getDataSourcesNode();
-        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.NODE_TYPE,JcrDataSource.class);
+        try {
+            Node dsNode = getDataSourcesNode();
+            NodeType type = JcrUtil.getNodeType(getNode().getSession(), JcrDataSource.NODE_TYPE);
+            return JcrUtil.getJcrObjects(dsNode, type, JcrDataSource.class);
+        }catch (RepositoryException e){
+            log.error("Unablt to get datasources for connector ",e);
+            return Collections.emptyList();
+        }
     }
     public Node getDataSourcesNode(){
         return JcrUtil.getNode(getNode(), DATASOURCES);
