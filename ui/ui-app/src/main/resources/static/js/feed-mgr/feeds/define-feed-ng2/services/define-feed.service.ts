@@ -777,7 +777,7 @@ export class DefineFeedService {
             ).subscribe(
                 (version: EntityVersion) => {
                     this.openSnackBar("Removed draft "+version.id, 5000);
-                    this.stateService.go("feed-definition.summary.setup-guide", {feedId: feed.id});
+                    this.stateService.go("feed-definition.summary.setup-guide",{feedId:feed.id, refresh:true}, {location:'replace'})
                 },
                 error => {
                     console.log(error);

@@ -1,4 +1,5 @@
-<feed-info-item [feed]="feed" name="{{tagNamesString || 'None defined'}}" description="Tags" icon="grain" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()" [(editing)]="editing">
+<feed-info-item [feed]="feed" name="{{tagNamesString || 'No tags defined'}}" description="Tags" icon="local_offer" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()"
+                [(editing)]="editing">
 
   <td-chips class="pull-top" [chipAddition]="true"
             [chipRemoval]="true"

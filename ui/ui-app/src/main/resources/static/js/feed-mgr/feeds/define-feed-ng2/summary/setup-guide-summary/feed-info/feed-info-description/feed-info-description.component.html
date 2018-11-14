@@ -1,4 +1,5 @@
-<feed-info-item [feed]="feed" name="{{feed.description || 'None defined'}}" description="Description" icon="subject" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()" [(editing)]="editing">
+<feed-info-item [feed]="feed" name="{{feed.description || 'No description'}}" description="Description" icon="description" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()"
+                [(editing)]="editing">
 <form [formGroup]="formGroup">
 
   <mat-form-field class="pad-top-sm" style="width:100%">

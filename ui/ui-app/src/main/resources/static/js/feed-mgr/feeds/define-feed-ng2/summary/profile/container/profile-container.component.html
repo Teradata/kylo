@@ -2,9 +2,9 @@
   <mat-card-header>
     <mat-card-title>
       <mat-icon class="kylo-title-icon">{{kyloIcons_Links_profile}}</mat-icon>
-      <span>{{"Profile.Stats.Title" | translate}}: {{timeInMillis | date:'full'}}</span>
+      <span>{{"Profile.Stats.Title" | translate}}</span>
     </mat-card-title>
-    <mat-card-subtitle >{{"Profile.Stats.SubTitle" | translate}} {{timeInMillis | timeAgo:reference}}</mat-card-subtitle>
+    <mat-card-subtitle >{{"Profile.Stats.SubTitle" | translate}} {{timeInMillis | timeAgo:reference}} - ({{timeInMillis | date:'full'}})</mat-card-subtitle>
   </mat-card-header>
 
 

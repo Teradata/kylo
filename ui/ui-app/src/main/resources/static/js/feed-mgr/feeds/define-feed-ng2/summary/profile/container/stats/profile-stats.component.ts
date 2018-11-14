@@ -31,7 +31,7 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
      * Color to use for charts.
      * @type {string}
      */
-    CHART_COLOR = "#f08c38";
+    CHART_COLOR = "#00b2b1";
 
     /**
      * Duration of the chart animations.

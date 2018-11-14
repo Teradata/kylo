@@ -4,16 +4,16 @@
 
 .profile-columns {
   height: 900px;
-  margin-right: 15px;
+  margin-right: 16px;
 }
 
 .subhead {
   font-size: 18px;
-  margin-bottom: 7px;
+  margin-bottom: 8px;
 }
 
 .stats-panel {
-  padding-bottom: 15px;
+  padding-bottom: 16px;
 
   mat-list mat-list-item {
     font-size: 14px;
@@ -25,12 +25,12 @@
 }
 
 .profiled-icon {
-  height: auto;
-  color: #f08c38;
-  font-size: 10px;
+  color: #00b2b1;
+  font-size: 16px;
+  vertical-align: middle;
 }
 
 .selected-column {
-  color: black;
-  background-color: #CCC;
+  color: #00b2b1;
+  //background-color: #CCC;
 }
