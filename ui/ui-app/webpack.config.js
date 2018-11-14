@@ -38,7 +38,7 @@ const devServer = {
             '/js/plugin',
             '/api-docs'
         ],
-        target: 'http://kylo-demo:8400',
+        target: 'http://localhost:8400',
         secure: false,
         changeOrigin: false,
         headers: {host: 'localhost:3000'}
