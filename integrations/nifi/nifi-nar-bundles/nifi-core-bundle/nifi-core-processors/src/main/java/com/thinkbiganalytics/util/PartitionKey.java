@@ -86,7 +86,13 @@ public class PartitionKey implements Cloneable {
     }
 
     public String getFormula() {
-        return formula.indexOf('(') > -1 ? formula : HiveUtils.quoteIdentifier(key);
+        if (formula.startsWith("to_date(")) {
+            return "cast(" + formula + " as date)";
+        } else if (formula.indexOf('(') > -1) {
+            return formula;
+        } else {
+            return HiveUtils.quoteIdentifier(key);
+        }
     }
 
     public String getFormulaWithAlias() {
@@ -143,12 +149,20 @@ public class PartitionKey implements Cloneable {
     /**
      * Generates the partition specification portion using the value
      */
-    public String toPartitionNameValue(String value) {
-        if ("string".equalsIgnoreCase(type)) {
-            return toAliasSQL() + getKeyForSql() + "='" + value + "'";
+    public String toPartitionNameValue(final String value) {
+        // Prepare value for SQL
+        final String safeValue;
+
+        if (value == null) {
+            safeValue = null;
+        } else if (StringUtils.equalsAnyIgnoreCase(type, "binary", "char", "date", "string", "timestamp", "varchar")) {
+            safeValue = HiveUtils.quoteString(value);
         } else {
-            return toAliasSQL() + getKeyForSql() + "=" + value;
+            safeValue = value;
         }
+
+        // Return expression
+        return toAliasSQL() + getKeyForSql() + "=" + safeValue;
     }
 
     public String getAlias() {
