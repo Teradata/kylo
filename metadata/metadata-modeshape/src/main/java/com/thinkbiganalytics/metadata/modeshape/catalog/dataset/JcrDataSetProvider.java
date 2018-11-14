@@ -176,13 +176,14 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         private final Map<String, String> options = new HashMap<>();
 
         public Builder(DataSource dataSource) {
-            DataSetSparkParameters sparkParams = dataSource.getEffectiveSparkParameters();
-
             this.dataSource = (JcrDataSource) dataSource;
-            this.format = sparkParams.getFormat();
-            this.options.putAll(sparkParams.getOptions());
-            this.jars.addAll(sparkParams.getJars());
-            this.files.addAll(sparkParams.getFiles());
+            
+            // TODO do we really need to replicate the inherited properties?
+//            DataSetSparkParameters sparkParams = dataSource.getEffectiveSparkParameters();
+//            this.format = sparkParams.getFormat();
+//            this.options.putAll(sparkParams.getOptions());
+//            this.jars.addAll(sparkParams.getJars());
+//            this.files.addAll(sparkParams.getFiles());
         }
 
         @Override
@@ -291,7 +292,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v2));
 
             //if we dont have a title and we are a file upload create the title and set it
-            if(StringUtils.isBlank(this.title) && isFileUpload(dataSource)) {
+            if (StringUtils.isBlank(this.title) && isFileUpload(dataSource)) {
                 String title = UUID.randomUUID().toString();
                 String ensuredTitle = generateTitle(this.dataSource, title, this.format, this.options, this.paths);
                 this.title = ensuredTitle;
