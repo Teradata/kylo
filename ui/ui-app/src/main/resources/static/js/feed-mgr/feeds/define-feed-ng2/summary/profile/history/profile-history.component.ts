@@ -22,7 +22,7 @@ export class ProfileHistoryComponent implements OnInit {
     private utils: any;
     showSummary: boolean = true;
     private profileSummary: Array<any> = [];
-    private loading: boolean = false;
+    public loading: boolean = false;
     showNoResults: boolean = false;
 
     public kyloIcons_Links_profile = KyloIcons.Links.profile;
