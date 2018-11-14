@@ -29,8 +29,7 @@
           </div>
           <span fxFlex></span>
           <div>
-            <button *ngIf="!feed.readonly && schemaPanelExpanded && !step.dirty" mat-raised-button class="text-upper push-top" (click)="onSchemaPanelCancel($event)">Next
-            </button>
+            <button *ngIf="!feed.readonly && schemaPanelExpanded" mat-raised-button class="text-upper push-top" (click)="onSchemaPanelCancel($event)">Next</button>
             <button mat-icon-button class="push-right" color="accent" (click)="onSchemaPanelEdit($event)" *ngIf="!schemaPanelExpanded" matTooltip="Edit schema options"><mat-icon color="accent">edit
             </mat-icon></button>
           </div>
@@ -423,7 +422,7 @@
                 </div>
 
               </div>
-              <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.tableLocked && feed.table.partitions.length > 0">Add Partition</button>
+              <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.partitionsLocked && feed.table.partitions.length > 0">Add Partition</button>
             </form>
           </div>
         </mat-card-content>

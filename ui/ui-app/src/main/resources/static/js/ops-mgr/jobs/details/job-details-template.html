@@ -53,8 +53,8 @@
             </div>
           </div>
 
-          <div class="item-title">{{'views.job-details-template.ED' | translate}}</div>
-          <div class="grey" style="white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
+          <div ng-if="!vm.jobData.running" class="item-title">{{'views.job-details-template.ED' | translate}}</div>
+          <div ng-if="!vm.jobData.running" class="grey" style="white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
                ng-tt-chars-threshold="150">
           </div>
         </div>
@@ -64,8 +64,9 @@
           <md-tab flex>
             <md-tab-label>
                    <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
-                                                       <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
-                                                       </ng-md-icon>{{'views.job-details-template.JD' | translate}}</span>
+                                                       <!--<ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}"
+                                                       size="20"></ng-md-icon>-->
+                                                       {{'views.job-details-template.JD' | translate}}</span>
             </md-tab-label>
             <md-tab-body>
               <md-divider></md-divider>
@@ -141,7 +142,7 @@
               <md-divider></md-divider>
               <div flex layout="column" class="tab-content">
                   <md-list>
-                  <md-list-item ng-repeat="step in vm.allSteps" class="with-padding layout-padding item-column">
+                  <md-list-item ng-repeat="step in vm.allSteps" class="pad-sm pad-left item-column">
                    <div  layout="column" layout-fill>
 
                     <div layout="row" ng-click="step.content.open == true ? step.content.open = false : step.content.open = true"
@@ -152,7 +153,7 @@
                     <ng-md-icon icon="{{step.content.open == true ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}" size="20">
                     </ng-md-icon>   {{step.title}} - {{step.content.name}}
                    </span>
-                  <span class="column-title-bottom {{step.content.cssStatusClass}}">
+                  <span class="pad-left-md {{step.content.cssStatusClass}}">
                                                        <ng-md-icon ng-if="step.content.statusIcon" class="{{step.content.tabIconStyle}}" icon="{{step.content.statusIcon}}" size="20">
                                                        </ng-md-icon>{{step.content.displayStatus | translate}}</span>
 
@@ -184,8 +185,8 @@
                     <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16">
 
 
-                      <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-                      <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
+                      <div ng-if="step.content.displayStatus != 'COMPLETED'" class="item-title pad-left pad-top-sm pad-bottom-sm">{{'views.job-details-template.ED' | translate}}</div>
+                      <div ng-if="step.content.displayStatus != 'COMPLETED'" class="grey pad-bottom  pad-left" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
                       <md-list flex layout-fill ng-show="vm.pageState.loading == false" class="list-item-table">

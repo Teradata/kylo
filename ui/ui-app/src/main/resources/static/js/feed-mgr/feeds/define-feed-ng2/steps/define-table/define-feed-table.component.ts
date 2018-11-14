@@ -243,7 +243,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.indexCheckAll.setup(this.feed.table);
 
 
-        let locked = this.feed.hasBeenDeployed() || this.feed.isDataTransformation();
+        let locked = this.feed.hasBeenDeployed(); // || this.feed.isDataTransformation();
         this.tablePermissions.canRemoveFields = !locked
         this.tablePermissions.dataTypeLocked = locked
         this.tablePermissions.tableLocked = locked
@@ -283,8 +283,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.mergeStrategy = this.mergeStrategies.find((strategy: FeedServiceTypes.MergeStrategy) => strategy.type == this.feed.table.targetMergeStrategy)
         }
 
-        this.targetFormatOptionsForm.registerControl("targetFormat", new FormControl({value:'',disabled:this.feed.readonly || this.tablePermissions.tableLocked}));
-        this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl({value:'',disabled:this.feed.readonly || this.tablePermissions.tableLocked}));
+        this.targetFormatOptionsForm.registerControl("targetFormat", new FormControl({value:'',disabled:this.feed.readonly || this.feed.hasBeenDeployed()}));
+        this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl({value:'',disabled:this.feed.readonly || this.feed.hasBeenDeployed()}));
 
         //listen when the form is valid or invalid
       //  this.subscribeToFormChanges(this.parentForm);

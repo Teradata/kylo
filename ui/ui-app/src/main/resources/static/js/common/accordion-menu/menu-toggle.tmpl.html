@@ -4,7 +4,7 @@
   </div>
   <div class="accordion-body">
     <md-list id="menu-{{section.text}}" class="accordion-list">
-      <md-list-item ng-repeat="item in section.links" ng-if-permission="{{item.permission}}">
+      <md-list-item class="pad-none" ng-repeat="item in section.links" ng-if-permission="{{item.permission}}">
         <menu-link section="item"></menu-link>
       </md-list-item>
     </md-list>

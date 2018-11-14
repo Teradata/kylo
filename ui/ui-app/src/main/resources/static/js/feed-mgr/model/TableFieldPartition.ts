@@ -85,9 +85,7 @@ export class TableFieldPartition  implements KyloObject {
     }
 
     updateFieldName() {
-        if(angular.isUndefined(this.formula)){
-            this.formula = 'val';
-        }
+        if(angular.isUndefined(this.formula)) return;
         if (this.formula != 'val') {
             if (this.sourceField != null && (this.field == null || this.field == '' || this.field == this.sourceField || this.field == this.sourceField + "_")) {
                 this.field = this.sourceField + "_" + this.formula;
