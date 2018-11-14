@@ -89,7 +89,7 @@ public class DataSetController extends AbstractCatalogController {
                                   @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
         log.entry(source);
 
-        final DataSet dataSet;
+         DataSet dataSet;
         try {
             dataSet = dataSetService.findOrCreateDataSet(source, encryptCredentials);
         } catch (final CatalogException e) {
@@ -151,7 +151,7 @@ public class DataSetController extends AbstractCatalogController {
     public Response getUploads(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
 
-        final DataSet dataSet = findDataSet(dataSetId, false);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         final List<DataSetFile> files;
         try {
             log.debug("Listing uploaded files for dataset {}", dataSetId);
@@ -185,7 +185,7 @@ public class DataSetController extends AbstractCatalogController {
             throw new BadRequestException(getMessage("catalog.dataset.postUpload.missingBodyPart"));
         }
 
-        final DataSet dataSet = findDataSet(dataSetId, false);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         final DataSetFile file;
         try {
             final BodyPart part = bodyParts.get(0);
