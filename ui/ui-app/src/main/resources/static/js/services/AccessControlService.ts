@@ -9,6 +9,7 @@ import { CloneUtil } from '../common/utils/clone-util';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/forkJoin';
+import 'rxjs/add/observable/of';
 
 @Injectable()
 export default class AccessControlService extends AccessConstants {
@@ -72,7 +73,7 @@ export default class AccessControlService extends AccessConstants {
      */
     init() {
         //build the user access and role/permission cache//  roles:this.getRoles()
-        Observable.forkJoin(this.getUserAllowedActions(this.DEFAULT_MODULE, true), this.getRoles(), this.getCurrentUser(), this.checkEntityAccessControlled())
+        Observable.forkJoin(this.getUserAllowedActions(this.DEFAULT_MODULE, true), this.getRoles(), this.getCurrentUser()/*, this.checkEntityAccessControlled()*/)
             .subscribe((result) => {
                 this.initialized = true;
                 this.currentUser = result[2];
@@ -108,7 +109,7 @@ export default class AccessControlService extends AccessConstants {
 
     checkEntityAccessControlled() {
         if (ObjectUtils.isDefined(this.entityAccessControlled)) {
-            return this.entityAccessControlled;
+            return Observable.of(this.entityAccessControlled);
         }
         else {
             return this.http.get(this.commonRestUrlService.ENTITY_ACCESS_CONTROLLED_CHECK).toPromise().then((response: any) => {

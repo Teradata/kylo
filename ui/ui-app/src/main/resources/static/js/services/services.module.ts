@@ -29,7 +29,6 @@ import { WindowUnloadService } from "./WindowUnloadService";
     providers: [
         NotificationService,
         PreviewDatasetCollectionService,
-        BroadcastService,
         DefaultPaginationDataService,
         DefaultTableOptionsService,
         StateService,
@@ -40,13 +39,21 @@ import { WindowUnloadService } from "./WindowUnloadService";
         ConfigurationService,
         SearchService,
         SideNavService,
-        AccessControlService,
         AngularModuleExtensionService,
-        AddButtonService,
         FileUpload,
         WindowUnloadService,
         LoginNotificationService
+        
     ]
 })
 export class KyloServicesModule {
+    static forRoot(){
+        return{
+
+            ngModule:KyloServicesModule,
+         
+            providers:[BroadcastService,AddButtonService,AccessControlService]
+         
+          };
+    }
 }

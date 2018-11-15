@@ -61,6 +61,7 @@ import { TemplateDeleteDialog } from "./template-stepper/select-template/templat
 
 import { DndModule } from 'ng2-dnd';
 import { TemplateOrderController } from "./template-order/template-order.component";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @NgModule({
     declarations: [
@@ -129,6 +130,7 @@ import { TemplateOrderController } from "./template-order/template-order.compone
         CovalentVirtualScrollModule,
         MatSnackBarModule,
         CovalentDialogsModule,
+        MatTooltipModule,
         DndModule.forRoot(),
         UIRouterModule.forChild({states: templateStates})
     ],
