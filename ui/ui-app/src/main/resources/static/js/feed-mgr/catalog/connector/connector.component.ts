@@ -90,6 +90,10 @@ class DefaultUiOptionsMapper implements UiOptionsMapper {
         controls.forEach((control: FormControl, key: string) => {
             if (key === "path") {
                 control.setValue(ds.template.paths[0]);
+            } else if (key === "jars") {
+                if(ds.template.jars != undefined && ds.template.jars.length >0){
+                    control.setValue(ds.template.jars.join(","));
+                }
             } else {
               this.setUiValueAndSubscribeToChanges(ds,control,key,uiOptions.get(key))
             }
