@@ -29,7 +29,7 @@
     [pageSize]="pageSize"
     [filteredTotal]="filteredTotal"
     [allowedPageSize]="[5,10,20,50]"
-    (rowClick)="editTemplate($event.row)"
+    (rowClicked)="editTemplate($event.row)"
     (sortChange)="onSortOrderChange($event)"
     (searchDebounced)="search($event)"
     (pageSizeChanged)="onPageSizeChange($event)"

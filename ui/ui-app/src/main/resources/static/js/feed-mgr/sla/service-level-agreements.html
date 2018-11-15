@@ -21,7 +21,7 @@
   <div class="layout-padding-left-right" style="max-width: 980px; width: 980px;" >
     <filtered-paginated-table-view *ngIf="editSla == null && !loading" [cardTitle]="cardTitle" [filteredData]="filteredData"
       [columns]="columns" [clickable]="true" [sortable]="true" [sortOrder]="sortOrder" [sortBy]="sortBy" [firstLast]="false"
-      [pageSize]="pageSize" [filteredTotal]="filteredTotal" [allowedPageSize]="[5,10,20,50]" (rowClick)="onEditSla($event.row)"
+      [pageSize]="pageSize" [filteredTotal]="filteredTotal" [allowedPageSize]="[5,10,20,50]" (rowClicked)="onEditSla($event.row)"
       (sortChange)="onSortOrderChange($event)" (searchDebounced)="search($event)" (pageSizeChanged)="onPageSizeChange($event)">
     </filtered-paginated-table-view>
 
