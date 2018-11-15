@@ -61,7 +61,7 @@ const translateConfig: TranslateModuleConfig = {
         HttpClientModule,
         KyloCommonModule,
         KyloFeedManagerModule,
-        KyloServicesModule,
+        KyloServicesModule.forRoot(),
         MatDialogModule,
         MatFormFieldModule,
         MatProgressBarModule,

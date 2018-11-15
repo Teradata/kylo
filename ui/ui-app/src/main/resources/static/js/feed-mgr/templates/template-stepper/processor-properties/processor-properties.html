@@ -49,7 +49,7 @@
                                     
                                     <mat-hint *ngIf="property.propertyDescriptor.sensitive">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_SENSETIVE' | translate}}</mat-hint>
                                     <mat-hint *ngIf="property.propertyDescriptor.required">
-                                        {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_REQUIRED | translate}}
+                                        {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_REQUIRED' | translate}}
                                     </mat-hint>
                                     <mat-hint>
                                         {{property.propertyDescriptor.description}}
@@ -118,15 +118,14 @@
                                                 <div class="hint" thinkbig-derived-expression [model]="property.value"
                                                      style="margin-bottom:10px;"></div>
 
-                                                <div ng-if="vm.allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
+                                                <div *ngIf="allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
                                                     <md-input-container md-no-float class="md-block layout-margin-top-minus-7">
                                                         <div layout="row">
                                                         <div style="color:#0288d1; background-color:#0288d126" class="layout-padding-left-4 layout-padding-right-4">
-                                                            <ng-md-icon icon="info" style="fill:#0288d1" size="20"></ng-md-icon>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_TEMPLATE_DV' | translate}}<b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
+                                                            <mat-icon style="fill:#0288d1" size="20">info</mat-icon>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_TEMPLATE_DV' | translate}}<b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
                                                         </div>
                                                         <div class="layout-padding-left-4">
-                                                            <ng-md-icon icon="replay" style="fill:#0288d1" ng-click="vm.acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple"></ng-md-icon>
-                                                            <md-tooltip [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO'" [translateParams]="{from:property.registrationChangeInfo.valueFromNewerNiFiTemplate,to:property.value}"></md-tooltip>
+                                                            <mat-icon matTooltip="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO' | translate:property.registrationChangeInfo.valueFromNewerNiFiTemplate,property.value" style="fill:#0288d1" (click)="acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple">replay</mat-icon>
                                                         </div>
                                                         </div>
                                                     </md-input-container>

@@ -34,7 +34,6 @@ export class RegisterSelectTemplateController implements OnInit {
     model: any;
     stepIndex: string;
     stepNumber: number;
-    stepperController: any = null;
     template: any = null;
     isValid: boolean = false;
 
@@ -117,9 +116,6 @@ export class RegisterSelectTemplateController implements OnInit {
             });
 
         this.stepNumber = parseInt(this.stepIndex) + 1;
-        if (this.isLoading()) {
-            this.stepperController.showProgress = true;
-        }
     }
 
     constructor(private $state: StateService,
