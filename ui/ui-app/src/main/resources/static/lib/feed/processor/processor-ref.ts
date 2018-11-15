@@ -1,12 +1,10 @@
-import {AbstractControl, FormArray, FormGroup} from "@angular/forms";
+import {AbstractControl, FormArray} from "@angular/forms";
 
 import {Processor} from "../model/processor";
 
 export class ProcessorRef {
 
     readonly form = new FormArray([]);
-
-    formGroup: FormGroup;
 
     constructor(readonly processor: Processor, readonly feed?: any) {
     }
