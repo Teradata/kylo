@@ -124,23 +124,24 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
 
             }
             if (update) {
+                if(StringUtils.isNotBlank(inputPort.getState())) {
+                    //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
+                    if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && inputPort.getState()
+                        .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
+                        //first need to make it ENABLED
+                        inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                        current = updateInputPortEntity(processGroupId, inputPort, retryAttempt);
+                        inputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                    }
 
-                //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
-                if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && inputPort.getState()
-                    .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
-                    //first need to make it ENABLED
-                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                    current = updateInputPortEntity(processGroupId, inputPort, retryAttempt);
-                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                }
-
-                //if trying to make a RUNNING port DISABLED you need to make it STOPPED first and then mark it as DISABLED
-                if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name()) && inputPort.getState()
-                    .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
-                    //first need to make it ENABLED
-                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                    current = updateInputPortEntity(processGroupId, inputPort, retryAttempt);
-                    inputPort.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                    //if trying to make a RUNNING port DISABLED you need to make it STOPPED first and then mark it as DISABLED
+                    if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name()) && inputPort.getState()
+                        .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
+                        //first need to make it ENABLED
+                        inputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                        current = updateInputPortEntity(processGroupId, inputPort, retryAttempt);
+                        inputPort.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                    }
                 }
                 // Update input port
                 final PortEntity entity = new PortEntity();
@@ -214,25 +215,26 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
 
         }
         if (update) {
+            if(StringUtils.isNotBlank(outputPort.getState())) {
+                //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
+                if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && outputPort.getState()
+                    .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
+                    //first need to make it ENABLED
+                    outputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                    current = updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
+                    delay(500L);
+                    outputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                }
 
-            //if trying to make a DISABLED port RUNNING you need to make it STOPPED first and then mark it as RUNNING
-            if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name()) && outputPort.getState()
-                .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name())) {
-                //first need to make it ENABLED
-                outputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                current = updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
-                delay(500L);
-                outputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-            }
-
-            //if trying to make a RUNNING port DISABLED you need to make it STOPPED first and then mark it as DISABLED
-            if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name()) && outputPort.getState()
-                .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
-                //first need to make it ENABLED
-                outputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                current = updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
-                delay(500L);
-                outputPort.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                //if trying to make a RUNNING port DISABLED you need to make it STOPPED first and then mark it as DISABLED
+                if (current != null && current.getComponent().getState().equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.RUNNING.name()) && outputPort.getState()
+                    .equalsIgnoreCase(NifiProcessUtil.PROCESS_STATE.DISABLED.name())) {
+                    //first need to make it ENABLED
+                    outputPort.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                    current = updateOutputPortEntity(processGroupId, outputPort, retryAttempt);
+                    delay(500L);
+                    outputPort.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                }
             }
 
             // Update output port
