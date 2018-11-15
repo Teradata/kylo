@@ -295,7 +295,6 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
             if (!hasVisibleProcessors) {
                 this.noPropertiesExist = true;
             }
-            console.log('this.inputProcessor',this.inputProcessor.formGroup)
 
             this.updatedFormControls.emit();
             this.processorsChange.emit(new NiFiPropertiesProcessorsChangeEvent(this.mode, this.feed, this.inputProcessors, this.nonInputProcessors, this.noPropertiesExist));

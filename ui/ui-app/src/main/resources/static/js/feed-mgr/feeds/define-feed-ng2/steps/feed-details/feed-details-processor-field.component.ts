@@ -77,7 +77,6 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         if(this.forms[this.processor.id] == undefined){
             this.forms[this.processor.id] = new FormGroup({});
         }
-        this.processor.formGroup = this.forms[this.processor.id]
     }
 
     /**
@@ -87,8 +86,6 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
     getProcessorForm(){
         this._ensureProcessorForm();
         return this.forms[this.processor.id];
-
-
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -168,7 +165,7 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
                     .then((module: any) => module[exportName])
                     .then((type: any) => this.checkNotEmpty(type, module, exportName))
                     .then((type: any) => this._compiler.compileModuleAsync(type));
-                    // .then((x: any) => [x, kyloModule]);
+                // .then((x: any) => [x, kyloModule]);
             }),
             concatMap(template => SystemJS.import("@kylo/feed").then(kyloModule => [template, kyloModule])),
             map((imports: any) => {
