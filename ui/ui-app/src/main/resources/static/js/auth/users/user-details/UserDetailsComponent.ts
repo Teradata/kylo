@@ -3,7 +3,7 @@ import UserService from "../../services/UserService";
 import AccessControlService from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
 import { StateService } from "@uirouter/core";
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ViewContainerRef } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {FormControl, Validators, FormGroupDirective, NgForm} from '@angular/forms';
@@ -17,7 +17,7 @@ import { TranslateService } from '@ngx-translate/core';
     selector: 'user-Details',
     styles : [' .block { display : block; margin: 18px;}']
 })
-export default class UserDetailsComponent {
+export default class UserDetailsComponent implements OnInit{
 
     $error: any = { duplicateUser: false, missingGroup: false, missingUser: false };
 
@@ -95,9 +95,7 @@ export default class UserDetailsComponent {
         private _viewContainerRef: ViewContainerRef,
         private snackBar: MatSnackBar,
         private translate: TranslateService
-    ) {
-        this.onLoad();
-      }
+    ) {}
     /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
          *
@@ -154,15 +152,6 @@ export default class UserDetailsComponent {
     };
 
     /**
-     * Gets the titles for every group this user belongs to.
-     *
-     * @returns {Array.<string>} the group titles for this user
-     */
-    getGroupTitles () {
-        return _.map(this.model.groups, (group :any) => {this.getGroupTitle(group)});
-    };
-
-    /**
      * Cancels the current edit operation. If a new user is being created then redirects to the users page.
      */
     onCancel ()  {
@@ -210,7 +199,7 @@ export default class UserDetailsComponent {
     /**
      * Loads the user details.
      */
-    onLoad () {
+    ngOnInit () {
         // Get the list of groups
         this.UserService.getGroups()
             .then((groups: any) => {

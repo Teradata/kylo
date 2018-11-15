@@ -259,21 +259,9 @@ class Route {
         });
         $stateProvider.state({
             name: 'service-details.**',
-            url: '/service-details/{serviceName}',
-            params: {
-                serviceName: null
-            },
+            url: '/service-details',
             loadChildren: 'ops-mgr/service-health/ops-mgr-service-health.module#OpsManagerServiceHealthModule'
         });
-        $stateProvider.state({
-            name: 'service-component-details.**',
-            url: '/service-details/{serviceName}/{componentName}',
-            params: {
-                serviceName: null,
-                componentName: null
-            },
-            loadChildren: 'ops-mgr/service-health/ops-mgr-service-health.module#OpsManagerServiceHealthModule'
-        })
 
         $stateProvider.state({
             name: 'scheduler.**',
