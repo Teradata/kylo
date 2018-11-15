@@ -25,11 +25,16 @@
         <div fxLayout="row" class="pad">
           <div fxLayout="column">
             <div class="mat-card-title" style="font-size:20px">Target Table</div>
-            <div class="mat-card-subtitle">Define target schema and field options</div>
+            <div class="mat-card-subtitle" *ngIf="defineTableForm.invalid">
+              <mat-icon color="warn">error</mat-icon> Invalid form.
+            </div>
+            <div class="mat-card-subtitle">
+              Define target schema and field options
+            </div>
           </div>
           <span fxFlex></span>
           <div>
-            <button *ngIf="!feed.readonly && schemaPanelExpanded" mat-raised-button class="text-upper push-top" (click)="onSchemaPanelCancel($event)">Next</button>
+            <button *ngIf="!feed.readonly && schemaPanelExpanded" mat-raised-button class="text-upper push-top" (click)="onSchemaPanelCancel($event)" [disabled]="defineTableForm.invalid">Next</button>
             <button mat-icon-button class="push-right" color="accent" (click)="onSchemaPanelEdit($event)" *ngIf="!schemaPanelExpanded" matTooltip="Edit schema options"><mat-icon color="accent">edit
             </mat-icon></button>
           </div>
@@ -526,7 +531,7 @@
   <div fxLayout="row">
     <feed-toolbar-actions [(feed)]="feed" (onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false"></feed-toolbar-actions>
     <div *ngIf="!feed.readonly">
-      <button mat-raised-button color="accent" (click)="onSave()" [disabled]="feed.table.tableSchema.fields.length == 0 || schemaPanelExpanded">Save</button>
+      <button mat-raised-button color="accent" (click)="onSave()" [disabled]="feed.table.tableSchema.fields.length == 0 || schemaPanelExpanded || parentForm.invalid">Save</button>
     </div>
   </div>
 </ng-template>

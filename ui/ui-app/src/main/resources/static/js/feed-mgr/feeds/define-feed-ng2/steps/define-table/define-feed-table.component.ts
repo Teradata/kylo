@@ -217,7 +217,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.filterPartitionFormulaPipe = new FilterPartitionFormulaPipe();
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
-      //  this.parentForm = new FormGroup({})
+        this.parentForm = new FormGroup({})
 
         this.defineTableForm = new FormGroup({});
         this.definePartitionForm = new FormGroup({});
@@ -226,10 +226,10 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
         this.sourceSampleForm = new FormGroup({})
 
-      //  this.parentForm.addControl("defineTableForm",this.defineTableForm)
-     //   this.parentForm.addControl("definePartitionForm",this.definePartitionForm)
-     //   this.parentForm.addControl("mergeStrategiesForm",this.mergeStrategiesForm)
-     //   this.parentForm.addControl("targetFormatOptionsForm",this.targetFormatOptionsForm)
+        this.parentForm.addControl("defineTableForm",this.defineTableForm)
+        this.parentForm.addControl("definePartitionForm",this.definePartitionForm)
+        this.parentForm.addControl("mergeStrategiesForm",this.mergeStrategiesForm)
+        this.parentForm.addControl("targetFormatOptionsForm",this.targetFormatOptionsForm)
 
         this.mergeStrategiesForm.registerControl("targetMergeStrategy", new FormControl());
         this.defineTableForm.registerControl("indexCheckAll",new FormControl(this.indexCheckAll.isChecked))
@@ -287,7 +287,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.targetFormatOptionsForm.registerControl("compressionFormat", new FormControl({value:'',disabled:this.feed.readonly || this.feed.hasBeenDeployed()}));
 
         //listen when the form is valid or invalid
-      //  this.subscribeToFormChanges(this.parentForm);
+        this.subscribeToFormChanges(this.parentForm);
         this.subscribeToFormDirtyCheck(this.defineTableForm);
         this.subscribeToFormDirtyCheck(this.definePartitionForm);
         this.subscribeToFormDirtyCheck(this.mergeStrategiesForm);
@@ -990,7 +990,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                    cancelButton: "Cancel and review"
                }).afterClosed();
        }
-       return true;
+       return this.parentForm.valid;
     }
 }
 @Pipe({name: 'filterPartitionFormula'})
