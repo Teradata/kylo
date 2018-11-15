@@ -30,7 +30,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  *
@@ -96,10 +95,13 @@ public class Action implements Serializable {
         return this.actions.add(action);
     }
 
-    public Optional<Action> getAction(String name) {
-        return this.actions.stream()
-            .filter(a -> a.getSystemName().equals(name))
-            .findFirst();
+    public Action getAction(String name) {
+        for( Action action : actions ) {
+            if(action.getSystemName().equals(name)) {
+                return action;
+            }
+        }
+        return null;
     }
 
     /**
@@ -108,7 +110,9 @@ public class Action implements Serializable {
      * @return true if it has the name in this action hierarchy, false if not
      */
     boolean hasAction(String name) {
-        boolean hasAction = this.getSystemName().equals(name) || getAction(name).isPresent();
+        boolean actionPresent = getAction(name) != null;
+
+        boolean hasAction = this.getSystemName().equals(name) || actionPresent;
         if(!hasAction){
             for(Action a: actions){
                 hasAction = a.hasAction(name);
@@ -127,9 +131,9 @@ public class Action implements Serializable {
         List<Action> newActions = new ArrayList<>();
 
         for (Action otherAction : otherActions) {
-            Optional<Action> existingAction = this.getAction(otherAction.getSystemName());
-            if (existingAction.isPresent()) {
-                existingAction.get().union(otherAction);
+            Action existingAction = this.getAction(otherAction.getSystemName());
+            if (existingAction != null ) {
+                existingAction.union(otherAction);
             } else {
                 newActions.add(otherAction);
             }
@@ -137,4 +141,5 @@ public class Action implements Serializable {
 
         existingActions.addAll(newActions);
     }
+
 }

@@ -31,11 +31,7 @@
       <artifactId>kylo-commons-util7</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-commons-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-field-policy-rest-model</artifactId>

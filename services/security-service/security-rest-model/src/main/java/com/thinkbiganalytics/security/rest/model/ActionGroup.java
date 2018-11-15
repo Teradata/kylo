@@ -12,9 +12,9 @@ package com.thinkbiganalytics.security.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,12 +30,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -77,14 +72,18 @@ public class ActionGroup implements Serializable {
         return this.actions.add(action);
     }
 
-    public Optional<Action> getAction(String name) {
-        return this.actions.stream()
-            .filter(a -> a.getSystemName().equals(name))
-            .findFirst();
+    public Action getAction(String name) {
+        for (Action action : this.actions) {
+            if (action.getSystemName().equals(name)) {
+                return action;
+            }
+
+        }
+        return null;
     }
 
     @JsonIgnore
     public boolean hasAction(String action) {
-        return getActions().stream().filter(a -> a.hasAction(action)).findFirst().isPresent();
+        return getAction(action) != null;
     }
 }
