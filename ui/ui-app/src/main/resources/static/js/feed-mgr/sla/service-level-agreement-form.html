@@ -21,7 +21,7 @@
 <div *ngIf="editSla != null"  >
   <div layout="row" layout-align="start start">
     <div flex></div>
-    <button (click)="onViewSlaAssessments($event)"  class="md-primary" *ngIf="feed && mode != 'NEW'">{{"views.service-level-agreement-form.SA" | translate}}</button>
+    <button (click)="onViewSlaAssessments($event)"  class="md-primary" *ngIf="feed && mode != 'NEW'">{{"views.service-level-agreement-form.SlaAssessments" | translate}}</button>
   </div>
 
   <form #slaForm="ngForm" (change)="onChange(slaForm)">
@@ -58,7 +58,7 @@
       <div *ngIf="addingSlaCondition" class="layout-padding-left-right" layout="row" flex>
 
         <mat-form-field class="md-block layout-padding-top-bottom">
-          <mat-label class="md-container-ignore mat-label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SNC" | translate}}</mat-label>
+          <mat-label class="md-container-ignore mat-label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SelectNewCondition" | translate}}</mat-label>
           <mat-select name="slaCondition" [ngModel]="ruleType" [ngModelOptions]="{trackBy: 'value.name'}" (ngModelChange)="onAddConditionRuleTypeChange($event)" aria-mat-label="Rule Type">
             <mat-option [value]="opt" *ngFor="let opt of options">{{ opt.name }}</mat-option>
           </mat-select>
@@ -70,10 +70,10 @@
       </div>
 
       <div>
-        <span class="md-subhead">{{"views.service-level-agreement-form.SLAA" | translate}}</span>
+        <span class="md-subhead">{{"views.service-level-agreement-form.SlaActions" | translate}}</span>
 
         <div *ngIf="editSla.actionConfigurations.length ==0" layout="column" class="layout-padding">
-          <span>{{"views.service-level-agreement-form.ASLAvwgaA" | translate}}</span>
+          <span>{{"views.service-level-agreement-form.WillGenerateAlert" | translate}}</span>
           <span *ngIf="showActionOptions">{{"views.service-level-agreement-form.AddAction" | translate}}</span>
         </div>
 

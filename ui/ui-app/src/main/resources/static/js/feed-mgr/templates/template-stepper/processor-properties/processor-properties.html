@@ -258,7 +258,7 @@
 
             <div>
                 <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
-                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} 3</button>
+                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} {{stepIndex + 2}}</button>
             </div>
 
         </mat-card-content>
