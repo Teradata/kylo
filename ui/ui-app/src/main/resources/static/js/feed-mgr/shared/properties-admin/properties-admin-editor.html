@@ -63,7 +63,8 @@
             <span flex="5"></span>
 
             <div layout="column" flex="90" class="md-input-has-value">
-                <mat-checkbox placeholder='{{"views.properties-admin-editor.Required" | translate}}' [(ngModel)]="field.required"  (change)="updateField(field)"></mat-checkbox>
+                <mat-label>{{"views.properties-admin-editor.Required" | translate}}</mat-label>
+                <mat-checkbox [(ngModel)]="field.required"  (change)="updateField(field)"></mat-checkbox>
             </div>
 
             <span flex="5"></span>

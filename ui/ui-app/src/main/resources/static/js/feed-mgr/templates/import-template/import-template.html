@@ -230,7 +230,7 @@
                        {{'FEEDMGR.TEMPLATES.IMPORT.CARD_TITLE' | translate}}
             </button>
             <span flex="5"></span>
-            <md-progress-linear flex md-mode="determinate" value="{{uploadProgress}}" *ngIf="uploadInProgress"></md-progress-linear>
+            <mat-progress-bar flex mode="determinate" value="{{uploadProgress}}" *ngIf="uploadInProgress"></mat-progress-bar>
           </div>
 
           <div layout="column">
@@ -246,8 +246,6 @@
               </div>
             </div>
           </div>
-
-
 
         </div>
 
@@ -269,7 +267,7 @@
                   </div>
                   <div class="md-warn-text">{{error.message}}</div>
                 </div>
-                <mat-divider *ngIf="!last"></mat-divider>
+                <mat-divider *ngIf="last"></mat-divider>
               </mat-list-item>
             </ng-template>
           </mat-list>
@@ -285,7 +283,7 @@
                 </div>
                 <div layout="column" flex="50">
                   <div class="md-block condensed">
-                    <mat-select name="port-{{connection.feedOutputPortName}}" [(ngModel)]="connection.inputPortDisplayName" ng-change="onReusableTemplateConnectionChange(connection)"
+                    <mat-select name="port-{{connection.feedOutputPortName}}" [(ngModel)]="connection.inputPortDisplayName" (change)="onReusableTemplateConnectionChange(connection)"
                                 formControlName="port-{{connection.feedOutputPortName}}" required>
                       <ng-template *ngFor="let inputPort of inputPortList">
                         <mat-option value="{{inputPort.value}}" [disabled]="inputPort.disabled">
@@ -325,7 +323,7 @@
                     <div class="md-list-item-text">
                       <div class="md-warn-text">{{error}}</div>
                     </div>
-                    <mat-divider *ngIf="!last"></mat-divider>
+                    <mat-divider *ngIf="last"></mat-divider>
                   </mat-list-item>
                 </ng-template>
               </mat-list>
@@ -350,11 +348,13 @@
 
                 <div layout="row" layout-align="start">
                   <span flex="100"></span>
-                  <button (click)="cancelImport()">{{'view.main.cancel' | translate}}</button>
-                  <button class="md-primary" (click)="setRemoteProcessInputPorts()">{{'views.import_feed.Import' | translate}}</button>
+                  <button (click)="cancelImport()">
+                    {{'view.main.cancel' | translate}}
+                  </button>
+                  <button class="md-primary" (click)="setRemoteProcessInputPorts()">
+                    {{'views.import_feed.Import' | translate}}
+                  </button>
                 </div>
-
-
               </form>
             </div>
           </div>

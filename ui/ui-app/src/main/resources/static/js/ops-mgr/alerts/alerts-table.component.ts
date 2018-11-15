@@ -246,10 +246,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
             if (tabTitle != 'All') {
                 params.level=tabTitle;
             }
-            if(this.filterTable != '') {
-                params.filter = filter;
-            }
-            if(this.filterAlertType.label != 'ALL'){
+            if (this.filterAlertType.label != 'ALL'){
                 if(params.filter == undefined){
                     params.filter = this.filterAlertType.type;
                 }
