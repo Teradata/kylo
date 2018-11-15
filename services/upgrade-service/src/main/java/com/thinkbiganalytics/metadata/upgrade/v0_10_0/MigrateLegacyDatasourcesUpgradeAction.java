@@ -56,6 +56,7 @@ import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
 
+import org.modeshape.jcr.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -237,36 +238,37 @@ public class MigrateLegacyDatasourcesUpgradeAction implements UpgradeAction {
                 feed.getSources().stream()
                     .map(JcrFeedSource.class::cast)
                     .forEach(source -> {
-                        // There will be a derived datasource of with a connection name matching the new data datasource
-                        // for each table.  Create a data set from each table name.
                         source.getDatasource()
-                            .filter(JcrDerivedDatasource.class::isInstance)
-                            .map(JcrDerivedDatasource.class::cast)
-                            .filter(dds -> dds.getProperty("tba:datasourceType").equals("DatabaseDatasource"))
-                            .filter(dds -> title.equals(dds.getAllProperties().get("Database Connection")))
-                            .ifPresent(dds -> {
-                                Map<String, Object> allProps = dds.getAllProperties();
-                                
-                                if (allProps.containsKey("Table")) {
-                                    String tableName = allProps.get("Table").toString();
-                                    JcrDataSet dataSet = (JcrDataSet) dataSetProvider.build(catDs.getId())
-                                                    .title(tableName)
-                                                    .addOption("dbtable", tableName)
-                                                    .build();
+                            .map(JcrDatasource.class::cast)
+                            .ifPresent(datasource -> {
+                                // There will be a derived datasource of with a connection name matching the new data datasource
+                                // for each table.  Create a data set from each table name.
+                                if (datasource instanceof JcrDerivedDatasource) {
+                                    JcrDerivedDatasource dds = (JcrDerivedDatasource) datasource;
                                     
-                                    feedProvider.ensureFeedSource(feed.getId(), dataSet.getId());
-                                    // feed.removeFeedSource(source);
-                                } else {
-                                    log.warn("No table name found in data source: " + dds);
+                                    if (dds.getProperty("tba:datasourceType").equals("DatabaseDatasource") && title.equals(dds.getAllProperties().get("Database Connection"))) {
+                                        Map<String, Object> allProps = dds.getAllProperties();
+                                        
+                                        if (allProps.containsKey("Table")) {
+                                            String tableName = allProps.get("Table").toString();
+                                            JcrDataSet dataSet = (JcrDataSet) dataSetProvider.build(catDs.getId())
+                                                            .title(tableName)
+                                                            .addOption("dbtable", tableName)
+                                                            .build();
+                                            
+                                            feed.removeFeedSource(source);
+                                            feedProvider.ensureFeedSource(feed.getId(), dataSet.getId());
+                                        } else {
+                                            log.warn("No table name found in data source: " + dds);
+                                        }
+                                   }
+                                // Since we've converted a legacy datasource into a category data source with the same ID,
+                                // there will still be a reference to it in one of the FeedSources as a legacy datasource.  
+                                // When we find it then remove that FeedSource.
+                                } else if (datasource.getNode().equals(catDs.getNode())) {
+                                    feed.removeFeedSource(source);
                                 }
                             });
-                        
-                        // Since we've converted the category data source into a legacy datasource there will be a reference
-                        // to it in one of the FeedSources.  In that case just remove the FeedSource.
-//                        source.getDatasource()
-//                            .map(JcrDatasource.class::cast)
-//                            .filter(datasource -> datasource.getNode().equals(catDs.getNode()))
-//                            .ifPresent(datasource -> feed.removeFeedSource(source));
                     });
             });
     }
