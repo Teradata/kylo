@@ -267,7 +267,7 @@
                   </div>
                   <div class="md-warn-text">{{error.message}}</div>
                 </div>
-                <mat-divider *ngIf="last"></mat-divider>
+                <mat-divider *ngIf="!last"></mat-divider>
               </mat-list-item>
             </ng-template>
           </mat-list>
@@ -323,7 +323,7 @@
                     <div class="md-list-item-text">
                       <div class="md-warn-text">{{error}}</div>
                     </div>
-                    <mat-divider *ngIf="last"></mat-divider>
+                    <mat-divider *ngIf="!last"></mat-divider>
                   </mat-list-item>
                 </ng-template>
               </mat-list>
