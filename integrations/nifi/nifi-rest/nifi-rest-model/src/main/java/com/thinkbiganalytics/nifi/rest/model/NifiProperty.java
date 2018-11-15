@@ -147,8 +147,8 @@ public final class NifiProperty {
         this.value = value;
         this.propertyDescriptor = propertyDescriptor;
         if(propertyDescriptor != null){
-            this.required = propertyDescriptor.isRequired();
-            this.sensitive = propertyDescriptor.isSensitive();
+            this.required = propertyDescriptor.isRequired() != null ? propertyDescriptor.isRequired().booleanValue() : false;
+            this.sensitive = propertyDescriptor.isSensitive() != null ? propertyDescriptor.isSensitive().booleanValue() : false;
         }
     }
 
