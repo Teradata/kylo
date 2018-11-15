@@ -97,7 +97,7 @@ import {CloneUtil} from "../../../common/utils/clone-util";
         public ensureObjectTypes() {
 
             this.tableSchema = ObjectUtils.getAs(this.tableSchema,FeedTableSchema);
-            this.feedDefinitionTableSchema = this.feedDefinitionTableSchema && this.feedDefinitionTableSchema.hasFields() ? ObjectUtils.getAs(this.feedDefinitionTableSchema,FeedTableSchema) : CloneUtil.deepCopy(this.tableSchema);
+            this.feedDefinitionTableSchema =  (this.feedDefinitionTableSchema && this.feedDefinitionTableSchema.fields.length >0)  ? ObjectUtils.getAs(this.feedDefinitionTableSchema,FeedTableSchema) : CloneUtil.deepCopy(this.tableSchema);
             //ensure the table fields are correct objects
             let tableFieldMap: { [key: string]: TableColumnDefinition; } = {};
             this.feedDefinitionTableSchema.fields.forEach((field: TableColumnDefinition) => {
