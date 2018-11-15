@@ -7,15 +7,24 @@
   <mat-form-field *ngIf="databaseConnectionError == false" fxFill>
     <input matInput placeholder="Type table name" [matAutocomplete]="tableAuto" [formControl]="tableControl" required #tableAutoInput>
     <mat-autocomplete #tableAuto="matAutocomplete" [displayWith]="getTableName" (optionSelected)="onTableSelected($event)">
-      <mat-option *ngFor="let item of tableItems | async" [value]="item">
-        <span class="item-title">
-          <mat-icon style="color:#F08C38;font-size:20px">table_grid</mat-icon>
-          <span style="padding-left:5px;"> {{item.fullName}} </span>
-        </span>
-        <span class="item-metadata">
-          <span class="item-metastat"><span style="color:grey;">Schema:</span><span>{{item.schema}}</span></span>
-          <span class="item-metastat"><span style="color:grey;">Table:</span><span>{{item.tableName}}</span></span>
-        </span>
+      <mat-option *ngFor="let table of tableItems | async" [value]="item" class="autocomplete-option">
+
+              <span class="title">
+                    <mat-icon color="accent">grid_on</mat-icon>
+                    <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
+                  </span>
+                <br/>
+                <span>
+                    <span>
+                      <span class="sub-title hint">Schema:</span>
+                      <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
+                    </span>
+                    <span class="item-metastat" style="padding-left:10px;">
+                      <span class="sub-title hint">Table:</span>
+                      <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
+                    </span>
+                  </span>
+
       </mat-option>
     </mat-autocomplete>
     <mat-error>This field is required.</mat-error>
