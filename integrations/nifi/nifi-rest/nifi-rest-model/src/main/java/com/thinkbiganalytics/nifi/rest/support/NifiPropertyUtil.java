@@ -465,12 +465,16 @@ public class NifiPropertyUtil {
             propertyToUpdate.setRenderType(property.getRenderType());
             propertyToUpdate.setSensitive(property.isSensitive());
             propertyToUpdate.setRequired(property.isRequired());
-            if (property.getPropertyDescriptor() != null) {
+            if (property.getPropertyDescriptor() != null && isValidPropertyDescriptor(property.getPropertyDescriptor())) {
                 propertyToUpdate.setPropertyDescriptor(property.getPropertyDescriptor());
             }
             if (property.getRenderOptions() != null) {
                 propertyToUpdate.setRenderOptions(property.getRenderOptions());
             }
+        }
+
+        private static boolean isValidPropertyDescriptor(NiFiPropertyDescriptor descriptorDTO){
+            return descriptorDTO.getDescription() != null || descriptorDTO.isRequired() != null || descriptorDTO.isSensitive() != null;
         }
 
         /**

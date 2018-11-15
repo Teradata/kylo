@@ -146,6 +146,10 @@ public final class NifiProperty {
         this.key = key;
         this.value = value;
         this.propertyDescriptor = propertyDescriptor;
+        if(propertyDescriptor != null){
+            this.required = propertyDescriptor.isRequired();
+            this.sensitive = propertyDescriptor.isSensitive();
+        }
     }
 
     public String getProcessGroupName() {
