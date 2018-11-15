@@ -162,7 +162,7 @@ public class MigrateLegacyDatasourcesUpgradeAction implements UpgradeAction {
                             .map(JcrJdbcDatasourceDetails.class::cast)
                             .ifPresent(details -> {
                                 controllerServiceId.set(details.getControllerServiceId().orElse(null));
-                                password.set("{cypher}" + details.getPassword());
+                                password.set("{cipher}" + details.getPassword());
                             });
                         
                         if (this.accessController.isEntityAccessControlled()) {
