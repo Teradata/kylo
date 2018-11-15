@@ -72,7 +72,23 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
 
     private boolean isModified(PortDTO current, PortDTO port) {
         return current == null || port.getId() == null || (!current.getId().equals(port.getId()) ||
-                                                           !current.getName().equals(port.getName()) || !current.getState().equals(port.getState()));
+                                                           !current.getName().equals(port.getName()) ||
+                                                           !current.getState().equals(port.getState()) ||
+                                                           positionsDiffer(current,port));
+    }
+
+    private boolean positionsDiffer(PortDTO current, PortDTO port){
+        if(current.getPosition() != null && port.getPosition() == null){
+            return true;
+        } else  if(current.getPosition() == null && port.getPosition() != null){
+            return true;
+        }
+        else {
+            return (current.getPosition().getX() != null && port.getPosition().getX() != null
+                   && current.getPosition().getX().doubleValue() != port.getPosition().getX().doubleValue()) ||
+                   (current.getPosition().getY() != null && port.getPosition().getY() != null
+                    && current.getPosition().getY().doubleValue() != port.getPosition().getY().doubleValue());
+        }
     }
 
     @Nonnull
