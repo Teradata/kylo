@@ -5,6 +5,7 @@ export interface EntityVersion {
     createdDate:number;
     entityId:string;
     entity?:any;
+    draft?:boolean;
     deployedVersion?:EntityVersion
 
 }

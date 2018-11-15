@@ -645,6 +645,7 @@ export class DefineFeedService {
 
         let accessControl = feed.accessControl;
         observable.subscribe((response: any)=> {
+            this.clearLoadingFeedCache(feed.id)
 
             let updatedFeed = response;
             //when a feed is initially created it will have the data in the "feedMetadata" property
@@ -725,12 +726,12 @@ export class DefineFeedService {
 
            return this.http.post(url,null,{ params:params,headers:headers})
                .map((version:DeployEntityVersionResponse) => {
-               // this._loadingService.resolve("processingFeed")
+                this.clearLoadingFeedCache(feed.id)
                 this.openSnackBar("Deployed feed v."+version.name,5000)
                    return version;
             }).catch((error1:HttpErrorResponse,caught:Observable<any>) => {
                 if(error1.error){
-
+                    this.clearLoadingFeedCache(feed.id)
                     let content = error1.error as DeployEntityVersionResponse;
                     content.httpStatus = error1.status;
                     content.httpStatusText = error1.statusText;
@@ -777,10 +778,12 @@ export class DefineFeedService {
             ).subscribe(
                 (version: EntityVersion) => {
                     this.openSnackBar("Removed draft "+version.id, 5000);
+                    this.clearLoadingFeedCache(feed.id)
                     this.stateService.go("feed-definition.summary.setup-guide",{feedId:feed.id, refresh:true}, {location:'replace'})
                 },
                 error => {
                     console.log(error);
+                    this.clearLoadingFeedCache(feed.id)
                     this.openSnackBar("Failed to remove draft.", 5000);
                 }
             );
@@ -796,6 +799,14 @@ export class DefineFeedService {
         this.snackBar.open(message, null, {
             duration: duration,
         });
+    }
+
+    private clearLoadingFeedCache(feedId:string) {
+        Object.keys(this.loadingFeedCache).filter((cacheKey:string) => cacheKey.indexOf(feedId) >=0).forEach((key:string) => {
+            delete this.loadingFeedCache[key]
+        });
+        //remove the error map
+        delete this.loadingFeedErrors[feedId];
     }
 
 
@@ -815,11 +826,7 @@ export class DefineFeedService {
 
         //clear the cache if we are switching feeds
         if(feed && (feed.id != id )){
-            Object.keys(this.loadingFeedCache).filter((cacheKey:string) => cacheKey.indexOf(feed.id) >=0).forEach((key:string) => {
-                delete this.loadingFeedCache[key]
-            });
-            //remove the error map
-            delete this.loadingFeedErrors[feed.id];
+          this.clearLoadingFeedCache(feed.id)
         }
 
         let key = this.loadingCacheKey(id,loadMode);
@@ -856,7 +863,16 @@ export class DefineFeedService {
             feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.DEPLOYED;
             feed.versionId = entityVersion.id;
             feed.versionName = entityVersion.name;
+            if(entityVersion.deployedVersion == undefined && feed.mode ==  FeedMode.DEPLOYED) {
+                //create a copy of this entityVersion without the entity as the deployed version
+                entityVersion.deployedVersion = {id:entityVersion.id,
+                    createdDate:entityVersion.createdDate,
+                    name:entityVersion.name,
+                    entityId:entityVersion.entityId,
+                    draft:entityVersion.draft }
+            }
             feed.deployedVersion = entityVersion.deployedVersion;
+
             feed.createdDate = entityVersion.createdDate != null ? new Date(entityVersion.createdDate) : undefined;
 
             const hasBeenDeployed = feed.mode != FeedMode.DRAFT
