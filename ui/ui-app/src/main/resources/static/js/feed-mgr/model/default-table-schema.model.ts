@@ -40,6 +40,10 @@ export class DefaultSchema implements Schema {
     constructor() {
 
     }
+
+    hasFields(){
+        this.fields != undefined && this.fields.length >0;
+    }
 }
 
 
