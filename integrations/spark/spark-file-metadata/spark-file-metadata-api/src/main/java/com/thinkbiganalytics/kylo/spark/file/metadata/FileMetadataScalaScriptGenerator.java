@@ -55,7 +55,7 @@ public class FileMetadataScalaScriptGenerator {
             .append("import com.thinkbiganalytics.kylo.catalog._\n")
             .append("var listBuffer = new scala.collection.mutable.ListBuffer[org.apache.spark.sql.DataFrame]()\n");
 
-        sb.append("var kyloClientBuilder = KyloCatalog.builder(sqlContext) \n")
+        sb.append("var kyloClientBuilder = KyloCatalog.builder() \n")
             .append("var kyloClient = kyloClientBuilder.build()\n")
             .append("var kyloClientReader = kyloClient.read.format(\"com.thinkbiganalytics.spark.file.metadata\")");
         if (options != null) {

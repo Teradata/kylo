@@ -2,7 +2,7 @@ package com.thinkbiganalytics.kylo.spark.util;
 
 /*-
  * #%L
- * spark-file-metadata-spark-v1
+ * spark-file-metadata-core
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics
  * %%
@@ -20,10 +20,6 @@ package com.thinkbiganalytics.kylo.spark.util;
  * #L%
  */
 
-import org.apache.spark.sql.DataFrame;
-
-import java.util.List;
-
 import scala.collection.JavaConverters;
 import scala.collection.Map;
 
@@ -33,16 +29,5 @@ public class SparkUtil {
         return JavaConverters.mapAsScalaMapConverter(m).asScala();
     }
 
-    public static DataFrame unionAll(List<DataFrame> dataFrameList) {
-        DataFrame unionDf = null;
-        for (DataFrame df : dataFrameList) {
-            if (unionDf == null) {
-                unionDf = df;
-            } else {
-                unionDf = unionDf.unionAll(df);
-            }
-        }
-        return unionDf;
-    }
 
 }
