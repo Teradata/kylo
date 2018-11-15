@@ -202,12 +202,12 @@
               </div>
               <div fxFlex>
                 <span *ngIf="property.key != 'Backoff Period' && !property.sensitive">{{property.leftValue}}</span>
-                <span *ngIf="property.key != 'Backoff Period' && property.sensitive">{{Versions.MaskForSensitiveValue | translate}}</span>
+                <span *ngIf="property.key != 'Backoff Period' && property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
                 <span *ngIf="property.key == 'Backoff Period'">{{property.leftValue | verboseTimeUnit}}</span>
               </div>
               <div fxFlex>
                 <span *ngIf="property.key != 'Backoff Period' && !property.sensitive">{{property.rightValue}}</span>
-                <span *ngIf="property.key != 'Backoff Period' && property.sensitive">{{Versions.MaskForSensitiveValue | translate}}</span>
+                <span *ngIf="property.key != 'Backoff Period' && property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
                 <span *ngIf="property.key == 'Backoff Period'">{{property.rightValue | verboseTimeUnit}}</span>
               </div>
             </div>
@@ -231,11 +231,11 @@
               </div>
               <div fxFlex>
                 <span *ngIf="!property.sensitive">{{property.leftValue}}</span>
-                <span *ngIf="property.sensitive">{{Versions.MaskForSensitiveValue | translate}}</span>
+                <span *ngIf="property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
               </div>
               <div fxFlex>
                 <span *ngIf="!property.sensitive">{{property.rightValue}}</span>
-                <span *ngIf="property.sensitive">{{Versions.MaskForSensitiveValue | translate}}</span>
+                <span *ngIf="property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
               </div>
             </div>
           </div>
