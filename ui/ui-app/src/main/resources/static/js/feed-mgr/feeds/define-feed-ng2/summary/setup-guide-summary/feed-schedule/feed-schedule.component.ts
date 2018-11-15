@@ -95,7 +95,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
 
     ngOnInit(){
-        this.updateScheduleStrategies();
+
         this.detectNiFiClusterStatus();
 
         if(this.parentForm){
@@ -103,6 +103,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         }
         this.preconditions = this.feed.schedule.preconditions != undefined ? this.feed.schedule.preconditions : [];
         this.initializFormControls();
+        this.updateScheduleStrategies();
     }
 
     ngOnDestroy() {
@@ -142,7 +143,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
 
     private initializFormControls(){
         if(!this.checkAndSetValue("scheduleStrategy",this.feed.schedule.schedulingStrategy)) {
-            let scheduleStrategyControl = new FormControl(this.feed.schedule.schedulingStrategy, []);
+            let scheduleStrategyControl = new FormControl(this.feed.schedule.schedulingStrategy, [Validators.required]);
             scheduleStrategyControl.valueChanges.subscribe(value => {
                 this.registerFormControls();
             })
@@ -300,6 +301,10 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
                 return (strategy.value !== FeedConstants.SCHEDULE_STRATEGIES.TRIGGER_DRIVEN.value);
             }
         });
+        let currentStrategy =  this.getScheduleStrategy();
+        if(this.scheduleStrategies.find((strategy:any) => strategy.value ==currentStrategy ) == undefined){
+            this.resetScheduleStrategy();
+        }
     }
 
 
@@ -347,29 +352,35 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         }
     };
 
+    private resetScheduleStrategy(){
+        let scheduleStrategy = this.scheduleForm.get("scheduleStrategy");
+        if(scheduleStrategy) {
+            scheduleStrategy.setValue(null);
+        }
+    }
 
     private  getScheduleStrategy(){
         let scheduleStrategy = this.scheduleForm.get("scheduleStrategy");
         if(scheduleStrategy) {
             return scheduleStrategy.value
         }else {
-            return FeedConstants.SCHEDULE_STRATEGIES.CRON_DRIVEN.value;
+           return null; // return FeedConstants.SCHEDULE_STRATEGIES.CRON_DRIVEN.value;
         }
     }
 
     public isCronDriven() :boolean {
-        return this.getScheduleStrategy() == FeedConstants.SCHEDULE_STRATEGIES.CRON_DRIVEN.value
+        return FeedConstants.SCHEDULE_STRATEGIES.CRON_DRIVEN.value == this.getScheduleStrategy()
     }
     public isTimerDriven():boolean {
-        return this.getScheduleStrategy() == FeedConstants.SCHEDULE_STRATEGIES.TIMER_DRIVEN.value;
+        return  FeedConstants.SCHEDULE_STRATEGIES.TIMER_DRIVEN.value == this.getScheduleStrategy()
     }
 
     public isPrimaryNodeOnly():boolean {
-        return this.getScheduleStrategy() == FeedConstants.SCHEDULE_STRATEGIES.PRIMARY_NODE_ONLY.value;
+        return FeedConstants.SCHEDULE_STRATEGIES.PRIMARY_NODE_ONLY.value == this.getScheduleStrategy()
     }
 
     public isTriggerDriven():boolean {
-        return this.getScheduleStrategy() == FeedConstants.SCHEDULE_STRATEGIES.TRIGGER_DRIVEN.value;
+        return FeedConstants.SCHEDULE_STRATEGIES.TRIGGER_DRIVEN.value == this.getScheduleStrategy()
     }
 
 }

@@ -3,10 +3,11 @@
   <h3 matLine *ngIf="!customReadonlyLayout">{{name}}</h3>
   <p matLine *ngIf="!customReadonlyLayout">{{description}}</p>
   <ng-content select=".readonly-content" *ngIf="customReadonlyLayout && !readonlyList"></ng-content>
-  <div *ngIf="readonlyList" >
-    <mat-list dense *ngIf="!editing" class="no-padding">
-      <mat-list-item *ngFor="let item of readonlyList">{{item}}</mat-list-item>
-    </mat-list>
+
+  <div *ngIf="readonlyList" matLine fxLayout="column">
+    <div matLine *ngFor="let item of readonlyList">
+      {{item}}
+    </div>
   </div>
 
   <span></span>
