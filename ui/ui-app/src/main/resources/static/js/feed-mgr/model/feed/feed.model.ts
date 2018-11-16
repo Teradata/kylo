@@ -802,6 +802,8 @@ export class Feed implements KyloObject, KyloFeed {
                     if( sourceField.name == copy.table.sourceTableIncrementalDateField) {
                         feedFields.push(feedField);
                         sourceFields.push(sourceField);
+                    }  else if(copy.table.method == "EXISTING_TABLE"){
+                        sourceFields.push(sourceField);
                     }
                 }
 

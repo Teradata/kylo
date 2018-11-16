@@ -188,7 +188,7 @@
                         </div>
 
                         <div fxFlex="5">
-                          <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1">
+                          <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1 && !tablePermissions.tableLocked">
                             <mat-icon class="grey">undo</mat-icon>
                           </button>
                         </div>
