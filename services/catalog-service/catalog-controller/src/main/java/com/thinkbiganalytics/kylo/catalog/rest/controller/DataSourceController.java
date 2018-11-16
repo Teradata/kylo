@@ -596,7 +596,7 @@ public class DataSourceController extends AbstractCatalogController {
                     //assign the datasource to this dataset with encrypted credentials
                     dataSet.setDataSource(encryptedSource);
                     String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(), tableSchema.getName());
-                    dataSet.setTitle(fullTableName);
+                    dataSet.setTitle(tableSchema.getSchemaName()+"."+tableSchema.getName());
 
                     DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
                     List<String> paths = defaultDataSetTemplate.getPaths();
