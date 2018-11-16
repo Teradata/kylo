@@ -384,6 +384,7 @@ export class DatasetPreviewService {
         return this.previewSchemaService.preview(dataset, previewRequest, false, false)
             .pipe(
                 catchError((error: any, o: Observable<PreviewDataSet>) => {
+                    this._loadingService.resolve(DatasetPreviewService.PREVIEW_LOADING)
                     if (error instanceof PreviewDataSet) {
                         return Observable.throw(error);
                     }

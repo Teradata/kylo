@@ -81,6 +81,12 @@ export class DataSourcesComponent implements OnInit {
      */
     searchTerm: string;
 
+    /**
+     * cache of the datasource.id to boolean flag (true has access, false no access)
+     * @type {{}}
+     */
+    cachedDataSourceEditEntityAccess :{[key: string]: boolean} = {};
+
     constructor(private catalog: CatalogService,
                 private dataTable: TdDataTableService,
                 private dialog: TdDialogService,
@@ -131,9 +137,19 @@ export class DataSourcesComponent implements OnInit {
         }
     }
 
+    private hasEditEntityAccess(datasource:DataSource){
+        if(this.cachedDataSourceEditEntityAccess[datasource.id] != undefined){
+            return this.cachedDataSourceEditEntityAccess[datasource.id] == true;
+        }
+        else {
+            let access: boolean = this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS, datasource, EntityAccessControlService.entityRoleTypes.DATASOURCE);
+            this.cachedDataSourceEditEntityAccess[datasource.id] = access;
+            return access;
+        }
+    }
     isEditable(datasource: DataSource): boolean {
         return (this.allowEdit && !this.readOnly
-            && this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS, datasource, EntityAccessControlService.entityRoleTypes.DATASOURCE));
+            && this.hasEditEntityAccess(datasource));
     }
 
     /**

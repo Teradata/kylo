@@ -75,6 +75,23 @@ export class DatasetPreviewComponent implements OnInit{
         this._datasetPreviewService.notifyToUpdateView();
     }
 
+    openSchemaParseSettingsDialog(dataset:PreviewDataSet): void {
+        if(dataset instanceof PreviewFileDataSet) {
+            this._datasetPreviewService.openSchemaParseSettingsDialog(<PreviewFileDataSet>dataset).subscribe((ds:PreviewDataSet) => {
+                //reapply the final dataset back to the main one
+                dataset.applyPreview(ds,false);
+                //this.previewDatasetValid.emit(dataset)
+            },(error:PreviewFileDataSet) =>{
+                dataset.preview = undefined
+                let message = error.message || "Preview error";
+                dataset.previewError(message)
+                //save the schema parser
+                dataset.userModifiedSchemaParser = error.schemaParser
+              //  this.previewDatasetInvalid.emit(dataset)
+            })
+        }
+    }
+
 
 
 

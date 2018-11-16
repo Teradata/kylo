@@ -54,7 +54,7 @@
       <h2 class="mat-card-title" [style.font-size.px]="20" *ngIf="autoSelectSingleDataSet"> {{selectedDataSet.displayKey}}</h2>
       <span fxFlex></span>
 
-      <button class="icon-button" mat-icon-button (click)="openSchemaParseSettingsDialog(selectedDataSet)" *ngIf="selectedDataSet.schemaParser"  matTooltip="Update dataset preview settings ">
+      <button class="icon-button" mat-icon-button (click)="preview.openSchemaParseSettingsDialog(selectedDataSet)" *ngIf="selectedDataSet.schemaParser"  matTooltip="Update dataset preview settings ">
         <mat-icon>settings</mat-icon>
       </button>
 
