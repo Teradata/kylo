@@ -77,6 +77,16 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
         return JcrPropertyUtil.getPropertyValuesList(getNode(), FILES);
     }
 
+    public void setJars(List<String> jars){
+        if(jars != null){
+            jars.stream().forEach(jar -> addJar(jar));
+        }
+    }
+
+    public void addJar(String jar){
+        JcrPropertyUtil.addToSetProperty(getNode(),JARS,jar);
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#getJars()
      */

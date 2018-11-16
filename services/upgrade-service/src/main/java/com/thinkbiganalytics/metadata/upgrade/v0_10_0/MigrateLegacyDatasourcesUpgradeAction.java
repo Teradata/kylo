@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.catalog.JcrDataSetSparkParameters;
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
@@ -56,6 +57,7 @@ import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.modeshape.jcr.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,14 +212,17 @@ public class MigrateLegacyDatasourcesUpgradeAction implements UpgradeAction {
                     JcrUtil.getOrCreateNode(catDsNode, "tba:sparkParams", "tba:DataSetSparkParams");
                     
                     JcrDataSource catDs = JcrUtil.getJcrObject(catDsNode, JcrDataSource.class);
-                    DataSetSparkParameters sparProps = catDs.getSparkParameters();
+                    JcrDataSetSparkParameters sparkParameters = (JcrDataSetSparkParameters)catDs.getSparkParameters();
                     
                     catDs.setNifiControllerServiceId(controllerServiceId);
-                    sparProps.addOption("password", password);
-                    sparProps.setFormat("jdbc");
-                    sparProps.addOption("url", props.getUrl());
-                    sparProps.addOption("driver", props.getDriverClassName());
-                    sparProps.addOption("user", props.getUser());
+                    sparkParameters.addOption("password", password);
+                    sparkParameters.setFormat("jdbc");
+                    if(StringUtils.isNotBlank(props.getDriverLocation())){
+                        Arrays.asList(props.getDriverLocation().split(",")).stream().forEach(jar ->  sparkParameters.addJar(jar));
+                    }
+                    sparkParameters.addOption("url", props.getUrl());
+                    sparkParameters.addOption("driver", props.getDriverClassName());
+                    sparkParameters.addOption("user", props.getUser());
                     
                     catDsNode.getSession().save();
                     

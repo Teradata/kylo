@@ -602,6 +602,7 @@ public class DBCPConnectionPoolService {
 
     public PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, AbstractControllerServiceRequest serviceProperties) {
         String uri = properties.get(serviceProperties.getConnectionStringPropertyKey());
+        String driverLocations = properties.get(serviceProperties.getDriverLocationsKey());
         String user = properties.get(serviceProperties.getUserNamePropertyKey());
         String password = (serviceProperties.getPassword() != null) ? serviceProperties.getPassword() : properties.get(serviceProperties.getPasswordPropertyKey());
         String driverClassName = properties.get(serviceProperties.getDriverClassNamePropertyKey());
@@ -618,6 +619,8 @@ public class DBCPConnectionPoolService {
             validationQuery = parseValidationQueryFromConnectionString(uri);
         }
         boolean testOnBorrow = StringUtils.isNotBlank(validationQuery);
-        return new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
+        PoolingDataSourceService.DataSourceProperties ds = new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
+        ds.setDriverLocation(driverLocations);
+        return ds;
     }
 }
