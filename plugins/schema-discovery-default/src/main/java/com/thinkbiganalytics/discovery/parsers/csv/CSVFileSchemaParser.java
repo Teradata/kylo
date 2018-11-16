@@ -147,6 +147,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
                 HiveTableSettings tableSettings = new DefaultHaveTableSettings();
                 tableSettings.setHiveFormat(deriveHiveRecordFormat());
                 tableSettings.setStructured(false);
+                return tableSettings;
             default:
                 return new DefaultTableSettings();
         }
