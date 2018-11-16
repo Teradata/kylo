@@ -230,9 +230,14 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             }
         }
     }
-
+    
     public void removeAccessControl(Principal owner) {
+        disableAccessControl(owner);
         JcrUtil.getNodesOfType(getNode(), JcrAllowableAction.NODE_TYPE).forEach(JcrUtil::removeNode);
+    }
+
+    public void disableAccessControl(Principal owner) {
+        JcrAccessControlUtil.clearRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE);
         JcrAccessControlUtil.clearPermissions(getNode());
     }
 

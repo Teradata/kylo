@@ -133,8 +133,14 @@ public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixi
         }
         
         JcrAllowedActions allowed = getJcrAllowedActions();
-        allowed.removeAccessControl(owner);
+        allowed.disableAccessControl(owner);
         JcrAccessControlUtil.clearPermissions(getNode());
+    }
+    
+    default void clearAccessControl() {
+        disableAccessControl(getOwner());
+        JcrAllowedActions allowed = getJcrAllowedActions();
+        allowed.removeAccessControl(getOwner());
     }
 
     default void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> roles) {
