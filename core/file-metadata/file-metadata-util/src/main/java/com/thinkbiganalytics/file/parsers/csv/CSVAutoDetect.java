@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.discovery.parsers.csv;
+package com.thinkbiganalytics.file.parsers.csv;
 
 /*-
  * #%L
- * thinkbig-schema-discovery-default
+ * kylo-file-metadata-util
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -34,8 +34,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,11 +51,13 @@ import java.util.stream.Collectors;
  * Infers CSV format for a sample file
  */
 
-class CSVAutoDetect {
+public class CSVAutoDetect {
 
     private static final Logger LOG = LoggerFactory.getLogger(CSVAutoDetect.class);
 
+    /*
     private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
+
         return map.entrySet()
             .stream()
             .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
@@ -63,6 +68,104 @@ class CSVAutoDetect {
                 LinkedHashMap::new
             ));
     }
+
+*/
+
+    private CSVRecord firstRecord;
+
+    public interface Predicate<T> {
+        boolean apply(T type);
+    }
+
+
+    private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
+        List<Map.Entry<K,V>> list = new LinkedList(map.entrySet());
+        Collections.sort(list, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((Comparable) ((Map.Entry) (o1)).getValue())
+                    .compareTo(((Map.Entry) (o2)).getValue());
+            }
+        });
+
+        Map<K,V> sortedHashMap = new LinkedHashMap();
+        for(Map.Entry<K,V> item: list) {
+            sortedHashMap.put(item.getKey(), item.getValue());
+        }
+        return sortedHashMap;
+    }
+
+
+    private <E> boolean allMatch(List<E> list, Predicate<E> predicate){
+        boolean allMatch = false;
+        for(E e:list){
+            if(predicate.apply(e)){
+                allMatch = true;
+            }
+            else {
+                allMatch = false;
+                break;
+            }
+        }
+        return allMatch;
+    }
+
+    private <E> boolean anyMatch(List<E> list, Predicate<E> predicate){
+        boolean match = false;
+        for(E e:list){
+            if(predicate.apply(e)){
+                match = true;
+                break;
+            }
+
+        }
+        return match;
+    }
+
+    public class HasQuotePredicate implements Predicate<LineStats> {
+        private Character quoteChar;
+        public HasQuotePredicate(Character quoteChar){
+            this.quoteChar = quoteChar;
+        }
+        @Override
+        public boolean apply(LineStats type) {
+            return type.hasLegalQuotedStringOfChar(this.quoteChar);
+        }
+    }
+
+    public class ContainsNoDelimCharOfTypePredicate implements Predicate<LineStats> {
+        private Character quoteChar;
+        public ContainsNoDelimCharOfTypePredicate(Character quoteChar){
+            this.quoteChar = quoteChar;
+        }
+        @Override
+        public boolean apply(LineStats type) {
+            return type.containsNoDelimCharOfType(this.quoteChar);
+        }
+    }
+
+
+    public class CSVRecordSizePredicate implements Predicate<CSVRecord> {
+        private int size;
+        public CSVRecordSizePredicate(int size){
+            this.size =size;
+        }
+
+        @Override
+        public boolean apply(CSVRecord record) {
+            return record.size() == size;
+        }
+    }
+
+    public  List<String> getHeader(){
+        List<String> headers = new LinkedList<>();
+        if(firstRecord != null){
+            for(int i =0; i<firstRecord.size();i++){
+                headers.add(firstRecord.get(i));
+            }
+        }
+        return headers;
+    }
+
 
     /**
      * Parses a sample file to allow schema specification when creating a new feed.
@@ -115,9 +218,9 @@ class CSVAutoDetect {
         Character[] quoteTypeSupported = {Character.valueOf('"'), Character.valueOf('\'')};
         boolean match = false;
         for (Character quoteType : quoteTypeSupported) {
-            boolean quoteTypeFound = lineStats.stream().anyMatch(lineStat -> lineStat.containsNoDelimCharOfType(quoteType));
+            boolean quoteTypeFound = anyMatch(lineStats,new ContainsNoDelimCharOfTypePredicate(quoteType));
             if (quoteTypeFound) {
-                match = lineStats.stream().allMatch(lineStat -> lineStat.hasLegalQuotedStringOfChar(quoteType));
+                match = allMatch(lineStats,new HasQuotePredicate(quoteType));
             }
             if (match) {
                 return quoteType;
@@ -148,7 +251,10 @@ class CSVAutoDetect {
                             if (parser.getHeaderMap() != null) {
                                 int size = parser.getHeaderMap().size();
                                 List<CSVRecord> records = parser.getRecords();
-                                boolean match = records.stream().allMatch(record -> record.size() == size);
+                                if(records != null) {
+                                    firstRecord = records.get(0);
+                                }
+                                boolean match = allMatch(records, new CSVRecordSizePredicate(size));
                                 if (match) {
                                     return delim;
                                 }
@@ -196,13 +302,15 @@ class CSVAutoDetect {
      */
     private SortedSet<Character> sortDelimitersIntoPreferredOrder(Set<Character> delimiters) {
         SortedSet<Character> sortedDelimiters = new TreeSet<>(
-            (o1, o2) -> {
-                // use position in the delimiterPreference. If not in preferred delimiters then lower preference is by codepoint
-                int o1Idx = delimiterPreference.indexOf(o1);
-                int o1Pos = (o1Idx == -1)?(delimiterPreference.length() + o1):(o1Idx);
-                int o2Idx = delimiterPreference.indexOf(o2);
-                int o2Pos = (o2Idx == -1)?(delimiterPreference.length() + o2):(o2Idx);
-                return o1Pos - o2Pos;
+            new Comparator<Character>() {
+                @Override
+                public int compare(Character o1, Character o2) {
+                    int o1Idx = delimiterPreference.indexOf(o1);
+                    int o1Pos = (o1Idx == -1)?(delimiterPreference.length() + o1):(o1Idx);
+                    int o2Idx = delimiterPreference.indexOf(o2);
+                    int o2Pos = (o2Idx == -1)?(delimiterPreference.length() + o2):(o2Idx);
+                    return o1Pos - o2Pos;
+                }
             });
 
 

@@ -72,6 +72,10 @@ export enum LoadMode {
     LATEST="LATEST",DEPLOYED="DEPLOYED",DRAFT="DRAFT"
 }
 
+export enum TableMethod {
+    SAMPLE_FILE="SAMPLE_FILE",EXISTING_TABLE="EXISTING_TABLE",MANUAL="MANUAL"
+}
+
 export class FeedAccessControl {
     allowEdit:boolean;
     allowChangePermissions:boolean;
@@ -639,6 +643,30 @@ export class Feed implements KyloObject, KyloFeed {
         return this.accessControl.allowEdit && this.loadMode != LoadMode.DEPLOYED;
     }
 
+    /**
+     * Sets the table method as to where the target table was build from (i.e. database, sample file, manual)
+     * @param {TableMethod | string} method
+     */
+    setTableMethod(method:(TableMethod | string)){
+        this.table.method = method;
+        if(method == TableMethod.EXISTING_TABLE){
+            this.options.skipHeader = true;
+        }
+    }
+
+    /**
+     * mark the data as structured (i.e. JSON, or not (CSV) )
+     * @param {boolean} structured
+     */
+    structuredData(structured:boolean){
+        this.table.structured = structured;
+        if(structured){
+            this.options.skipHeader = false;
+        }
+        else {
+            this.options.skipHeader = true;
+        }
+    }
     /**
      * returns the array of paths used for the source sample preview
      * will return an empty array of no paths are used

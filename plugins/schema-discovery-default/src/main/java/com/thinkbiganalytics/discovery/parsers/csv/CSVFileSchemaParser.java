@@ -34,6 +34,7 @@ import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
+import com.thinkbiganalytics.file.parsers.util.ParserUtil;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
@@ -53,6 +54,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import com.thinkbiganalytics.file.parsers.csv.CSVAutoDetect;
 
 import javax.annotation.Nonnull;
 
@@ -115,7 +117,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         validate();
 
         // Parse the file
-        String sampleData = ParserHelper.extractSampleLines(is, charset, numRowsToSample);
+        String sampleData = ParserUtil.extractSampleLines(is, charset, numRowsToSample);
         Validate.notEmpty(sampleData, "No data in file");
         CSVFormat format = createCSVFormat(sampleData);
         try (Reader reader = new StringReader(sampleData)) {

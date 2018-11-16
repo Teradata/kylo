@@ -941,7 +941,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 this.defineFeedSourceSampleService.parseTableSettings((<PreviewFileDataSet>event.previews[0])).subscribe( (response:any)=> {
                     console.log("SCHEMA RESPONSE ",response)
                     this.feed.table.feedFormat = response.hiveFormat;
-                    this.feed.table.structured = response.structured;
+                    this.feed.structuredData(response.structured);
                     this.feed.table.feedTblProperties = response.serdeTableProperties;
                     _updateFormControls();
                 }, (error1:any) =>  this.cd.reattach());

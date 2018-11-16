@@ -329,7 +329,6 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
      */
     onTableSelected(event: MatAutocompleteSelectedEvent) {
         this.selectedTable = event.option.value;
-
         if (this.tableProperty && this.tableControl.value != null) {
             let needsDescribe = (!this.model.cloned || this.model.table.feedDefinitionTableSchema.fields.length == 0);
 
@@ -533,7 +532,12 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     this.model.table.setTableFields(this.tableSchema.fields)
 
                     //this.feedService.setTableFields(this.tableSchema.fields);
-                    this.model.table.method = 'EXISTING_TABLE';
+                    if(this.model.setTableMethod) {
+                        this.model.setTableMethod('EXISTING_TABLE');
+                    }
+                    else {
+                        this.model.table.method = 'EXISTING_TABLE';
+                    }
 
                     if (this.tableSchema.schemaName != null) {
                         this.model.table.existingTableName = this.tableSchema.schemaName + "." + this.tableSchema.name;

@@ -86,7 +86,7 @@ public class FileMetadataService {
                 XmlRootExtractor rowTagExtractor = new XmlRootExtractor();
                 QName root = rowTagExtractor.extractRootElement(InputStreamUtil.asStream(header));
                 if (root != null) {
-                    String rowTag = root.toString();
+                    String rowTag = root.getLocalPart();
                     md.set("rowTag", rowTag);
                 }
                 else {
