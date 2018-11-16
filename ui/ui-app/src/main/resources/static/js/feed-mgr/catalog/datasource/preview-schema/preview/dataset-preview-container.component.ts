@@ -84,28 +84,6 @@ export class DatasetPreviewContainerComponent implements OnInit{
         this.previewSelectionChange.emit(this.selectedDataSet)
     }
 
-      openSchemaParseSettingsDialog(dataset:PreviewDataSet): void {
-        if(dataset instanceof PreviewFileDataSet) {
-            this._datasetPreviewService.openSchemaParseSettingsDialog(<PreviewFileDataSet>dataset).subscribe((ds:PreviewDataSet) => {
-                console.log('DONE!',ds)
-                //reapply the final dataset back to the main one
-                dataset.applyPreview(ds,false);
-                console.log('DONE!',dataset,ds)
-                this.previewDatasetValid.emit(dataset)
-               // this._datasetPreviewService.markFormAsValid(this.formGroup)
-            },(error:PreviewFileDataSet) =>{
-                console.log("ERROR ",error)
-                dataset.preview = undefined
-                let message = error.message || "Preview error";
-                dataset.previewError(message)
-
-                //save the schema parser
-                dataset.userModifiedSchemaParser = error.schemaParser
-                this.previewDatasetInvalid.emit(dataset)
-             //   this._datasetPreviewService.markFormAsInvalid(this.formGroup)
-            })
-        }
-    }
 
 
     /**
