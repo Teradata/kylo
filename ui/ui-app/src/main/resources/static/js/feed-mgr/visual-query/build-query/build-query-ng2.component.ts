@@ -605,6 +605,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
         // Prepare nodes
         _.each(chartDataModel.nodes, (node: any) => {
+            // Update to catalog data sources
+            if (node.datasourceId !== "HIVE" && typeof(node.dataset) === "undefined") {
+                node.dataset = this.model.datasets
+                    .find(dataSet => dataSet.dataSource.id == node.datasourceId && dataSet.options != null && dataSet.options.dbtable != null && dataSet.options.dbtable == node.name);
+            }
+
             // Add utility functions
             this.prepareNode(node);
 

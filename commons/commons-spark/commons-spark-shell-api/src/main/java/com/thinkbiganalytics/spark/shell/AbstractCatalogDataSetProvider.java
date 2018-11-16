@@ -28,6 +28,8 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -152,7 +154,7 @@ public abstract class AbstractCatalogDataSetProvider<T> implements CatalogDataSe
                 dst.setJars(new ArrayList<>(src.getJars()));
             }
         }
-        if (src.getFormat() != null) {
+        if (StringUtils.isNotEmpty(src.getFormat())) {
             dst.setFormat(src.getFormat());
         }
         if (src.getOptions() != null) {
