@@ -85,7 +85,8 @@ constructor() {
             })
             .determinePreferredLanguage()
             .fallbackLanguage('en')
-            .useLocalStorage();  // saves selected language to localStorage
+            .useLocalStorage() // saves selected language to localStorage
+            .useSanitizeValueStrategy('escape');
 
         tmhDynamicLocaleProvider.localeLocationPattern('../bower_components/angular-i18n/angular-locale_{{locale}}.js');
 
