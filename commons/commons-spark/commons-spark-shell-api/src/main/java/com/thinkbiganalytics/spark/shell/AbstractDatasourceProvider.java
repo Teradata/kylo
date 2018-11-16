@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.shell;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,7 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
     @Nonnull
     private final Map<String, DataSource> catalogDataSources;
 
-    private final Map<String,String> legacyDatasourceCatalogDataSetId;
+    private final Map<String, String> legacyDatasourceCatalogDataSetId;
 
 
     public abstract CatalogDataSetProvider getCatalogDataSetProvider();
@@ -71,7 +71,7 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
         }
 
         for(final DataSource catalogDataSource:catalogDataSources){
-            this.catalogDataSources.putIfAbsent(catalogDataSource.getId(),catalogDataSource);
+            this.catalogDataSources.put(catalogDataSource.getId(),catalogDataSource);
         }
     }
 
@@ -123,15 +123,14 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
             final Properties properties = new Properties();
             String driver = datasource.getTemplate().getOptions().get("driver");
             String url = datasource.getTemplate().getOptions().get("url");
-            String jars = datasource.getTemplate().getOptions().get("jars");
             String user = datasource.getTemplate().getOptions().get("user");
             String password = datasource.getTemplate().getOptions().get("password");
             properties.put("driver", driver);
             if (StringUtils.isNotBlank(user)) {
-                properties.put("user",user);
+                properties.put("user", user);
             }
             if (StringUtils.isNotBlank(password)) {
-                properties.put("password",password);
+                properties.put("password", password);
             }
             return readJdbcTable(url, table, properties, sqlContext);
         } else {
@@ -142,46 +141,43 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
     @Nonnull
     @Override
     public final T getTableFromCatalogDataSource(@Nonnull final String table, @Nonnull final String catalogDataSourceId, @Nonnull final SQLContext sqlContext) {
-        return getTableFromCatalogDataSource(table,findCatalogDataSourceById(catalogDataSourceId),sqlContext);
+        return getTableFromCatalogDataSource(table, findCatalogDataSourceById(catalogDataSourceId), sqlContext);
     }
 
     /**
      * the key for the legacyDatasourceCatalogDataSetId map
-     * @param table
-     * @param datasourceId
-     * @return
      */
-    private String datasourceDataSetMapKey(String table, String datasourceId){
-        return table+"-"+datasourceId;
+    private String datasourceDataSetMapKey(String table, String datasourceId) {
+        return table + "-" + datasourceId;
     }
 
     /**
      * Remap a UserDatasource using a given table and datasource id to a Catalog DataSet
-     * @param table
-     * @param datasourceId
-     * @param catalogDataSetId
      */
-    public final void remapDatasourceToDataSet(final String table,final String datasourceId, String catalogDataSetId){
-        this.legacyDatasourceCatalogDataSetId.put(datasourceDataSetMapKey(table,datasourceId),catalogDataSetId);
+    public final void remapDatasourceToDataSet(final String table, final String datasourceId, String catalogDataSetId) {
+        this.legacyDatasourceCatalogDataSetId.put(datasourceDataSetMapKey(table, datasourceId), catalogDataSetId);
     }
 
     @Nonnull
     @Override
     public final T getTableFromDatasource(@Nonnull final String table, @Nonnull final String datasourceId, @Nonnull final SQLContext sqlContext) {
-       String key = datasourceDataSetMapKey(table,datasourceId);
-        if(this.legacyDatasourceCatalogDataSetId.containsKey(key)){
-            DataSet dataSet = this.getCatalogDataSetProvider().findById(key);
+        final String dataSetKey = datasourceDataSetMapKey(table, datasourceId);
+        if (legacyDatasourceCatalogDataSetId.containsKey(dataSetKey)) {
+            final DataSet dataSet;
+            try {
+                dataSet = this.getCatalogDataSetProvider().findById(dataSetKey);
+            } catch (final IllegalArgumentException e) {
+                throw new IllegalArgumentException("Unable to get Data Set Datasource from LegacyDatasource for  table:" + table + " and datasouce: " + datasourceId);
+            }
             //now get the DataSource from the dataSet
-            if(dataSet != null) {
-               return (T) getCatalogDataSetProvider().readDataSet(dataSet);
-            //  return getTableFromCatalogDataSource(table, dataSet.getDataSource(),sqlContext);
-            }
-            else {
-                throw new IllegalArgumentException("Unable to get Data Set Datasource from LegacyDatasource for  table:" + table+" and datasouce: "+datasourceId);
-            }
-        }
-        else {
+            //noinspection unchecked
+            return (T) getCatalogDataSetProvider().readDataSet(dataSet);
+        } else if (datasources.containsKey(datasourceId)) {
             return getTableFromDatasource(table, findById(datasourceId), sqlContext);
+        } else if (catalogDataSources.containsKey(datasourceId)) {
+            return getTableFromCatalogDataSource(table, findCatalogDataSourceById(datasourceId), sqlContext);
+        } else {
+            throw new IllegalArgumentException("DataSource does not exist: " + datasourceId);
         }
     }
 
