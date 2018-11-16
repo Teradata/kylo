@@ -100,7 +100,7 @@ public class KyloUpgradeDatabaseVersionChecker {
                 versions.add(new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, tag));
             }
             versions.sort((v1, v2) -> v2.compareTo(v1));  // DESC
-            version = versions.get(0);
+            version = (versions.size() > 0)?versions.get(0):null;
         } catch (SQLException e) {
             // this is ok.. If an error happens assume the upgrade is needed.  The method will return a null value if errors occur and the upgrade app will start.
             log.error("An error has occurred while looking up current Kylo version, assuming an upgrade is needed");
