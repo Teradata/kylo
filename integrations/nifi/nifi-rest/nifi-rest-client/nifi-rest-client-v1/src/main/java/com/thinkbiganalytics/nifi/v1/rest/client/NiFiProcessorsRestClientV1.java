@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v1.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -123,6 +123,25 @@ public class NiFiProcessorsRestClientV1 extends AbstractNiFiProcessorsRestClient
 
     }
 
+    @Nonnull
+    @Override
+    public Optional<ProcessorDTO> updateWithRetry(@Nonnull final ProcessorEntity processor, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
+
+        Exception lastError = null;
+
+        for (int count = 0; count <= retries; ++count) {
+            try {
+                return update(processor);
+            } catch (final Exception e) {
+                lastError = e;
+                Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
+            }
+        }
+
+        // Give up
+        throw new NifiClientRuntimeException("Unable to update processor: " + processor.getId(), lastError);
+
+    }
 
     /**
      * Gets a processor entity.
