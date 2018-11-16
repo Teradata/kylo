@@ -109,7 +109,7 @@
             </ng-container>
 
             <ng-container *ngIf="!feed.readonly">
-              <div *ngIf="feed.table.feedDefinitionTableSchema.fields.length >0">
+              <div *ngIf="targetFields.length >0">
                 <form [formGroup]="defineTableForm">
                   <div fxLayout="row" fxFlex="100" class="push-bottom-xs">
                     <div fxFlex="15">Name</div>
@@ -125,7 +125,7 @@
                     <div fxFlex="5"></div>
                     <div fxFlex="5" style="margin-right:6px"></div>
                   </div>
-                  <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.feedDefinitionTableSchema.fields">
+                  <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="targetFields">
                     <ng-template let-row="row"
                                  let-index="index"
                                  let-first="first"
@@ -200,7 +200,7 @@
                 </form>
               </div>
 
-              <div *ngIf="feed.table.feedDefinitionTableSchema.fields.length == 0 && skippedSourceSample" fxLayout="column" fxFlex fxLayoutAlign="center center"
+              <div *ngIf="targetFields.length == 0 && skippedSourceSample" fxLayout="column" fxFlex fxLayoutAlign="center center"
                    class="tc-grey-500 mat-typography pad">
                 <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
                 <h2>Target schema incomplete</h2>
@@ -215,7 +215,7 @@
 
         </mat-card>
 
-        <mat-card *ngIf="feed.table.feedDefinitionTableSchema.fields.length >0" fxFlex="20" class="feed-card selected-column-card">
+        <mat-card *ngIf="targetFields.length >0" fxFlex="20" class="feed-card selected-column-card">
           <mat-card-header>
             <mat-card-title *ngIf="selectedColumn == undefined">Column Details</mat-card-title>
             <mat-card-title *ngIf="selectedColumn != undefined" class="text-truncate" [matTooltip]="selectedColumn.field.name">{{selectedColumn.field.name}}</mat-card-title>
@@ -353,7 +353,7 @@
       </div>
     </td-expansion-panel>
 
-    <div [hidden]="feed.table.feedDefinitionTableSchema.fields.length ==0 || (!feed.readonly && schemaPanelExpanded)">
+    <div [hidden]="targetFields.length ==0 || (!feed.readonly && schemaPanelExpanded)">
       <mat-card class="feed-card">
         <mat-card-header>
           <mat-card-title>Table Partitions</mat-card-title>
@@ -531,7 +531,7 @@
   <div fxLayout="row">
     <feed-toolbar-actions [(feed)]="feed" (onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false"></feed-toolbar-actions>
     <div *ngIf="!feed.readonly">
-      <button mat-raised-button color="accent" (click)="onSave()" [disabled]="feed.table.tableSchema.fields.length == 0 || schemaPanelExpanded || parentForm.invalid">Save</button>
+      <button mat-raised-button color="accent" (click)="onSave()" [disabled]="feed.table.feedDefinitionTableSchema.fields.length == 0 || schemaPanelExpanded || parentForm.invalid">Save</button>
     </div>
   </div>
 </ng-template>

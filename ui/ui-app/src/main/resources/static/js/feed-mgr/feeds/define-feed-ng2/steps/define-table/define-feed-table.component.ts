@@ -48,6 +48,7 @@ import {DefineFeedSourceSampleService} from "./source-sample/define-feed-source-
 import {CatalogService} from "../../../../catalog/api/services/catalog.service";
 import {Common} from '../../../../../../lib/common/CommonTypes';
 import {SaveFeedResponse} from "../../model/save-feed-response.model";
+import {SchemaField} from "../../../../model/schema-field";
 
 const moduleName = require('../../../define-feed/module-name');
 
@@ -189,6 +190,8 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     schemaPanelExpanded:boolean = true;
 
+    targetFields:TableColumnDefinition[] | SchemaField[];
+
 
     @ViewChild('virtualScroll')
    virtualScroll: TdVirtualScrollContainerComponent
@@ -252,6 +255,13 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tablePermissions.canAddFields = !locked && !this.feed.isDataTransformation();
         this.tablePermissions.partitionsLocked = this.feed.hasBeenDeployed();
 
+
+        if(this.feed.hasBeenDeployed()){
+            this.targetFields = this.feed.table.tableSchema.fields;
+        }
+        else {
+            this.targetFields = this.feed.table.feedDefinitionTableSchema.fields;
+        }
 
         this.feedTableColumnDefinitionValidation = new FeedTableColumnDefinitionValidation(this.definePartitionForm, this.feed);
 
@@ -791,6 +801,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     private ensureTableFields(){
         if (this.feed.table.feedDefinitionTableSchema.fields && this.feed.table.feedDefinitionTableSchema.fields.length > 0) {
             //ensure data types
+            let targetFormFields  = [];
 
        this.feed.table.feedDefinitionTableSchema.fields.forEach((columnDef: TableColumnDefinition) => {
                 // add exotic data type to available columns if needed
@@ -801,7 +812,18 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
                 columnDef.initFeedColumn()
                 //add the form control
                 this.tableFormControls.addTableFieldFormControl(columnDef,false);
+
+                if(this.feed.hasBeenDeployed()) {
+                    if(!columnDef.deleted)
+                    {
+                        targetFormFields.push(columnDef);
+                    }
+                }
+                else {
+                    targetFormFields.push(columnDef);
+                }
             });
+            this.targetFields = targetFormFields;
 
             this.defineTableForm.get("indexCheckAll").setValue(this.indexCheckAll.isChecked)
             this.defineTableForm.get("profileCheckAll").setValue(this.profileCheckAll.isChecked)
