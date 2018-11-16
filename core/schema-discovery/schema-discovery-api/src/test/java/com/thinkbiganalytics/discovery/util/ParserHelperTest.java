@@ -42,37 +42,6 @@ public class ParserHelperTest {
 
     }
 
-    public void textExtract(String text, int numRows, int numExpected) throws Exception {
-        try (InputStream is = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8))) {
-            String value = ParserHelper.extractSampleLines(is, StandardCharsets.UTF_8, numRows);
-            assertEquals(numExpected, value.split("\n").length);
-        }
-    }
-
-
-    @Test
-    public void testExtractSample10Lines() throws Exception {
-        String text = "col1,col2,col3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\n";
-        textExtract(text, 10, 10);
-    }
-
-    @Test
-    public void testExtractMaxSampleLines() throws Exception {
-        String text = "col1,col2,col3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\nv1,v2,v3\n";
-        textExtract(text, 100, 12);
-    }
-
-    @Test
-    public void testInvalidFile() throws Exception {
-        String text = StringUtils.leftPad("Z", ParserHelper.MAX_CHARS, "Z");
-        try {
-            textExtract(text, 100, 1);
-            fail();
-        } catch (IOException e) {
-            // good
-        }
-    }
-
 
     @Test
     public void testDeriveJDBCDataType() throws Exception {
