@@ -90,14 +90,15 @@ export class DefineFeedSideNavComponent  implements OnInit, OnDestroy{
 
 
     onLinkSelected(link:FeedLink){
-        this.feedSideNavService.setSelected(link);
         let params = {"feedId":this.feed.id}
         if(link.srefParams){
             Object.keys(link.srefParams).forEach((key:string) => {
                 params[key] = link.srefParams[key];
             });
         }
-        this.stateService.go(link.sref,params);
+        this.stateService.go(link.sref,params).then(response =>  this.feedSideNavService.setSelected(link));
+
+
      }
 
     /**
