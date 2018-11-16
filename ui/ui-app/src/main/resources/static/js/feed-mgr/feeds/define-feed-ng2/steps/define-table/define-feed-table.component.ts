@@ -57,6 +57,7 @@ class TablePermissions {
     partitionsLocked:boolean;
     dataTypeLocked: boolean;
     canRemoveFields: boolean;
+    canAddFields:boolean;
     constructor() {
     this.canRemoveFields = true;
     }
@@ -70,6 +71,7 @@ class TablePermissions {
     templateUrl: "./define-feed-table.component.html"
 })
 export class DefineFeedTableComponent extends AbstractFeedStepComponent implements OnInit,OnDestroy{
+
 
     @ViewChild("toolbarActionTemplate")
     private toolbarActionTemplate:TemplateRef<any>;
@@ -247,6 +249,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tablePermissions.canRemoveFields = !locked
         this.tablePermissions.dataTypeLocked = locked
         this.tablePermissions.tableLocked = locked
+        this.tablePermissions.canAddFields = !locked && !this.feed.isDataTransformation();
         this.tablePermissions.partitionsLocked = this.feed.hasBeenDeployed();
 
 

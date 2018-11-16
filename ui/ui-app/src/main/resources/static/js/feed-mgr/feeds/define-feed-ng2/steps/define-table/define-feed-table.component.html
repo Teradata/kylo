@@ -20,7 +20,7 @@
 
 
     <td-expansion-panel [expand]="schemaPanelExpanded" class="push-left-sm push-right-sm" (expanded)="onSchemaPanelExpanded()"
-                        (collapsed)="onSchemaPanelCollapsed()">
+                        (collapsed)="onSchemaPanelCollapsed()" *ngIf="(skippedSourceSample || (feed.readonly && feed.table.tableSchema.fields.length >0) || (!feed.readonly && feed.table.feedDefinitionTableSchema.fields.length >0))">
       <ng-template td-expansion-panel-header>
         <div fxLayout="row" class="pad">
           <div fxLayout="column">
@@ -42,7 +42,7 @@
 
       </ng-template>
 
-      <div fxLayout="row" style="background-color:#e0e0e0">
+      <div fxLayout="row" style="background-color:#e0e0e0" >
 
         <mat-card class="feed-card" fxFlex="{{feed.table.tableSchema.fields.length >0 ? 80 : 100}}" *ngIf="feed.table.tableSchema.fields.length > 0 || skippedSourceSample">
 <!--
@@ -109,7 +109,7 @@
             </ng-container>
 
             <ng-container *ngIf="!feed.readonly">
-              <div *ngIf="feed.table.tableSchema.fields.length >0">
+              <div *ngIf="feed.table.feedDefinitionTableSchema.fields.length >0">
                 <form [formGroup]="defineTableForm">
                   <div fxLayout="row" fxFlex="100" class="push-bottom-xs">
                     <div fxFlex="15">Name</div>
@@ -196,7 +196,7 @@
 
                     </ng-template>
                   </td-virtual-scroll-container>
-                  <button mat-button [disabled]="feed.sampleDataSet" (click)="addColumn()" *ngIf="!tablePermissions.tableLocked">Add Column</button>
+                  <button mat-button [disabled]="feed.sampleDataSet" (click)="addColumn()" *ngIf="tablePermissions.canAddFields">Add Column</button>
                 </form>
               </div>
 
@@ -353,7 +353,7 @@
       </div>
     </td-expansion-panel>
 
-    <div [hidden]="feed.table.tableSchema.fields.length ==0 || (!feed.readonly && schemaPanelExpanded)">
+    <div [hidden]="feed.table.feedDefinitionTableSchema.fields.length ==0 || (!feed.readonly && schemaPanelExpanded)">
       <mat-card class="feed-card">
         <mat-card-header>
           <mat-card-title>Table Partitions</mat-card-title>
@@ -383,7 +383,7 @@
                     <mat-form-field fxFlex="20">
                       <mat-select required placeholder="Partition column" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef"
                                   (change)="onPartitionSourceFieldChange(partition, feed)">
-                        <mat-option *ngFor="let field of feed.table.tableSchema.fields" [value]="field">
+                        <mat-option *ngFor="let field of feed.table.feedDefinitionTableSchema.fields" [value]="field">
                           {{field.name}}
                         </mat-option>
                       </mat-select>

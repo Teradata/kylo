@@ -795,7 +795,7 @@ export class Feed implements KyloObject, KyloFeed {
                 }
                 else {
                     // For files the feed table must contain all the columns from the source even if unused in the target
-                    if (copy.table.method == 'SAMPLE_FILE') {
+                    if (copy.table.method == 'SAMPLE_FILE' || copy.isDataTransformation()) {
                         feedFields.push(feedField);
                     }
                     //if we somehow deleted the source incremental field from the target we need to push it back into the source map
