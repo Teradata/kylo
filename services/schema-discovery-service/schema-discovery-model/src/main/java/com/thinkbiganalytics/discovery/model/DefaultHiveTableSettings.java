@@ -22,7 +22,7 @@ package com.thinkbiganalytics.discovery.model;
 
 import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
 
-public class DefaultHaveTableSettings extends DefaultTableSettings implements HiveTableSettings{
+public class DefaultHiveTableSettings extends DefaultTableSettings implements HiveTableSettings{
 
     private String hiveFormat;
 

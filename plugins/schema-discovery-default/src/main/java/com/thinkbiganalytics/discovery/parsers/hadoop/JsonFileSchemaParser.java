@@ -20,7 +20,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
@@ -62,7 +62,7 @@ public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implemen
     }
 
     private HiveTableSettings getHiveTableSettings(){
-        HiveTableSettings tableSettings = new DefaultHaveTableSettings();
+        HiveTableSettings tableSettings = new DefaultHiveTableSettings();
         tableSettings.setStructured(true);
         tableSettings.setHiveFormat(
             "ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");

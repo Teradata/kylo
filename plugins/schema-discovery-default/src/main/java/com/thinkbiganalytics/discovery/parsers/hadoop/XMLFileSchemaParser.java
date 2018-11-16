@@ -20,7 +20,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
@@ -178,7 +178,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
                                      + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'", paths);
 
         LOG.debug("XML serde {}", serde);
-        HiveTableSettings hiveTableSettings = new DefaultHaveTableSettings();
+        HiveTableSettings hiveTableSettings = new DefaultHiveTableSettings();
         hiveTableSettings.setHiveFormat(serde);
         hiveTableSettings.setStructured(true);
         return hiveTableSettings;

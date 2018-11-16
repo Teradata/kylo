@@ -23,7 +23,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultField;
-import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
@@ -176,7 +176,7 @@ public class SparkFileSchemaParserService {
     public TableSettings deriveTableSettings(SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
         switch (tableSchemaType) {
             case HIVE:
-                HiveTableSettings hiveTableSettings = new DefaultHaveTableSettings();
+                HiveTableSettings hiveTableSettings = new DefaultHiveTableSettings();
                 hiveTableSettings.setHiveFormat("STORED AS " + fileType);
                 hiveTableSettings.setStructured(true);
                 return hiveTableSettings;

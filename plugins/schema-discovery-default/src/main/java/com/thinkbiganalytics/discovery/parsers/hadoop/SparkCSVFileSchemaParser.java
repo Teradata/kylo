@@ -20,7 +20,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
@@ -87,7 +87,7 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
     public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
         switch (target){
             case HIVE:
-                HiveTableSettings tableSettings = new DefaultHaveTableSettings();
+                HiveTableSettings tableSettings = new DefaultHiveTableSettings();
                 tableSettings.setHiveFormat(deriveHiveRecordFormat());
                 tableSettings.setStructured(false);
                 return tableSettings;

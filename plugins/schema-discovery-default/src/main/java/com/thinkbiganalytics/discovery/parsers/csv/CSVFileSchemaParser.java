@@ -22,7 +22,7 @@ package com.thinkbiganalytics.discovery.parsers.csv;
 
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultFileSchema;
-import com.thinkbiganalytics.discovery.model.DefaultHaveTableSettings;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
@@ -144,7 +144,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
     public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
         switch (target){
             case HIVE:
-                HiveTableSettings tableSettings = new DefaultHaveTableSettings();
+                HiveTableSettings tableSettings = new DefaultHiveTableSettings();
                 tableSettings.setHiveFormat(deriveHiveRecordFormat());
                 tableSettings.setStructured(false);
                 return tableSettings;
