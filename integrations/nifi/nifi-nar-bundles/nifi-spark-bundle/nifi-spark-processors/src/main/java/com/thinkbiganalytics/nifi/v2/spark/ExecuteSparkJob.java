@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.spark;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
@@ -65,6 +66,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -754,6 +756,7 @@ public class ExecuteSparkJob extends BaseProcessor {
         if (StringUtils.isNotBlank(datasourceIds)) {
             //datasourceids can hold anytype of data
             //first get by legacy, then by catalog datasource, then by id... error out if none match
+            final List<DataSetTemplate> dataSetTemplates = new ArrayList<>();
 
             for (final String id : datasourceIds.split(",")) {
                 //if the id exists and it doesnt already match a datasource, dataset, or catalog datasource then try to match it
@@ -768,6 +771,8 @@ public class ExecuteSparkJob extends BaseProcessor {
                             catalogDataSource = fetchCatalogDataSource(id, session, flowFile, metadataService, extraJarPaths);
                             if (catalogDataSource != null) {
                                 catalogDataSources.add(catalogDataSource);
+                                dataSetTemplates.add(catalogDataSource.getTemplate());
+                                dataSetTemplates.add(catalogDataSource.getConnector() != null ? catalogDataSource.getConnector().getTemplate() : null);
                             }
                         } catch (Exception e) {
                             //swallow and continue
@@ -781,6 +786,11 @@ public class ExecuteSparkJob extends BaseProcessor {
                                 dataSet = fetchDataSet(id, session, flowFile, metadataService, extraJarPaths);
                                 if (dataSet != null) {
                                     catalogDataSets.add(dataSet);
+                                    dataSetTemplates.add(dataSet);
+                                    if (dataSet.getDataSource() != null) {
+                                        dataSetTemplates.add(dataSet.getDataSource().getTemplate());
+                                        dataSetTemplates.add(dataSet.getDataSource().getConnector() != null ? dataSet.getDataSource().getConnector().getTemplate() : null);
+                                    }
                                 }
                             } catch (Exception e) {
                                 //swallow and continue
@@ -794,6 +804,14 @@ public class ExecuteSparkJob extends BaseProcessor {
                     }
                 }
             }
+
+            // Add jar files
+            dataSetTemplates.stream().filter(Objects::nonNull)
+                .map(DataSetTemplate::getJars).filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .filter(path -> path.startsWith("file:"))
+                .distinct()
+                .forEach(extraJarPaths::add);
         }
 
         if (!catalogDataSets.isEmpty()) {
