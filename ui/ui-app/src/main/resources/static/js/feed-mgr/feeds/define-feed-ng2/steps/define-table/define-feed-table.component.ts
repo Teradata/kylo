@@ -190,7 +190,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
 
     schemaPanelExpanded:boolean = true;
 
-    targetFields:TableColumnDefinition[] = [];
+    targetFields:any[];
 
 
     @ViewChild('virtualScroll')
@@ -360,7 +360,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) {
         let newColumn = this.feed.table.addColumn(columnDef, syncFieldPolicies);
-        if(this.targetFields.find((col:TableColumnDefinition) => col._id == newColumn._id) == undefined) {
+        if(this.targetFields.find((col:any) => col._id != undefined && col._id == newColumn._id) == undefined) {
             this.targetFields.push(newColumn);
         }
         this.tableFormControls.addTableFieldFormControl(newColumn)
