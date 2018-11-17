@@ -137,14 +137,12 @@ onBrowserComponentFiltered(files:BrowserObject[]){
     private initDataSource(){
         this.datasourceSref = '';
         this.catalogService.getDataSourceConnectorPlugin(this.datasource.id).subscribe(plugin => {
-            //???
             this.plugin = plugin;
             if (this.plugin.tabs) {
                 //find the first tab get the sref and determine the component to use for selecting
                 this.datasourceSref = this.plugin.tabs[0].sref
             }
 
-            console.log("mark for check!!")
             this.cd.markForCheck()
         })
         this.cd.markForCheck()
@@ -169,6 +167,9 @@ onBrowserComponentFiltered(files:BrowserObject[]){
      */
     preview(file:BrowserObject){
         this._previewDataSet(file);
+    }
+    onSelectionChange() {
+        this.cd.markForCheck()
     }
 
     onCheckboxChange() {

@@ -36,6 +36,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
     @Output()
     onCheckboxChange=new EventEmitter<any>()
 
+    @Output()
+    onSelectionChange = new EventEmitter<any>();
+
     displayInCard?:boolean = true;
 
     tableTemplate:string = "NameLinkTableTemplate";
@@ -374,6 +377,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
             if (itemsWereRemoved) {
                 this.selectAll = false;
                 this.initSelection();
+                this.onSelectionChange.emit();
             }
         });
     }
