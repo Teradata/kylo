@@ -193,6 +193,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         }
     }
 
+
     @Override
     public T findById(PK id) {
         try {
@@ -203,9 +204,13 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 //swallow this exception
                 // if we dont find the item then return null
             }
-            if (node != null) {
+            String nodeType = getNodeType(getJcrEntityClass());
+            if (node != null && JcrUtil.isNodeType(node,nodeType)) {
                 return (T) constructEntity(node);
             } else {
+                if(node != null){
+                    log.warn("Found a node [{}] of type [{}], but was looking for a node of type [{}]. returning null ",node.getIdentifier(),node.getPrimaryNodeType().getName(),nodeType);
+                }
                 return null;
             }
         } catch (AccessDeniedException e) {
