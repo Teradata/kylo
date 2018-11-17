@@ -252,7 +252,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         this.tablePermissions.canRemoveFields = !locked
         this.tablePermissions.dataTypeLocked = locked
         this.tablePermissions.tableLocked = locked
-        this.tablePermissions.canAddFields = !locked && !this.feed.isDataTransformation();
+        this.tablePermissions.canAddFields = !locked && !this.feed.isDataTransformation() && this.feed.table.method != "EXISTING_TABLE";
         this.tablePermissions.partitionsLocked = this.feed.hasBeenDeployed();
 
 
@@ -360,6 +360,9 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     addColumn(columnDef?: TableColumnDefinition, syncFieldPolicies?: boolean) {
         let newColumn = this.feed.table.addColumn(columnDef, syncFieldPolicies);
+        if(this.targetFields.find(col => col._id == newColumn._id) == undefined) {
+            this.targetFields.push(newColumn);
+        }
         this.tableFormControls.addTableFieldFormControl(newColumn)
         this.feedTableColumnDefinitionValidation.validateColumn(newColumn);
         if(this.virtualScroll) {
