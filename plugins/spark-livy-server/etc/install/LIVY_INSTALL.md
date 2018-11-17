@@ -50,11 +50,12 @@ This issue will be addressed by TBK-85
 ## Use LIVY
     
     service kylo-services stop
-    sed -i.bak 's/kylo-livy/kylo-shell/' /opt/kylo/kylo-services/conf/application.properties
+    cp /opt/kylo/setup/plugins/kylo-spark-livy-server-0.10.0-SNAPSHOT.jar /opt/kylo/kylo-services/plugin/
+    sed -i.bak 's/kylo-shell/kylo-livy/' /opt/kylo/kylo-services/conf/application.properties
     service kylo-services start
 
 ## Use Spark Shell
 
     service kylo-services stop
-    sed -i.bak 's/kylo-shell/kylo-livy/' /opt/kylo/kylo-services/conf/application.properties
+    sed -i.bak 's/kylo-livy/kylo-shell/' /opt/kylo/kylo-services/conf/application.properties
     service kylo-services start
