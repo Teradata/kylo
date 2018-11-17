@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.scala;
  * #L%
  */
 
+
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMap;

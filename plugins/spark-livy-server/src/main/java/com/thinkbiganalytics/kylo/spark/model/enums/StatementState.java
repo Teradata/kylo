@@ -2,7 +2,7 @@ package com.thinkbiganalytics.kylo.spark.model.enums;
 
 /*-
  * #%L
- * kylo-spark-livy-core
+ * kylo-spark-livy-server
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -19,6 +19,7 @@ package com.thinkbiganalytics.kylo.spark.model.enums;
  * limitations under the License.
  * #L%
  */
+
 
 /**
  * Statement State

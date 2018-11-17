@@ -2,7 +2,7 @@ package com.thinkbiganalytics.kylo.spark.client.jersey;
 
 /*-
  * #%L
- * kylo-spark-livy-core
+ * kylo-spark-livy-server
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -19,6 +19,7 @@ package com.thinkbiganalytics.kylo.spark.client.jersey;
  * limitations under the License.
  * #L%
  */
+
 
 
 import org.apache.http.cookie.CookieSpec;

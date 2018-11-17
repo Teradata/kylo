@@ -2,7 +2,7 @@
 
 ###
 # #%L
-# kylo-spark-livy-core
+# kylo-spark-livy-server
 # %%
 # Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
 # %%

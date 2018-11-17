@@ -127,7 +127,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
             }
         }
 
-        Set<String> searchProfiles = Sets.newHashSet("search-es", "search-esr","search-solr");
+        Set<String> searchProfiles = Sets.newHashSet("search-es", "search-esr", "search-solr");
         if (Sets.intersection(profiles, searchProfiles).size() > 1) {
             throw new KyloProfileException("Cannot specify more than one search profile on startup");
         }

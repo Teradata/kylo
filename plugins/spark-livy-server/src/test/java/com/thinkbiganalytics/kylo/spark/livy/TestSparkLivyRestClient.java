@@ -2,16 +2,16 @@ package com.thinkbiganalytics.kylo.spark.livy;
 
 /*-
  * #%L
- * kylo-spark-livy-core
+ * kylo-spark-livy-server
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ package com.thinkbiganalytics.kylo.spark.livy;
  * limitations under the License.
  * #L%
  */
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,7 +69,7 @@ public class TestSparkLivyRestClient {
     private SparkLivyRestClient livyRestProvider;
 
     /**
-     * This test assumes: 1) you have configured a Livy Server for Kerberos and that it is running at 8998 2) that server has the library 'kylo-spark-shell-client-v1-0.9.2-SNAPSHOT.jar' installed
+     * This test assumes: 1) you have configured a Livy Server for Kerberos and that it is running at 8998 2) that server has the library 'kylo-spark-shell-client-v1-0.10.0-SNAPSHOT.jar' installed
      */
     @Test
     @Ignore // ignore, for now, because this is an integration test that requires livy configured on the test system

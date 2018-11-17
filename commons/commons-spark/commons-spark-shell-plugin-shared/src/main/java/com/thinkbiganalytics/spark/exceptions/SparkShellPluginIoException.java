@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.exceptions;
  * #L%
  */
 
+
 public class SparkShellPluginIoException extends SparkShellPluginException {
     public SparkShellPluginIoException() {
         super();

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.io;
  * #L%
  */
 
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;

@@ -2,7 +2,7 @@ package com.thinkbiganalytics.kylo.spark.config;
 
 /*-
  * #%L
- * kylo-spark-livy-core
+ * kylo-spark-livy-server
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -19,6 +19,7 @@ package com.thinkbiganalytics.kylo.spark.config;
  * limitations under the License.
  * #L%
  */
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
