@@ -297,9 +297,13 @@ public class DataSourceProvider {
     private void createOrUpdateNiFiControllerService(@Nonnull final DataSource dataSource, @Nonnull final ConnectorPluginNiFiControllerService plugin) {
         // Resolve properties
         final PropertyPlaceholderHelper.PlaceholderResolver resolver = new DataSourcePlaceholderResolver(dataSource);
-        final Map<String, String> properties = plugin.getProperties().entrySet().stream()
-            .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), placeholderHelper.replacePlaceholders(entry.getValue(), resolver)))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final Map<String, String> properties = new HashMap<>(plugin.getProperties().size());
+        plugin.getProperties().forEach((key, value) -> {
+            final String resolvedValue = placeholderHelper.replacePlaceholders(value, resolver);
+            if (resolvedValue != null && !resolvedValue.startsWith("{cipher}")) {
+                properties.put(key, resolvedValue);
+            }
+        });
 
         // Update or create the controller service
         ControllerServiceDTO controllerService = null;
