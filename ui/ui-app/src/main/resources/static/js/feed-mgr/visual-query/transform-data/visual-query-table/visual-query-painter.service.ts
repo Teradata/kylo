@@ -532,7 +532,7 @@ export class VisualQueryPainterService extends fattable.Painter {
             });
     }
 
-    /**
+   /**
      * Shows the tooltip on the specified cell.
      */
     private showTooltip(cellDiv: HTMLElement) {
@@ -543,29 +543,34 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.validation = angular.element(cellDiv).data("validation");
         $scope.value = cellDiv.innerText;
 
-        // Update position
-        const cellOffset = angular.element(cellDiv).offset();
-        let offsetY;
-        let yPosition;
+        if ($scope.value && $scope.value.length > 22) {
 
-        if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > this.$window.innerHeight) {
-            offsetY = "-27" + PIXELS;
-            yPosition = this.$mdPanel.yPosition.ABOVE;
+            // Update position
+            const cellOffset = angular.element(cellDiv).offset();
+            let offsetY;
+            let yPosition;
+
+            if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > this.$window.innerHeight) {
+                offsetY = "-27" + PIXELS;
+                yPosition = this.$mdPanel.yPosition.ABOVE;
+            } else {
+                offsetY = "0";
+                yPosition = this.$mdPanel.yPosition.BELOW;
+            }
+
+            this.tooltipPanel.updatePosition(
+                this.$mdPanel.newPanelPosition()
+                    .relativeTo(cellDiv)
+                    .addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, yPosition)
+                    .withOffsetX("28px")
+                    .withOffsetY(offsetY)
+            );
+
+            // Show tooltip
+            this.tooltipPanel.open();
         } else {
-            offsetY = "0";
-            yPosition = this.$mdPanel.yPosition.BELOW;
+            this.hideTooltip();
         }
-
-        this.tooltipPanel.updatePosition(
-            this.$mdPanel.newPanelPosition()
-                .relativeTo(cellDiv)
-                .addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, yPosition)
-                .withOffsetX("28px")
-                .withOffsetY(offsetY)
-        );
-
-        // Show tooltip
-        this.tooltipPanel.open();
     }
 
     /**

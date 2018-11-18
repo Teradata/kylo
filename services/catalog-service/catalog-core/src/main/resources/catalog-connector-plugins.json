@@ -134,7 +134,7 @@
       {
         "key": "jars",
         "label": "Driver Location(s)",
-        "hint":"Comma-separated list of file paths containing the driver JAR and its dependencies (if any). For example '/var/tmp/mariadb-java-client-1.1.7.jar'",
+        "hint":"Comma-separated list of paths containing the driver JAR and dependencies. Path must be accessible to Kylo, Nifi, and Spark. For example: 'file:///var/shared/mariadb-java-client-1.1.7.jar,s3a:///mybucket/db.jar'",
         "required": false,
         "validators": [
           {
