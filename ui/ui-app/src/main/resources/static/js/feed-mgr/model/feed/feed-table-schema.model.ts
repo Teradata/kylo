@@ -22,6 +22,13 @@ export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
 
     }
 
+    getVisibleColumns() {
+       if(this.fields && this.fields.length) {
+        return   this.fields.filter(field => field.deleted == false);
+       }
+       return [];
+    }
+
 
 
     addColumn(columnDef?: TableColumnDefinition) :TableColumnDefinition{
