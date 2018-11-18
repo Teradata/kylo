@@ -151,7 +151,7 @@ export class SlaDetailsComponent implements OnInit {
         this.loadingService.register(SlaDetailsComponent.slaLoader);
         this.loadingSla = true;
 
-        Observable.fromPromise( this.slaService.getSlaForEditForm(slaId))
+        Observable.fromPromise<Sla>( <Promise<Sla>>this.slaService.getSlaForEditForm(slaId))
             .pipe(
                 catchError(err => {
                     this.loadingService.resolve(SlaDetailsComponent.slaLoader);
@@ -159,8 +159,9 @@ export class SlaDetailsComponent implements OnInit {
                     this.loadingSla = false;
                     console.error(msg);
                     this.snackBar.open(this.labelAccessDenied, this.labelOk, { duration: 5000 });
+                    throw err;
                 } ),
-                switchMap(sla =>  this.applyEditPermissionsToSLA(sla)),
+                switchMap((sla:Sla) =>  this.applyEditPermissionsToSLA(sla)),
                 finalize(() =>{
                 this.loadingService.resolve(SlaDetailsComponent.slaLoader);
                 this.loadingSla = false;
@@ -187,10 +188,10 @@ export class SlaDetailsComponent implements OnInit {
     });
     }
 
-    private applyEditPermissionsToSLA(sla: Sla) :Promise<any> {
+    private applyEditPermissionsToSLA(sla: Sla) :Observable<Sla> {
         const entityAccessControlled = this.accessControlService.isEntityAccessControlled();
        let promise = this.accessControlService.getUserAllowedActions();
-       let subject = new Subject();
+       let subject = new Subject<Sla>();
        promise.then((response: any) => {
             const allowFeedEdit = this.accessControlService.hasAction(AccessConstants.FEEDS_EDIT, response.actions);
             const allowSlaEdit = this.accessControlService.hasAction(AccessConstants.SLA_EDIT, response.actions);
