@@ -96,7 +96,8 @@
             </ng-template>
 
             <ng-template tdDataTableTemplate="action" let-value="value" let-job="row" let-column="column">
-              <button mat-button *ngIf="job.status !='COMPLETED' && job.status !='FAILED' && allowAdmin" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</button>
+              <button mat-button *ngIf="job.status !='COMPLETED' && job.status !='FAILED' && allowAdmin && job.status != 'ABANDONED'" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" |
+                translate}}</button>
               <button mat-button  *ngIf="job.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</button>
               <span *ngIf="job.errorMessage != ''">
                                         <br/>
