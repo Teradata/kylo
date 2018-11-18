@@ -38,7 +38,7 @@
         <mat-list-item matRipple [visibleOnMouseOver]="'action-icons'" class="cursor-pointer" (click)="selectDatasource(datasource)">
           <ng-md-icon mat-list-icon
                       [icon]="datasource.connector.icon ? datasource.connector.icon : 'fa-database'"
-                      [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'tc-accent'"></ng-md-icon>
+                      [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'tc-orange-600'"></ng-md-icon>
           <h4 matLine>{{datasource.title}}</h4>
           <span></span>
           <div *ngIf="isEditable(datasource)" class="action-icons" fxLayout="row" style="visibility: hidden;">
