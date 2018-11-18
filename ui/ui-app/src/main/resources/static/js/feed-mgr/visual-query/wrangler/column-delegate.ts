@@ -2,6 +2,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import * as _ from "underscore";
 
 import {CloneUtil} from "../../../common/utils/clone-util";
+import {StringUtils} from "../../../common/utils/StringUtils";
 import {ColumnDelegate as IColumnDelegate, DataType as DT} from "./api/column";
 import {ColumnProfile} from "./api/column-profile";
 import {DialogService} from "./api/services/dialog.service";
@@ -21,7 +22,6 @@ import {ReplaceValueForm} from "./core/columns/replace-value-form";
 import {RescaleForm} from "./core/columns/rescale-form";
 import {RoundNumberForm} from "./core/columns/round-number-form";
 import {AnalyzeColumnDialog} from "../transform-data/main-dialogs/analyze-column-dialog";
-import {StringUtils} from "../../../common/utils/StringUtils";
 
 /**
  * Categories for data types.
@@ -254,7 +254,7 @@ export class ColumnDelegate implements IColumnDelegate {
     deleteRowsEqualTo(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} != '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_containing", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
     }
 
     /**
@@ -266,7 +266,7 @@ export class ColumnDelegate implements IColumnDelegate {
     deleteRowsGreaterThan(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} <= '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "≯", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " greater than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " greater than " + value});
     }
 
     /**
@@ -278,7 +278,7 @@ export class ColumnDelegate implements IColumnDelegate {
     deleteRowsLessThan(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} >= '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " less than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " less than " + value});
     }
 
     /**
@@ -287,7 +287,7 @@ export class ColumnDelegate implements IColumnDelegate {
     findNullRows(column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(isnull(${fieldName}))`;
-        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find where " + ColumnUtil.getColumnDisplayName(column) + " is null"});
+        this.controller.addFunction(formula, {formula: formula, icon: "filter_list", name: "Find where " + ColumnUtil.getColumnDisplayName(column) + " is null"});
     }
 
     /**
@@ -299,7 +299,7 @@ export class ColumnDelegate implements IColumnDelegate {
     findRowsContaining(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(contains(${fieldName}, '${value}'))`;
-        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " containing " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "filter_list", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " containing " + value});
     }
 
     /**
@@ -311,7 +311,7 @@ export class ColumnDelegate implements IColumnDelegate {
     findRowsEqualTo(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} == '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "filter_list", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
     }
 
     /**
@@ -323,7 +323,7 @@ export class ColumnDelegate implements IColumnDelegate {
     findRowsGreaterThan(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} > '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_right", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " greater than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "filter_list", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " greater than " + value});
     }
 
     /**
@@ -335,7 +335,7 @@ export class ColumnDelegate implements IColumnDelegate {
     findRowsLessThan(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} < '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_left", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " less than " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "filter_list", name: "Find " + ColumnUtil.getColumnDisplayName(column) + " less than " + value});
     }
 
     /**

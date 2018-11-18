@@ -22,7 +22,7 @@ import {
 import {ColumnProfile, ColumnProfileHelper} from "../wrangler/api/column-profile";
 import {ColumnController} from "../wrangler/column-controller";
 import {ChainedOperation, ColumnDelegate, DataCategory} from "../wrangler/column-delegate";
-import {ProfileOutputRow, ScriptState, StringUtils} from "../wrangler/index";
+import {ProfileOutputRow, ScriptState} from "../wrangler/index";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {AnalyzeColumnDialog} from "./main-dialogs/analyze-column-dialog";
@@ -35,6 +35,7 @@ import {ColumnItem, SchemaLayoutDialog, SchemaLayoutDialogData} from "./main-dia
 import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean-dialog";
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
+import {StringUtils} from "../../../common/utils/StringUtils";
 
 declare const CodeMirror: any;
 
