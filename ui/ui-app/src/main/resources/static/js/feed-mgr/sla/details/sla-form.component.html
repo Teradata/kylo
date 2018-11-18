@@ -1,13 +1,13 @@
 <div *ngIf="editSla != null" [formGroup]="slaForm">
 
-  <div fxLayout="row" fxLayoutAlign="start start">
-    <div fxFlex></div>
-    <button mat-button mat-raised-button (click)="viewSlaAssessments($event)" *ngIf="feedModel && mode != newMode" [style.margin-top.px]="-50">{{'Sla.Details.SlaAssessments' | translate}}</button>
-  </div>
-
   <div class="section">
 
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="mode != newMode" >
     <h3 class="mat-subheading-3" translate>Sla.Details.SlaConditions</h3>
+      <div fxFlex></div>
+      <button mat-button color="accent" (click)="viewSlaAssessments($event)" [style.margin-top.px]="-50">{{'Sla.Details.SlaAssessments' | translate}}</button>
+    </div>
+
 
     <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="push-bottom-md">
       <div fxLayout="row">
@@ -29,7 +29,7 @@
 
     </div>
 
-    <div *ngIf="addingSlaCondition == false" fxLayout="row" class="push-bottom">
+    <div *ngIf="addingSlaCondition == false && editSla.editable" fxLayout="row" class="push-bottom">
       <button mat-button mat-raised-button color="accent" (click)="addNewCondition()" [disabled]="loadingConditions">{{'Sla.Details.AddCondition' | translate}}</button>
       <span fxFlex></span>
     </div>
@@ -108,7 +108,7 @@
       </button>
     </div>
 
-    <div *ngIf="addingSlaAction == false" fxFlex fxLayout="row">
+    <div *ngIf="addingSlaAction == false && editSla.editable" fxFlex fxLayout="row">
       <button mat-button mat-raised-button color="accent" (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0">
         {{"Sla.Details.AddAction" | translate}}
       </button>

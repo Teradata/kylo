@@ -8,6 +8,7 @@ import * as angular from 'angular';
 import {FormMode, RuleType} from './sla-details.componment';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {SlaService} from "../../services/sla.service";
+import {FormGroupUtil} from "../../../services/form-group-util";
 
 
 export function nonEmptyValidator(): ValidatorFn {
@@ -32,7 +33,6 @@ export class SlaFormComponent implements OnInit, OnChanges {
     @Input('sla') editSla: Sla;
     @Input('feed') feedModel: Feed;
     @Input('mode') mode: FormMode;
-
     /**
      * The Default Condition to be applied to the new Rule
      * REQUIRED = "AND"
@@ -103,10 +103,11 @@ export class SlaFormComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+
         this.slaForm.addControl('conditions', this.slaConditions);
         this.slaForm.addControl('name', this.slaName);
         this.slaForm.addControl('description', this.slaDescription);
-
+        this.checkSlaForm();
         /**
          * Load up the Metric Options for defining SLAs
          */
@@ -157,16 +158,28 @@ export class SlaFormComponent implements OnInit, OnChanges {
 
     }
 
+    checkSlaForm(){
+        if (this.editSla) {
+            if(!this.editSla.editable) {
+                FormGroupUtil.disableFormControls(this.slaForm);
+            }
+        }
+    }
+
+
+
 
     ngOnChanges(changes: SimpleChanges): void {
         if (this.editSla) {
             this.slaName.setValue(this.editSla.name);
             this.slaDescription.setValue(this.editSla.description);
+            this.checkSlaForm();
         }
     }
 
     onPolicyInputControlsAdded(): void {
         this.validateForm2();
+        this.checkSlaForm();
     }
 
     addNewCondition() {

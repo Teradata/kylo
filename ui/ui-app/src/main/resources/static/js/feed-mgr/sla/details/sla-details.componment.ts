@@ -12,6 +12,25 @@ import {TranslateService} from '@ngx-translate/core';
 import AccessConstants from '../../../constants/AccessConstants';
 import {SlaService} from "../../services/sla.service";
 
+import "rxjs/add/observable/empty";
+import 'rxjs/add/observable/forkJoin'
+import "rxjs/add/observable/of";
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
+import "rxjs/add/observable/from";
+import 'rxjs/add/observable/fromPromise';
+import {Observable} from "rxjs/Observable";
+import {PartialObserver} from "rxjs/Observer";
+import {catchError} from "rxjs/operators/catchError";
+import {concatMap} from "rxjs/operators/concatMap";
+import {filter} from "rxjs/operators/filter";
+import {finalize} from "rxjs/operators/finalize";
+import {map} from "rxjs/operators/map";
+import {switchMap} from "rxjs/operators/switchMap";
+import {tap} from "rxjs/operators/tap";
+import {Subject} from "rxjs/Subject";
+import {error} from "ng-packagr/lib/util/log";
+
 export enum FormMode {
     ModeEdit = "EDIT",
     ModeNew = "NEW",
@@ -121,69 +140,58 @@ export class SlaDetailsComponent implements OnInit {
             this.sla = new Sla();
             //allow the user to edit this SLA if it is new
             this.sla.canEdit = true;
+            this.sla.editable = true;
             this.applyEditPermissionsToSLA(this.sla);
 
         }
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;
-       // this.loadFeed(this.feedId);
     }
-/*
-    private loadFeed(feedId:string):void {
-        this.loadingService.register(SlaDetailsComponent.feedLoader);
-        this.loadingFeed = true;
-
-        this.feedLoadingService.loadFeed(feedId).subscribe((feedModel:Feed) => {
-            this.feedModel = feedModel;
-            this.loadingService.resolve(SlaDetailsComponent.feedLoader);
-            this.loadingFeed = false;
-        },(error:any) =>{
-            this.loadingService.resolve(SlaDetailsComponent.feedLoader);
-            this.loadingFeed = false;
-            console.log('error loading feed for id ' + feedId);
-        });
-    }
-*/
 
     loadSla(slaId: string) {
         this.loadingService.register(SlaDetailsComponent.slaLoader);
         this.loadingSla = true;
 
-        this.slaService.getSlaForEditForm(slaId).then((response: any) => {
-            this.sla = response;
-            this.slaName = response.name;
-            this.applyEditPermissionsToSLA(this.sla);
-            _.each(this.sla.rules, (rule: any) => {
-                rule.editable = this.sla.canEdit;
-                rule.mode = FormMode.ModeEdit;
-                rule.groups = this.policyInputFormService.groupProperties(rule);
-                this.policyInputFormService.updatePropertyIndex(rule);
+        Observable.fromPromise( this.slaService.getSlaForEditForm(slaId))
+            .pipe(
+                catchError(err => {
+                    this.loadingService.resolve(SlaDetailsComponent.slaLoader);
+                    const msg = err.data.message || this.labelErrorLoadingSla;
+                    this.loadingSla = false;
+                    console.error(msg);
+                    this.snackBar.open(this.labelAccessDenied, this.labelOk, { duration: 5000 });
+                } ),
+                switchMap(sla =>  this.applyEditPermissionsToSLA(sla)),
+                finalize(() =>{
+                this.loadingService.resolve(SlaDetailsComponent.slaLoader);
+                this.loadingSla = false;
+                })
+            ).subscribe(sla => {
+                this.sla = sla;
+                this.slaName = sla.name;
+                _.each(sla.rules, (rule: any) => {
+                    rule.editable = sla.canEdit;
+                    rule.mode = FormMode.ModeEdit;
+                    rule.groups = this.policyInputFormService.groupProperties(rule);
+                    this.policyInputFormService.updatePropertyIndex(rule);
+                });
+
+                _.each(sla.actionConfigurations, (rule: any) => {
+                    rule.editable = sla.canEdit;
+                    rule.mode = FormMode.ModeEdit;
+                    rule.groups = this.policyInputFormService.groupProperties(rule);
+                    this.policyInputFormService.updatePropertyIndex(rule);
+                    //validate the rules
+                    this.slaService.validateSlaActionRule(rule);
+
             });
-
-            _.each(this.sla.actionConfigurations, (rule: any) => {
-                rule.editable = this.sla.canEdit;
-                rule.mode = FormMode.ModeEdit;
-                rule.groups = this.policyInputFormService.groupProperties(rule);
-                this.policyInputFormService.updatePropertyIndex(rule);
-                //validate the rules
-                this.slaService.validateSlaActionRule(rule);
-
-            });
-            this.loadingService.resolve(SlaDetailsComponent.slaLoader);
-            this.loadingSla = false;
-
-        }, (err: any) => {
-            this.loadingService.resolve(SlaDetailsComponent.slaLoader);
-            const msg = err.data.message || this.labelErrorLoadingSla;
-            this.loadingSla = false;
-            console.error(msg);
-            this.snackBar.open(this.labelAccessDenied, this.labelOk, { duration: 5000 });
-        });
-
+    });
     }
 
-    private applyEditPermissionsToSLA(sla: Sla) {
+    private applyEditPermissionsToSLA(sla: Sla) :Promise<any> {
         const entityAccessControlled = this.accessControlService.isEntityAccessControlled();
-        this.accessControlService.getUserAllowedActions().then((response: any) => {
+       let promise = this.accessControlService.getUserAllowedActions();
+       let subject = new Subject();
+       promise.then((response: any) => {
             const allowFeedEdit = this.accessControlService.hasAction(AccessConstants.FEEDS_EDIT, response.actions);
             const allowSlaEdit = this.accessControlService.hasAction(AccessConstants.SLA_EDIT, response.actions);
 
@@ -195,7 +203,14 @@ export class SlaDetailsComponent implements OnInit {
                 this.allowEdit = allowFeedEdit && allowSlaEdit;
                 sla.editable = this.allowEdit;
             }
-        });
+            subject.next(sla);
+            subject.complete();
+        },
+           (error:any) => {
+           subject.next(sla)
+               subject.complete();
+           });
+       return subject.asObservable();
     }
 
 

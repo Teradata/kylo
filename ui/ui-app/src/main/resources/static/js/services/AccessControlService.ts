@@ -227,7 +227,7 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
              * @param {boolean|null} true to save the data in a cache, false or underfined to not.  default is false
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            getUserAllowedActions= (opt_module?: any, cache?: any)=>{
+            getUserAllowedActions(opt_module?: any, cache?: any):Promise<any> {
                 var defer: any = null;
 
                 var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : this.DEFAULT_MODULE;

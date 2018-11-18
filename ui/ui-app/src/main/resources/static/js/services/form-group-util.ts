@@ -6,6 +6,36 @@ import * as _ from "underscore"
 export class FormGroupUtil {
 
 
+    static disableFormControls(formGroup:FormGroup) {
+        formGroup.disable()
+        if (formGroup.controls) {
+            (<any>Object).values(formGroup.controls).forEach((control: AbstractControl) => {
+
+                control.disable();
+                if (control instanceof FormGroup) {
+                    FormGroupUtil.disableFormControls(control as FormGroup);
+                }
+                if (control instanceof FormArray) {
+                    FormGroupUtil.disableFormArrayControls(control as FormArray);
+                }
+            });
+        }
+    }
+
+    static disableFormArrayControls(formArray:FormArray) {
+        if (formArray.controls) {
+            formArray.controls.forEach((control: AbstractControl) => {
+                control.disable();
+                if (control instanceof FormGroup) {
+                    FormGroupUtil.disableFormControls(control as FormGroup);
+                }
+                if (control instanceof FormArray) {
+                    FormGroupUtil.disableFormArrayControls(control as FormArray);
+                }
+            });
+        }
+    }
+
     static touchFormControls(formGroup:FormGroup) {
         if (formGroup.controls) {
             (<any>Object).values(formGroup.controls).forEach((control: AbstractControl) => {
