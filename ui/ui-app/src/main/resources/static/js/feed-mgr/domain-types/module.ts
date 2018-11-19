@@ -1,5 +1,4 @@
 import * as angular from 'angular';
-import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
 import AccessConstants from "../../constants/AccessConstants";
 import {moduleName} from "./module-name";
 import "../../codemirror-require/module";
@@ -14,7 +13,7 @@ class ModuleFactory  {
     module: ng.IModule;
     constructor () {
        // Window.CodeMirror = CodeMirror;
-        this.module = angular.module(moduleName,[]); 
+        this.module = angular.module(moduleName,["ui.codemirror"]);
         this.module.config(["$stateProvider", "$compileProvider", this.configFn.bind(this)]); 
     }
 
