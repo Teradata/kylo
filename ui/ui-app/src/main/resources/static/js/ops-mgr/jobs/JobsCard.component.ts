@@ -288,28 +288,16 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
             var errorFn = (err: any, canceler : Subscription) => {
                 this.finishedRequest(canceler);
             };
-            var filter = this.filterJob;
+            var filter = this.feedFilter ? "jobInstance.feed.name==" + this.feedFilter : this.filterJob;
+            if(!this.containsFilterOperator(filter)) {
+                filter = 'job=~%' + filter;
+            }
 
             let params = new HttpParams();
             params = params.append('start', start.toString());
             params = params.append('limit', limit);
             params = params.append('sort', sort);
             params = params.append('filter', filter);
-
-            if (this.feedFilter) {
-                if (!params.get('filter')) {
-                    params.set('filter', '');
-                }
-                if (params.get('filter') != '') {
-                    params.set('filter', params.get('filter') + '');
-                }
-                params.set('filter', params.get('filter') + "jobInstance.feed.name==" + this.feedFilter);
-            }
-            //if the filter doesnt contain an operator, then default it to look for the job name
-            if (params.get('filter') != '' && params.get('filter') != null && !this.containsFilterOperator(params.get('filter'))) {
-                params.set('filter', 'job=~%' + params.get('filter'));
-            }
-
 
             var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
 
