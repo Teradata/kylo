@@ -27,6 +27,7 @@ import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 
@@ -45,6 +46,12 @@ import javax.ws.rs.core.Response;
 public class RemoteClientRunner implements ApplicationRunner {
 
     private static final Logger log = LoggerFactory.getLogger(RemoteClientRunner.class);
+
+    @Nullable
+    private String clientId;
+
+    @Nullable
+    private String clientSecret;
 
     /**
      * Password for keystore
@@ -96,11 +103,8 @@ public class RemoteClientRunner implements ApplicationRunner {
             throw new IllegalStateException("Not a valid registration URL: " + serverUrl);
         }
 
-        // Find client id and secret
-        final String clientId = System.getenv("KYLO_CLIENT_ID");
+        // Verify client id and secret
         Preconditions.checkNotNull(clientId, "Environment variable is not defined: KYLO_CLIENT_ID");
-
-        final String clientSecret = System.getenv("KYLO_CLIENT_SECRET");
         Preconditions.checkNotNull(clientSecret, "Environment variable is not defined: KYLO_CLIENT_SECRET");
 
         // Register with server
@@ -140,6 +144,16 @@ public class RemoteClientRunner implements ApplicationRunner {
         }
 
         log.trace("run - exit");
+    }
+
+    @Value("${kylo.client.id:#{null}}")
+    public void setClientId(@Nullable final String clientId) {
+        this.clientId = clientId;
+    }
+
+    @Value("${kylo.client.secret:#{null}}")
+    public void setClientSecret(@Nullable final String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 
     /**

@@ -24,6 +24,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -37,10 +38,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.AbstractEnvironment;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Instantiates a REST server for executing Spark scripts.
@@ -48,10 +50,11 @@ import java.util.List;
 @Profile("kylo-shell")
 // ignore auto-configuration classes outside Spark Shell
 @ComponentScan(basePackages = {"com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog.spark"},
-        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityCoreConfig.class))
+               excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = SecurityCoreConfig.class))
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {WebSocketAutoConfiguration.class})
 public class SparkShellApp {
+
     private static final Logger logger = LoggerFactory.getLogger(SparkShellApp.class);
 
     /**
@@ -65,21 +68,26 @@ public class SparkShellApp {
         final SpringApplication app = new SpringApplication(SparkShellApp.class);
         app.setAdditionalProfiles("kylo-shell");
 
+        final Map<String, Object> properties = new HashMap<>();
+        properties.put("kylo.client.id", System.getenv("KYLO_CLIENT_ID"));
+        properties.put("kylo.client.secret", System.getenv("KYLO_CLIENT_SECRET"));
+        app.setDefaultProperties(properties);
+
         // Ignore application listeners that will load kylo-services configuration
         final List<ApplicationListener<?>> listeners = FluentIterable.from(app.getListeners())
-                .filter(Predicates.not(
-                        Predicates.or(
-                                Predicates.instanceOf(ConfigFileApplicationListener.class),
-                                Predicates.instanceOf(LoggingApplicationListener.class)
-                        )
-                ))
-                .toList();
+            .filter(Predicates.not(
+                Predicates.or(
+                    Predicates.instanceOf(ConfigFileApplicationListener.class),
+                    Predicates.instanceOf(LoggingApplicationListener.class)
+                )
+            ))
+            .toList();
         app.setListeners(listeners);
 
         // Start app
         final ApplicationContext context = app.run(args);
 
-        if( logger.isInfoEnabled() ) {
+        if (logger.isInfoEnabled()) {
             logger.info("SparkLauncher Active Profiles = '{}'", Arrays.toString(context.getEnvironment().getActiveProfiles()));
         }
 

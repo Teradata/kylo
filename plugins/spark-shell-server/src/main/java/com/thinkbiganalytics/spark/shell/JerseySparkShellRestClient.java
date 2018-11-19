@@ -229,6 +229,10 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
             final JerseyClientConfig config = new JerseyClientConfig();
             config.setHost(target.getHostname());
             config.setPort(target.getPort());
+            if (process instanceof SparkLauncherSparkShellProcess) {
+                config.setUsername(process.getClientId());
+                config.setPassword(((SparkLauncherSparkShellProcess) process).getClientSecret().toCharArray());
+            }
             return new JerseyRestClient(config);
         });
     }
