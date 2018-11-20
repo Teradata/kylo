@@ -3,6 +3,10 @@
  */
 package com.thinkbiganalytics.security.core;
 
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.thinkbiganalytics.security.core.encrypt.EncryptedStringDeserializer;
+
 /*-
  * #%L
  * kylo-commons-security
@@ -27,19 +31,17 @@ package com.thinkbiganalytics.security.core;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.bootstrap.encrypt.EncryptionBootstrapConfiguration;
 import org.springframework.cloud.config.server.config.EncryptionAutoConfiguration;
-import org.springframework.cloud.config.server.encryption.SingleTextEncryptorLocator;
-import org.springframework.cloud.config.server.encryption.TextEncryptorLocator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.crypto.encrypt.TextEncryptor;
 
 /**
  *
  */
 @Configuration
-@Import({EncryptionAutoConfiguration.class})
+@Import({ EncryptionBootstrapConfiguration.class, EncryptionAutoConfiguration.class })
 public class SecurityCoreConfig {
 
     @Bean
@@ -47,7 +49,19 @@ public class SecurityCoreConfig {
     public EncryptionService encryptionService() {
         return new EncryptionService();
     }
-
+    
+    @Bean
+    public EncryptedStringDeserializer encryptedStringDeserializer() {
+        return new EncryptedStringDeserializer();
+    }
+    
+    @Bean
+    public Module decryptionModule() {
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(String.class, encryptedStringDeserializer());
+        return module;
+    }
+    
     /*@Bean
     @ConditionalOnMissingBean
     public TextEncryptorLocator textEncryptorLocator(TextEncryptor textEncryptor) {
