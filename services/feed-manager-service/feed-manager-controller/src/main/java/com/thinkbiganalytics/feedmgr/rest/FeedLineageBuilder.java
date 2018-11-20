@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.rest;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 
@@ -83,13 +84,13 @@ public class FeedLineageBuilder {
             // build the data source
             ds = datasourceTransform.toDatasource(domainDatasource, DatasourceModelTransform.Level.BASIC);
             restDatasources.put(ds.getId(), ds);
-            populateConnections(ds, 
-                                domainDatasource.getFeedSources().stream().collect(Collectors.toSet()), 
+            populateConnections(ds,
+                                domainDatasource.getFeedSources().stream().collect(Collectors.toSet()),
                                 domainDatasource.getFeedDestinations().stream().collect(Collectors.toSet()));
         }
         return ds;
     }
-    
+
     private Datasource buildDatasource(DataSet domainDataSet) {
         Datasource ds = restDatasources.get(domainDataSet.getId().toString());
         if (ds == null) {
@@ -102,8 +103,8 @@ public class FeedLineageBuilder {
     }
 
 
-    protected void populateConnections(Datasource ds, 
-                                       Set<com.thinkbiganalytics.metadata.api.feed.FeedSource> feedSources, 
+    protected void populateConnections(Datasource ds,
+                                       Set<com.thinkbiganalytics.metadata.api.feed.FeedSource> feedSources,
                                        Set<com.thinkbiganalytics.metadata.api.feed.FeedDestination> feedDestinations) {
         //populate the Feed relationships
         if (feedSources != null) {
@@ -134,12 +135,19 @@ public class FeedLineageBuilder {
         List<? extends com.thinkbiganalytics.metadata.api.feed.FeedSource> sources = domainFeed.getSources();
         Set<FeedSource> feedSources = new HashSet<FeedSource>();
         if (sources != null) {
-            sources.stream().forEach(feedSource -> {
+            boolean containsDerivedDatasource = false;
+            for (com.thinkbiganalytics.metadata.api.feed.FeedSource feedSource : sources) {
                 FeedSource src = new FeedSource();
                 feedSource.getDatasource().ifPresent(datasource -> src.setDatasource(buildDatasource(datasource)));
-                feedSource.getDataSet().ifPresent(dataSet -> src.setDatasource(buildDatasource(dataSet)));
+                //only add datasets if the source is missing or if its not a derived datasource
+                if (src.getDatasource() != null && src.getDatasource() instanceof DerivedDatasource) {
+                    containsDerivedDatasource = true;
+                }
+                if (!containsDerivedDatasource) {
+                    feedSource.getDataSet().ifPresent(dataSet -> src.setDatasource(buildDatasource(dataSet)));
+                }
                 feedSources.add(src);
-            });
+            }
         }
         feed.setSources(feedSources);
         Set<FeedDestination> feedDestinations = new HashSet<FeedDestination>();
