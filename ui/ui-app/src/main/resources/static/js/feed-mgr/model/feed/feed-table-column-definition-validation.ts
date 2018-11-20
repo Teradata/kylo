@@ -89,7 +89,7 @@ export class FeedTableColumnDefinitionValidation {
             else {
                 _.each(group, (partition) => {
                     //valid this is a unique partition name
-                    this.definePartitionForm.get("partitionName_"+partition._id).setErrors({'notUnique': false});
+                    this.definePartitionForm.get("partitionName_"+partition._id).setErrors(null);
                 });
             }
         });
