@@ -48,6 +48,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -151,7 +152,21 @@ public class DatasourceModelTransform {
         
         ds.setId(domainDataSet.getId().toString());
         ds.setName(domainDataSet.getTitle());
-        ds.setDatasourceType(DATA_SET_SRC_TYPES.getOrDefault(params.getFormat(), "DatabaseDatasource"));
+        String datasourceType = params.getFormat();
+        String derivedDatasourceType = "DatabaseDatasource";
+        if(DATA_SET_SRC_TYPES.containsKey(datasourceType)){
+            derivedDatasourceType= DATA_SET_SRC_TYPES.get(datasourceType);
+        }
+        else if( domainDataSet.getDataSource().getConnector() != null){
+            datasourceType = domainDataSet.getDataSource().getConnector().getPluginId();
+            derivedDatasourceType= DATA_SET_SRC_TYPES.getOrDefault(datasourceType, derivedDatasourceType);
+        }
+        //exclude file-upload??
+        ds.setDatasourceType(derivedDatasourceType);
+        if(StringUtils.isBlank(ds.getName()) && params.getPaths() != null && !params.getPaths().isEmpty()){
+            ds.setName(params.getPaths().stream().collect(Collectors.joining(",")));
+        }
+
         
         return ds;
     }
