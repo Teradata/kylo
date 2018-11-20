@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.spark.interpreter;
 
+import com.fasterxml.jackson.databind.Module;
+
 /*-
  * #%L
  * thinkbig-spark-interpreter-app
@@ -48,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.inject.Named;
 
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
@@ -75,7 +78,8 @@ public class App {
 
         // Load environment
         final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark",
-                                                                              "com.thinkbiganalytics.kylo.catalog");
+                                                                              "com.thinkbiganalytics.kylo.catalog",
+                                                                              "com.thinkbiganalytics.security.core");
 
         File scriptFile = new File(args[0]);
         if (scriptFile.exists() && scriptFile.isFile()) {
@@ -110,7 +114,8 @@ public class App {
      * @throws IOException if an I/O error occurs
      */
     @Bean
-    public DatasourceProvider datasourceProvider(final DatasourceProviderFactory datasourceProviderFactory) throws IOException {
+    public DatasourceProvider datasourceProvider(final DatasourceProviderFactory datasourceProviderFactory,
+                                                 final @Named("decryptionModule") Module decryptionModule) throws IOException {
         final List<Datasource> datasources;
         final String env = System.getenv("DATASOURCES");
 
@@ -118,12 +123,12 @@ public class App {
         final String catalogDatasourcesEnv = System.getenv("CATALOG_DATASOURCES");
 
         if (env != null) {
-            datasources = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
+            datasources = new ObjectMapper().registerModule(decryptionModule).readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, Datasource.class));
         } else {
             datasources = Collections.emptyList();
         }
         if (catalogDatasourcesEnv != null) {
-            catalogDataSources = new ObjectMapper().readValue(catalogDatasourcesEnv, TypeFactory.defaultInstance().constructCollectionType(List.class, DataSource.class));
+            catalogDataSources = new ObjectMapper().registerModule(decryptionModule).readValue(catalogDatasourcesEnv, TypeFactory.defaultInstance().constructCollectionType(List.class, DataSource.class));
         } else {
             catalogDataSources = Collections.emptyList();
         }
@@ -132,12 +137,13 @@ public class App {
     }
 
     @Bean
-    public CatalogDataSetProvider catalogDataSetProvider(final CatalogDataSetProviderFactory catalogDataSetProviderFactory) throws IOException {
+    public CatalogDataSetProvider catalogDataSetProvider(final CatalogDataSetProviderFactory catalogDataSetProviderFactory,
+                                                         final @Named("decryptionModule") Module decryptionModule) throws IOException {
         final List<DataSet> dataSets;
         final String env = System.getenv("DATASETS");
 
         if (env != null) {
-            dataSets = new ObjectMapper().readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, DataSet.class));
+            dataSets = new ObjectMapper().registerModule(decryptionModule).readValue(env, TypeFactory.defaultInstance().constructCollectionType(List.class, DataSet.class));
         } else {
             dataSets = Collections.emptyList();
         }

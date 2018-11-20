@@ -27,6 +27,12 @@
       <artifactId>jsr305</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-security</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Spark dependencies -->
     <dependency>
       <groupId>org.apache.spark</groupId>

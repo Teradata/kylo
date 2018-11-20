@@ -511,6 +511,8 @@ public class ExecuteSparkJob extends BaseProcessor {
             } else {
                 return;
             }
+            
+            addEncryptionSettings(env);
 
             /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher(env)
@@ -575,6 +577,15 @@ public class ExecuteSparkJob extends BaseProcessor {
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
+    }
+
+    /**
+     * Add any encryption settings to the environment variables.
+     */
+    protected void addEncryptionSettings(Map<String, String> env) {
+        System.getenv().entrySet().stream()
+            .filter(entry -> entry.getKey().startsWith("ENCRYPT_"))
+            .forEach(entry -> env.put(entry.getKey(), entry.getValue()));
     }
 
     protected String[] getMainArgs(final ProcessContext context, FlowFile flowFile) {
