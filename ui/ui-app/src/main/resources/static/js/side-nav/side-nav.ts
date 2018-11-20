@@ -92,7 +92,7 @@ export default class SideNav implements ng.IComponentController {
         var currentState = transition.to();
         let moduleName = currentState.data ? currentState.data.module : undefined;
         let currentStateName = currentState.name;
-        let menuLinkKey = currentState.data.menuLink || this.menuStateMap[currentStateName];
+        let menuLinkKey = (currentState.data  && currentState.data.menuLink) ? currentState.data.menuLink : this.menuStateMap[currentStateName];
         let menuLink : any = undefined;
         if(menuLinkKey) {
             menuLink = this.menuStateMap[menuLinkKey];
