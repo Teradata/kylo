@@ -90,9 +90,20 @@ export default class SideNav implements ng.IComponentController {
 
         this.$transitions.onSuccess({},(transition: Transition)=>{
         var currentState = transition.to();
-        let currentStateName = (typeof currentState.name === "string" && currentState.name.indexOf(".") !== -1) ? currentState.name.substring(0, currentState.name.indexOf(".")) : currentState.name;
+        let moduleName = currentState.data ? currentState.data.module : undefined;
+        let currentStateName = currentState.name;
+        let menuLinkKey = currentState.data.menuLink || this.menuStateMap[currentStateName];
+        let menuLink : any = undefined;
+        if(menuLinkKey) {
+            menuLink = this.menuStateMap[menuLinkKey];
+        }
+        if(menuLink == undefined){
+            currentStateName = (typeof currentState.name === "string" && currentState.name.indexOf(".") !== -1) ? currentState.name.substring(0, currentState.name.indexOf(".")) : currentState.name;
+            menuLink = this.menuStateMap[currentStateName];
+        }
+
         var parentMenu = this.menuStateToMenuToggleMap[currentStateName];
-        var menuLink = this.menuStateMap[currentStateName];
+
         if(menuLink != undefined ){
             if(this.currentMenuLink != null && this.currentMenuLink != menuLink) {
                 this.currentMenuLink.selected = false;
@@ -106,8 +117,7 @@ export default class SideNav implements ng.IComponentController {
         }
         if(parentMenu == undefined && currentState != undefined && currentState.data != undefined) {
             //attempt to locate the menu based upon the moduleName defined on the state
-            var moduleName = currentState.data.module;
-            if(moduleName != undefined) {
+             if(moduleName != undefined) {
                 var menuToggle = this.menuToggleItemForModuleName(moduleName);
                 if(menuToggle != null){
                     parentMenu = menuToggle;
@@ -296,7 +306,8 @@ export default class SideNav implements ng.IComponentController {
         else if(moduleName.indexOf('auth') >=0 || 
                 moduleName == 'kylo.feedmgr.datasources' ||
                 moduleName == "kylo.feedmgr.domain-types" || 
-                moduleName == 'kylo.feedmgr.templates'){
+                moduleName == 'kylo.feedmgr.templates'||
+                moduleName == this.MENU_KEY.ADMIN ){
             return this.menuMap[this.MENU_KEY.ADMIN];
         }
         else {
@@ -332,7 +343,7 @@ export default class SideNav implements ng.IComponentController {
     buildAdminMenu: any=()=>{
         
         let links: any[] = [];
-        links.push({sref: "catalog.admin-connectors", type: "link", icon: "settings_input_hdmi", text: this.$filter('translate')('views.main.catalogConnectors'), defaultActive: false, permission: AccessConstants.ADMIN_CONNECTORS});
+        links.push({sref: "catalog.admin-connectors",type: "link", icon: "settings_input_hdmi", text: this.$filter('translate')('views.main.catalogConnectors'), defaultActive: false, permission: AccessConstants.ADMIN_CONNECTORS});
         links.push({sref: "domain-types", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: AccessConstants.FEEDS_ADMIN});
         links.push({sref: "business-metadata", type:'link', icon: "business", text: this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
         links.push({sref: "registered-templates",type:'link', icon: "layers", text: this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});

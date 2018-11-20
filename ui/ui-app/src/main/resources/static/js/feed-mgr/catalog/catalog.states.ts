@@ -199,7 +199,8 @@ export const catalogStates: Ng2StateDeclaration[] = [
         data:{
             permissionsKey:"ADMIN_CONNECTORS",
             breadcrumbRoot: true,
-            displayName: "Manage Connectors"
+            displayName: "Manage Connectors",
+            module:"ADMIN"
         }
     },
     {
@@ -215,7 +216,9 @@ export const catalogStates: Ng2StateDeclaration[] = [
         ],
         data:{
             permissionsKey:"ADMIN_CONNECTORS",
-            displayName: "Manage Connector"
+            displayName: "Manage Connector",
+            module:"ADMIN",
+            menuLink:"catalog.admin-connectors"
         }
     },
 
