@@ -53,6 +53,8 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
 
     updateFeedHealth:any;
 
+    cancelTimeouts:boolean = false;
+
 
 
     @Input() filterJob: any;
@@ -174,6 +176,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     }
 
     ngOnDestroy(): void {
+        this.cancelTimeouts = true;
         this.clearAllTimeouts();
     }
 
@@ -462,7 +465,7 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
         this.clearRefreshTimeout(instanceId);
 
         //Refresh the Job Row if needed
-        if (shouldRefresh) {
+        if (shouldRefresh && !this.cancelTimeouts) {
             this.timeoutMap[instanceId] = setTimeout(() => {
                 this.getRunningJobExecutionData(instanceId, executionId)
             }, 1000);
@@ -478,7 +481,6 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
     }
 
     jobDetails(event: any) {
-        console.log("go to jobDetails ",event)
         if (event.row.stream) {
             this.kyloStateService.OpsManager().Feed().navigateToFeedStats(event.row.jobName);
         } else {DateTimeService
@@ -505,7 +507,9 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
                 clearTimeout(this.updateFeedHealth)
                 this.updateFeedHealth = undefined;
             }
-            setTimeout(this.fetchFeedHealth.bind(this), 3000)
+            if(!this.cancelTimeouts) {
+                setTimeout(this.fetchFeedHealth.bind(this), 3000)
+            }
         }
     }
 
