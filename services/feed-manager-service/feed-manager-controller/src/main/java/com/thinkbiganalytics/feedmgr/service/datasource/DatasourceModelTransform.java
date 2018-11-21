@@ -137,6 +137,18 @@ public class DatasourceModelTransform {
         this.nifiRestClient = nifiRestClient;
         this.securityService = securityService;
     }
+
+    public com.thinkbiganalytics.metadata.api.datasource.Datasource findDomainDatasource(DataSet domainDataSet){
+        DataSetSparkParameters params = domainDataSet.getEffectiveSparkParameters();
+        String derivedDatasourceType = getDerivedDataSourceType(domainDataSet);
+        String derivedDataSourceName = domainDataSet.getTitle();
+        if(StringUtils.isBlank(derivedDataSourceName)  && params.getPaths() != null && !params.getPaths().isEmpty()){
+            derivedDataSourceName = params.getPaths().stream().collect(Collectors.joining(","));
+        }
+        DerivedDatasource ds = null;
+        com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource derivedDatasource = datasourceProvider.findDerivedDatasource(derivedDatasourceType,derivedDataSourceName);
+        return derivedDatasource;
+    }
     
     /**
      * Transforms the specified domain data set to an equivalent legacy REST Datasource.
@@ -147,11 +159,23 @@ public class DatasourceModelTransform {
      * @throws IllegalArgumentException if the domain object cannot be converted
      */
     public Datasource toDatasource(@Nonnull final DataSet domainDataSet, @Nonnull final Level level) {
+        String derivedDatasourceType = getDerivedDataSourceType(domainDataSet);
+        String derivedDataSourceName = domainDataSet.getTitle();
+        com.thinkbiganalytics.metadata.api.datasource.Datasource derivedDatasource =  findDomainDatasource(domainDataSet);
+        DerivedDatasource ds = null;
+        if(derivedDatasource != null) {
+            ds = (DerivedDatasource)toDatasource(derivedDatasource,Level.BASIC);
+        }else {
+            ds = new DerivedDatasource();
+            ds.setId(domainDataSet.getId().toString());
+            ds.setName(derivedDataSourceName);
+            ds.setDatasourceType(derivedDatasourceType);
+        }
+        return ds;
+    }
+
+    private String getDerivedDataSourceType(DataSet domainDataSet){
         DataSetSparkParameters params = domainDataSet.getEffectiveSparkParameters();
-        DerivedDatasource ds = new DerivedDatasource();
-        
-        ds.setId(domainDataSet.getId().toString());
-        ds.setName(domainDataSet.getTitle());
         String datasourceType = params.getFormat();
         String derivedDatasourceType = "DatabaseDatasource";
         if(DATA_SET_SRC_TYPES.containsKey(datasourceType)){
@@ -161,14 +185,7 @@ public class DatasourceModelTransform {
             datasourceType = domainDataSet.getDataSource().getConnector().getPluginId();
             derivedDatasourceType= DATA_SET_SRC_TYPES.getOrDefault(datasourceType, derivedDatasourceType);
         }
-        //exclude file-upload??
-        ds.setDatasourceType(derivedDatasourceType);
-        if(StringUtils.isBlank(ds.getName()) && params.getPaths() != null && !params.getPaths().isEmpty()){
-            ds.setName(params.getPaths().stream().collect(Collectors.joining(",")));
-        }
-
-        
-        return ds;
+        return derivedDatasourceType;
     }
 
     /**

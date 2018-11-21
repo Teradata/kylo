@@ -95,9 +95,18 @@ public class FeedLineageBuilder {
         Datasource ds = restDatasources.get(domainDataSet.getId().toString());
         if (ds == null) {
             // build the data source
-            ds = datasourceTransform.toDatasource(domainDataSet, DatasourceModelTransform.Level.BASIC);
-            restDatasources.put(ds.getId(), ds);
-            populateConnections(ds, domainDataSet.getFeedSources(), domainDataSet.getFeedTargets());
+            com.thinkbiganalytics.metadata.api.datasource.Datasource domainDatasource = datasourceTransform.findDomainDatasource(domainDataSet);
+            if(domainDatasource != null){
+                ds = buildDatasource(domainDatasource);
+                restDatasources.put(domainDataSet.getId().toString(),ds);
+            }
+            else {
+                ds = datasourceTransform.toDatasource(domainDataSet, DatasourceModelTransform.Level.BASIC);
+                restDatasources.put(ds.getId(), ds);
+                restDatasources.put(domainDataSet.getId().toString(),ds);
+                populateConnections(ds, domainDataSet.getFeedSources(), domainDataSet.getFeedTargets());
+            }
+
         }
         return ds;
     }
