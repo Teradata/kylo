@@ -261,6 +261,7 @@ export default class AccessConstants {
             CHANGE_TEMPLATE_PERMISSIONS: "changeTemplatePermissions"
         },
         DATASOURCE: {
+            ACCESS_DATASOURCE: "accessDatasource",
             EDIT_DETAILS: "editDatasourceDetails",
             DELETE_DATASOURCE: "deleteDatasource",
             CHANGE_DATASOURCE_PERMISSIONS: "changeDatasourcePermissions"

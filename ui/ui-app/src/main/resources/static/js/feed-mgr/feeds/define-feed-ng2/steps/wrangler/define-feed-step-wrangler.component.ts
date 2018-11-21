@@ -4,6 +4,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {StateService} from "@uirouter/angular";
 import {Observable} from "rxjs/Observable";
 
+import {AccessControlService} from "../../../../../services/AccessControlService";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
 import {VisualQueryStepperComponent} from "../../../../visual-query/visual-query-stepper.component";
 import {DefineFeedService} from "../../services/define-feed.service";
@@ -33,8 +34,11 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
     constructor(defineFeedService: DefineFeedService,
                 stateService: StateService,
                 private _translateService: TranslateService,
-                private $$angularInjector: Injector, feedLoadingService: FeedLoadingService,
-                dialogService: TdDialogService, feedSideNavService: FeedSideNavService) {
+                private $$angularInjector: Injector,
+                feedLoadingService: FeedLoadingService,
+                dialogService: TdDialogService,
+                feedSideNavService: FeedSideNavService,
+                private accessControlService: AccessControlService) {
         super(defineFeedService, stateService, feedLoadingService, dialogService, feedSideNavService);
     }
 
@@ -42,10 +46,14 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         super.init();
         this.feed.dataTransformation.datasets = this.feed.sourceDataSets;
 
-        this.allowEdit = (this.feed.sourceDataSets || [])
-            .map(dataSet => dataSet.dataSource != null && (dataSet.dataSource.allowedActions == null
-                || (Array.isArray(dataSet.dataSource.allowedActions.actions) && dataSet.dataSource.allowedActions.actions.length > 0)))
-            .reduce((previous, current) => previous && current, true);
+        if (this.accessControlService.isEntityAccessControlled()) {
+            this.allowEdit = (this.feed.sourceDataSets || [])
+                .map(dataSet => dataSet.dataSource != null
+                    && this.accessControlService.hasEntityAccess(AccessControlService.ENTITY_ACCESS.DATASOURCE.ACCESS_DATASOURCE, dataSet.dataSource))
+                .reduce((previous, current) => previous && current, true);
+        } else {
+            this.allowEdit = true;
+        }
     }
 
     getStepName() {
@@ -58,8 +66,8 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
 
     protected cancelFeedEdit() {
         super.cancelFeedEdit();
-       // this.defineFeedService.sideNavStateChanged({opened:true})
-       // this.goToSetupGuideSummary();
+        // this.defineFeedService.sideNavStateChanged({opened:true})
+        // this.goToSetupGuideSummary();
     }
 
     protected applyUpdatesToFeed(): (Observable<any> | boolean | null) {
@@ -67,11 +75,11 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         this.feed.sourceDataSets = this.feed.dataTransformation.datasets;
         this.feed.dataTransformation.catalogDataSourceIds = this.feed.dataTransformation.$catalogDataSources.map(ds => ds.id);
 
-        let datasetIds = this.feed.dataTransformation.datasets ? this.feed.dataTransformation.datasets.map(ds => ds.id): [];
+        let datasetIds = this.feed.dataTransformation.datasets ? this.feed.dataTransformation.datasets.map(ds => ds.id) : [];
         //put all the legacy datsourceids, datasetids, and catalogdatasourceids in the dataTransformation.datasourceIds property.
         // this is for backwards compatibility for 0.9.1 and earlier templates
-        let allIds :string[] = [];
-        allIds= allIds.concat(this.feed.dataTransformation.datasourceIds || [],this.feed.dataTransformation.catalogDataSourceIds, datasetIds);
+        let allIds: string[] = [];
+        allIds = allIds.concat(this.feed.dataTransformation.datasourceIds || [], this.feed.dataTransformation.catalogDataSourceIds, datasetIds);
         this.feed.dataTransformation.datasourceIds = allIds;
         if (this.feed.table.schemaChanged) {
             this.dialogService.openAlert({
