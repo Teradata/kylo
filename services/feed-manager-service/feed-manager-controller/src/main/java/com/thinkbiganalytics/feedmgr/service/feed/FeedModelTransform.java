@@ -63,6 +63,7 @@ import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -132,6 +133,9 @@ public class FeedModelTransform {
 
     @Inject
     private EncryptionService encryptionService;
+
+    @Inject
+    private AccessController accessController;
 
     /**
      *
@@ -679,7 +683,8 @@ public class FeedModelTransform {
                             final com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                             dataSource = dataSourceProvider.find(dataSourceId).orElse(null);
                         }
-                        if (dataSource == null || !dataSource.getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE, DatasourceAccessControl.ACCESS_DETAILS)) {
+                        if (dataSource == null || (accessController.isEntityAccessControlled()
+                                                   && !dataSource.getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE, DatasourceAccessControl.ACCESS_DETAILS))) {
                             dataSet.setDataSource(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSource());
                             dataSet.getDataSource().setAllowedActions(new ActionGroup());
                         }
