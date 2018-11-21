@@ -617,7 +617,7 @@ public class ExecuteSparkJob extends BaseProcessor {
         final MetadataProvider provider = metadataService.getProvider();
         final Optional<com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSet;
         try {
-            dataSet = provider.getDataSet(id, false);
+            dataSet = provider.getDataSet(id);
         } catch (final Exception e) {
             getLog().error("Unable to access data set: {}: {}", new Object[]{id, e}, e);
             throw e;

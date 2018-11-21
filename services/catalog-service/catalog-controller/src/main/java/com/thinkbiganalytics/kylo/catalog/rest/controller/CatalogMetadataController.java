@@ -107,8 +107,10 @@ public class CatalogMetadataController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data set not found", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response getDataSet(@PathParam("id") @UUID final String dataSetId, @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response getDataSet(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
+        final boolean encryptCredentials = true;
+
         return metadataService
             .read(() -> {
                 accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_DATASOURCES);
@@ -135,9 +137,9 @@ public class CatalogMetadataController extends AbstractCatalogController {
                   })
     @Path("datasource/{id}")
     public Response getDataSource(@PathParam("id") final String dataSourceId,
-                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode,  // TODO Change default to be "none"
-                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode) {  // TODO Change default to be "none"
         log.entry(dataSourceId);
+        final boolean encryptCredentials = true;
         CredentialMode mode;
 
         try {

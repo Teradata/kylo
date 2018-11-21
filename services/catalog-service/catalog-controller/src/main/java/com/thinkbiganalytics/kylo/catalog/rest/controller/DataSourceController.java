@@ -238,11 +238,11 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     @Path("{id}")
     public Response getDataSource(@PathParam("id") final String dataSourceId,
-                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode,  // TODO Change default to be "none"
-                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+                                  @QueryParam("credentials") @DefaultValue("embed") final String credentialMode) {  // TODO Change default to be "none"
         log.entry(dataSourceId);
         CredentialMode mode;
-
+        final boolean encryptCredentials = true;
+        
         try {
             mode = CredentialMode.valueOf(credentialMode.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -331,9 +331,10 @@ public class DataSourceController extends AbstractCatalogController {
     public Response getDataSources(@QueryParam("connector") final String connectorId,
                                    @QueryParam("filter") final String filter,
                                    @QueryParam("limit") final Integer limit,
-                                   @QueryParam("start") final Integer start,
-                                   @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+                                   @QueryParam("start") final Integer start) {
         log.entry(connectorId, filter, limit, start);
+        
+        final boolean encryptCredentials = true;
 
         // Validate parameters
         if (start != null && start < 0) {
@@ -370,9 +371,9 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Path("/plugin-id")
-    public Response getDataSources(@QueryParam("pluginIds") final String pluginIds,
-                                   @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response getDataSources(@QueryParam("pluginIds") final String pluginIds) {
         log.entry(pluginIds);
+        final boolean encryptCredentials = true;
         List<String> pluginList = Arrays.asList(pluginIds.split(",")).stream().map(id -> id.trim()).collect(Collectors.toList());
         final Set<DataSource> datasources = metadataService.read(() -> {
             // Require admin permission if the results should include unencrypted credentials.
@@ -563,10 +564,11 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     public Response createJdbcTableDataSet(@PathParam("id") final String dataSourceId,
                                            @PathParam("tableName") final String tableName,
-                                           @QueryParam("schema") final String schema,
-                                           @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+                                           @QueryParam("schema") final String schema) {
         // TODO Verify user has access to data source
         // Require admin permission if the results should include unencrypted credentials.
+        final boolean encryptCredentials = true;
+        
         accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
         DataSetWithTableSchema dataSetWithTableSchema = null;
         boolean hasAccess = false;
@@ -666,10 +668,12 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list credentials", response = RestResponseStatus.class)
                   })
-    public Response listCredentials(@PathParam("id") final String dataSourceId,
-                                    @QueryParam("encrypt") @DefaultValue("true") final boolean encrypted) {
+    public Response listCredentials(@PathParam("id") final String dataSourceId) {
+        final boolean encrypted = true;
+        
         log.entry(dataSourceId, encrypted);
         log.debug("List tables for catalog:{} encrypted:{}", encrypted);
+        
 
         try {
             final DataSource dataSource = findDataSource(dataSourceId, true);
@@ -714,14 +718,13 @@ public class DataSourceController extends AbstractCatalogController {
     @POST
     @Path("{id}/dataset")
     @ApiOperation("creates a new dataset for a datasource")
-    public Response createDataSet(@PathParam("id") final String datasourceId,
-                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response createDataSet(@PathParam("id") final String datasourceId) {
         log.entry(datasourceId);
         final DataSource dataSource = findDataSource(datasourceId, true);
         final DataSet dataSet = new DataSet();
         dataSet.setDataSource(dataSource);
 
-        return dataSetController.createDataSet(dataSet, encryptCredentials);
+        return dataSetController.createDataSet(dataSet);
     }
 
     /**

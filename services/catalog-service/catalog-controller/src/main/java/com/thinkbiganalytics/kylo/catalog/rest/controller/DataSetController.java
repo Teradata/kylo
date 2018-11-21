@@ -51,7 +51,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -85,11 +84,11 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createDataSet(@Nonnull final DataSet source,
-                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response createDataSet(@Nonnull final DataSet source) {
         log.entry(source);
 
-         DataSet dataSet;
+        final boolean encryptCredentials = true;
+        DataSet dataSet;
         try {
             dataSet = dataSetService.findOrCreateDataSet(source, encryptCredentials);
         } catch (final CatalogException e) {
@@ -109,10 +108,10 @@ public class DataSetController extends AbstractCatalogController {
                   })
     @Path("{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateDataSet(@Nonnull final DataSet source,
-                                  @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response updateDataSet(@Nonnull final DataSet source) {
         log.entry(source);
 
+        final boolean encryptCredentials = true;
         final DataSet dataSet;
         try {
             dataSet = dataSetService.updateDataSet(source, encryptCredentials);
@@ -131,11 +130,11 @@ public class DataSetController extends AbstractCatalogController {
                       @ApiResponse(code = 404, message = "Data set not found", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response getDataSet(@PathParam("id") @UUID final String dataSetId,
-                               @QueryParam("encrypt") @DefaultValue("true") final boolean encryptCredentials) {
+    public Response getDataSet(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
 
-        DataSet dataSet = findDataSet(dataSetId, encryptCredentials);
+        final boolean encryptCredentials = true;
+        final DataSet dataSet = findDataSet(dataSetId, encryptCredentials);
         return Response.ok(log.exit(dataSet)).build();
     }
 

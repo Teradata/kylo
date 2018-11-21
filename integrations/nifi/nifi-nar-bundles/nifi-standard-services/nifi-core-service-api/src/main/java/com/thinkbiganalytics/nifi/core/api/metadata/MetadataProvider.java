@@ -242,10 +242,9 @@ public interface MetadataProvider {
      * Gets the data set with the specified id.
      *
      * @param id data set id
-     * @param encryptedCredentials true if any embedded credentials should be encrypted in the result
      * @return the data set, if found
      */
-    Optional<DataSet> getDataSet(@Nonnull String id, final boolean encryptedCredentials);
+    Optional<DataSet> getDataSet(@Nonnull String id);
 
 
     Optional<DataSource>getCatalogDataSource(@Nonnull String id);

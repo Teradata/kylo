@@ -711,11 +711,9 @@ public class MetadataClient {
      * @return the data set, if found
      * @throws RestClientException if the data set is unavailable
      */
-    public Optional<DataSet> getDataSet(@Nonnull final String id, boolean encryptedCredentials) {
+    public Optional<DataSet> getDataSet(@Nonnull final String id) {
         try {
-            return Optional.of(get(path("catalog", "dataset", id), 
-                                   uri -> uri.queryParam("encrypt", encryptedCredentials),
-                                   DataSet.class));
+            return Optional.of(get(path("catalog", "dataset", id), DataSet.class));
         } catch (final HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return Optional.empty();

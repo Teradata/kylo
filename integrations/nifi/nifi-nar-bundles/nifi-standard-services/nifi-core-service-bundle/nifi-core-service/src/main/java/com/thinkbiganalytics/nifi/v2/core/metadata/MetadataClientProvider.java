@@ -323,8 +323,8 @@ public class MetadataClientProvider implements MetadataProvider {
     }
 
     @Override
-    public Optional<DataSet> getDataSet(@Nonnull final String id, final boolean encryptedCredentials) {
-        return client.getDataSet(id, encryptedCredentials);
+    public Optional<DataSet> getDataSet(@Nonnull final String id) {
+        return client.getDataSet(id);
     }
 
     @Override
