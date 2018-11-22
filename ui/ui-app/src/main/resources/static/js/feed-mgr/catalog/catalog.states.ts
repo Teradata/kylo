@@ -9,13 +9,8 @@ import {ConnectorsComponent} from './connectors/connectors.component';
 import {TdLoadingService} from '@covalent/core/loading';
 import {ConnectorComponent} from './connector/connector.component';
 import {DataSourcesComponent} from './datasources/datasources.component';
-import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-schema.module";
-import {UploadRouterModule} from "./datasource/upload/upload.module";
-import {RemoteFilesRouterModule} from "./datasource/files/remote-files.module";
-import {TablesRouterModule} from "./datasource/tables/tables.module";
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
-import AccessConstants from "../../constants/AccessConstants";
 
 export function resolveConnectors(catalog: CatalogService, state: StateService, loading: TdLoadingService) {
     loading.register(ConnectorsComponent.LOADER);

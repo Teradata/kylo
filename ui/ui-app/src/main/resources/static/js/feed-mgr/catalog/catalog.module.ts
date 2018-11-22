@@ -102,7 +102,6 @@ export class CatalogModule {
 @NgModule({
     imports: [
         CatalogModule,
-        RemoteFilesRouterModule,
         TablesRouterModule,
         PreviewSchemaRouterModule,
         UIRouterModule.forChild({states: catalogStates})
