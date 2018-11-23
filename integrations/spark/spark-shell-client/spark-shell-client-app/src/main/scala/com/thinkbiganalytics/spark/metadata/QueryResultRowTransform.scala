@@ -27,7 +27,7 @@ object QueryResultRowTransform {
 
 class QueryResultRowTransform(schema: StructType, destination: String, converterService: DataSetConverterService) {
     /** Array of columns for the [[com.thinkbiganalytics.discovery.schema.QueryResultColumn]] */
-    val names: util.HashSet[String]
+
     val columns: Array[DefaultQueryResultColumn] = {
         var index = 1
         schema.fields.map(field => {
