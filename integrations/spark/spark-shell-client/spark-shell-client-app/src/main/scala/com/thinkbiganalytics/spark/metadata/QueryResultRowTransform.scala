@@ -20,10 +20,14 @@ object QueryResultRowTransform {
 
     /** Pattern for field names */
     val FIELD_PATTERN: Pattern = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
+
+    /** String pattern for replacing illegal characters **/
+    val REPLACE_PATTERN_STR = "[[^a-z]+[^a-zA-Z0-9_]+]"
 }
 
 class QueryResultRowTransform(schema: StructType, destination: String, converterService: DataSetConverterService) {
     /** Array of columns for the [[com.thinkbiganalytics.discovery.schema.QueryResultColumn]] */
+    val names: util.HashSet[String]
     val columns: Array[DefaultQueryResultColumn] = {
         var index = 1
         schema.fields.map(field => {
@@ -39,16 +43,15 @@ class QueryResultRowTransform(schema: StructType, destination: String, converter
                 column.setField(field.name)
             } else {
                 // Generate name for non-alphanumeric fields
-                var name: String = null
+                var name: String = if (field.name != null) field.name.replaceAll(QueryResultRowTransform.REPLACE_PATTERN_STR, "_") else "?"
                 do {
-                    name = QueryResultRowTransform.DISPLAY_NAME_PREFIX + index
-                    index += 1
-
                     try {
                         schema(name)
                         name = null
                     } catch {
                         case _: IllegalArgumentException => // ignored
+                          name = QueryResultRowTransform.DISPLAY_NAME_PREFIX + index
+                          index += 1
                     }
                 } while (name == null)
 
