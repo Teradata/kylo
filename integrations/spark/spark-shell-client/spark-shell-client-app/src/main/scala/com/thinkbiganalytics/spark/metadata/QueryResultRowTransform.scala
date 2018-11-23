@@ -22,7 +22,7 @@ object QueryResultRowTransform {
     val FIELD_PATTERN: Pattern = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
     /** String pattern for replacing illegal characters **/
-    val REPLACE_PATTERN_STR = "[[^a-z]+[^a-zA-Z0-9_]+]"
+    val REPLACE_PATTERN_STR = "[^a-zA-Z0-9_]+"
 }
 
 class QueryResultRowTransform(schema: StructType, destination: String, converterService: DataSetConverterService) {
@@ -44,6 +44,7 @@ class QueryResultRowTransform(schema: StructType, destination: String, converter
             } else {
                 // Generate name for non-alphanumeric fields
                 var name: String = if (field.name != null) field.name.replaceAll(QueryResultRowTransform.REPLACE_PATTERN_STR, "_") else "?"
+                name = if (name.substring(0, 1).matches("\\d")) "C_"+name else name;
                 do {
                     try {
                         schema(name)
