@@ -65,7 +65,7 @@
               <mat-list-item *ngFor="let row of topvalues; last as isLast;">
                 <div fxFlex="90" fxLayout="row">
                   <div fxFlex="90">
-                    <span class="">{{row['value']}}</span>
+                    <span class="" [matTooltip]="row['value']">{{row['value'] | charactersPipe:100}}</span>
 
                   </div>
                   <div fxFlex="10">
@@ -105,7 +105,7 @@
                     <span class="hint">{{row['name']}}</span>
                   </div>
                   <div fxFlex="70">
-                    <span class="" title="{{row['value']}}">{{row['value'] | truncate:50}}</span>
+                    <span class=""  [matTooltip]="row['value']" title="{{row['value']}}">{{row['value'] | charactersPipe:50}}</span>
                   </div>
                 </div>
                 <mat-divider *ngIf="!$last"></mat-divider>
