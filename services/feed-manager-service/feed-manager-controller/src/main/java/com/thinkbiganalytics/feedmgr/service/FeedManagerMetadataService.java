@@ -177,6 +177,17 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = feedProvider.createFeed(feedMetadata);
+        afterDeployedFeed(feed);
+        return feed;
+
+    }
+
+    /**
+     * ensure the feed is enabled if it needs to be
+     * @param feed
+     * @return
+     */
+    private void afterDeployedFeed(NifiFeed feed){
         if (feed.isSuccess()) {
             if (feed.isEnableAfterSave()) {
                 enableFeed(feed.getFeedMetadata().getId());
@@ -188,10 +199,12 @@ public class FeedManagerMetadataService implements MetadataService {
                         feed.setSuccess(false);
                         feed.getFeedProcessGroup().setInputProcessor(updatedProcessor.get());
                         feed.getFeedProcessGroup().validateInputProcessor();
-                        if (feedMetadata.isNew() && feed.getFeedMetadata().getId() != null) {
-                            //delete it
+                    /*
+                            if (feedMetadata.isNew() && feed.getFeedMetadata().getId() != null) {
+                            delete it
                             deleteFeed(feed.getFeedMetadata().getId());
-                        }
+                            }
+                            */
                     }
                 }
             }
@@ -199,8 +212,6 @@ public class FeedManagerMetadataService implements MetadataService {
             FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());
             feed.setFeedMetadata(updatedFeed);
         }
-        return feed;
-
     }
     
     @Override
@@ -574,7 +585,9 @@ public class FeedManagerMetadataService implements MetadataService {
     
     @Override
     public DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) {
-        return feedProvider.deployFeedVersion(feedId, versionId, includeContent);
+        DeployResponseEntityVersion version = feedProvider.deployFeedVersion(feedId, versionId, includeContent);
+        afterDeployedFeed(version.getFeed());
+        return version;
     }
 
     @Override

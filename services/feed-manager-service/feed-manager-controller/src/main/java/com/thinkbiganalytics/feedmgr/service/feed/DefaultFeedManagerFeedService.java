@@ -1260,6 +1260,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
 
+        // if this is the very first version we need to enable it later (after the data has been sync'd with ops manager)
+        boolean enableLater = false;
+        if(enabled && version.isFirstVersion()) {
+            enabled = false;
+            enableLater = true;
+            feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+        }
+
 
         CreateFeedBuilder feedBuilder = CreateFeedBuilder
                 .newFeed(nifiRestClient,
@@ -1317,6 +1325,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedMetadata);
                 }
                 feed.setSuccess(true);
+                feed.setEnableAfterSave(enableLater);
                 stopwatch.stop();
                 log.debug("Time to saveFeed in Kylo: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
                 stopwatch.reset();
@@ -1346,7 +1355,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
             throw new DeployFeedException(feed);
         }
-
+        //Move to isSuccess block??
         feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
 
         return feed;

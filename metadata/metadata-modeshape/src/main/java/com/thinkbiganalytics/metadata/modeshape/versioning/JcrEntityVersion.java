@@ -118,7 +118,12 @@ public class JcrEntityVersion<I, E> implements EntityVersion<I, E> {
     protected void setId(VersionId id) {
         this.id = id;
     }
-    
+
+    @Override
+    public boolean isFirstVersion() {
+        return "1.0".equalsIgnoreCase(getName());
+    }
+
     public static class VersionId implements ID {
 
         private static final long serialVersionUID = 1L;

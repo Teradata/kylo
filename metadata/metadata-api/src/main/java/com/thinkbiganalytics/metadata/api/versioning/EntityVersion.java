@@ -72,4 +72,10 @@ public interface EntityVersion<I, E> {
     interface ID extends Serializable {
 
     }
+
+    /**
+     * return true if this is the very first version, false if not
+     * @return
+     */
+    boolean isFirstVersion();
 }
