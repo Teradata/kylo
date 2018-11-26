@@ -9,9 +9,9 @@ package com.thinkbiganalytics.kylo.spark.config;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,8 +29,7 @@ import com.thinkbiganalytics.kylo.spark.client.ReliableLivyClient;
 import com.thinkbiganalytics.kylo.spark.client.jersey.LivyRestClient;
 import com.thinkbiganalytics.kylo.spark.client.livy.LivyHeartbeatMonitor;
 import com.thinkbiganalytics.kylo.spark.client.model.LivyServer;
-import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
-import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterListener;
+import com.thinkbiganalytics.kylo.spark.cluster.DefaultSparkShellClusterListener;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyProcessManager;
 import com.thinkbiganalytics.kylo.spark.livy.SparkLivyRestClient;
 import com.thinkbiganalytics.kylo.utils.KerberosUtils;
@@ -41,7 +40,6 @@ import com.thinkbiganalytics.kylo.utils.ScriptGenerator;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
-import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -155,8 +153,8 @@ public class SparkLivyConfig {
      */
     @Bean
     @ConditionalOnProperty("kylo.cluster.jgroupsConfigFile")
-    public SparkShellClusterListener clusterListener(final ClusterService clusterService, final SparkLivyProcessManager sparkLivyProcessManager) {
-        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, sparkLivyProcessManager);
+    public DefaultSparkShellClusterListener clusterListener(final ClusterService clusterService, final SparkLivyProcessManager sparkLivyProcessManager) {
+        final DefaultSparkShellClusterListener clusterListener = new DefaultSparkShellClusterListener(clusterService, sparkLivyProcessManager);
         sparkLivyProcessManager.addListener(clusterListener);
         return clusterListener;
     }

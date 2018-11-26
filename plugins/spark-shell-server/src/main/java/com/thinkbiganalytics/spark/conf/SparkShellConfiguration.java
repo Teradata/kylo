@@ -22,6 +22,8 @@ package com.thinkbiganalytics.spark.conf;
 
 import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.kylo.spark.cluster.DefaultSparkShellClusterListener;
+import com.thinkbiganalytics.kylo.spark.cluster.InvalidSparkShellClusterListener;
 import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
 import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterListener;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
@@ -70,12 +72,21 @@ public class SparkShellConfiguration {
      */
     @Bean
     @ConditionalOnProperty("kylo.cluster.jgroupsConfigFile")
-    public SparkShellClusterListener clusterListener(final ClusterService clusterService, final SparkShellClusterDelegate delegate) {
-        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, delegate);
-        if (delegate instanceof SparkShellProcessManager) {
-            ((SparkShellProcessManager) delegate).addListener(clusterListener);
+    public SparkShellClusterListener clusterListener(final ClusterService clusterService, final Optional<SparkShellClusterDelegate> optDelegate) {
+        logger.debug("Building DefaultSparkShellClusterListener bean");
+
+        if( optDelegate.isPresent() ){
+            SparkShellClusterDelegate delegate = optDelegate.get();
+            final DefaultSparkShellClusterListener clusterListener = new DefaultSparkShellClusterListener(clusterService, delegate);
+            if (delegate instanceof SparkShellProcessManager) {
+                ((SparkShellProcessManager) delegate).addListener(clusterListener);
+            }
+
+            return clusterListener;
+        } else {
+            // NOTE: avoids issues with Spring wiring with the alternative approach of using @ConditionalOnBean
+            return new InvalidSparkShellClusterListener();
         }
-        return clusterListener;
     }
 
     /**
@@ -98,6 +109,7 @@ public class SparkShellConfiguration {
      * @param users                mapping of username to password
      * @return a Spark Shell process manager
      */
+
     @Bean
     @Profile("!kyloUpgrade")
     public SparkShellProcessManager processManager(final SparkShellProperties sparkShellProperties, final KerberosSparkProperties kerberosProperties,

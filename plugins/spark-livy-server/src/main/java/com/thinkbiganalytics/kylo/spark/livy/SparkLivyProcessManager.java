@@ -104,7 +104,7 @@ public class SparkLivyProcessManager implements SparkShellProcessManager, SparkS
 
     @Override
     public void addListener(@Nonnull SparkShellProcessListener listener) {
-        // currently only called in KyloHA mode, when SparkShellClusterListener bean is instantiated
+        // currently only called in KyloHA mode, when DefaultSparkShellClusterListener bean is instantiated
         logger.debug("adding listener '{}", listener);
         listeners.add(listener);
     }

@@ -22,8 +22,8 @@ package com.thinkbiganalytics.spark.shell.cluster;
 
 import com.google.common.collect.ImmutableList;
 import com.thinkbiganalytics.cluster.ClusterService;
+import com.thinkbiganalytics.kylo.spark.cluster.DefaultSparkShellClusterListener;
 import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterDelegate;
-import com.thinkbiganalytics.kylo.spark.cluster.SparkShellClusterListener;
 import com.thinkbiganalytics.kylo.spark.cluster.SparkShellProcessChangedMessage;
 import com.thinkbiganalytics.kylo.spark.cluster.SparkShellProcessSyncMessage;
 import com.thinkbiganalytics.spark.shell.SparkLauncherSparkShellProcess;
@@ -44,7 +44,7 @@ public class SparkShellClusterListenerTest {
     public void onConnected() {
         // Test process connected
         final ClusterService clusterService = Mockito.mock(ClusterService.class);
-        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
+        final DefaultSparkShellClusterListener clusterListener = new DefaultSparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
         clusterListener.onConnected(ImmutableList.of("node1", "node2"));
 
         // Verify message
@@ -67,7 +67,7 @@ public class SparkShellClusterListenerTest {
         Mockito.when(clusterService.isClustered()).thenReturn(true);
 
         // Test process ready
-        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
+        final DefaultSparkShellClusterListener clusterListener = new DefaultSparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
 
         final SparkLauncherSparkShellProcess process = Mockito.mock(SparkLauncherSparkShellProcess.class);
         Mockito.when(process.getClientId()).thenReturn(CLIENT_ID);
@@ -90,7 +90,7 @@ public class SparkShellClusterListenerTest {
         Mockito.when(clusterService.isClustered()).thenReturn(true);
 
         // Test process started
-        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
+        final DefaultSparkShellClusterListener clusterListener = new DefaultSparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
 
         final SparkLauncherSparkShellProcess process = Mockito.mock(SparkLauncherSparkShellProcess.class);
         Mockito.when(process.getClientId()).thenReturn(CLIENT_ID);
@@ -113,7 +113,7 @@ public class SparkShellClusterListenerTest {
         Mockito.when(clusterService.isClustered()).thenReturn(true);
 
         // Test process stopped
-        final SparkShellClusterListener clusterListener = new SparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
+        final DefaultSparkShellClusterListener clusterListener = new DefaultSparkShellClusterListener(clusterService, Mockito.mock(SparkShellClusterDelegate.class));
 
         final SparkLauncherSparkShellProcess process = Mockito.mock(SparkLauncherSparkShellProcess.class);
         Mockito.when(process.getClientId()).thenReturn(CLIENT_ID);
