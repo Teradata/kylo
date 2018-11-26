@@ -250,6 +250,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     autocompleteNoDataFound:boolean = false;
 
     /**
+     * flag when the query engine is loaded
+     */
+    engineLoaded:boolean = false;
+
+    /**
      * Constructs a {@code BuildQueryComponent}.
      *    private hiveService: HiveService, private sideNavService: SideNavService,
      private visualQueryService: VisualQueryService, private datasourcesService: DatasourcesService,
@@ -1135,7 +1140,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.model && !changes.model.firstChange) {
+        if (changes.model && !changes.model.firstChange && this.engineLoaded) {
             this.initModelAttributes();
             // Setup the flowchart Model
             this.setupFlowChartModel();
@@ -1183,6 +1188,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
 
                 // Validate when the page loads
                 this.validate();
+                this.engineLoaded = true;
             });
 
 
