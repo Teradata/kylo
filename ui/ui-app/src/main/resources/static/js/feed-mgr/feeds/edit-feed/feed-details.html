@@ -65,7 +65,7 @@
             <div class="card-title" flex> {{"views.feed-details.FS" | translate}} </div>
             <div layout-align="center center" layout="column">
             <md-menu md-position-mode="target-right target">
-              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdOpenMenu, $event)" ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
+              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdMenu.open, $event)" ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                 <ng-md-icon icon="more_vert"></ng-md-icon>
               </md-button>
               <md-menu-content width="4">
