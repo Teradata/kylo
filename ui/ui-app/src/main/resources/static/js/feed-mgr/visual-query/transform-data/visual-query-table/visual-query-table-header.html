@@ -12,7 +12,7 @@
   <md-tooltip>{{ domainType.title }}</md-tooltip>
 </span>
 <md-menu class="ui-grid-column-menu-button" md-position-mode="target-right target" md-offset="0 42">
-  <md-button ng-click="$mdOpenMenu()" class="md-icon-button" style="line-height: 24px;">
+  <md-button ng-click="$mdMenu.open()" class="md-icon-button" style="line-height: 24px;">
     <i class="ui-grid-icon-angle-down">&nbsp;</i>
   </md-button>
   <md-menu-content class="visual-query-column-menu">
@@ -39,7 +39,7 @@
     </md-menu-item>
     <md-menu-item ng-if="availableCasts.length > 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           <i class="material-icons">font_download</i> Change type
         </md-button>
         <md-menu-content class="visual-query-column-menu">
@@ -52,7 +52,7 @@
           <md-menu-divider></md-menu-divider>
           <md-menu-item ng-if="availableDomainTypes != null && availableDomainTypes.length > 0">
             <md-menu>
-              <md-button ng-click="$mdOpenMenu()">
+              <md-button ng-click="$mdMenu.open()">
                 <i class="material-icons">local_offer</i> Other
               </md-button>
               <md-menu-content class="visual-query-column-menu">
@@ -85,7 +85,7 @@
 
     <md-menu-item ng-if="header.delegate.filters.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           <i class="material-icons">filter_list</i> {{"views.query-table-header.filter" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu visual-query-filter-menu">
@@ -112,7 +112,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.calculate.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           {{"views.query-table-header.calculate" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
@@ -127,7 +127,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.format.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
            {{"views.query-table-header.format" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
@@ -142,7 +142,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.replace.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           {{"views.query-table-header.replace" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
@@ -157,7 +157,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.extract.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           {{"views.query-table-header.extract" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
@@ -172,7 +172,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.ml.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           {{"views.query-table-header.ml" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
@@ -187,7 +187,7 @@
 
     <md-menu-item ng-if="header.delegate.transforms.other.length !== 0">
       <md-menu>
-        <md-button ng-click="$mdOpenMenu()">
+        <md-button ng-click="$mdMenu.open()">
           {{"views.query-table-header.other" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
