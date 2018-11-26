@@ -346,7 +346,7 @@ export class RegisterSelectTemplateController {
      */
     matchNiFiTemplateIdWithModel() {
         if (!this.isLoading() && this.model.nifiTemplateId != this.nifiTemplateId) {
-            var matchingTemplate = this.templates.find(function (template: any) {
+            var matchingTemplate = this.templates.find((template: any) => {
                 var found = angular.isDefined(template.templateDto) ? template.templateDto.id == this.model.nifiTemplateId : template.id == this.model.nifiTemplateId;
                 if (!found) {
                     //check on template name
