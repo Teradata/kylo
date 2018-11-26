@@ -336,6 +336,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Wait for query engine to load
         const onLoad = () => {
+            this.hiveDataLoaded = false;
             let domainTypesLoaded = false;
             this.sampleFormulas = this.engine.sampleFormulas;
 
@@ -437,7 +438,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Get user confirmation for domain type changes to field data types
         if (fields.length > 0) {
-            this.$mdDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog"})
+            this.$mdDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog", clickToClose:false, width:"80%"})
                 .afterClosed().subscribe((response: ApplyDomainTypesResponse) => {
                     if(response.status ==ApplyDomainTypesResponseStatus.APPLY ) {
                         let selected = response.appliedRows;
@@ -449,9 +450,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                             flgChanged = true;
                         });
                         if (flgChanged) {
-                            // Need to supply a formula
-                            const formula = `withColumn("${fields[0].name}", ${fields[0].name})`
-                            this.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'}, true);
+                            this.resample();
                         }
                     }
             }, () => {
@@ -634,7 +633,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      */
     showError(message: string): void {
         this.$mdDialog.openAlert({
-            closeButton: "Got it!",
+            closeButton: "Ok",
             message: message,
             title: "Transform Exception"
         });
