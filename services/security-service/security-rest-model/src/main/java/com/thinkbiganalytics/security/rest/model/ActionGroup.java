@@ -77,13 +77,19 @@ public class ActionGroup implements Serializable {
             if (action.getSystemName().equals(name)) {
                 return action;
             }
-
         }
         return null;
     }
 
     @JsonIgnore
     public boolean hasAction(String action) {
-        return getAction(action) != null;
+        boolean hasAction = false;
+        for(Action a: this.getActions()){
+            hasAction = a.hasAction(action);
+            if(hasAction){
+                break;
+            }
+        }
+        return hasAction;
     }
 }
