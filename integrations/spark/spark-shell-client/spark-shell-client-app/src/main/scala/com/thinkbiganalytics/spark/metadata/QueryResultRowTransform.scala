@@ -69,7 +69,7 @@ class QueryResultRowTransform(schema: StructType, destination: String, converter
       var i = 1;
       while (uniqueColumns.contains(name)) {
         var tryName = name + "_" + i;
-        name = if (uniqueColumns.contains(tryName)) tryName else name
+        name = if (!uniqueColumns.contains(tryName)) tryName else name
           i += 1
       }
       name
