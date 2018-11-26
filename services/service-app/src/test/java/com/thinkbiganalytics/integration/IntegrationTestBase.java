@@ -357,7 +357,7 @@ public class IntegrationTestBase {
                 podAndApplicationName = kubernetesConfig.getHadoopPodName();
             }
             String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", podAndApplicationName);
-            String kubeCommand = String.format("kubectl exec %s/$KUBECTL_POD_NAME -c %s -- %s ", kubernetesConfig.getKubernetesNamespace(), podAndApplicationName, command);
+            String kubeCommand = String.format("kubectl -n %s exec $KUBECTL_POD_NAME -c %s -- %s ", kubernetesConfig.getKubernetesNamespace(), podAndApplicationName, command);
             LOG.info("The kube commands is: " + getPodNameCommand + ";" + kubeCommand);
             runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
         } else {
