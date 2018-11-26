@@ -103,22 +103,4 @@ public class CatalogMetadataConfig {
             }, MetadataAccess.SERVICE);
         };
     }
-    
-
-    @Bean
-    public PostMetadataConfigAction ennsureDataSetHashAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
-        return () -> {
-            log.info("**********************************************************************");
-            log.info(" TEMPORARY CHECK TO ENSURE DATA SET HASH CODES - REMOVE BEFORE RELEASE ");
-            log.info("**********************************************************************");
-            metadata.commit(() -> {
-                JcrDataSetProvider jcrProvider = (JcrDataSetProvider) dataSetProvider();
-                
-                jcrProvider.findAll().stream()
-                    .map(JcrDataSet.class::cast)
-                    .filter(dataSet -> dataSet.getParamsHash() == 0L)
-                    .forEach(dataSet -> dataSet.generateHashCode());
-            }, MetadataAccess.SERVICE);
-        };
-    }
 }
