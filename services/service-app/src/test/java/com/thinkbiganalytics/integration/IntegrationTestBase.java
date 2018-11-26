@@ -330,7 +330,7 @@ public class IntegrationTestBase {
         LOG.info("Test Infrastructure type is: " + kyloConfig.getTestInfrastructureType());
         if (kyloConfig.getTestInfrastructureType() != null && KyloConfig.TEST_INFRASTRUCTURE_TYPE_KUBERNETES.equals(kyloConfig.getTestInfrastructureType())) {
             LOG.info("Kubernetes Namespace is: " + kubernetesConfig.getKubernetesNamespace());
-            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", application);
+            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl -n %s get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", kubernetesConfig.getKubernetesNamespace() ,application);
             String kubeCommand = String.format("kubectl cp %s %s/$KUBECTL_POD_NAME:%s", localFile, kubernetesConfig.getKubernetesNamespace(), remoteDir);
             LOG.info("The kube commands is: " + getPodNameCommand + ";" + kubeCommand);
             runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
@@ -356,7 +356,7 @@ public class IntegrationTestBase {
             if (application.equals(APP_HADOOP)) {
                 podAndApplicationName = kubernetesConfig.getHadoopPodName();
             }
-            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", podAndApplicationName);
+            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl -n %s get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", kubernetesConfig.getKubernetesNamespace() ,podAndApplicationName);
             String kubeCommand = String.format("kubectl -n %s exec $KUBECTL_POD_NAME -c %s -- %s ", kubernetesConfig.getKubernetesNamespace(), podAndApplicationName, command);
             LOG.info("The kube commands is: " + getPodNameCommand + ";" + kubeCommand);
             runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
