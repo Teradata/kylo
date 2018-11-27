@@ -261,6 +261,10 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         FeedMetadata editFeedRequest = getEditFeedRequest();
         NifiFeed feed = createFeed(editFeedRequest);
+        LOG.debug("EntityLevelAccessIT.assertAnalystCantEditFeed - asserting analyst cant create the feed");
+        if(feed.getErrorMessages() != null && feed.getErrorMessages().get(0) != null){
+            LOG.debug("Analyst feed error message is {}.",feed.getErrorMessages().get(0));
+        }
         Assert.assertEquals(1, feed.getErrorMessages().size());
         Assert.assertTrue(Arrays.asList(errorMessages).stream().anyMatch(msg -> feed.getErrorMessages().get(0).startsWith(msg)));
     }
