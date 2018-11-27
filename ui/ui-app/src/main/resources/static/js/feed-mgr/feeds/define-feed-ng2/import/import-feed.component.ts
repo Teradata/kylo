@@ -729,10 +729,10 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                                 valid = false
                                 schemaNeeded = importSchema;
                             }
-
                         }
                     }
-                    if(valid) {
+
+                    const onSuccess = () => {
                         importProperty.valid = true;
                         importProperty.displayName = ds.paths[0];
                         importProperty.componentName = ds.dataSource.title;
@@ -742,17 +742,22 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                         if (property) {
                             property.setValue("true");
                         }
-                    }
-                    else {
-                        this._dialogService.openAlert({title:"Schemas don't match", message:"The selected dataset schema doesnt match. Please supply a schema matching: \n "+schemaNeeded});
+                    };
+                    if (valid) {
+                        onSuccess();
+                    } else {
+                        this._dialogService.openConfirm({
+                            title: "Schemas don't match",
+                            message: "The selected dataset schema doesnt match. Please supply a schema matching: \n" + schemaNeeded,
+                            acceptButton: "Ignore",
+                            cancelButton: "Cancel"
+                        }).afterClosed().subscribe(value => {
+                            if (value) {
+                                onSuccess();
+                            }
+                        });
                     }
                 })
-
-
-
             });
-
     }
-
-
 }
