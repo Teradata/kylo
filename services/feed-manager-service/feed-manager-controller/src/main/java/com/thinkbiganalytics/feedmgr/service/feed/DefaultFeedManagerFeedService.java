@@ -999,6 +999,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 .newFeed(nifiRestClient, nifiFlowCache, feedToSave, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache,
                          templateConnectionUtil)
                 .enabled(enabled)
+                .setOriginalFeedProperties(originalFeedProperties)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
                 .autoAlign(nifiAutoFeedsAlignAfterSave)
                 .withNiFiTemplateCache(niFiTemplateCache);
@@ -1310,6 +1311,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                          niFiObjectCache,
                          templateConnectionUtil)
                 .enabled(enabled)
+                .setOriginalFeedProperties(originalFeedProperties)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
                 .autoAlign(nifiAutoFeedsAlignAfterSave)
                 .withNiFiTemplateCache(niFiTemplateCache);

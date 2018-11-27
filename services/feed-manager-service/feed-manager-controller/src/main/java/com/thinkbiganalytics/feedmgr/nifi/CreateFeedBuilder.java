@@ -131,6 +131,11 @@ public class CreateFeedBuilder {
 
     private Long timestamp;
 
+    /**
+     * a snapshot of the feed properties prior to being merged with the template
+     * This is so we can reference feed values and determine if a different service should be used
+     */
+    private List<NifiProperty> originalFeedProperties;
 
     protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver,
                                 NiFiPropertyDescriptorTransform propertyDescriptorTransform, NiFiObjectCache niFiObjectCache, TemplateConnectionUtil templateConnectionUtil) {
@@ -178,6 +183,11 @@ public class CreateFeedBuilder {
 
     public CreateFeedBuilder autoAlign(boolean autoAlign) {
         this.autoAlign = autoAlign;
+        return this;
+    }
+
+    public CreateFeedBuilder setOriginalFeedProperties(List<NifiProperty> originalFeedProperties){
+        this.originalFeedProperties = originalFeedProperties;
         return this;
     }
 
@@ -261,6 +271,7 @@ public class CreateFeedBuilder {
                     //snapshot the existing controller services
                     eventTime.start();
                     templateCreationHelper.snapshotControllerServiceReferences();
+                    templateCreationHelper.setOriginalFeedProperties(this.originalFeedProperties);
                     log.debug("Time to snapshotControllerServices.  ElapsedTime: {} ms", eventTime(eventTime));
 
                     //create the flow from the template
