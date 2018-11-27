@@ -112,6 +112,8 @@ public class DataSourceController extends AbstractCatalogController {
 
     public static final String BASE = "/v1/catalog/datasource";
 
+    public static final String PLUGIN_ID = "/v1/catalog/datasource/plugin-id";
+
     public enum CredentialMode {NONE, EMBED, ATTACH}
 
     static final ExceptionTransformer<ThriftConnectionException> exceptionTransformer =

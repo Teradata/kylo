@@ -495,6 +495,16 @@ public class IntegrationTestBase {
         datasources = getDatasources();
         Assert.assertTrue(datasources.length == 0);
 
+        DataSource[] jdbcDataSources = getJdbcDataSources();
+        if(jdbcDataSources != null) {
+            for (DataSource dataSource : jdbcDataSources) {
+                    deleteDataSource(dataSource.getId());
+            }
+        }
+
+        jdbcDataSources = getJdbcDataSources();
+        Assert.assertTrue(jdbcDataSources.length == 0);
+
     }
 
     protected void disableExistingFeeds() {
@@ -1295,6 +1305,28 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
 
         return response.as(JdbcDatasource[].class);
+    }
+
+    protected DataSource[] getJdbcDataSources() {
+        LOG.info("Getting datasources");
+
+        Response response = given(DataSourceController.PLUGIN_ID)
+            .when()
+            .get("?pluginIds=jdbc");
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(DataSource[].class);
+    }
+
+    protected void deleteDataSource(String dataSourceId) {
+        LOG.info("Delete dataSource {} ",dataSourceId);
+
+        Response response = given(DataSourceController.BASE)
+            .when()
+            .delete("/" + dataSourceId);
+
+        response.then().statusCode(HTTP_NO_CONTENT);
     }
 
 
