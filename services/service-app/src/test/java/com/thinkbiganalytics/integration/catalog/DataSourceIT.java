@@ -39,9 +39,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class DataSourceIT extends IntegrationTestBase {
@@ -61,14 +63,22 @@ public class DataSourceIT extends IntegrationTestBase {
     @Test
     public void testFindAll() {
         // Create a feed data source
-        final JdbcDatasource jdbcDatasourceRequest = new JdbcDatasource();
-        jdbcDatasourceRequest.setName("My Test SQL");
-        jdbcDatasourceRequest.setDatabaseConnectionUrl("jdbc:mysql://localhost:3306/kylo");
-        jdbcDatasourceRequest.setDatabaseDriverClassName("org.mariadb.jdbc.Driver");
-        jdbcDatasourceRequest.setDatabaseUser("root");
-        jdbcDatasourceRequest.setPassword("secret");
-        jdbcDatasourceRequest.setType("mysql");
-        final JdbcDatasource jdbcDatasource = createDatasource(jdbcDatasourceRequest);
+        final Connector[] connectors = listConnectors();
+
+        Connector jdbcConnector = Arrays.asList(connectors).stream().filter(c -> c.getPluginId().equalsIgnoreCase("jdbc")).findFirst().orElse(null);
+
+        DataSource ds = new DataSource();
+        ds.setConnector(jdbcConnector);
+        ds.setTitle("MySql Test");
+        DefaultDataSetTemplate dsTemplate = new DefaultDataSetTemplate();
+        Map<String, String> options = new HashMap<>();
+        options.put("driver", "org.mariadb.jdbc.Driver");
+        options.put("user", "root");
+        options.put("password", "secret");
+        options.put("url", "jdbc:mysql://localhost:3306/kylo");
+        dsTemplate.setOptions(options);
+        ds.setTemplate(dsTemplate);
+        final DataSource jdbcDatasource = createDataSource(ds);
 
         // Find all data sources
         final SearchResult<DataSource> searchResult = given(DataSourceController.BASE)
@@ -86,7 +96,7 @@ public class DataSourceIT extends IntegrationTestBase {
             @Override
             public boolean matches(final Object item) {
                 final DataSource dataSource = (item instanceof DataSource) ? (DataSource) item : null;
-                return (dataSource != null && jdbcDatasource.getId().equals(dataSource.getId()) && jdbcDatasource.getName().equals(dataSource.getTitle()));
+                return (dataSource != null && jdbcDatasource.getId().equals(dataSource.getId()) && jdbcDatasource.getTitle().equals(dataSource.getTitle()));
             }
         };
         Assert.assertThat(searchResult.getData(), CoreMatchers.hasItem(isHive));

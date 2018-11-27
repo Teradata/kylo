@@ -80,6 +80,10 @@ import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.rest.controller.ConnectorController;
+import com.thinkbiganalytics.kylo.catalog.rest.controller.DataSourceController;
+import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
@@ -285,7 +289,7 @@ public class IntegrationTestBase {
     }
 
     protected void startClean() {
-        cleanup();
+       cleanup();
     }
 
     private void configureObjectMapper(ObjectMapper om) {
@@ -1254,6 +1258,31 @@ public class IntegrationTestBase {
         response.then().statusCode(HTTP_OK);
 
         return response.as(JdbcDatasource.class);
+    }
+
+    protected Connector[] listConnectors(){
+        Response response = given(ConnectorController.BASE)
+            .when()
+            .get();
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(Connector[].class);
+
+    }
+
+
+    protected DataSource createDataSource(DataSource ds) {
+        LOG.info("Creating dataSource '{}'", ds.getTitle());
+
+        Response response = given(DataSourceController.BASE)
+            .body(ds)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(DataSource.class);
     }
 
     protected JdbcDatasource[] getDatasources() {
