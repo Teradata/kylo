@@ -438,7 +438,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Get user confirmation for domain type changes to field data types
         if (fields.length > 0) {
-            this.$mdDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog", clickToClose:false, width:"80%"})
+            this.$mdDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog", disableClose:true, width:"80%"})
                 .afterClosed().subscribe((response: ApplyDomainTypesResponse) => {
                     if(response.status ==ApplyDomainTypesResponseStatus.APPLY ) {
                         let selected = response.appliedRows;

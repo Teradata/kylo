@@ -78,7 +78,8 @@
             <ng-md-icon icon="add"></ng-md-icon>
           </button>
 
-          <button matTooltip="Browse catalog" mat-raised-button mat-icon-button color="accent" class="md-kylo-theme" aria-label="Browse catalog" (click)="openCatalogBrowser()"
+          <button matTooltip="Browse catalog" mat-raised-button mat-icon-button [color]="selectedTable == null ? 'accent' : 'primary'" class="md-kylo-theme" aria-label="Browse catalog"
+                  (click)="openCatalogBrowser()"
                   *ngIf="!advancedMode">
             <ng-md-icon icon="playlist_add"></ng-md-icon>
           </button>
