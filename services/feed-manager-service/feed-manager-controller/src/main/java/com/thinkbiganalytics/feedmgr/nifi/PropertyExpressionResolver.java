@@ -284,6 +284,9 @@ public class PropertyExpressionResolver {
             if(isCollectionOfStrings(obj)){
                 return stringCollectionToString((Collection<String>)obj);
             }
+            else if(obj instanceof Collection && ((Collection)obj).isEmpty()){
+                return null;
+            }
             else {
                 return obj.toString();
             }

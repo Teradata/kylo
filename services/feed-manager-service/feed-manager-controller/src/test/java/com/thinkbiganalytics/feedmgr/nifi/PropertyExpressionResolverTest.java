@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -108,6 +110,8 @@ public class PropertyExpressionResolverTest {
     public void resolveExpression() {
         final FeedMetadata metadata = new FeedMetadata();
         metadata.setSystemFeedName("myfeed");
+        metadata.setDataTransformation(new FeedDataTransformation());
+        metadata.getDataTransformation().setDatasourceIds(new ArrayList<>());
 
         // Verify config variable
         final NifiProperty prop1 = createProperty("${config.test.value}");
@@ -179,6 +183,16 @@ public class PropertyExpressionResolverTest {
         final NifiProperty hiveSchema = createProperty(STATIC_KEY,"${config.hive.schema}");
         Assert.assertTrue(resolver.resolveExpression(metadata, hiveSchema));
         Assert.assertEquals("hive",hiveSchema.getValue());
+
+        // Verify datatransformation variables
+        final NifiProperty prop13 = createProperty("${metadata.dataTransformation.datasourceIds}");
+        Assert.assertFalse(resolver.resolveExpression(metadata, prop13));
+
+        String uuid =UUID.randomUUID().toString();
+        metadata.getDataTransformation().getDatasourceIds().add(uuid);
+        final NifiProperty prop14 = createProperty("${metadata.dataTransformation.datasourceIds}");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop14));
+        Assert.assertEquals(uuid, prop14.getValue());
 
 
     }
