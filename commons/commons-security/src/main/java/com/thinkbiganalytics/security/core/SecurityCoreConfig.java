@@ -31,8 +31,10 @@ import com.thinkbiganalytics.security.core.encrypt.EncryptedStringDeserializer;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.bootstrap.encrypt.EncryptionBootstrapConfiguration;
-import org.springframework.cloud.config.server.config.EncryptionAutoConfiguration;
+import org.springframework.cloud.bootstrap.encrypt.KeyProperties;
+import org.springframework.cloud.bootstrap.encrypt.RsaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -41,7 +43,8 @@ import org.springframework.context.annotation.Import;
  *
  */
 @Configuration
-@Import({ EncryptionBootstrapConfiguration.class, EncryptionAutoConfiguration.class })
+@EnableConfigurationProperties({ KeyProperties.class, RsaProperties.class })
+@Import({ EncryptionBootstrapConfiguration.class })
 public class SecurityCoreConfig {
 
     @Bean

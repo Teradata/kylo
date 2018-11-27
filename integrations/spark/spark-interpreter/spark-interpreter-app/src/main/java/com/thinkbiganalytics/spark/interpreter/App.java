@@ -28,6 +28,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.shell.CatalogDataSetProvider;
@@ -38,9 +39,11 @@ import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 import org.apache.spark.SparkConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.bootstrap.encrypt.EncryptionBootstrapConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -77,9 +80,10 @@ public class App {
         }
 
         // Load environment
-        final ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark",
-                                                                              "com.thinkbiganalytics.kylo.catalog",
-                                                                              "com.thinkbiganalytics.security.core");
+        final AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.register(SecurityCoreConfig.class);
+        ctx.scan("com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog");
+        ctx.refresh();
 
         File scriptFile = new File(args[0]);
         if (scriptFile.exists() && scriptFile.isFile()) {
