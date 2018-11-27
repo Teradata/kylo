@@ -166,14 +166,12 @@ class Route {
         $stateProvider.state('register-template.**', {
             url: '/register-template',
             lazyLoad: (transition: any) => {
-                transition.injector().get('$ocLazyLoad').load('./feed-mgr/templates/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('register-template')
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading register-template ", err);
-                    return err;
-                });
+                const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
+                const onModuleLoad = () => {
+                    return import(/* webpackChunkName: "feedmgr.templates.module" */ "./feed-mgr/templates/module")
+                        .then(Lazy.onModuleFactoryImport($ocLazyLoad)).then(Lazy.goToState($stateProvider, "register-template"));
+                };
+                import(/* webpackChunkName: "feed-mgr.module-require" */ "./feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         })
         $stateProvider.state({
