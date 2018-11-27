@@ -43,6 +43,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 import static com.thinkbiganalytics.integration.UserContext.User.ADMIN;
 import static com.thinkbiganalytics.integration.UserContext.User.ANALYST;
 import static java.net.HttpURLConnection.HTTP_FORBIDDEN;
@@ -64,7 +66,9 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private static final String PERMISSION_FEED_CREATOR = "feedCreator";
 
     private static final String FEED_EDIT_FORBIDDEN = "Error saving Feed Not authorized to perform the action: Edit Feeds";
+    private static final String FEED_EDIT_FORBIDDEN2= "Error creating Feed: Not authorized to perform the action: Edit Feeds";
     private static final String FEED_NOT_FOUND = "Error saving Feed Feed not found for id";
+    private static final String FEED_NOT_FOUND2 = "Error creating Feed: Feed not found for id";
     private static final String TEST_FILE = "access.txt";
 
     private FeedCategory category;
@@ -94,7 +98,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         createFeedWithAdmin();
         assertAnalystCantAccessFeeds();
-        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
+        assertAnalystCantEditFeed(new String[]{FEED_EDIT_FORBIDDEN, FEED_EDIT_FORBIDDEN2});
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
@@ -103,7 +107,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantAccessFeedsToAnalysts();
         assertAnalystCanAccessFeedsButCantSeeFeed();
-        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
+        assertAnalystCantEditFeed(new String[]{FEED_EDIT_FORBIDDEN, FEED_EDIT_FORBIDDEN2});
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_NOT_FOUND);
@@ -111,7 +115,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_READ_ONLY);
         assertAnalystCanSeeFeed();
-        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN);
+        assertAnalystCantEditFeed(new String[]{FEED_EDIT_FORBIDDEN, FEED_EDIT_FORBIDDEN2});
         assertAnalystCantExportFeed(HTTP_FORBIDDEN);
         assertAnalystCantDisableEnableFeed(HTTP_FORBIDDEN);
         assertAnalystCantEditFeedPermissions(HTTP_FORBIDDEN);
@@ -119,7 +123,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         grantFeedEntityPermissionToAnalysts(PERMISSION_EDITOR);
         assertAnalystCanSeeFeed();
-        assertAnalystCantEditFeed(FEED_EDIT_FORBIDDEN); //cant edit feed until required service permissions are added for feed, category, template and entity access to category
+        assertAnalystCantEditFeed(new String[]{FEED_EDIT_FORBIDDEN, FEED_EDIT_FORBIDDEN2}); //cant edit feed until required service permissions are added for feed, category, template and entity access to category
         grantEditFeedsToAnalysts();
         grantCategoryEntityPermissionToAnalysts(PERMISSION_FEED_CREATOR);
         assertAnalystCanEditFeed();
@@ -141,7 +145,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
 
         revokeFeedEntityPermissionsFromAnalysts();
         assertAnalystCanAccessFeedsButCantSeeFeed();
-        assertAnalystCantEditFeed(FEED_NOT_FOUND);
+        assertAnalystCantEditFeed(new String[]{FEED_NOT_FOUND,FEED_NOT_FOUND2});
         assertAnalystCantExportFeed(HTTP_NOT_FOUND);
         assertAnalystCantDisableEnableFeed(HTTP_NOT_FOUND);
         assertAnalystCantEditFeedPermissions(HTTP_NOT_FOUND);
@@ -250,7 +254,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         exportFeed(feed.getFeedId());
     }
 
-    private void assertAnalystCantEditFeed(String errorMessage) {
+    private void assertAnalystCantEditFeed(String[] errorMessages) {
         LOG.debug("EntityLevelAccessIT.assertAnalystCantEditFeed");
 
         runAs(ANALYST);
@@ -258,8 +262,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
         FeedMetadata editFeedRequest = getEditFeedRequest();
         NifiFeed feed = createFeed(editFeedRequest);
         Assert.assertEquals(1, feed.getErrorMessages().size());
-        Assert.assertTrue(feed.getErrorMessages().get(0).startsWith(errorMessage));
-
+        Assert.assertTrue(Arrays.asList(errorMessages).stream().anyMatch(msg -> feed.getErrorMessages().get(0).startsWith(msg)));
     }
 
     private void assertAnalystCanEditFeed() {

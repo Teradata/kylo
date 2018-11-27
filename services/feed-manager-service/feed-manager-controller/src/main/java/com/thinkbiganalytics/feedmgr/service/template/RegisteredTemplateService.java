@@ -100,7 +100,7 @@ public class RegisteredTemplateService {
     private RegisteredTemplateCache registeredTemplateCache;
 
     @Value("${kylo.template.remote-process-groups.enabled:false}")
-    private boolean remoteProcessGroupsEnabledd;
+    private boolean remoteProcessGroupsEnabled;
 
     /**
      * Checks the current security context has been granted permission to perform the specified action(s)
@@ -811,6 +811,6 @@ public class RegisteredTemplateService {
 
     public boolean isRemoteProcessGroupsEnabled() {
         final NiFiClusterSummary clusterSummary = nifiRestClient.getNiFiRestClient().clusterSummary();
-        return remoteProcessGroupsEnabledd || clusterSummary.getClustered();
+        return remoteProcessGroupsEnabled || clusterSummary.getClustered();
     }
 }

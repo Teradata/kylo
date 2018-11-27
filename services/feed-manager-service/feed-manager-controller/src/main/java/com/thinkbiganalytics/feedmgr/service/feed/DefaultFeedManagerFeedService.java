@@ -723,7 +723,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }, MetadataAccess.SERVICE);
         }
 
+
         NifiFeed feed = createAndSaveFeed(feedMetadata);
+
         //register the audit for the update event
         if (feed.isSuccess() && !feedMetadata.isNew()) {
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
@@ -867,8 +869,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
      *
      * @param feedMetadata the feed metadata
      * @return an object indicating if the feed creation was successful or not
+     * @deprecated
      */
-    private NifiFeed createAndSaveFeed(FeedMetadata feedMetadata) {
+    private NifiFeed createAndSaveFeed(final FeedMetadata feedMetadata) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
@@ -907,43 +910,58 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             });
         }
 
+        FeedMetadata feedToSave = feedMetadata;
+        //create a Draft if the feed already exists
+
+        if(!feedToSave.isNew()) {
+            //create a new version if this is not a new feed
+            feedToSave = saveDraftFeed(feedToSave);
+        }
+        
+        
+        
+        
+        
+
         //replace expressions with values
-        if (feedMetadata.getTable() != null) {
-            feedMetadata.getTable().updateMetadataFieldValues();
+        if (feedToSave.getTable() != null) {
+            feedToSave.getTable().updateMetadataFieldValues();
         }
 
-        if (feedMetadata.getProperties() == null) {
-            feedMetadata.setProperties(new ArrayList<NifiProperty>());
+        if (feedToSave.getProperties() == null) {
+            feedToSave.setProperties(new ArrayList<NifiProperty>());
         }
 
         FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
         try {
-            state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
+            state = FeedMetadata.STATE.valueOf(feedToSave.getState());
         } catch (Exception e) {
             //if the string isnt valid, disregard as it will end up disabling the feed.
         }
 
 
-        boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
+
+
+        boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedToSave.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
 
         //store ref to the originalFeedProperties before resolving and merging with the template
-        List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
+        List<NifiProperty> originalFeedProperties = feedToSave.getProperties();
 
         //get all the properties for the metadata
         RegisteredTemplate
             registeredTemplate =
             registeredTemplateService.findRegisteredTemplate(
-                new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
+                new RegisteredTemplateRequest.Builder().templateId(feedToSave.getTemplateId()).templateName(feedToSave.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
                     .build());
 
         //copy the registered template properties it a new list so it doest get updated
         List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
-        //update the template properties with the feedMetadata properties
-        NifiPropertyUtil.matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
+        //update the template properties with the feedToSave properties
+        NifiPropertyUtil.matchAndSetPropertyByProcessorName(templateProperties, feedToSave.getProperties(), NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES);
 
         registeredTemplate.setProperties(templateProperties);
-        feedMetadata.setProperties(registeredTemplate.getProperties());
-        feedMetadata.setRegisteredTemplate(registeredTemplate);
+        feedToSave.setProperties(registeredTemplate.getProperties());
+        feedToSave.setRegisteredTemplate(registeredTemplate);
 
         //skip any properties that the user supplied which are not ${ values
         List<NifiProperty>
@@ -957,10 +975,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             propertiesToSkip.addAll(templatePropertiesToSkip);
         }
         //resolve any ${metadata.} properties
-        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata, propertiesToSkip);
+        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedToSave, propertiesToSkip);
 
         //decrypt the metadata
-        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
+        feedModelTransform.decryptSensitivePropertyValues(feedToSave);
 
 
 
@@ -968,16 +986,16 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         // flag to indicate to enable the feed later
         //if this is the first time for this feed and it is set to be enabled, mark it to be enabled after we commit to the JCR store
         boolean enableLater = false;
-        if (enabled && feedMetadata.isNew()) {
+        if (enabled && feedToSave.isNew()) {
             enableLater = true;
             enabled = false;
-            feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+            feedToSave.setState(FeedMetadata.STATE.DISABLED.name());
         }
 
         CreateFeedBuilder
             feedBuilder =
             CreateFeedBuilder
-                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache,
+                .newFeed(nifiRestClient, nifiFlowCache, feedToSave, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache,
                          templateConnectionUtil)
                 .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
@@ -986,10 +1004,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);
-            feedMetadata.setIsReusableFeed(true);
+            feedToSave.setIsReusableFeed(true);
         } else {
-            feedBuilder.inputProcessorType(feedMetadata.getInputProcessorType())
-                .feedSchedule(feedMetadata.getSchedule()).properties(feedMetadata.getProperties());
+            feedBuilder.inputProcessorType(feedToSave.getInputProcessorType())
+                .feedSchedule(feedToSave.getSchedule()).properties(feedToSave.getProperties());
             if (registeredTemplate.usesReusableTemplate()) {
                 for (ReusableTemplateConnectionInfo connection : registeredTemplate.getReusableTemplateConnections()) {
                     feedBuilder.addInputOutputPort(new InputOutputPort(connection.getReusableTemplateInputPortName(), connection.getFeedOutputPortName()));
@@ -1006,21 +1024,24 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         stopwatch.stop();
         log.debug("Time to save feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
-        feed = new NifiFeed(feedMetadata, entity);
+        feed = new NifiFeed(feedToSave, entity);
         //set the original feedProperties back to the feed
-        feedMetadata.setProperties(originalFeedProperties);
+        feedToSave.setProperties(originalFeedProperties);
         //encrypt the metadata properties
-        feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
+        feedModelTransform.encryptSensitivePropertyValues(feedToSave);
 
         if (entity.isSuccess()) {
-            feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
+            feedToSave.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
 
             try {
                 stopwatch.start();
-                saveFeed(feedMetadata);
+
+
+
+                saveFeed(feedToSave);
                 //tell NiFi if this is a streaming feed or not
-                if (feedMetadata.getRegisteredTemplate().isStream()) {
-                    streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedMetadata);
+                if (feedToSave.getRegisteredTemplate().isStream()) {
+                    streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedToSave);
                 }
                 feed.setEnableAfterSave(enableLater);
                 feed.setSuccess(true);
@@ -1043,7 +1064,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 try {
                     feedBuilder.rollback();
                 } catch (FeedRollbackException rollbackException) {
-                    log.error("Error rolling back feed {}. {} ", feedMetadata.getCategoryAndFeedName(), rollbackException.getMessage());
+                    log.error("Error rolling back feed {}. {} ", feedToSave.getCategoryAndFeedName(), rollbackException.getMessage());
                     feed.addErrorMessage("Error occurred in rolling back the Feed.");
                 }
                 entity.setRolledBack(true);
@@ -1094,7 +1115,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     private void saveFeed(final FeedMetadata feed) {
 
-        metadataAccess.commit(() -> {
+        Feed.ID feedId  =  metadataAccess.commit(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving because we need to compare afterward
@@ -1185,16 +1206,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             // Update Kylo metastore
             stopwatch.start();
+
             domainFeed = feedProvider.update(domainFeed);
 
-            // TODO TEMPORARY
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version = feedProvider.createVersion(domainId, null, false);
-            feedProvider.setDeployed(domainId, version.getId());
-            // TODO TEMPORARY
-
-            stopwatch.stop();
+         stopwatch.stop();
             log.debug("Time to call feedProvider.update: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             stopwatch.reset();
+            return domainFeed.getId();
         }, (e) -> {
             if (feed.isNew() && StringUtils.isNotBlank(feed.getId())) {
                 //Rollback ops Manager insert if it is newly created
@@ -1204,6 +1222,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
         });
 
+
+      if(feedId != null){
+          //set deployed as  a service account since it needs access to the versionable node
+
+          metadataAccess.commit(() -> {
+              // TODO TEMPORARY
+              com.thinkbiganalytics.metadata.api.versioning.EntityVersion<Feed.ID, Feed> version = feedProvider.createVersion(feedId, null, false);
+              feedProvider.setDeployed(feedId, version.getId());
+              // TODO TEMPORARY
+          },MetadataAccess.SERVICE);
+      }
 
     }
 
