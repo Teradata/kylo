@@ -871,6 +871,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
      * @return an object indicating if the feed creation was successful or not
      * @deprecated
      */
+    @Deprecated
     private NifiFeed createAndSaveFeed(final FeedMetadata feedMetadata) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         NifiFeed feed = null;
@@ -1113,6 +1114,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return domainFeed;
     }
 
+    @Deprecated
     private void saveFeed(final FeedMetadata feed) {
 
         Feed.ID feedId  =  metadataAccess.commit(() -> {
