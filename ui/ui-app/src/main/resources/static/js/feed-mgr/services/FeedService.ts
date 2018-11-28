@@ -595,21 +595,17 @@ export class FeedService {
                 this.$mdDialog.hide();
             }
 
-        validateSchemaDidNotChange=(model:any)=>{
-            var valid = true;
+        validateSchemaDidNotChange(model:any) {
+            let valid = true;
             //if we are editing we need to make sure we dont modify the originalTableSchema
             if(model.id && model.originalTableSchema && model.table && model.table.tableSchema) {
                 //if model.originalTableSchema != model.table.tableSchema  ... ERROR
                 //mark as invalid if they dont match
-                var origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(function (i) {
-                    return i.name + " " + i.derivedDataType;
-                }).value().join()
-                var updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(function (i) {
-                    return i.name + " " + i.derivedDataType;
-                }).value().join()
+                const origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(_.property("derivedDataType")).value().join(",");
+                const updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(_.property("derivedDataType")).value().join(",");
                 valid = origFields == updatedFields;
             }
-            return valid
+            return valid;
         }
             /**
              * Save the model Posting the data to the server

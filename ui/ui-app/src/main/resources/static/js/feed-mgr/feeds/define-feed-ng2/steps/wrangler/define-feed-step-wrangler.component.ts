@@ -82,11 +82,12 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
         allIds = allIds.concat(this.feed.dataTransformation.datasourceIds || [], this.feed.dataTransformation.catalogDataSourceIds, datasetIds);
         this.feed.dataTransformation.datasourceIds = allIds;
         if (this.feed.table.schemaChanged) {
-            this.dialogService.openAlert({
+            return this.dialogService.openConfirm({
                 title: 'Error saving feed.  Table Schema Changed.',
-                message: 'The table schema no longer matches the schema previously defined. This is invalid.  If you wish to modify the underlying schema (i.e. change some column names and/or types) please clone the feed as a new feed instead.'
-            });
-            return false;
+                message: 'The table schema no longer matches the schema previously defined. This is invalid.  If you wish to modify the underlying schema (i.e. change some column names and/or types) please clone the feed as a new feed instead.',
+                acceptButton: "Ignore",
+                cancelButton: "Cancel"
+            }).afterClosed();
         }
         else {
             return true;

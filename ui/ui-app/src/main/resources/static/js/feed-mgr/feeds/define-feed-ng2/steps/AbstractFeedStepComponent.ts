@@ -250,15 +250,19 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
             this.resolveLoading();
         }
         else if (updates && updates instanceof Observable) {
-            updates.subscribe((response: any) => {
-                if((response != undefined && typeof response == "boolean" && response == false)) {
-                    //skip since response is false
+            updates.subscribe(
+                (response: any) => {
+                    if((response != undefined && typeof response == "boolean" && response == false)) {
+                        //skip since response is false
+                        this.resolveLoading();
+                    } else {
+                        saveCall();
+                    }
+                },
+                (error: any) => {
+                    console.warn("Failed to save feed", error);
                     this.resolveLoading();
-                }
-                else {
-                    saveCall();
-                }
-            })
+                });
         }
         else {
             saveCall();
