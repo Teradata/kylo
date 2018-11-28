@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.discovery.model.CatalogTableSchema;
 import com.thinkbiganalytics.exceptions.ExceptionTransformer;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
@@ -242,7 +242,7 @@ public class DataSourceController extends AbstractCatalogController {
         log.entry(dataSourceId);
         CredentialMode mode;
         final boolean encryptCredentials = true;
-        
+
         try {
             mode = CredentialMode.valueOf(credentialMode.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -333,7 +333,7 @@ public class DataSourceController extends AbstractCatalogController {
                                    @QueryParam("limit") final Integer limit,
                                    @QueryParam("start") final Integer start) {
         log.entry(connectorId, filter, limit, start);
-        
+
         final boolean encryptCredentials = true;
 
         // Validate parameters
@@ -420,7 +420,7 @@ public class DataSourceController extends AbstractCatalogController {
             log.debug("Catalog exception when accessing path: {}: {}", path, e, e);
             throw new BadRequestException(getMessage(e));
         } catch (final Exception e) {
-            if( exceptionTransformer.causesInChain(e) ) {
+            if (exceptionTransformer.causesInChain(e)) {
                 throw new ThriftConnectionException(e);
             }
 
@@ -475,7 +475,7 @@ public class DataSourceController extends AbstractCatalogController {
             log.debug("List tables for catalog:{} schema:{}", catalogName, schemaName);
             tables = tableManager.listCatalogsOrTables(dataSource, catalogName, schemaName);
         } catch (final Exception e) {
-            if( exceptionTransformer.causesInChain(e) ) {
+            if (exceptionTransformer.causesInChain(e)) {
                 throw new ThriftConnectionException(e);
             }
 
@@ -520,7 +520,7 @@ public class DataSourceController extends AbstractCatalogController {
                     log.debug("List tables for catalogOrSchema:{}", catalogOrSchemaName);
                     tables = tableManager.listTables(dataSource, catalogOrSchemaName);
                 } catch (final Exception e) {
-                    if( exceptionTransformer.causesInChain(e) ) {
+                    if (exceptionTransformer.causesInChain(e)) {
                         throw new ThriftConnectionException(e);
                     }
 
@@ -568,7 +568,7 @@ public class DataSourceController extends AbstractCatalogController {
         // TODO Verify user has access to data source
         // Require admin permission if the results should include unencrypted credentials.
         final boolean encryptCredentials = true;
-        
+
         accessController.checkPermission(AccessController.SERVICES, encryptCredentials ? FeedServicesAccessControl.ACCESS_DATASOURCES : FeedServicesAccessControl.ADMIN_DATASOURCES);
         DataSetWithTableSchema dataSetWithTableSchema = null;
         boolean hasAccess = false;
@@ -588,7 +588,7 @@ public class DataSourceController extends AbstractCatalogController {
 
                 //describe the datasource and table
 
-                TableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
+                CatalogTableSchema tableSchema = tableManager.describeTable(dataSource, schema, tableName);
 
                 //create the dataset as a service account.  if we get here the user has access to view the data source
 
@@ -599,8 +599,10 @@ public class DataSourceController extends AbstractCatalogController {
                     DataSet dataSet = new DataSet();
                     //assign the datasource to this dataset with encrypted credentials
                     dataSet.setDataSource(encryptedSource);
-                    String fullTableName = HiveUtils.quoteIdentifier(tableSchema.getSchemaName(), tableSchema.getName());
-                    dataSet.setTitle(tableSchema.getSchemaName()+"."+tableSchema.getName());
+                    String fullTableName = (tableSchema.getTable() != null)
+                                           ? tableSchema.getTable().getQualifiedIdentifier()
+                                           : HiveUtils.quoteIdentifier(tableSchema.getSchemaName(), tableSchema.getName());
+                    dataSet.setTitle(tableSchema.getSchemaName() + "." + tableSchema.getName());
 
                     DefaultDataSetTemplate defaultDataSetTemplate = DataSetUtil.mergeTemplates(dataSet);
                     List<String> paths = defaultDataSetTemplate.getPaths();
@@ -610,10 +612,10 @@ public class DataSourceController extends AbstractCatalogController {
                     if (options == null) {
                         options = new HashMap<>();
                     }
-                    if (paths == null) {
-                        paths = new ArrayList<>();
-                    }
                     if ("hive".equalsIgnoreCase(format.toLowerCase())) {
+                        if (paths == null) {
+                            paths = new ArrayList<>();
+                        }
                         paths.add(fullTableName);
                     }
                     options.put("dbtable", fullTableName);
@@ -645,7 +647,7 @@ public class DataSourceController extends AbstractCatalogController {
                 throw new InternalServerErrorException(Response.serverError().entity(status).build());
             }
         } catch (Exception e) {
-            if( exceptionTransformer.causesInChain(e) ) {
+            if (exceptionTransformer.causesInChain(e)) {
                 throw new ThriftConnectionException(e);
             }
 
@@ -670,10 +672,9 @@ public class DataSourceController extends AbstractCatalogController {
                   })
     public Response listCredentials(@PathParam("id") final String dataSourceId) {
         final boolean encrypted = true;
-        
+
         log.entry(dataSourceId, encrypted);
         log.debug("List tables for catalog:{} encrypted:{}", encrypted);
-        
 
         try {
             final DataSource dataSource = findDataSource(dataSourceId, true);
@@ -683,7 +684,7 @@ public class DataSourceController extends AbstractCatalogController {
 
             return Response.ok(log.exit(credentials)).build();
         } catch (final Exception e) {
-            if( exceptionTransformer.causesInChain(e) ) {
+            if (exceptionTransformer.causesInChain(e)) {
                 throw new ThriftConnectionException(e);
             }
 

@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.table;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.discovery.model.CatalogTableSchema;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
@@ -41,7 +41,7 @@ public interface CatalogTableManager {
      * @deprecated Used only for compatibility with NiFi controller services
      */
     @Nonnull
-    TableSchema describeTable(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException;
+    CatalogTableSchema describeTable(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException;
 
     /**
      * Returns a list of table names for the specified data source.

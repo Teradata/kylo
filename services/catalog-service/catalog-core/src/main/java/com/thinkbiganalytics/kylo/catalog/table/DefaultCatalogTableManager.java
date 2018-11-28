@@ -26,6 +26,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.db.DataSourceProperties;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
+import com.thinkbiganalytics.discovery.model.CatalogTableSchema;
 import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
 import com.thinkbiganalytics.discovery.schema.JdbcSchema;
 import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
@@ -42,6 +43,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.util.HadoopClassLoader;
 import com.thinkbiganalytics.schema.DBSchemaParser;
+import com.thinkbiganalytics.schema.DefaultJdbcTable;
 import com.thinkbiganalytics.schema.JdbcSchemaParserProvider;
 
 import org.apache.commons.lang3.StringUtils;
@@ -142,18 +144,49 @@ public class DefaultCatalogTableManager implements CatalogTableManager {
 
     @Nonnull
     @Override
-    public TableSchema describeTable(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException {
+    public CatalogTableSchema describeTable(@Nonnull final DataSource dataSource, @Nullable final String schemaName, @Nullable final String tableName) throws SQLException {
         final DataSetTemplate template = DataSourceUtil.mergeTemplates(dataSource);
         if (Objects.equals("hive", template.getFormat())) {
-            return hiveMetastoreService.getTable(schemaName,tableName);
+            final TableSchema tableSchema = hiveMetastoreService.getTable(schemaName, tableName);
+            final CatalogTableSchema catalogTableSchema = new CatalogTableSchema(tableSchema);
+
+            // Get table metadata
+            if (StringUtils.isNotEmpty(tableSchema.getName())) {
+                final DefaultJdbcTable jdbcTable = new DefaultJdbcTable(tableSchema.getName(), "TABLE");
+                jdbcTable.setCatalog(tableSchema.getDatabaseName());
+                jdbcTable.setCatalog(tableSchema.getDatabaseName());
+                jdbcTable.setRemarks(tableSchema.getDescription());
+                jdbcTable.setSchema(tableSchema.getSchemaName());
+                jdbcTable.setCatalogSeparator(".");
+                jdbcTable.setIdentifierQuoteString("`");
+                catalogTableSchema.setTable(createTable(jdbcTable));
+            }
+
+            return catalogTableSchema;
         } else if (Objects.equals("jdbc", template.getFormat())) {
 
             return isolatedFunction(template, schemaName, (connection, schemaParser) -> {
                 final javax.sql.DataSource ds = new SingleConnectionDataSource(connection, true);
                 final DBSchemaParser tableSchemaParser = new DBSchemaParser(ds, new KerberosTicketConfiguration());
-                return tableSchemaParser.describeTable(schemaName, tableName);
+                final TableSchema tableSchema = tableSchemaParser.describeTable(schemaName, tableName);
+                if (tableSchema != null) {
+                    // Get table metadata
+                    final DefaultJdbcTable jdbcTable = new DefaultJdbcTable(tableSchema.getName(), "TABLE");
+                    jdbcTable.setCatalog(tableSchema.getDatabaseName());
+                    jdbcTable.setCatalog(tableSchema.getDatabaseName());
+                    jdbcTable.setRemarks(tableSchema.getDescription());
+                    jdbcTable.setSchema(tableSchema.getSchemaName());
+                    jdbcTable.setMetaData(connection.getMetaData());
+
+                    // Return table schema
+                    final CatalogTableSchema catalogTableSchema = new CatalogTableSchema(tableSchema);
+                    catalogTableSchema.setTable(createTable(jdbcTable));
+                    return catalogTableSchema;
+                } else {
+                    return null;
+                }
             });
-        }else {
+        } else {
             throw new IllegalArgumentException("Unsupported format: " + template.getFormat());
         }
     }
