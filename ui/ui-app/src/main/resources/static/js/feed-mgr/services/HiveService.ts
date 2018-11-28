@@ -18,7 +18,12 @@ export class HiveService {
         return this.http.get(RestUrlConstants.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache");
     };
     queryTablesSearch(query: any) {
-        return this.getTables(null,query);
+        return new Promise((resolve,reject)=> {
+            return this.getTables(null,query).then((response: any)=> {
+                resolve(this.parseTableResponse(response));
+            });
+        })
+        
     };
     parseTableResponse(response: any) {
         var schemaTables = {};
