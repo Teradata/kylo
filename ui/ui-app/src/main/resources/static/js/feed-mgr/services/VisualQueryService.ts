@@ -1,12 +1,12 @@
 import "feed-mgr/module";
-import {UnderscoreStatic} from "underscore";
+import { UnderscoreStatic } from "underscore";
 import { Injectable } from "@angular/core";
-import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
+import { PreviewDataSet } from "../catalog/datasource/preview-schema/model/preview-data-set";
 
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
 
-import {SparkDataSet} from "../model/spark-data-set.model";
+import { SparkDataSet } from "../model/spark-data-set.model";
 
 /**
  * Prefix for table aliases.
@@ -21,29 +21,75 @@ var TABLE_PREFIX = "tbl";
  * @param model - the visual query model
  * @param dialect - SQL dialect
  */
-export function SqlBuilder(model: VisualQueryModel, dialect: SqlDialect) {
+export class SqlBuilder {
 
     /**
      * SQL dialect.
      */
-    this.dialect = dialect;
-
+    dialect: SqlDialect;
     /**
      * The visual query model.
      * @private
      * @type {VisualQueryModel}
      */
-    this.model_ = model;
-
+    model_: VisualQueryModel;
     /**
      * List of columns in the generated SQL.
      * @private
      * @type {Array|null}
      */
-    this.selectedColumnsAndTables_ = null;
-}
+    selectedColumnsAndTables_: any;
 
-angular.extend(SqlBuilder.prototype, {
+      /**
+     * Type of boolean expression.
+     *
+     * @public
+     * @readonly
+     * @enum {number}
+     */
+    public static BoolExprType = {
+        AND_EXPR: 0
+    };
+
+    /**
+     * Identifier of the Hive datasource.
+     * @type {string}
+     */
+    public static HIVE_DATASOURCE: string = "HIVE";
+
+    /**
+     * Enums for types of relation joins.
+     *
+     * @public
+     * @readonly
+     * @enum {number}
+     */
+    public static JoinType = {
+        JOIN: 0,
+        JOIN_INNER: 1,
+        JOIN_LEFT: 2,
+        JOIN_RIGHT: 3
+    };
+
+    /**
+     * Type of node.
+     *
+     * @public
+     * @readonly
+     * @enum {string}
+     */
+    public static NodeTag = {
+        A_Expr: "A_Expr",
+        BoolExpr: "BoolExpr",
+        JoinExpr: "JoinExpr",
+        RangeVar: "RangeVar"
+    };
+
+    constructor(model: VisualQueryModel, dialect: SqlDialect) {
+        this.dialect = dialect;
+        this.model_ = model;
+        this.selectedColumnsAndTables_ = null;
+    }
     /**
      * Generates the SQL for the model.
      *
@@ -51,8 +97,7 @@ angular.extend(SqlBuilder.prototype, {
      * @return {string} the SQL
      * @throws {Error} if the model is invalid
      */
-    build: function (): string {
-        const self = this;
+    build(): string {
         let select = "";
         const tree = this.buildTree();
 
@@ -61,11 +106,11 @@ angular.extend(SqlBuilder.prototype, {
         }
 
         // Build SELECT clause
-        angular.forEach(tree.targetList, function (target) {
+        angular.forEach(tree.targetList, (target : any) => {
             select += (select.length === 0) ? "SELECT " : ", ";
-            select += target.val.fields[0] + "." + self.quoteSql(target.val.fields[1]);
+            select += target.val.fields[0] + "." + this.quoteSql(target.val.fields[1]);
             if (target.name != null) {
-                select += " AS " + self.quoteSql(target.name);
+                select += " AS " + this.quoteSql(target.name);
             }
         });
 
@@ -73,23 +118,23 @@ angular.extend(SqlBuilder.prototype, {
         const fromTables: string[] = [];
         const joinClauses: string[] = [];
 
-        angular.forEach(tree.fromClause, function (node) {
-            self.addFromClause(node, fromTables, joinClauses);
+        angular.forEach(tree.fromClause, (node : any ) => {
+            this.addFromClause(node, fromTables, joinClauses);
         });
 
         // Build FROM clause
         let sql = "";
 
-        angular.forEach(fromTables, function (table) {
+        angular.forEach(fromTables, (table : any) => {
             sql += (sql.length === 0) ? select + " FROM " : ", ";
             sql += table;
         });
-        angular.forEach(joinClauses, function (join) {
+        angular.forEach(joinClauses, (join : any) => {
             sql += " " + join;
         });
 
         return sql;
-    },
+    }
 
     /**
      * Generates a tree for the model.
@@ -97,7 +142,7 @@ angular.extend(SqlBuilder.prototype, {
      * @public
      * @return {?SelectStmt} the abstract syntax tree, or NULL if the model is empty
      */
-    buildTree: function (): SelectStmt {
+    buildTree(): SelectStmt {
         this.selectedColumnsAndTables_ = [];
 
         if (this.model_ === null || this.model_.nodes.length === 0) {
@@ -105,9 +150,9 @@ angular.extend(SqlBuilder.prototype, {
         } else {
             var fromClause = this.buildFromTree();
             var targetList = this.buildTargetTree();
-            return {fromClause: fromClause, targetList: targetList};
+            return { fromClause: fromClause, targetList: targetList };
         }
-    },
+    }
 
     /**
      * Gets the set of data sources used in the model.
@@ -115,14 +160,14 @@ angular.extend(SqlBuilder.prototype, {
      * @public
      * @return {Array.<string>} the unique data source ids
      */
-    getDatasourceIds: function (): string[] {
+    getDatasourceIds(): string[] {
         return _.chain(this.model_.nodes)
-            .map(function (node) {
+            .map((node : any) => {
                 return node.datasourceId;
             })
             .uniq()
             .value();
-    },
+    }
 
     /**
      * Returns the list of columns in the generated SQL.
@@ -130,12 +175,12 @@ angular.extend(SqlBuilder.prototype, {
      * @public
      * @returns {Array} the list of columns
      */
-    getSelectedColumnsAndTables: function (): any[] {
+    getSelectedColumnsAndTables(): any[] {
         if (this.selectedColumnsAndTables_ === null) {
             this.build();
         }
         return this.selectedColumnsAndTables_;
-    },
+    }
 
     /**
      * Adds joins for the specified table to a SQL statement.
@@ -146,27 +191,27 @@ angular.extend(SqlBuilder.prototype, {
      * @param {string[]} joinClauses the list of JOIN clauses
      * @throws {Error} if the model is invalid
      */
-    addFromClause: function (expr: any, fromTables: any, joinClauses: any) {
-        if (expr.type === VisualQueryService.NodeTag.RangeVar) {
+    addFromClause(expr: any, fromTables: any, joinClauses: any) {
+        if (expr.type === SqlBuilder.NodeTag.RangeVar) {
             fromTables.push(this.quoteSql(expr.schemaname) + "." + this.quoteSql(expr.relname) + " " + expr.aliasName);
-        } else if (expr.type === VisualQueryService.NodeTag.JoinExpr) {
+        } else if (expr.type === SqlBuilder.NodeTag.JoinExpr) {
             this.addFromClause(expr.larg, fromTables, joinClauses);
 
             var sql = "";
             switch (expr.jointype) {
-                case VisualQueryService.JoinType.JOIN:
+                case SqlBuilder.JoinType.JOIN:
                     sql += "JOIN";
                     break;
 
-                case VisualQueryService.JoinType.JOIN_INNER:
+                case SqlBuilder.JoinType.JOIN_INNER:
                     sql += "INNER JOIN";
                     break;
 
-                case VisualQueryService.JoinType.JOIN_LEFT:
+                case SqlBuilder.JoinType.JOIN_LEFT:
                     sql += "LEFT JOIN";
                     break;
 
-                case VisualQueryService.JoinType.JOIN_RIGHT:
+                case SqlBuilder.JoinType.JOIN_RIGHT:
                     sql += "RIGHT JOIN";
                     break;
 
@@ -184,7 +229,7 @@ angular.extend(SqlBuilder.prototype, {
         } else {
             throw new Error("Not a recognized node type: " + expr.type);
         }
-    },
+    }
 
     /**
      * Adds joins for the specified table to a SQL statement.
@@ -195,17 +240,16 @@ angular.extend(SqlBuilder.prototype, {
      * @param {Array.<RangeVar>} fromTables the list of tables to include in the FROM clause
      * @param {Array.<JoinExpr>} joinClauses the list of JOIN clauses
      */
-    addTableJoins: function (tableInfo: any, graph: any, fromTables: any, joinClauses: any) {
-        var self = this;
+    addTableJoins(tableInfo: any, graph: any, fromTables: any, joinClauses: any) {
 
         // Add JOIN clauses for tables connected to this one
         var edges: any = [];
         var srcID = tableInfo.data.id;
         graph[srcID].seen = true;
 
-        angular.forEach(graph[srcID].edges, function (connection, dstID) {
+        angular.forEach(graph[srcID].edges, (connection, dstID) => {
             if (connection !== null) {
-                self.getJoinTree(tableInfo.data, graph[dstID].data, connection, graph, joinClauses);
+                this.getJoinTree(tableInfo.data, graph[dstID].data, connection, graph, joinClauses);
                 edges.push(dstID);
                 graph[srcID].edges[dstID] = null;
                 graph[dstID].edges[srcID] = null;
@@ -213,10 +257,10 @@ angular.extend(SqlBuilder.prototype, {
         });
 
         // Add JOIN clauses for tables connected to child nodes
-        angular.forEach(edges, function (nodeID) {
-            self.addTableJoins(graph[nodeID], graph, null, joinClauses);
+        angular.forEach(edges, (nodeID : any) => {
+            this.addTableJoins(graph[nodeID], graph, null, joinClauses);
         });
-    },
+    }
 
     /**
      * Gets the join tree for the specified join.
@@ -228,21 +272,20 @@ angular.extend(SqlBuilder.prototype, {
      * @param {Array.<JoinExpr>} joinClauses the list of JOIN clauses
      * @returns {JoinExpr} the join tree
      */
-    getJoinTree: function (src: any, dst: any, connection: any, graph: any, joinClauses: any) {
-        var self = this;
+    getJoinTree(src: any, dst: any, connection: any, graph: any, joinClauses: any) {
 
         // Determine left arg
         var larg = (joinClauses.length > 0)
             ? joinClauses.pop()
-            : self.getRangeVar(src);
+            : this.getRangeVar(src);
 
         // Use default if missing join keys
         if (angular.isUndefined(connection.joinKeys.destKey) || angular.isUndefined(connection.joinKeys.sourceKey) || angular.isUndefined(connection.joinType)) {
             joinClauses.push({
-                type: VisualQueryService.NodeTag.JoinExpr,
-                jointype: VisualQueryService.JoinType.JOIN,
+                type: SqlBuilder.NodeTag.JoinExpr,
+                jointype: SqlBuilder.JoinType.JOIN,
                 larg: larg,
-                rarg: self.getRangeVar(dst),
+                rarg: this.getRangeVar(dst),
                 quals: null
             });
             return;
@@ -253,22 +296,22 @@ angular.extend(SqlBuilder.prototype, {
 
         var joinType;
         if (connection.joinType === "INNER JOIN") {
-            joinType = VisualQueryService.JoinType.JOIN_INNER;
+            joinType = SqlBuilder.JoinType.JOIN_INNER;
         } else if (connection.joinType === "LEFT JOIN") {
-            joinType = VisualQueryService.JoinType.JOIN_LEFT;
+            joinType = SqlBuilder.JoinType.JOIN_LEFT;
         } else if (connection.joinType === "RIGHT JOIN") {
-            joinType = VisualQueryService.JoinType.JOIN_RIGHT;
+            joinType = SqlBuilder.JoinType.JOIN_RIGHT;
         } else {
             throw new Error("Not a supported join type: " + connection.joinType);
         }
 
         var tree: any = {
-            type: VisualQueryService.NodeTag.JoinExpr,
+            type: SqlBuilder.NodeTag.JoinExpr,
             jointype: joinType,
             larg: larg,
-            rarg: self.getRangeVar(dst),
+            rarg: this.getRangeVar(dst),
             quals: {
-                type: VisualQueryService.NodeTag.A_Expr,
+                type: SqlBuilder.NodeTag.A_Expr,
                 name: "=",
                 lexpr: {
                     fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey]
@@ -281,13 +324,13 @@ angular.extend(SqlBuilder.prototype, {
 
         // Add conditions for 'seen' tables
         _.values(graph[dst.id].edges)
-            .filter(function (edge: any) {
+            .filter((edge: any) => {
                 return (edge != null && edge.source.nodeID !== src.id && graph[edge.source.nodeID].seen && edge.dest.nodeID !== src.id && graph[edge.dest.nodeID].seen);
             })
-            .forEach(function (edge: any) {
+            .forEach((edge: any) => {
                 var lexpr = tree.quals;
                 var rexpr = {
-                    type: VisualQueryService.NodeTag.A_Expr,
+                    type: SqlBuilder.NodeTag.A_Expr,
                     name: "=",
                     lexpr: {
                         fields: [TABLE_PREFIX + edge.source.nodeID, edge.joinKeys.sourceKey]
@@ -297,8 +340,8 @@ angular.extend(SqlBuilder.prototype, {
                     }
                 };
                 tree.quals = {
-                    type: VisualQueryService.NodeTag.BoolExpr,
-                    boolop: VisualQueryService.BoolExprType.AND_EXPR,
+                    type: SqlBuilder.NodeTag.BoolExpr,
+                    boolop: SqlBuilder.BoolExprType.AND_EXPR,
                     args: [lexpr, rexpr]
                 };
 
@@ -308,7 +351,7 @@ angular.extend(SqlBuilder.prototype, {
             });
 
         joinClauses.push(tree);
-    },
+    }
 
     /**
      * Builds the tree for the FROM clause.
@@ -316,26 +359,24 @@ angular.extend(SqlBuilder.prototype, {
      * @private
      * @return {Array.<(RangeVar|JoinExpr)>} the FROM tree
      */
-    buildFromTree: function () {
-        var self = this;
-
+    buildFromTree() {
         // Build clauses
         var fromTables: any = [];
         var graph = this.createTableJoinMap();
         var joinClauses: any = [];
 
-        angular.forEach(graph, function (node) {
+        angular.forEach(graph, (node : any) => {
             if (_.size(node.edges) === 0) {
-                fromTables.push(self.getRangeVar(node.data));
+                fromTables.push(this.getRangeVar(node.data));
             }
             else {
-                self.addTableJoins(node, graph, fromTables, joinClauses);
+                this.addTableJoins(node, graph, fromTables, joinClauses);
             }
         });
 
         Array.prototype.push.apply(fromTables, joinClauses);
         return fromTables;
-    },
+    }
 
     /**
      * Builds the tree for the target column list.
@@ -343,21 +384,20 @@ angular.extend(SqlBuilder.prototype, {
      * @private
      * @return {Array.<ResTarget>} the target trees
      */
-    buildTargetTree: function () {
+    buildTargetTree() {
         var aliasCount: any = this.getAliasCount();
-        var self = this;
         var targetList: any = [];
 
-        angular.forEach(this.model_.nodes, function (node) {
+        angular.forEach(this.model_.nodes, (node : any) => {
             var table = TABLE_PREFIX + node.id;
 
-            angular.forEach(node.nodeAttributes.attributes, function (attr) {
+            angular.forEach(node.nodeAttributes.attributes, (attr : any ) => {
                 if (attr.selected) {
                     // Determine column alias
-                    var alias = _.find(self.getColumnAliases(node.name, attr.name), function (name: any) {
+                    var alias = _.find(this.getColumnAliases(node.name, attr.name), (name: any) => {
                         return (aliasCount[name] === 1)
                     });
-                    if (typeof(alias) === "undefined") {
+                    if (typeof (alias) === "undefined") {
                         var i = 0;
                         do {
                             ++i;
@@ -370,9 +410,9 @@ angular.extend(SqlBuilder.prototype, {
                     targetList.push({
                         description: attr.description,
                         name: (alias !== attr.name) ? alias : null,
-                        val: {fields: [table, attr.name]}
+                        val: { fields: [table, attr.name] }
                     });
-                    self.selectedColumnsAndTables_.push({
+                    this.selectedColumnsAndTables_.push({
                         column: attr.name,
                         alias: TABLE_PREFIX + node.id, tableName: node.name,
                         tableColumn: attr.name, dataType: attr.dataType
@@ -382,7 +422,7 @@ angular.extend(SqlBuilder.prototype, {
         });
 
         return targetList;
-    },
+    }
 
     /**
      * Creates a map indicating how tables may be joined. The key is the node ID and the value is a dictionary containing the node model and the connections for the joins.
@@ -390,22 +430,22 @@ angular.extend(SqlBuilder.prototype, {
      * @private
      * @returns {TableJoinMap} the table join map
      */
-    createTableJoinMap: function () {
+    createTableJoinMap() {
         var map = {};
 
         // Add every node to the map
-        angular.forEach(this.model_.nodes, function (node) {
-            map[node.id] = {data: node, edges: {}, seen: false};
+        angular.forEach(this.model_.nodes, (node : any) => {
+            map[node.id] = { data: node, edges: {}, seen: false };
         });
 
         // Add edges to the map
-        angular.forEach(this.model_.connections, function (connection) {
+        angular.forEach(this.model_.connections, (connection : any) => {
             map[connection.source.nodeID].edges[connection.dest.nodeID] = connection;
             map[connection.dest.nodeID].edges[connection.source.nodeID] = connection;
         });
 
         return map;
-    },
+    }
 
     /**
      * Determine a unique alias for each column.
@@ -413,22 +453,20 @@ angular.extend(SqlBuilder.prototype, {
      * @private
      * @return {Object.<string, number>} the alias name to count
      */
-    getAliasCount: function () {
+    getAliasCount() {
         var aliasCount = {};
-        var self = this;
-
-        angular.forEach(this.model_.nodes, function (node) {
-            angular.forEach(node.nodeAttributes.attributes, function (attr) {
+        angular.forEach(this.model_.nodes, (node : any) => {
+            angular.forEach(node.nodeAttributes.attributes, (attr : any ) => {
                 if (attr.selected) {
-                    angular.forEach(self.getColumnAliases(node.name, attr.name), function (alias) {
-                        aliasCount[alias] = (typeof(aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;
+                    angular.forEach(this.getColumnAliases(node.name, attr.name), (alias : any) => {
+                        aliasCount[alias] = (typeof (aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;
                     });
                 }
             });
         });
 
         return aliasCount;
-    },
+    }
 
     /**
      * Gets the SQL clause for the specified boolean type.
@@ -437,15 +475,15 @@ angular.extend(SqlBuilder.prototype, {
      * @param {BoolExprType} boolType the boolean expression type
      * @returns {string} the SQL
      */
-    getBoolTypeSql: function (boolType: any) {
+    getBoolTypeSql(boolType: any) {
         switch (boolType) {
-            case VisualQueryService.BoolExprType.AND_EXPR:
+            case SqlBuilder.BoolExprType.AND_EXPR:
                 return "AND";
 
             default:
                 throw new Error("Not a supported BoolExprType: " + boolType);
         }
-    },
+    }
 
     /**
      * Generates a list of possible aliases for the specified column.
@@ -455,14 +493,14 @@ angular.extend(SqlBuilder.prototype, {
      * @param columnName the name of the column
      * @returns {string[]} the list of aliases
      */
-    getColumnAliases: function (tableName: any, columnName: any) {
+    getColumnAliases(tableName: any, columnName: any) {
         var aliases = [];
         if (columnName !== "processing_dttm") {
             aliases.push(columnName);
         }
         aliases.push(tableName.replace(/.*\./, "") + "_" + columnName, tableName.replace(".", "_") + "_" + columnName);
         return aliases;
-    },
+    }
 
     /**
      * Gets the SQL clause for the specified column reference.
@@ -472,17 +510,16 @@ angular.extend(SqlBuilder.prototype, {
      * @param {boolean} [quoteSchema] indicates if the schema should be quoted
      * @return {string} the SQL
      */
-    getColumnSql: function (column: any, quoteSchema: any) {
-        var self = this;
+    getColumnSql(column: any, quoteSchema ?: any) {
         var sql = "";
-        angular.forEach(column.fields, function (field) {
+        angular.forEach(column.fields, (field : any ) => {
             if (sql.length > 0) {
                 sql += ".";
             }
-            sql += (sql.length > 0 || quoteSchema) ? self.quoteSql(field) : field;
+            sql += (sql.length > 0 || quoteSchema) ? this.quoteSql(field) : field;
         });
         return sql;
-    },
+    }
 
     /**
      * Gets the SQL clause for the specified table reference.
@@ -491,14 +528,14 @@ angular.extend(SqlBuilder.prototype, {
      * @param {RangeVar} table the table reference
      * @returns {string} the SQL
      */
-    getTableSql: function (table: any) {
+    getTableSql(table: any) {
         var sql = "";
         if (table.schemaname !== null) {
             sql += this.quoteSql(table.schemaname) + ".";
         }
         sql += this.quoteSql(table.relname);
         return sql;
-    },
+    }
 
     /**
      * Gets the SQL clause for the specified join qualifier.
@@ -508,13 +545,13 @@ angular.extend(SqlBuilder.prototype, {
      * @param {boolean} [quoteSchema] indicates if the schema should be quoted
      * @returns {string} the SQL
      */
-    getQualifierSql: function (qualifier: any, quoteSchema: any) {
-        if (qualifier.type === VisualQueryService.NodeTag.A_Expr) {
+    getQualifierSql(qualifier: any, quoteSchema ?: any) : any {
+        if (qualifier.type === SqlBuilder.NodeTag.A_Expr) {
             return this.getColumnSql(qualifier.lexpr, quoteSchema) + " " + qualifier.name + " " + this.getColumnSql(qualifier.rexpr);
-        } else if (qualifier.type === VisualQueryService.NodeTag.BoolExpr) {
+        } else if (qualifier.type === SqlBuilder.NodeTag.BoolExpr) {
             return this.getQualifierSql(qualifier.args[0]) + " " + this.getBoolTypeSql(qualifier.boolop) + " " + this.getQualifierSql(qualifier.args[1]);
         }
-    },
+    }
 
     /**
      * Creates a RangeVar from the specified VisualQueryNode.
@@ -522,7 +559,7 @@ angular.extend(SqlBuilder.prototype, {
      * @param {VisualQueryNode} node the table node
      * @returns {RangeVar} the range var
      */
-    getRangeVar: function (node: any) {
+    getRangeVar(node: any) {
         var schema;
         var table;
         if (angular.isArray(node.nodeAttributes.reference)) {
@@ -535,7 +572,7 @@ angular.extend(SqlBuilder.prototype, {
         }
 
         var rangeVar: any = {
-            type: VisualQueryService.NodeTag.RangeVar,
+            type: SqlBuilder.NodeTag.RangeVar,
             schemaname: schema,
             relname: table,
             aliasName: TABLE_PREFIX + node.id
@@ -543,20 +580,19 @@ angular.extend(SqlBuilder.prototype, {
         if (angular.isString(node.datasourceId)) {
             rangeVar.datasourceId = node.datasourceId;
         }
-        if(node.dataset){
+        if (node.dataset) {
             rangeVar.dataset = node.dataset;
         }
         return rangeVar;
-    },
-
-    quoteSql: function (identifier: string): string {
+    }
+    quoteSql(identifier: string): string {
         if (this.dialect === SqlDialect.HIVE) {
             return "`" + StringUtils.quoteSql(identifier, "`", "`") + "`";
         } else if (this.dialect === SqlDialect.TERADATA) {
             return "\"" + identifier + "\"";
         }
     }
-});
+}
 
 /**
  * Supported SQL dialects
@@ -566,7 +602,7 @@ export enum SqlDialect {
     /** Hive Query Language dialect */
     HIVE,
 
-        /** Teradata SQL dialect */
+    /** Teradata SQL dialect */
     TERADATA
 }
 
@@ -576,54 +612,11 @@ export enum SqlDialect {
 @Injectable()
 export class VisualQueryService {
 
+    public static HIVE_DATASOURCE: string = "HIVE";
     constructor() {
         this.resetModel();
     }
-    /**
-     * Type of boolean expression.
-     *
-     * @public
-     * @readonly
-     * @enum {number}
-     */
-    static BoolExprType:  {
-        AND_EXPR: 0
-    };
-
-    /**
-     * Identifier of the Hive datasource.
-     * @type {string}
-     */
-    static HIVE_DATASOURCE: string = "HIVE";
-
-    /**
-     * Enums for types of relation joins.
-     *
-     * @public
-     * @readonly
-     * @enum {number}
-     */
-    static JoinType:  {
-        JOIN: 0,
-        JOIN_INNER: 1,
-        JOIN_LEFT: 2,
-        JOIN_RIGHT: 3
-    };
-
-    /**
-     * Type of node.
-     *
-     * @public
-     * @readonly
-     * @enum {string}
-     */
-    static NodeTag:  {
-        A_Expr: "A_Expr",
-        BoolExpr: "BoolExpr",
-        JoinExpr: "JoinExpr",
-        RangeVar: "RangeVar"
-    };
-
+    
     /**
      * Stored model for the Visual Query page.
      * @type {{selectedDatasourceId: string, visualQueryModel: VisualQueryModel, visualQuerySql: string}}
@@ -633,7 +626,7 @@ export class VisualQueryService {
     /**
      * Resets this model to default values.
      */
-    resetModel () {
+    resetModel() {
         this.model = {
             selectedDatasourceId: VisualQueryService.HIVE_DATASOURCE
         };
@@ -646,8 +639,8 @@ export class VisualQueryService {
      * @param dialect - SQL dialect
      * @returns {SqlBuilder} the SQL builder
      */
-    sqlBuilder (model: VisualQueryModel, dialect: SqlDialect) {
-        return new (SqlBuilder as any)(model, dialect);
+    sqlBuilder(model: VisualQueryModel, dialect: SqlDialect) {
+        return new SqlBuilder(model, dialect);
     }
 }
 
@@ -675,6 +668,8 @@ export interface VisualQueryModel {
      * List of tables.
      */
     nodes: VisualQueryNode[];
+
+    connections : any[];
 }
 
 /**
@@ -925,7 +920,7 @@ export interface RangeVar {
     /**
      * the dataset used on this node
      */
-    dataset?:SparkDataSet;
+    dataset?: SparkDataSet;
 }
 
 /**

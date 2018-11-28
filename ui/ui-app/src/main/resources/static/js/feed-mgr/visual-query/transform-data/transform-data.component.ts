@@ -205,7 +205,7 @@ export class TransformDataComponent implements OnInit {
                 private domainTypesService: DomainTypesService, private RestUrlService: any, private SideNavService: any, private uiGridConstants: any, private feedService: FeedService, private broadcastService: BroadcastService,
                 private stepperService: StepperService, private WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService) {
         //Listen for when the next step is active
-        this.broadcastService.subscribe($scope, this.stepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
+        this.broadcastService.subscribe($scope, this.stepperService.STEP_CHANGED_EVENT, (changedSteps : { newStep: number, oldStep: number })=> { this.onStepChange(changedSteps)});
 
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
@@ -1175,8 +1175,7 @@ export class TransformDataComponent implements OnInit {
     /**
      * Update the feed model when changing from this transform step to a different step
      */
-    private onStepChange(event: string, changedSteps: { newStep: number, oldStep: number }) {
-        const self = this;
+    private onStepChange(changedSteps: { newStep: number, oldStep: number }) {
         const thisIndex = parseInt(this.stepIndex);
 
        let localFileChanged = this.isSampleFileChanged();
