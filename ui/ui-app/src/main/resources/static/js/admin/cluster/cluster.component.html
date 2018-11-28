@@ -52,7 +52,7 @@
       <div fxLayout="column">
         <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.receivedMessage" | translate}}</span>
         <mat-list layout-fill fxLayout="column" class="list-item-table">
-          <mat-list-item *ngFor="let msg of receivedMessages">
+          <mat-list-item *ngFor="let msg of receivedMessages" style="height: 80px">
             <div fxLayout="row" layout-fill>
               <div fxFlex="60" fxLayout="column" class="item-column mat-list-item-text ">
                 <span class="item-title">{{msg.message}}</span>

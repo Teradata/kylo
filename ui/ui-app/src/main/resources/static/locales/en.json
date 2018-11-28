@@ -1188,6 +1188,7 @@
     "views.common.executeQ": "Execute Query",
     "views.common.previousQ": "Previous Queries",
     "views.common.ok": "OK",
+    "views.common.date": "Date",
     "utils.singlespace": " ",
     "utils.notApplicable": "NA"
 }
