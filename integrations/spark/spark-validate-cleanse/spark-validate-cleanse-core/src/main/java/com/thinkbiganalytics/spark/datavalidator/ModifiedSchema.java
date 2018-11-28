@@ -80,10 +80,6 @@ class ModifiedSchema {
                 if (validFieldsWithStandardizers.contains(lowerFieldName)) {
                     //get the valid table
                     field = validFieldsMap.get(lowerFieldName);
-                    HCatDataType dataType = HCatDataType.createFromDataType(field.name(), field.dataType().simpleString());
-                    if (dataType != null && dataType.isDateOrTimestamp()) {
-                        field = new StructField(field.name(), DataTypes.StringType, field.nullable(), field.metadata());
-                    }
                 }
                 fieldsList.add(field);
             } else {
