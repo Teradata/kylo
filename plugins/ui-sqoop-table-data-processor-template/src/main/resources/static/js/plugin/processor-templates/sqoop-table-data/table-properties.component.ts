@@ -470,6 +470,18 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         ref.close();
     }
 
+    private updateRestrictIncrementalToDateOnly(){
+        let newVal = this.loadStrategyProperty.value;
+        if (newVal == 'FULL_LOAD') {
+            this.restrictIncrementalToDateOnly = false;
+        } else if (this.isIncrementalLoadStrategy(newVal)) {
+            let option = this.loadStrategyOptions.find((opt: any) => opt.strategy == newVal);
+            if (option) {
+                this.restrictIncrementalToDateOnly = option.restrictDates != undefined ? option.restrictDates : false;
+            }
+        }
+    }
+
     /**
      * on edit describe the table for incremental load to populate the tableField options
      */
@@ -477,6 +489,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         //get the property that stores the DBCPController Service
         let dbcpProperty = this.dbConnectionProperty;
         if (dbcpProperty != null && dbcpProperty.value != null && this.selectedTable != null) {
+            this.updateRestrictIncrementalToDateOnly();
             let serviceId = dbcpProperty.value;
             let serviceNameValue: any = null;
             if (Array.isArray(dbcpProperty.propertyDescriptor.allowableValues)) {

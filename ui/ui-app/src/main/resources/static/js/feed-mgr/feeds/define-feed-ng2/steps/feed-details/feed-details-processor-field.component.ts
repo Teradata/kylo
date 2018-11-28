@@ -89,42 +89,47 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.processor) {
+        if (changes.processor || (changes.readonly && changes.readonly.currentValue == false)) {
             // Unsubscribe from form status changes
             if (this.statusSubscription != null) {
                 this.statusSubscription.unsubscribe();
             }
 
-            if (changes.processor.currentValue) {
-                // Ensure form state matches readonly state
-                this.statusSubscription = this.processor.form.statusChanges.subscribe(status => {
-                    if (this.readonly === true && status !== "DISABLED") {
-                        this.processor.form.disable();
-                    }
-                });
-
-                // Fetch template and update state
-                this.getProcessorTemplate().pipe(
-                    single(),
-                    catchError(err => {
-                        if (err instanceof EmptyError) {
-                            this.state = State.FORM;
-                            changes.processor.currentValue.control = this.getProcessorForm();
-                            return empty();
-                        } else {
-                            throw err;
+            let processor = changes.processor != undefined ? changes.processor.currentValue : this.processor;
+            let previousProcessorValue = changes.processor != undefined ? changes.processor.previousValue: undefined;
+            if(processor != undefined) {
+                if ((changes.processor && changes.processor.currentValue) || (changes.readonly && changes.readonly.currentValue == false)) {
+                    // Ensure form state matches readonly state
+                    this.statusSubscription = this.processor.form.statusChanges.subscribe(status => {
+                        if (this.readonly === true && status !== "DISABLED") {
+                            this.processor.form.disable();
                         }
-                    })
-                ).subscribe(null, (err: any) => {
-                    console.error(err);
-                    this.error = err;
-                    this.state = State.ERROR;
-                });
-            } else {
-                this.childType = null;
-                this.state = State.LOADING;
-                if (changes.processor.previousValue) {
-                    changes.processor.previousValue.control = null;
+                    });
+
+
+                    // Fetch template and update state
+                    this.getProcessorTemplate().pipe(
+                        single(),
+                        catchError(err => {
+                            if (err instanceof EmptyError) {
+                                this.state = State.FORM;
+                                processor.control = this.getProcessorForm();
+                                return empty();
+                            } else {
+                                throw err;
+                            }
+                        })
+                    ).subscribe(null, (err: any) => {
+                        console.error(err);
+                        this.error = err;
+                        this.state = State.ERROR;
+                    });
+                } else {
+                    this.childType = null;
+                    this.state = State.LOADING;
+                    if (previousProcessorValue) {
+                        previousProcessorValue.control = null;
+                    }
                 }
             }
         }
@@ -133,9 +138,12 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         if (changes.readonly && this.processor != null) {
             if (this.readonly) {
                 this.processor.form.disable();
+                this.getProcessorForm().disable();
             } else {
                 this.processor.form.enable();
+                this.getProcessorForm().enable();
             }
+
         }
     }
 
