@@ -26,15 +26,17 @@ import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnectorProvider;
-import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSetProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSourceProvider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.modeshape.jcr.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -44,9 +46,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.jcr.Session;
+
 @Configuration
 public class CatalogMetadataConfig {
-    
+
     private static final Logger log = LoggerFactory.getLogger(CatalogMetadataConfig.class);
 
 
@@ -67,6 +71,34 @@ public class CatalogMetadataConfig {
 
     @Bean
     public PostMetadataConfigAction connectorPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
+        try {
+            return doPluginSyncAction(pluginMgr, metadata);
+        } catch (ConnectorAlreadyExistsException e) {
+            log.warn("Encountered an error attempting to synchronize plugins", e);
+            log.info("Rebuilding modeshape indexes to ensure the are accurately synchronized with the data.   Please be patient as this may take a long time!");
+
+            try {
+                reindex(metadata);
+                return doPluginSyncAction(pluginMgr, metadata);
+            } catch (ConnectorAlreadyExistsException e2) {
+                log.error("Unrecoverable fatal exception. Encountered connector already exists after synchronizing modeshape indexes", e2);
+                throw e2;
+            }
+        }
+    }
+
+
+
+    private void reindex(MetadataAccess metadata) {
+        metadata.commit(() -> {
+            Session session = JcrMetadataAccess.getActiveSession();
+            Workspace workspace = (Workspace) session.getWorkspace();
+            workspace.reindex();
+        });
+    }
+
+
+    private PostMetadataConfigAction doPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
         return () -> {
             metadata.commit(() -> {
                 List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
