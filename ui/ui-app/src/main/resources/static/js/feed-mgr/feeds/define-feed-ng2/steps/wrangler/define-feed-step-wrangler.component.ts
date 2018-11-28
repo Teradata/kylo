@@ -3,6 +3,7 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {TranslateService} from '@ngx-translate/core';
 import {StateService} from "@uirouter/angular";
 import {Observable} from "rxjs/Observable";
+import {tap} from "rxjs/operators/tap";
 
 import {AccessControlService} from "../../../../../services/AccessControlService";
 import {FeedStepConstants} from "../../../../model/feed/feed-step-constants";
@@ -87,7 +88,16 @@ export class DefineFeedStepWranglerComponent extends AbstractFeedStepComponent {
                 message: 'The table schema no longer matches the schema previously defined. This is invalid.  If you wish to modify the underlying schema (i.e. change some column names and/or types) please clone the feed as a new feed instead.',
                 acceptButton: "Ignore",
                 cancelButton: "Cancel"
-            }).afterClosed();
+            }).afterClosed().pipe(
+                tap(value => {
+                    if (value) {
+                        // Ignore changes; restore table fields and policies
+                        const originalFeed = this.defineFeedService.getFeed();
+                        this.feed.table.setTableFields(originalFeed.table.feedDefinitionTableSchema.fields, originalFeed.table.feedDefinitionFieldPolicies);
+                        this.feed.table.syncTableFieldPolicyNames();
+                    }
+                })
+            );
         }
         else {
             return true;
