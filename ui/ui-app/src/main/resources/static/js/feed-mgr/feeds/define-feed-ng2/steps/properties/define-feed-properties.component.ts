@@ -55,7 +55,7 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
     }
 
     private initEditActions(){
-        if(!this.feed.readonly && this.feed.userProperties.length >0){
+        if(!this.feed.readonly ){
             this.displayEditActions = true;
         }
         else {
