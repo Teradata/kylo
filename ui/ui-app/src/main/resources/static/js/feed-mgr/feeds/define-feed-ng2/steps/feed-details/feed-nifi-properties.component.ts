@@ -316,9 +316,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
 
     private setProcessors(inputProcessors: Templates.Processor[], nonInputProcessors: Templates.Processor[], selected?: Templates.Processor, feed?: Feed) {
         let hasVisibleProcessors = false;
-
+        let selectedProcessorRef: ProcessorRef = null;
         if (this.isShowInputProperties()) {
-            let selectedProcessorRef: ProcessorRef = null;
+
             //set the value after inputProcessors is defined so the valuechanges callback is called after this.inputProcessors is initialized
             this.inputProcessors = inputProcessors.map(processor => {
                 const ref = new ProcessorRef(processor as any, feed);
@@ -327,10 +327,7 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                 }
                 return ref;
             });
-            if (selectedProcessorRef != null) {
-                this.inputProcessorControl.setValue(selectedProcessorRef);
-                this.form.setControl(0, selectedProcessorRef.form);
-            }
+
 
             hasVisibleProcessors = this.inputProcessors
                 .find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
@@ -355,6 +352,12 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
                 hasVisibleProcessors = this.nonInputProcessors.find((ref: ProcessorRef) => ref.processor.properties && ref.processor.properties.find((property: Templates.Property) => property.userEditable) != undefined) != undefined;
             }
         }
+
+        if (selectedProcessorRef != null) {
+            this.inputProcessorControl.setValue(selectedProcessorRef);
+            this.form.setControl(0, selectedProcessorRef.form);
+        }
+
         if (!hasVisibleProcessors) {
             this.noPropertiesExist = true;
         }
