@@ -1,6 +1,6 @@
 <define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (saved)="onSave()" [fxHide]="!feed.readonly">
   <feed-step-readonly-content>
-    <div fxLayout="column" *ngIf="feed.dataTransformation.sql != undefined  && feed.dataTransformation.sql != ''" >
+    <div fxLayout="column" *ngIf="feed.dataTransformation.dataTransformScript != null && feed.dataTransformation.dataTransformScript.length > 0; else emptyTransform" >
       <div class="read-only-row" fxLayout="row">
         <div fxFlex="25" translate>VISUAL_QUERY.FEED_STEP.QUERY</div>
         <div fxFlex>{{feed.dataTransformation.sql}}</div>
@@ -22,11 +22,13 @@
       </div>
     </div>
 
-    <div *ngIf="feed.dataTransformation.sql == undefined || feed.dataTransformation.sql == ''"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
-      <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
-      <h2>Wrangler Incomplete </h2>
-      <h3>No transformation exists yet for this feed</h3>
-    </div>
+    <ng-template #emptyTransform>
+      <div fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+        <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+        <h2>Wrangler Incomplete </h2>
+        <h3>No transformation exists yet for this feed</h3>
+      </div>
+    </ng-template>
   </feed-step-readonly-content>
 </define-feed-step-card>
 

@@ -1189,6 +1189,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 // Validate when the page loads
                 this.validate();
                 this.engineLoaded = true;
+
+                // Display Catalog for templates only using a sample file
+                if (typeof this.model.dataTransformScript === "string" && this.model.dataTransformScript.length > 0 && this.model.sql === "") {
+                    this.openCatalogBrowser();
+                }
             });
 
 
