@@ -30,22 +30,71 @@ import com.thinkbiganalytics.security.core.encrypt.EncryptedStringDeserializer;
 
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.bootstrap.encrypt.EncryptionBootstrapConfiguration;
 import org.springframework.cloud.bootstrap.encrypt.KeyProperties;
+import org.springframework.cloud.bootstrap.encrypt.KeyProperties.KeyStore;
 import org.springframework.cloud.bootstrap.encrypt.RsaProperties;
+import org.springframework.cloud.context.encrypt.EncryptorFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
+import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
+import org.springframework.security.rsa.crypto.RsaSecretEncryptor;
+
+import javax.inject.Inject;
 
 /**
  *
  */
 @Configuration
-@EnableConfigurationProperties({ KeyProperties.class, RsaProperties.class })
-@Import({ EncryptionBootstrapConfiguration.class })
+@EnableConfigurationProperties
 public class SecurityCoreConfig {
+    
+    @Bean
+    @ConfigurationProperties("encrypt")
+    public KeyProperties keyProperties() {
+        return new KeyProperties();
+    }
+    
+    @Bean
+    @ConfigurationProperties("encrypt.rsa")
+    public RsaProperties rsaProperties() {
+        return new RsaProperties();
+    }
+    
+    @Configuration
+    public static class TextEncryptorConfig {
+        @Inject
+        private KeyProperties keyProperties;
+        
+        @Inject
+        private RsaProperties rsaProperties;
+        
+        @Bean
+        public TextEncryptor textEncryptor() {
+            // The presence of an encrypt key takes precedence over the keystore.
+            if (StringUtils.isNotBlank(this.keyProperties.getKey())) {
+                return new EncryptorFactory().create(this.keyProperties.getKey());
+            } else {
+                KeyStore store = this.keyProperties.getKeyStore();
+                
+                if (store.getLocation() == null) {
+                    throw new IllegalStateException("Neither an encrypt key or a keystore location specified in the configuration");
+                } else if (! store.getLocation().exists()) {
+                    throw new IllegalStateException("The specified keystore does not exist: " + store.getLocation());
+                } else {
+                    return new RsaSecretEncryptor(new KeyStoreKeyFactory(store.getLocation(),
+                                                                         store.getPassword().toCharArray()).getKeyPair(store.getAlias(),
+                                                                                                                       store.getSecret().toCharArray()),
+                                                  this.rsaProperties.getAlgorithm(), this.rsaProperties.getSalt(),
+                                                  this.rsaProperties.isStrong());
+                }
+            }
+        }
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -64,10 +113,4 @@ public class SecurityCoreConfig {
         module.addDeserializer(String.class, encryptedStringDeserializer());
         return module;
     }
-    
-    /*@Bean
-    @ConditionalOnMissingBean
-    public TextEncryptorLocator textEncryptorLocator(TextEncryptor textEncryptor) {
-        return new SingleTextEncryptorLocator(textEncryptor);
-    }*/
 }

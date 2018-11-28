@@ -36,18 +36,24 @@ import com.thinkbiganalytics.spark.shell.CatalogDataSetProviderFactory;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.bootstrap.encrypt.EncryptionBootstrapConfiguration;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.bootstrap.encrypt.KeyProperties;
+import org.springframework.cloud.bootstrap.encrypt.KeyProperties.KeyStore;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,34 +86,60 @@ public class App {
         }
 
         // Load environment
-        final AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-        ctx.register(SecurityCoreConfig.class);
-        ctx.scan("com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog");
-        ctx.refresh();
-
-        File scriptFile = new File(args[0]);
-        if (scriptFile.exists() && scriptFile.isFile()) {
-            log.info("Loading script file at {} ", args[0]);
-        } else {
-            log.info("Couldn't find script file at {} will check classpath.", args[0]);
-            String fileName = scriptFile.getName();
-            scriptFile = new File("./" + fileName);
+        try (final AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext()) {
+            ctx.register(SecurityCoreConfig.class);
+            ctx.scan("com.thinkbiganalytics.spark", "com.thinkbiganalytics.kylo.catalog");
+            ctx.refresh();
+    
+            File scriptFile = new File(args[0]);
+            if (scriptFile.exists() && scriptFile.isFile()) {
+                log.info("Loading script file at {} ", args[0]);
+            } else {
+                log.info("Couldn't find script file at {} will check classpath.", args[0]);
+                String fileName = scriptFile.getName();
+                scriptFile = new File("./" + fileName);
+            }
+    
+            final String script = Files.toString(scriptFile, Charsets.UTF_8);
+    
+            // Prepare bindings
+            final List<NamedParam> bindings = new ArrayList<>();
+    
+            final DatasourceProvider datasourceProvider = ctx.getBean(DatasourceProvider.class);
+            bindings.add(new NamedParamClass("datasourceProvider", datasourceProvider.getClass().getName(), datasourceProvider));
+    
+            final CatalogDataSetProvider catalogDataSetProvider = ctx.getBean(CatalogDataSetProvider.class);
+            bindings.add(new NamedParamClass("catalogDataSetProvider", catalogDataSetProvider.getClass().getName(), catalogDataSetProvider));
+    
+            // Execute script
+            final SparkScriptEngine engine = ctx.getBean(SparkScriptEngine.class);
+            engine.eval(script, bindings);
         }
+    }
 
-        final String script = Files.toString(scriptFile, Charsets.UTF_8);
-
-        // Prepare bindings
-        final List<NamedParam> bindings = new ArrayList<>();
-
-        final DatasourceProvider datasourceProvider = ctx.getBean(DatasourceProvider.class);
-        bindings.add(new NamedParamClass("datasourceProvider", datasourceProvider.getClass().getName(), datasourceProvider));
-
-        final CatalogDataSetProvider catalogDataSetProvider = ctx.getBean(CatalogDataSetProvider.class);
-        bindings.add(new NamedParamClass("catalogDataSetProvider", catalogDataSetProvider.getClass().getName(), catalogDataSetProvider));
-
-        // Execute script
-        final SparkScriptEngine engine = ctx.getBean(SparkScriptEngine.class);
-        engine.eval(script, bindings);
+    @Bean
+    public SparkContext sparkContext(SparkConf sparkConf) {
+        return SparkContext.getOrCreate(sparkConf);
+    }
+    
+    @Bean
+    @Primary
+    @ConfigurationProperties("encrypt")
+    public KeyProperties keyProperties(SparkContext cxt) throws MalformedURLException {
+        SparkConf conf = cxt.getConf();
+        KeyProperties props = new KeyProperties();
+        KeyStore store = props.getKeyStore();
+        String locationPath = conf.get("spark.ssl.keyStore");
+        
+        if (StringUtils.isNotBlank(locationPath)) {
+            Resource location = locationPath.startsWith("file:") ? new UrlResource(locationPath) : new UrlResource("file:" + locationPath);
+            
+            store.setAlias("kylo");
+            store.setLocation(location);
+            store.setPassword(conf.get("spark.ssl.keyStorePassword"));
+        }
+        
+        return props;
     }
 
     /**
