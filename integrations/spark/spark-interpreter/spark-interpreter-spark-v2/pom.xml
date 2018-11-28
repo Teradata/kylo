@@ -20,6 +20,7 @@
     <spark.version>2.0.0</spark.version>
     <spark.binary.version>2.0</spark.binary.version>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+    <spark.avro.version>3.2.0</spark.avro.version>
   </properties>
 
   <dependencies>
@@ -59,6 +60,28 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>com.databricks</groupId>
+      <artifactId>spark-avro_${scala.binary.version}</artifactId>
+      <version>${spark.avro.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

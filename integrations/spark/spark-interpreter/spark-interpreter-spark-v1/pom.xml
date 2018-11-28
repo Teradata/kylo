@@ -16,6 +16,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+    <spark.avro.version>2.0.1</spark.avro.version>
   </properties>
 
   <dependencies>
@@ -65,6 +66,27 @@
           <artifactId>scala-library</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.databricks</groupId>
+      <artifactId>spark-avro_${scala.binary.version}</artifactId>
+      <version>${spark.avro.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
     </dependency>
 
   </dependencies>
