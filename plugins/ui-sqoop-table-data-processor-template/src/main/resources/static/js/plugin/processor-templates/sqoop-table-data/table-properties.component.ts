@@ -159,6 +159,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
 
     catalogNiFiControllerServiceIds:string[] = null;
 
+    initialized:boolean = false;
+
     constructor(private http: HttpClient, private dialog: MatDialog, @Inject("FeedService") private feedService: any, @Inject("DBCPTableSchemaService") private tableSchemaService: any) {
         // Handle connection service changes
         this.form.valueChanges.pipe(
@@ -231,13 +233,16 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         this.dbConnectionProperty = this.findProperty(this.connectionServiceKey, false);
 
         //update the hint only when editing
-        const hintSuffix = ".  ** indicates an existing catalog data source";
+        const hintSuffix = "   ** Indicates an existing catalog data source";
         if(this.dbConnectionProperty) {
             let desc = this.dbConnectionProperty.propertyDescriptor.origDescription || this.dbConnectionProperty.propertyDescriptor.description;
-            if (desc != undefined && !this.processor.form.disabled) {
-                if(desc.indexOf(hintSuffix) == -1){
+            if (!this.processor.form.disabled) {
+                if(desc != undefined && desc.indexOf(hintSuffix) == -1){
                     this.dbConnectionProperty.propertyDescriptor.origDescription = desc;
                     this.dbConnectionProperty.propertyDescriptor.description = desc+hintSuffix;
+                }
+                else if (desc == undefined || desc == null){
+                    this.dbConnectionProperty.propertyDescriptor.description = hintSuffix;
                 }
             } else if(desc != undefined){
                 this.dbConnectionProperty.propertyDescriptor.description = desc;
@@ -279,7 +284,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         this.http.get(url).subscribe((responses:any[]) => {
             this.catalogNiFiControllerServiceIds = responses.map((source:any) => source.nifiControllerServiceId);
             this.updateDbConnectionPropertyOptions();
-        });
+            this.initialized = true;
+        },(error1:any) => this.initialized = true);
 
     }
 
@@ -494,8 +500,10 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                         this.databaseConnectionErrorMessage = error.message;
                     }
                     else {
-                        this.databaseConnectionErrorMessage = "Unable to connecto to data source";
+                        this.databaseConnectionErrorMessage = "Unable to connecto to data source.";
                     }
+
+                    this.databaseConnectionErrorMessage +=". If you know the table name and source field names you can manually enter them below."
                     throw error;
                 })
             );

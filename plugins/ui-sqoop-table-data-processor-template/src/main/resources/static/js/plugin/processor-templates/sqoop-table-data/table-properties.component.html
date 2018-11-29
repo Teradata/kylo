@@ -1,6 +1,6 @@
 <processor-form *ngIf="processor.form.disabled" [form]="form" [processor]="processor" [readonly]="true"></processor-form>
 
-<div *ngIf="processor.form.enabled" class="layout-padding-indent">
+<div *ngIf="processor.form.enabled && initialized == true" class="layout-padding-indent">
 
   <processor-form [form]="form" [processor]="processor" [properties]="dbConnectionProperty" [readonly]="false" class="layout-padding-top-bottom"></processor-form>
 
