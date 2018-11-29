@@ -90,7 +90,7 @@ export class SlaListComponent implements OnInit {
 
     loadSlas() {
         this.loading = true;
-        console.log('load all slas', this)
+
         this.slaService.getAllSlas().then((response: any) => {
             this.serviceLevelAgreements = response;
             this.loading = false;

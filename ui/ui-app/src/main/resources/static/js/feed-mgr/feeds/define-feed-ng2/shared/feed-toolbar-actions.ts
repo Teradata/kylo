@@ -54,12 +54,7 @@ export class FeedToolbarActions implements OnInit {
 
 
     ngOnInit(){
-        if(this.feed != undefined) {
-            console.log('INIT FEED ACTIONS RO:', this.feed.readonly, "canEdit ", this.feed.canEdit(), "LoadMode: ", this.feed.loadMode, "is draft ", this.feed.isDraft())
-        }
-        else {
-            console.log('feed not yet defined!')
-        }
+
     }
 
     edit(){

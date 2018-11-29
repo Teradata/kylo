@@ -64,14 +64,14 @@ export class Lazy {
 
     static onModuleImport = ($ocLazyLoad: any) => {
         return (mod: any) => {
-            console.log('imported module ' + mod.default.name);
+
             return $ocLazyLoad.load({name: mod.default.name});
         };
     };
 
     static onModuleFactoryImport = ($ocLazyLoad: any) => {
         return (mod: any) => {
-            console.log('imported module factory ' + mod.default.module.name);
+
             return $ocLazyLoad.load({name: mod.default.module.name});
         };
     };

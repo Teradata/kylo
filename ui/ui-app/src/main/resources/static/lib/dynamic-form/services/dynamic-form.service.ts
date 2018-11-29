@@ -8,7 +8,7 @@ import {DynamicFormUtil} from "./dynamic-form-util";
 @Injectable()
 export class DynamicFormService {
     constructor( private _translateService: TranslateService) {
-        console.log("BUILD FORM SERVICE!")
+
     }
 
     toFormGroup(fields: FieldConfig<any>[] ) :FormGroup {

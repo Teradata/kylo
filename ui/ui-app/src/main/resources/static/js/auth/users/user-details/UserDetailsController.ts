@@ -308,8 +308,6 @@ export class UserDetailsController implements ng.IComponentController {
                         return item.name;
                     });
         };
-
-
 }
 
 const module = angular.module(moduleName)

@@ -54,11 +54,11 @@ export class TemplateInfoComponent implements OnInit {
         this.disabling = true;
         if (this.template.id) {
             this.registerTemplateService.disableTemplate(this.template.id).then((response: any) => {
-                console.log(response);
+
                 this.template = response.data;
                 this.disabling = false;
             }, (error: any) => {
-                console.log(error);
+
                 this.disabling = false;
             });
         }

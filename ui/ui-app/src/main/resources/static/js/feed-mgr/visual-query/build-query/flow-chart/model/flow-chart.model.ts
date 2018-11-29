@@ -688,7 +688,7 @@ export namespace FlowChart {
             connectionDataModel.joinKeys = {};
             var connectionViewModel = new FlowChart.ConnectionViewModel(connectionDataModel, startConnector, endConnector);
             connectionDataModel.edit = (viewModel: any) => {
-                console.log('EDIT CONNECTION ',viewModel)
+
                 this.onEditConnectionSubject.next({connectionViewModel:connectionViewModel, connectionDataModel:connectionDataModel, src:src, dest:dest})
             }
             connectionsViewModel.push(connectionViewModel);
@@ -719,7 +719,7 @@ export namespace FlowChart {
         // Select all nodes and connections in the chart.
         //
         selectAll(){
-            console.log('SELECT ALL!!!')
+
             var nodes = this.nodes;
             for (var i = 0; i < nodes.length; ++i) {
                 var node = nodes[i];

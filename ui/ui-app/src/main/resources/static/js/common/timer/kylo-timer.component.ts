@@ -53,7 +53,6 @@ export class KyloTimerDirective {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (!changes.startTime.firstChange) {
-            console.log(changes.startTime);
             this.time = changes.startTime.currentValue;
             this.format();
         }

@@ -239,7 +239,8 @@ export class ProcessorFormComponent implements OnChanges, OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if ((changes.processor || changes.properties)) {
+
+        if ((changes.processor || changes.properties || changes.readonly)) {
             if (this.processor != null) {
                 this.fieldConfigurationState.reset();
 

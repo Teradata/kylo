@@ -100,7 +100,7 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
                 if(!angular.isArray(requiredPermissions)){
                     requiredPermissions = [requiredPermissions];
                 }
-                console.log("CHECK HAS ENTITY ACCESS FOR ",requiredPermissions,"check" , entity.allowedActions)
+
                 return this.hasAnyAction(requiredPermissions, entity.allowedActions);
             }
             isFutureState=(state: any)=>{

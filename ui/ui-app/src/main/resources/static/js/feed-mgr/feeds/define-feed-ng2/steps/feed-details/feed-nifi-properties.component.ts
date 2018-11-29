@@ -167,9 +167,9 @@ export class FeedNifiPropertiesComponent implements OnInit, OnDestroy {
     }
 
     private buildInputProcessorRelationships(registeredTemplate: any) {
-        console.log("check for input graph with ", registeredTemplate)
+
         if (registeredTemplate.inputProcessorRelationships) {
-            console.log("YES!!! ", registeredTemplate.inputProcessorRelationships)
+
         }
     }
 

@@ -30,7 +30,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.scheduler.controller" */ './SchedulerController')
                         .then(mod => {
-                            console.log('imported SchedulerController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

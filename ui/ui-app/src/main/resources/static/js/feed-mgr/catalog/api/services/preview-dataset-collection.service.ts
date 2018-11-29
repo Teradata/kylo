@@ -53,7 +53,7 @@ export class PreviewDatasetCollectionService {
         this.datasetsSubject = new Subject<DatasetChangeEvent>();
         this.datasets$ = this.datasetsSubject.asObservable();
         this.id = _.uniqueId("previewDatasetCollection-")
-        console.log("NEW PreviewDatasetCollectionService ",this.id);
+
     }
 
     public subscribeToDatasetChanges(observer:PartialObserver<DatasetChangeEvent>):ISubscription{
@@ -61,7 +61,7 @@ export class PreviewDatasetCollectionService {
     }
 
     public reset(){
-        console.log("reset datasets ",this.id)
+
         this.datasets.forEach(dataset => dataset.collectionStatus = DatasetCollectionStatus.REMOVED);
         this.datasets = [];
     }
@@ -76,7 +76,7 @@ export class PreviewDatasetCollectionService {
     public addDataSet(dataset:PreviewDataSet){
         //only add if it doesnt exist yet
         if(!this.exists(dataset)) {
-            console.log("ADDED Dataset  ",this.id,dataset)
+
             this.datasets.push(dataset);
             dataset.collectionStatus = DatasetCollectionStatus.COLLECTED;
             //notify the observers of the change

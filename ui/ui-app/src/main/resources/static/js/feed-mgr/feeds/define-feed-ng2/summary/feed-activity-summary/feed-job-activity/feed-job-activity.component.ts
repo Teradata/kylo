@@ -162,7 +162,7 @@ export class FeedJobActivityComponent implements OnInit {
                 }
             }
             else {
-                console.log("NO DATA!!!!! ",this.feed)
+
             }
         }
         var errorFn = (err: any) => {

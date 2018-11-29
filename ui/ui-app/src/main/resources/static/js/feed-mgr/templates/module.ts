@@ -91,7 +91,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feeds.register-template.controller" */ './template-stepper/RegisterTemplateController')
                         .then(mod => {
-                            console.log('imported RegisterTemplateController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
@@ -120,7 +120,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feeds.register-template-complete-complete.controller" */ './template-stepper/register-template/register-template-step')
                         .then(mod => {
-                            console.log('imported registerTemplateCompleteController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

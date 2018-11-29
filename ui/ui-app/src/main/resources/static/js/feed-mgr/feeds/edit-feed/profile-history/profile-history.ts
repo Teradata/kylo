@@ -223,7 +223,7 @@ export class FeedProfileHistoryController implements ng.IComponentController {
     }
 
     public showProfileDialog(currentTab: any, profileRow: any) {
-        console.log("showProfileDialog currentTag,profileRow", currentTab, profileRow);
+
         this.$mdDialog.show({
             controller: 'FeedProfileItemController',
             templateUrl: 'js/feed-mgr/feeds/edit-feed/profile-history/profile-history-dialog.html',

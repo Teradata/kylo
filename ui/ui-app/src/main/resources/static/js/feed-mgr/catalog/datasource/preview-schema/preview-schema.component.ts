@@ -167,7 +167,7 @@ export class PreviewSchemaComponent implements OnInit {
                 this.datasets.push(dataset)
             }
             else {
-                console.log("skipping collected dataset ",dataset,this)
+
             }
 
         })
@@ -345,7 +345,7 @@ export class PreviewSchemaComponent implements OnInit {
                         dataSet.collectionStatus = DatasetCollectionStatus.COLLECTED;
                     }
                     if(this.autoCollect && this.editable){
-                        console.log('ADDING dataset ',dataSet)
+
                         this.addToCollection(dataSet);
                     }
                 });
@@ -366,7 +366,7 @@ export class PreviewSchemaComponent implements OnInit {
 
                     this.previewSchemaService.updateDataSetsWithCachedPreview([previewDataSet])
                     if(this.autoCollect && this.editable){
-                        console.log('ADDING dataset ',previewDataSet)
+
                         this.addToCollection(previewDataSet);
                     }
                     if(this.previewDatasetCollectionService.exists(previewDataSet) && !previewDataSet.isCollected()){
@@ -426,7 +426,7 @@ export class PreviewSchemaComponent implements OnInit {
                     _.each(response.results.datasets,(dataset:PreviewDataSet,key:string)=> {
                         this.previewSchemaService.updateDataSetsWithCachedPreview([dataset])
                         if(this.autoCollect && this.editable){
-                            console.log('ADDING dataset ',dataset)
+
                             this.addToCollection(dataset);
                         }
                         if(this.previewDatasetCollectionService.exists(dataset) && !dataset.isCollected()){
@@ -450,8 +450,6 @@ export class PreviewSchemaComponent implements OnInit {
         }
 
     }
-
-
 }
 
 
@@ -582,11 +580,6 @@ export class SimpleTableComponent {
         this.data = this.rows;
         this.filter();
     }
-
-
-
-
-
 }
 
 

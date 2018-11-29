@@ -265,8 +265,6 @@ constructor(private $scope: angular.IScope,
             this.loaded = true;
         }
 
-
-
 }
 
 const module = angular.module(moduleName).component("kyloServiceLevelAssessments", {

@@ -46,7 +46,7 @@ export class OverviewComponent extends AbstractLoadFeedComponent  {
         if(response.success){
             //update this feed
             this.feed = response.feed;
-            console.log('Feed saved overview component ',this.feed)
+
         }
     }
 

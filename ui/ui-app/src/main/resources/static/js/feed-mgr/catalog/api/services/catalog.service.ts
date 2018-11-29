@@ -154,7 +154,7 @@ export class CatalogService {
                     });
                 }
                 else {
-                    console.log('returning list ',list)
+
                     return list;
                 }
             }).catch((e:any) => {

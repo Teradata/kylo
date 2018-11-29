@@ -656,7 +656,7 @@ export class VisualQueryService {
     model: any = {selectedDatasourceId: VisualQueryService.HIVE_DATASOURCE };
 
     constructor(){
-        console.log("NEW VISUALQUERYSERVICE!!!")
+
 
     }
 

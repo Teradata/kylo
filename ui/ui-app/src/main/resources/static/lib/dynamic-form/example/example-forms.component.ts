@@ -40,7 +40,7 @@ export class ExampleFormsComponent {
             .done().columnComplete().onApply((values:any)=> {
                 console.log("THE VALUES ARE ",values,this);
             },this).onCancel(()=> {
-                console.log("CANCELLED!!!!");
+
             },this).build();
 
 
@@ -60,9 +60,9 @@ export class ExampleFormsComponent {
             .textarea()
             .setPlaceholder("description")
             .done().columnComplete().onApply((values:any)=> {
-                console.log("Form2 THE VALUES ARE ",values,this);
+
             },this).onCancel(()=> {
-                console.log("form2 CANCELLED!!!!");
+
             },this).build();
 
 

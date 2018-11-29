@@ -290,7 +290,7 @@ export class NotificationService {
     errorWithGroupKey(errorType: string, message: string, groupKey: string, detailMsg?: string) {
         //   console.error("ERROR ",message, detailMsg)
         //Only add the error if it doesnt already exist
-        console.log(errorType, message, groupKey, detailMsg);
+
         if (groupKey != undefined) {
             if (this.getAlertWithGroupKey(groupKey) == null) {
                 let alert = false;

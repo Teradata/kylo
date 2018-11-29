@@ -469,7 +469,7 @@ export class ConnectorComponent {
                 return [];
             }))
             .subscribe(() => {
-                console.log('validated');
+
             });
     }
 

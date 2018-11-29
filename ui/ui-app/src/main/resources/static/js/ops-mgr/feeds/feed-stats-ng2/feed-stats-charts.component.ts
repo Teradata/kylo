@@ -612,7 +612,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
                     unzoomEventType: 'dblclick.zoom',
                     useFixedDomain: false,
                     zoomed: (xDomain: any, yDomain: any) => {
-                        console.log('zoom check?',xDomain)
+
                         //zoomed will get called` initially (even if not zoomed)
                         // because of this we need to check to ensure the 'preventZoomChange' flag was not triggered after initially refreshing the dataset
                         if (!self.preventZoomChange) {
@@ -743,7 +743,7 @@ export class FeedStatsChartsComponent implements OnInit, OnDestroy {
         if (!value) {
             return 0;
         }
-        console.log('FORMAT LABEL!!! ',value, this.timeFrameOptions[value])
+
         return value;
     }
 

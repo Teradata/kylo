@@ -312,7 +312,7 @@ export class FeedScheduleComponent implements OnInit, OnDestroy{
         this.preconditionDialogService.openDialog({feed: this.feed, preconditions:this.preconditions, itemIndex: index}, this._viewContainerRef).subscribe((preconditions:any[]) => {
             let preconditionsString =preconditions.map(precondition => precondition.name).join(",");
             this.checkAndSetValue("preconditions",preconditionsString)
-            console.log('SAVED ',preconditions)
+
             this.preconditions = preconditions;
        });
    }

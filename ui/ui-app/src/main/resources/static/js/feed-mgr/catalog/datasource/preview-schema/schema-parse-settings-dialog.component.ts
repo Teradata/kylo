@@ -14,13 +14,11 @@ export class SchemaParseSettingsDialog {
     }
 
     apply(){
-        console.log("APPLY ",this.selectedParser)
+
             this.dialogRef.close(this.selectedParser)
     }
 
      cancel(): void {
             this.dialogRef.close();
     }
-
-
 }

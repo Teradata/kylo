@@ -395,7 +395,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                            let control = nestedForm.get(prop.propertyKey);
                            if(control){
                                prop.propertyValue = control.value;
-                               console.log('SET THE PROPERTY VALUE ',prop,prop.propertyValue)
+
                            }
                        }
 
@@ -634,7 +634,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                     let nestedForm: FormGroup = new FormGroup({})
                     this.formGroup.addControl(formName, nestedForm);
                     option.properties.forEach((prop:ImportProperty) => {
-                        console.log("adding form control ",prop.propertyKey,prop)
+
                         nestedForm.addControl(prop.propertyKey, new FormControl(prop.propertyValue, [Validators.required]));
                     });
                 }
@@ -717,7 +717,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 let dataSet =preview.toSparkDataSet();
                 this.catalogService.createDataSetWithTitle(dataSet).subscribe((ds:SparkDataSet) => {
                     //find or create dataset then
-                    console.log("REMAP ",importProperty,importProperty.componentId,"TO ",dataSet, ds)
+
                     let valid = true;
                     let schemaNeeded = "";
                     //validate schema

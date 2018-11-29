@@ -88,7 +88,7 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
                 @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
                 private engineRef: SparkQueryEngine, private matIconRegistry: MatIconRegistry) {
-        console.log("PreviewDatasetCollectionService", this.previewDataSetCollectionService.datasets);
+
         this.engine = engineRef;
 
         matIconRegistry.registerFontClassAlias ('fa');
@@ -110,7 +110,7 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
         this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
         let collection = this.previewDataSetCollectionService.getSparkDataSets();
         this.dataModel.model.datasets = collection;
-        console.log('collection', collection);
+
     }
 
     /**

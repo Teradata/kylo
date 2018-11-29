@@ -35,7 +35,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.jobs.controller" */ './JobsPageController')
                         .then(mod => {
-                            console.log('imported JobsPageController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

@@ -32,7 +32,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "feedmgr.business-metadata.controller" */ './BusinessMetadataController')
                         .then(mod => {
-                            console.log('imported BusinessMetadataController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

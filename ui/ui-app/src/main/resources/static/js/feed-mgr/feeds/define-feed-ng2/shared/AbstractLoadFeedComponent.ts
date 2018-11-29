@@ -88,7 +88,7 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
 
 
     onFeedEditStateChange(event:FeedEditStateChangeEvent){
-        console.log("FEED STATE CHANGED!!!!",event)
+
         if(this.feed) {
             this.feed.readonly = event.readonly;
             this.feed.accessControl = event.accessControl;
@@ -97,12 +97,12 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
     }
 
     onFeedChangeEvent(event:Feed){
-        console.log("FEED  CHANGED!!!!",'old feed', this.feed, 'new feed ',event)
+
         this.feed = event;
     }
 
     onStepStateChangeEvent(event:StepStateChangeEvent){
-        console.log('Load STEP CHANGED!!!',this,event)
+
     }
 
 
@@ -178,6 +178,6 @@ export abstract class AbstractLoadFeedComponent implements OnInit,OnDestroy {
      */
     onFeedLoaded(feed: Feed) {
         this.feed = feed;
-            console.log('FEED LOADED ',feed.id, feed.versionName,this.constructor.name, feed.canEdit())
+
     }
 }

@@ -24,7 +24,7 @@ export abstract class AbstractSchemaTransformService {
             let statusCheckTime = 300
 
             let formatDetected = (data: TransformResponse):void => {
-                console.log('FORMAT DETECTED ', data,);
+
                // this.result = data;
                 observer.next(data);
             }
@@ -52,7 +52,7 @@ export abstract class AbstractSchemaTransformService {
             }
 
             let fetchProgress = (id: string) => {
-                console.log('PROGRESS FOR ', id)
+
                 this.http.get("/proxy/v1/spark/shell/transform/" + id).subscribe((data: any) => {
                     checkProgress(data);
                 })
@@ -61,7 +61,7 @@ export abstract class AbstractSchemaTransformService {
 
             this.http.post(url, request)
                 .subscribe((data: any) => {
-                    console.log('DATA', data)
+
                     checkProgress(data);
                 }, error1 => {
                     console.log("Preview Error",error1);

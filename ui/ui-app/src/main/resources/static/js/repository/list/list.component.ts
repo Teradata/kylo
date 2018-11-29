@@ -69,7 +69,7 @@ export class ListTemplatesComponent implements OnInit {
                 if(error.developerMessage)
                     this.errorMsg += error.developerMessage;
 
-                console.log(this.errorMsg);
+
                 this.loading = false;
             }
         );
@@ -146,7 +146,7 @@ export class ListTemplatesComponent implements OnInit {
     }
 
     viewUpdates(template: TemplateMetadata): void {
-        console.log(template.updates);
+
         this.dialog.open(TemplateUpdatesDialog, {
             data: {updates: template.updates},
             width: '40%'

@@ -107,8 +107,6 @@ export class FeedAccessControl {
     }
 
     static adminAccess = () => new FeedAccessControl().allAccess();
-
-
 }
 
 
@@ -925,7 +923,7 @@ export class Feed implements KyloObject, KyloFeed {
             }
             else {
                 //WARN Columns are empty.
-                console.log("EMPTY columns for ", dataSet);
+               //console.log("EMPTY columns for ", dataSet);
             }
             if (TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
                 this.table.sourceTableSchema.fields = sourceColumns;

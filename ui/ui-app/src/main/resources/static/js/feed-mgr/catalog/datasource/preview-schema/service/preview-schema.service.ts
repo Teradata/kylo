@@ -58,7 +58,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
                 dataset.clearPreviewError();
                 dataset.preview = cachedPreview.preview;
                 dataset.schema = cachedPreview.schema;
-                console.log("Updated dataset",dataset," with cached preview")
+
             }
         })
     }

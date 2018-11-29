@@ -97,7 +97,7 @@ import {CovalentDataTableModule} from "@covalent/core/data-table";
 })
 export class SlaModule {
     constructor(){
-        console.log("SLA MODULE!!!")
+        
     }
 }
 
@@ -112,6 +112,6 @@ export class SlaModule {
 })
 export class SlaRouterModule {
     constructor() {
-        console.log("SlaRouterModule!!!")
+        
     }
 }

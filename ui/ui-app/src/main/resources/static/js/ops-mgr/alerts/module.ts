@@ -30,7 +30,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.alert-details.controller" */ './AlertDetailsController')
                         .then(mod => {
-                            console.log('imported AlertDetailsController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
@@ -60,7 +60,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.alert-details.controller" */ './AlertDetailsController')
                         .then(mod => {
-                            console.log('imported AlertDetailsController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

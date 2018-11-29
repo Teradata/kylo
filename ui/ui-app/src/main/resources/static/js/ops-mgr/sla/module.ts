@@ -62,7 +62,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.sla.controller" */ './service-level-assessment')
                         .then(mod => {
-                            console.log('imported ServiceLevelAssessmentsInitController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

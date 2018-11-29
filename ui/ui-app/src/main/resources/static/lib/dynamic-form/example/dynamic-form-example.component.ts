@@ -15,7 +15,7 @@ export class DynamicFormExampleComponent implements OnInit,OnDestroy{
     formConfig:FormConfig;
 
     constructor() {
-        console.log("NEW DYNAMIC FORM!!!!!!")
+        
 
         // Create form
         this.formConfig = new DynamicFormBuilder().setTitle("Example Form")
@@ -77,14 +77,14 @@ export class DynamicFormExampleComponent implements OnInit,OnDestroy{
      * Closes this dialog and returns the form value.
      */
     apply() {
-        console.log("APPLY ",this.formConfig.form.value)
+        
     }
 
     /**
      * Cancel this dialog.
      */
     cancel() {
-       console.log("CANCELLED!!! ")
+       
     }
 
 

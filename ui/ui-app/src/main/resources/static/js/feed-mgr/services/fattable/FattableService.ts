@@ -284,12 +284,12 @@ function FattableService($window: any) {
         angular.element($window).unbind(eventId);
         const debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);
         angular.element($window).on(eventId, function () {
-            console.log('binding ' + eventId);
+
             debounced(settings);
         });
 
         angular.element(selector).on('$destroy', function () {
-            console.log('on destroy, unbinding ' + eventId);
+
             angular.element($window).unbind(eventId);
         });
     }

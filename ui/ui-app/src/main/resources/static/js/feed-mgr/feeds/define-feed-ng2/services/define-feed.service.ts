@@ -296,7 +296,7 @@ export class DefineFeedService {
     }
 
     getDraftFeed(feedId:string):Observable<Feed>{
-        console.log("get draft version ",feedId)
+
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
         return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, false, true, true)
     }
@@ -558,9 +558,6 @@ export class DefineFeedService {
             steps = stepUtil.dataTransformationSteps()
             steps.filter(step => step.systemName == FeedStepConstants.STEP_FEED_SOURCE).forEach(step => {
                 step.hidden = !feed.renderSourceStep();
-                if(step.hidden){
-                    console.log("HIDING Source step for feed ",feed)
-                }
             });
         }
         else {
@@ -909,7 +906,7 @@ export class DefineFeedService {
             feedModel.validate(true);
             feedModel.loadMode = loadMode;
             if(load) {
-                console.log('LOADED FEED Version ',entityVersion)
+
                 this.feed = feedModel;
                 this.feedLoadMode = loadMode;
             }
