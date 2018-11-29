@@ -1,4 +1,4 @@
-import {HttpClient, HttpHeaders, HttpParams, HttpErrorResponse} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from "@angular/common/http";
 import {Injectable, Injector, ViewContainerRef} from "@angular/core";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -18,7 +18,6 @@ import {filter} from "rxjs/operators/filter";
 import {finalize} from "rxjs/operators/finalize";
 import {tap} from "rxjs/operators/tap";
 import {ReplaySubject} from "rxjs/ReplaySubject";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Subject} from "rxjs/Subject";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
@@ -840,9 +839,13 @@ export class DefineFeedService {
             }, error1 => {
                 if(load && alertOnError && this.loadingFeedErrors[id] == undefined) {
                     this.loadingFeedErrors[id] = id;
+                    let message = "There was an error attempting to load the feed";
+                    if (error1.status == 404) {
+                        message = "Feed not found";
+                    }
                     this._dialogService.openAlert({
                         title:"Error loading feed",
-                        message: "There was an error attempting to load the feed "
+                        message: message
                     });
                 }
                 loadFeedSubject.error(error1)
