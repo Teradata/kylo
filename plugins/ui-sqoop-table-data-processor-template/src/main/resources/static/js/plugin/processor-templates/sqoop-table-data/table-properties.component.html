@@ -32,7 +32,7 @@
   </mat-form-field>
 
   <div *ngIf="databaseConnectionError == true" fxLayout="column">
-    <div class="layout-padding-top-bottom">Unable to connect to selected data source.</div>
+    <div class="layout-padding-top-bottom">{{databaseConnectionErrorMessage}}</div>
 
     <mat-form-field class="layout-padding-top-bottom" *ngIf="renderLoadStrategyOptions" fxFill>
       <input matInput placeholder="Table Name" [(ngModel)]="tableProperty.value" (change)="onManualTableNameChange()">

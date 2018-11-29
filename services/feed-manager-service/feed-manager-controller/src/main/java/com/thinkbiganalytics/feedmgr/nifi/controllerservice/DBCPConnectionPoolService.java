@@ -272,7 +272,6 @@ public class DBCPConnectionPoolService {
      * Executes the specified SELECT query in the context of the specified data source.
      *
      * @param datasource the JDBC datasource
-     * @param query      the query to execute
      * @return the query results
      * @throws DataAccessException      if the query cannot be executed
      * @throws IllegalArgumentException if the datasource is invalid
@@ -492,7 +491,7 @@ public class DBCPConnectionPoolService {
         return null;
     }
 
-    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, AbstractControllerServiceRequest serviceProperties) {
+    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, AbstractControllerServiceRequest serviceProperties) throws InvalidControllerServiceLookupException {
         boolean valid = !isMasked(dataSourceProperties.getPassword());
         if (!valid) {
             List<Datasource> matchingDatasources = metadataAccess.read(() -> {
@@ -523,6 +522,8 @@ public class DBCPConnectionPoolService {
                 String example = propertyKey + "=PASSWORD";
                 log.error("Unable to connect to Controller Service {}, {}.  You need to specify a configuration property as {} with the password for user: {}. ",
                           serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), example, dataSourceProperties.getUser());
+
+                throw new InvalidControllerServiceLookupException("Unable to connect to Controller Service "+serviceProperties.getControllerServiceName()+".  Please ensure Kylo has a configuration property matching ["+example+"] to connect to this source ");
             }
         }
         return valid;
@@ -569,7 +570,7 @@ public class DBCPConnectionPoolService {
     }
 
 
-    private TableSchema describeTableForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
+    private TableSchema describeTableForControllerService(DescribeTableControllerServiceRequest serviceProperties) throws InvalidControllerServiceLookupException {
 
         String type = serviceProperties.getControllerServiceType();
         if (serviceProperties.getControllerServiceType() != null && serviceProperties.getControllerServiceType().equalsIgnoreCase(type)) {
@@ -586,8 +587,6 @@ public class DBCPConnectionPoolService {
                 DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
                 DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
                 return schemaParser.describeTable(serviceProperties.getSchemaName(), serviceProperties.getTableName());
-            } else {
-                return null;
             }
         }
         return null;

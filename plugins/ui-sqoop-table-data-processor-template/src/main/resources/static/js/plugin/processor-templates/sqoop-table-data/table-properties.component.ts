@@ -87,6 +87,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
      */
     databaseConnectionError = false;
 
+    databaseConnectionErrorMessage: string;
+
     dbConnectionProperty: any;
 
     deleteSourceProperty: any;
@@ -232,12 +234,12 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         const hintSuffix = ".  ** indicates an existing catalog data source";
         if(this.dbConnectionProperty) {
             let desc = this.dbConnectionProperty.propertyDescriptor.origDescription || this.dbConnectionProperty.propertyDescriptor.description;
-            if (!this.processor.form.disabled) {
+            if (desc != undefined && !this.processor.form.disabled) {
                 if(desc.indexOf(hintSuffix) == -1){
                     this.dbConnectionProperty.propertyDescriptor.origDescription = desc;
                     this.dbConnectionProperty.propertyDescriptor.description = desc+hintSuffix;
                 }
-            } else {
+            } else if(desc != undefined){
                 this.dbConnectionProperty.propertyDescriptor.description = desc;
             }
         }
@@ -464,7 +466,11 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 }
             }
 
+            console.log("get ",this.tableSchemaService.LIST_TABLES_URL(this.dbConnectionProperty.value), 'with ',httpOptions.params)
             return this.http.get(this.tableSchemaService.LIST_TABLES_URL(this.dbConnectionProperty.value), httpOptions).pipe(
+                catchError((error: any) => {
+                    return Observable.throw(error);
+                }),
                 map((data: any) => {
                     if (Array.isArray(data)) {
                         return data;
@@ -481,6 +487,15 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 }),
                 catchError<any, any[]>((error: any) => {
                     this.databaseConnectionError = true;
+                    if(error && error.error && error.error.message){
+                        this.databaseConnectionErrorMessage = error.error.message;
+                    }
+                    else if(error && error.message ){
+                        this.databaseConnectionErrorMessage = error.message;
+                    }
+                    else {
+                        this.databaseConnectionErrorMessage = "Unable to connecto to data source";
+                    }
                     throw error;
                 })
             );
@@ -540,8 +555,9 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     this.tableSchema = response;
                     this.tableFields = this.tableSchema.fields;
                     this.filteredFieldDates = this.tableFields.filter(this.filterFieldDates);
-                }, () => {
+                }, (error:any) => {
                     this.databaseConnectionError = true;
+                    console.error("error",error)
                 });
         }
     }
