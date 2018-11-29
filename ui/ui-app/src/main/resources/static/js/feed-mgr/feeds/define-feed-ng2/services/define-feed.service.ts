@@ -1,4 +1,4 @@
-import {HttpClient, HttpHeaders, HttpParams, HttpErrorResponse} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from "@angular/common/http";
 import {Injectable, Injector, ViewContainerRef} from "@angular/core";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -18,7 +18,6 @@ import {filter} from "rxjs/operators/filter";
 import {finalize} from "rxjs/operators/finalize";
 import {tap} from "rxjs/operators/tap";
 import {ReplaySubject} from "rxjs/ReplaySubject";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {Subject} from "rxjs/Subject";
 import {ISubscription} from "rxjs/Subscription";
 import * as _ from "underscore";
@@ -296,7 +295,7 @@ export class DefineFeedService {
     }
 
     getDraftFeed(feedId:string):Observable<Feed>{
-        console.log("get draft version ",feedId)
+
         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
         return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, false, true, true)
     }
@@ -558,9 +557,6 @@ export class DefineFeedService {
             steps = stepUtil.dataTransformationSteps()
             steps.filter(step => step.systemName == FeedStepConstants.STEP_FEED_SOURCE).forEach(step => {
                 step.hidden = !feed.renderSourceStep();
-                if(step.hidden){
-                    console.log("HIDING Source step for feed ",feed)
-                }
             });
         }
         else {
@@ -843,9 +839,13 @@ export class DefineFeedService {
             }, error1 => {
                 if(load && alertOnError && this.loadingFeedErrors[id] == undefined) {
                     this.loadingFeedErrors[id] = id;
+                    let message = "There was an error attempting to load the feed";
+                    if (error1.status == 404) {
+                        message = "Feed not found";
+                    }
                     this._dialogService.openAlert({
                         title:"Error loading feed",
-                        message: "There was an error attempting to load the feed "
+                        message: message
                     });
                 }
                 loadFeedSubject.error(error1)
@@ -909,7 +909,7 @@ export class DefineFeedService {
             feedModel.validate(true);
             feedModel.loadMode = loadMode;
             if(load) {
-                console.log('LOADED FEED Version ',entityVersion)
+
                 this.feed = feedModel;
                 this.feedLoadMode = loadMode;
             }

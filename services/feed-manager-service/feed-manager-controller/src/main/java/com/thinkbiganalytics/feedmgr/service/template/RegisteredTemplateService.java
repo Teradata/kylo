@@ -504,7 +504,7 @@ public class RegisteredTemplateService {
         RegisteredTemplate
             registeredTemplate =
             findRegisteredTemplate(
-                new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).isFeedEdit(true).nifiTemplateId(feedMetadata.getTemplateId()).includeAllProperties(true).build());
+                new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).isFeedEdit(true).nifiTemplateId(feedMetadata.getTemplateId()).includePropertyDescriptors(true).includeAllProperties(true).build());
         if (registeredTemplate != null) {
             feedMetadata.setTemplateId(registeredTemplate.getId());
 

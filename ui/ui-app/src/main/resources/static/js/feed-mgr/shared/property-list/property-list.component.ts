@@ -78,7 +78,7 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
      * Update the Model 'properties' array with the form values
      */
     updateModel(){
-        console.log("Update Model", this.userPropertyForm.value, 'this.properties',this.properties);
+
         this.properties.map(property => {
             property.systemName = this.userPropertyForm.value[this.formControlKey(property,"systemName")];
             property.value = this.userPropertyForm.value[this.formControlKey(property,"value")];

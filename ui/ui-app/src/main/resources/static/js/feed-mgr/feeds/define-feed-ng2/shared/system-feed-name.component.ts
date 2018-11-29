@@ -40,7 +40,7 @@ export class SystemFeedNameComponent implements OnInit {
                 this.generateSystemName(value);
             }
             else {
-                console.log('system name will not auto generate.  its been touched')
+               // console.log('system name will not auto generate.  its been touched')
             }
         });
         this.formGroup.registerControl("feedName", feedNameCtrl);

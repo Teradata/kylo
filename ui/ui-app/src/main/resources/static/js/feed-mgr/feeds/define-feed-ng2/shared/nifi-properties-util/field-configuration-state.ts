@@ -39,7 +39,7 @@ export class FieldConfigurationState {
         this.getFieldsForInput(processor.id).forEach((fieldConfig:FieldConfig<any>) => {
             let oldValue = fieldConfig.value;
             let newValue = fieldConfig.getModelValue();
-            console.log('update ',fieldConfig.key,'oldValue',oldValue,'newValue',newValue,'config',fieldConfig)
+
             fieldConfig.value = fieldConfig.getModelValue()
         })
     }

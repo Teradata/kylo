@@ -45,7 +45,7 @@ export class TemplatePublishDialog implements OnInit {
 
     publishTemplate() {
         this.loading = true;
-        console.log(this.data.templateId, this.selectedRepository, this.overwrite);
+
         if (this.selectedRepository) {
             this.templateService
                 .publishTemplate({ "repositoryName": this.selectedRepository.name,

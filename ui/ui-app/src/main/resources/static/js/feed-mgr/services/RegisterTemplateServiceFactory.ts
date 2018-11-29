@@ -660,7 +660,7 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
         }
 
         if (registeredTemplateId != null) {
-            console.log('reset');
+
             this.resetModel();
             //get the templateId for the registeredTemplateId
             this.model.id = registeredTemplateId;
@@ -671,7 +671,7 @@ return this.registerTemplatePropertyService.fetchMetadataProperties(successFn, e
         if (this.model.nifiTemplateId != null) {
             this.model.loading = true;
             let successFn = (response: angular.IHttpResponse<any>) => {
-                console.log("running success function", this.model.changeComment);
+
                 var templateData = response.data;
                 transformPropertiesToArray(templateData.properties);
                 this.model.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + templateData.id;

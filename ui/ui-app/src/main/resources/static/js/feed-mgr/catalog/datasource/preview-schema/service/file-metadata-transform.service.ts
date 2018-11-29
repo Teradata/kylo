@@ -77,7 +77,7 @@ export class FileMetadataTransformService  {
         let cacheKey = datasource.id+"_"+paths.sort().toString();
         if(this.cache[cacheKey]){
             observable = Observable.of(this.cache[cacheKey]);
-            console.log("returning cached result of file metadata transform for ",paths);
+
         }
         else {
             observable = new Observable<FileMetadataTransformResponse>((observer) => {
@@ -89,7 +89,7 @@ export class FileMetadataTransformService  {
                 let statusCheckTime = 300
 
                 let formatDetected = (data: FileMetadataTransformResponse): void => {
-                    console.log('FORMAT DETECTED ', data,);
+
                     this.detectionResult = {}
 
                     this.detectionResult.filePaths = paths;
@@ -126,7 +126,7 @@ export class FileMetadataTransformService  {
                 }
 
                 let fileMetadataProgress = (id: string) => {
-                    console.log('PROGRESS FOR ', id)
+
                     this.http.get("/proxy/v1/spark/shell/file-metadata/" + id).subscribe((data: any) => {
                         checkProgress(data);
                     }, error1 => {
@@ -137,7 +137,7 @@ export class FileMetadataTransformService  {
 
                 this.http.post("/proxy/v1/spark/shell/file-metadata", request)
                     .subscribe((data: any) => {
-                        console.log('DATA', data)
+
                         checkProgress(data);
                     });
 
@@ -147,6 +147,4 @@ export class FileMetadataTransformService  {
         return observable;
 
     }
-
-
 }

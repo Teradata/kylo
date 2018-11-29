@@ -144,7 +144,7 @@ export class FeedPreconditionDialogComponent{
         if (this.preconditions != null && $index != null) {
             this.preconditions.splice($index, 1);
         }
-        console.log("deleted precondition ",$index, this.preconditions)
+
         this.pendingEdits = true;
         this.preconditionsChange.emit(this.preconditions)
         this.cancelEdit();

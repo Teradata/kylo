@@ -152,7 +152,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     }
 
     onSelect(item: any) {
-        console.log("onSelect!!");
+
         if (item && item.nodes && item.nodes[0]) {
             this.changed = true;
             var firstItem = item.nodes[0];
@@ -229,7 +229,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
     }
 
     redraw() {
-        console.log("redraw");
+
         if (this.isDetailedGraph()) {
             this.onDetailedView();
         }

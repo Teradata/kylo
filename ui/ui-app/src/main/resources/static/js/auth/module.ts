@@ -29,7 +29,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "users.table.controller" */ './users/UsersTableController')
                         .then(mod => {
-                            console.log('imported UsersTableController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
@@ -61,7 +61,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "user.details.controller" */ './users/user-details/UserDetailsController')
                         .then(mod => {
-                            console.log('imported UserDetailsController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
@@ -91,7 +91,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "groups.table.controller" */ './groups/GroupsTableController')
                         .then(mod => {
-                            console.log('imported GroupsTableController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
@@ -123,7 +123,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "groups.details.controller" */ './groups/group-details/GroupDetailsController')
                         .then(mod => {
-                            console.log('imported GroupDetailsController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

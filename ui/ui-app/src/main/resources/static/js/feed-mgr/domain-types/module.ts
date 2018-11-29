@@ -34,7 +34,7 @@ class ModuleFactory  {
                     loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                         return import(/* webpackChunkName: "admin.domain-types.controller" */ './DomainTypesController')
                             .then(mod => {
-                                console.log('imported DefineFeedCompleteController mod', mod);
+
                                 return $ocLazyLoad.load(mod.default)
                             })
                             .catch(err => {
@@ -69,7 +69,7 @@ class ModuleFactory  {
                     loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                         return import(/* webpackChunkName: "admin.domain-types-details.component" */ './details/details.component')
                             .then(mod => {
-                                console.log('imported domainTypeDetailsComponent mod', mod);
+
                                 return $ocLazyLoad.load(mod.default)
                             })
                             .catch(err => {

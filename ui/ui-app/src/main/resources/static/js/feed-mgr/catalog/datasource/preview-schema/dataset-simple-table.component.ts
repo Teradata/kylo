@@ -146,9 +146,4 @@ export class DatasetSimpleTableComponent {
            return widthMap;
 
     }
-
-
-
-
-
 }

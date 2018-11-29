@@ -122,6 +122,4 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
             return null;
         }
     }
-
-
 }

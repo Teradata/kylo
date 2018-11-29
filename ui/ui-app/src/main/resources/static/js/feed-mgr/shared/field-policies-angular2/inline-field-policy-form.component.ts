@@ -56,7 +56,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
         if(this.policyForm == undefined){
             this.policyForm = new FormGroup({});
         }
-        console.log('policyParameter',this.policyParameter)
+
         this.fieldPolicyOptionsService.getOptionsForType(this.policyParameter).subscribe( (response:any) => {
             var currentFeedValue = null;
             var results = [];

@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.InvalidControllerServiceLookupException;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -461,13 +462,18 @@ public class NifiIntegrationRestController {
             log.info("Query for Table Names against data source: {}", dataSource.get().getId());
             try {
                 tables = catalogTableManager.getTableNames(dataSource.get(), schema, tableName);
-            } catch (final SQLException e) {
+            } catch (final SQLException | InvalidControllerServiceLookupException e) {
                 log.error("Unable to list table names for data source: {}", dataSource.get().getId(), e);
-                throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
+                throw new InternalServerErrorException("Unable to connect to the data source", e);
             }
         } else {
             log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
+            try {
             tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
+            } catch (final InvalidControllerServiceLookupException e) {
+                log.error("Unable to list table names for controller service: {}", serviceName, e);
+                throw new InternalServerErrorException("Unable to connect to the data source", e);
+            }
         }
 
         return Response.ok(tables).build();

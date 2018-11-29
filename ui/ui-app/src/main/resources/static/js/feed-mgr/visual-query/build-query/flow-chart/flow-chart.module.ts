@@ -21,6 +21,6 @@ import {FlowChartComponent} from "./flow-chart.component";
 })
 export class FlowChartModule {
     constructor(injector: Injector) {
-        console.log("Loading FlowChartModule")
+
     }
 }

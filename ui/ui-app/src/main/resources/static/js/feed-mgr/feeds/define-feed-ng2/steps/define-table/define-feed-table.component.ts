@@ -900,7 +900,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
     }
 
     onSampleSourceSaved(previewEvent: DatasetPreviewStepperSavedEvent) {
-        console.log("SAVE SAMPLE ",previewEvent)
+
         let previews: PreviewDataSet[] = previewEvent.previews;
         if (previews && previews.length) {
             let feedDataSets = this.feed.sourceDataSets;
@@ -956,7 +956,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             this.cd.reattach();
             this.cd.markForCheck();
             this.cd.detectChanges();
-            console.log('_update controls ',this)
+
         }
 
 
@@ -967,7 +967,7 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
             if(event.previews[0] instanceof PreviewFileDataSet) {
 
                 this.defineFeedSourceSampleService.parseTableSettings((<PreviewFileDataSet>event.previews[0])).subscribe( (response:any)=> {
-                    console.log("SCHEMA RESPONSE ",response)
+
                     this.feed.table.feedFormat = response.hiveFormat;
                     this.feed.structuredData(response.structured);
                     this.feed.table.feedTblProperties = response.serdeTableProperties;
@@ -1116,13 +1116,13 @@ class TableFormControls {
         Object.keys(this.defineTableForm.controls).forEach((key: string) => {
             if(key != "indexCheckAll" && key != "profileCheckAll") {
                 this.defineTableForm.removeControl(key)
-                console.log("REMOVE field ",key)
+
             }
         });
         Object.keys(this.definePartitionForm.controls).forEach((key: string) => {
 
          this.definePartitionForm.removeControl(key);
-        console.log("REMOVE partition ",key)
+
         });
     }
 

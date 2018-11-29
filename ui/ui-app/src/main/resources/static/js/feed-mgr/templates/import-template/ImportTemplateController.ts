@@ -470,7 +470,7 @@ export class ImportTemplateController implements angular.IController, OnDestroy,
     }
 
     importTemplateFromRepository(params: any, successFn: any, errorFn: any) {
-        console.log(params);
+
         this.$http.post("/proxy/v1/repository/templates/import", params, {
             headers: {'Content-Type': 'application/json'}
         })

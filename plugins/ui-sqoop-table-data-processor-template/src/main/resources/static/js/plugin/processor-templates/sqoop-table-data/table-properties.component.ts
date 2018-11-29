@@ -87,6 +87,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
      */
     databaseConnectionError = false;
 
+    databaseConnectionErrorObject: any;
+
     dbConnectionProperty: any;
 
     deleteSourceProperty: any;
@@ -157,6 +159,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
 
     catalogNiFiControllerServiceIds:string[] = null;
 
+    initialized:boolean = false;
+
     constructor(private http: HttpClient, private dialog: MatDialog, @Inject("FeedService") private feedService: any, @Inject("DBCPTableSchemaService") private tableSchemaService: any) {
         // Handle connection service changes
         this.form.valueChanges.pipe(
@@ -199,8 +203,10 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         if(this.dbConnectionProperty && this.catalogNiFiControllerServiceIds != null){
             (this.dbConnectionProperty.propertyDescriptor.allowableValues as any[])
                 .filter((allowableValue: any) => allowableValue.displayName.indexOf("**") == -1 && this.catalogNiFiControllerServiceIds.indexOf(allowableValue.value) >=0)
-                .forEach((allowableValue:any) =>  {allowableValue.displayName +="**";
+                .forEach((allowableValue:any) =>  {
                             allowableValue.catalogSource = true;
+                            allowableValue.origName = allowableValue.displayName;
+                            allowableValue.displayName +="**";
                 });
               }
 
@@ -229,15 +235,18 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         this.dbConnectionProperty = this.findProperty(this.connectionServiceKey, false);
 
         //update the hint only when editing
-        const hintSuffix = ".  ** indicates an existing catalog data source";
+        const hintSuffix = "   ** Indicates an existing catalog data source";
         if(this.dbConnectionProperty) {
             let desc = this.dbConnectionProperty.propertyDescriptor.origDescription || this.dbConnectionProperty.propertyDescriptor.description;
             if (!this.processor.form.disabled) {
-                if(desc.indexOf(hintSuffix) == -1){
+                if(desc != undefined && desc.indexOf(hintSuffix) == -1){
                     this.dbConnectionProperty.propertyDescriptor.origDescription = desc;
                     this.dbConnectionProperty.propertyDescriptor.description = desc+hintSuffix;
                 }
-            } else {
+                else if (desc == undefined || desc == null){
+                    this.dbConnectionProperty.propertyDescriptor.description = hintSuffix;
+                }
+            } else if(desc != undefined){
                 this.dbConnectionProperty.propertyDescriptor.description = desc;
             }
         }
@@ -277,7 +286,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         this.http.get(url).subscribe((responses:any[]) => {
             this.catalogNiFiControllerServiceIds = responses.map((source:any) => source.nifiControllerServiceId);
             this.updateDbConnectionPropertyOptions();
-        });
+            this.initialized = true;
+        },(error1:any) => this.initialized = true);
 
     }
 
@@ -460,11 +470,19 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 const service = (this.dbConnectionProperty.propertyDescriptor.allowableValues as any[])
                     .find((allowableValue: any) => allowableValue.value == this.dbConnectionProperty);
                 if (typeof service !== "undefined") {
-                    httpOptions.params.serviceName = service.displayName;
+                    let name = service.displayName;
+                    if(service.catalogSource && service.origName){
+                        name = service.origName;
+                    }
+                    httpOptions.params.serviceName = name
                 }
             }
 
+
             return this.http.get(this.tableSchemaService.LIST_TABLES_URL(this.dbConnectionProperty.value), httpOptions).pipe(
+                catchError((error: any) => {
+                    return Observable.throw(error);
+                }),
                 map((data: any) => {
                     if (Array.isArray(data)) {
                         return data;
@@ -480,11 +498,32 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     return query ? tables.filter(this.createFilterForTable(query)) : tables;
                 }),
                 catchError<any, any[]>((error: any) => {
-                    this.databaseConnectionError = true;
-                    throw error;
+                    this.setDatabaseConnectionError(error)
+                    return Observable.throw(error);
                 })
             );
         }
+    }
+
+    private setDatabaseConnectionError(error:any){
+        if(error && error.error && error.error.message){
+            this.databaseConnectionErrorObject = error.error;
+        }
+        else if(error && error.message ){
+            this.databaseConnectionErrorObject = error;
+        }
+        else {
+            this.databaseConnectionErrorObject = {message:"Unable to connect to data source ",developerMessage:null};
+        }
+        this.databaseConnectionErrorObject.message +=". You can manually enter the table and fields below";
+
+        if(this.tableProperty){
+            this.tableProperty.value = "";
+        }
+        if(this.fieldsProperty) {
+            this.fieldsProperty.value = "";
+        }
+        this.databaseConnectionError = true;
     }
 
     /**
@@ -529,19 +568,26 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         if (dbcpProperty != null && dbcpProperty.value != null && this.selectedTable != null) {
             this.updateRestrictIncrementalToDateOnly();
             let serviceId = dbcpProperty.value;
-            let serviceNameValue: any = null;
+
+            let serviceName = '';
             if (Array.isArray(dbcpProperty.propertyDescriptor.allowableValues)) {
-                dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => allowableValue.value == serviceId);
+             let service =   dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => allowableValue.value == serviceId);
+             if(service != undefined) {
+                 serviceName = service.displayName;
+                 if (service.catalogSource && service.origName) {
+                     serviceName = service.origName;
+                 }
+             }
             }
-            let serviceName = serviceNameValue != null && serviceNameValue != undefined ? serviceNameValue.displayName : '';
             this.http.get(this.tableSchemaService.DESCRIBE_TABLE_URL(serviceId, this.selectedTable.tableName), {params: {schema: this.selectedTable.schema, serviceName: serviceName}})
                 .subscribe((response) => {
                     this.databaseConnectionError = false;
                     this.tableSchema = response;
                     this.tableFields = this.tableSchema.fields;
                     this.filteredFieldDates = this.tableFields.filter(this.filterFieldDates);
-                }, () => {
-                    this.databaseConnectionError = true;
+                }, (error:any) => {
+                    this.setDatabaseConnectionError(error);
+                    console.error("error",error)
                 });
         }
     }
@@ -559,13 +605,17 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
             this.describingTableSchema = true;
 
             let serviceId = dbcpProperty.value;
-            let serviceNameValue = null;
+            let service = null;
+            let serviceName = '';
             if (dbcpProperty.propertyDescriptor.allowableValues) {
-                serviceNameValue = dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => {
-                    return allowableValue.value == serviceId;
-                });
+                service =   dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => allowableValue.value == serviceId);
             }
-            let serviceName = serviceNameValue != null && serviceNameValue != undefined ? serviceNameValue.displayName : '';
+            if(service != undefined && service != null) {
+                serviceName = service.displayName;
+                if (service.catalogSource && service.origName) {
+                    serviceName = service.origName;
+                }
+            }
             this.http.get(this.tableSchemaService.DESCRIBE_TABLE_URL(serviceId, this.selectedTable.tableName), {params: {schema: this.selectedTable.schema, serviceName: serviceName}})
                 .subscribe((response) => {
                     this.databaseConnectionError = false;
@@ -599,14 +649,15 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     this.model.table.sourceTableSchema.name = this.model.table.existingTableName;
                     this.describingTableSchema = false;
                     this.hideDescribeTableSchemaDialog(dialogRef);
-                }, () => {
-                    this.databaseConnectionError = true;
+                }, (error:any) => {
+                    this.setDatabaseConnectionError(error)
                     this.describingTableSchema = false;
                     this.hideDescribeTableSchemaDialog(dialogRef);
                 });
 
         }
     }
+
 
     onManualTableNameChange() {
         if (this.model.table.method != 'EXISTING_TABLE') {
@@ -631,7 +682,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
             fieldNames.push(col.name);
         });
         this.model.table.sourceTableSchema.fields = [...fields];
-        this.feedService.setTableFields(fields);
+        this.model.table.setTableFields(fields)
 
         this.model.table.sourceFieldsCommaString = fieldNames.join(",");
         this.model.table.sourceFields = fieldNames.join("\n")

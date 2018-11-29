@@ -206,7 +206,7 @@ export class DefaultFeedDataTransformation implements FeedDataTransformation, Ky
     }
 
     reset(){
-        console.log("RESET DATA MODEL!!!!!!")
+
     }
 
 }

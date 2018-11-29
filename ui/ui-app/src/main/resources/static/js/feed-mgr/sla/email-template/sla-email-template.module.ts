@@ -90,7 +90,7 @@ import {SlaEmailTemplateContainerComponment} from "./sla-email-template-containe
 })
 export class SlaEmailTemplateModule {
     constructor(){
-        console.log("SLA MODULE!!!")
+        
     }
 }
 
@@ -105,6 +105,6 @@ export class SlaEmailTemplateModule {
 })
 export class SlaEmailTemplatesRouterModule {
     constructor() {
-        console.log("SlaRouterModule!!!")
+        
     }
 }

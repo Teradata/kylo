@@ -83,9 +83,9 @@ export class DefineFeedContainerComponent extends AbstractLoadFeedComponent impl
     }
 
     onTemplateActionTemplateChanged(change: ToolbarActionTemplateChangedEvent) {
-        console.log('TEMPLATE CHANGED!!!!');
+
         if (this.toolbarActionLinks != change.templateRef) {
-            console.log('RESET template!!!');
+
             this.toolbarActionLinks = change.templateRef;
         }
     }

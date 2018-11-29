@@ -593,6 +593,8 @@ public class FeedRestController {
             return getMetadataService().getLatestFeedVersion(feedId, includeEntity)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -616,6 +618,8 @@ public class FeedRestController {
             return getMetadataService().getDeployedFeedVersion(feedId, includeEntity)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -637,6 +641,8 @@ public class FeedRestController {
             return getMetadataService().getDeployedFeedVersion(feedId, false)
                 .map(version -> Response.ok("true").build())
                 .orElse(Response.ok("false").build());
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.ok("false").build();
         } catch (Exception e) {
@@ -658,6 +664,8 @@ public class FeedRestController {
             return getMetadataService().getDraftFeedVersion(feedId, false)
                 .map(version -> Response.ok("true").build())
                 .orElse(Response.ok("false").build());
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.ok("false").build();
         } catch (Exception e) {
@@ -683,6 +691,8 @@ public class FeedRestController {
                 .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (NifiConnectionException e ) {
             throw e;
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -707,6 +717,8 @@ public class FeedRestController {
                 .orElse(Response.status(Status.NOT_FOUND).build());
         } catch (NifiConnectionException e ) {
             throw e;
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -882,6 +894,8 @@ public class FeedRestController {
             return getMetadataService().getFeedVersion(feedId, versionId, includeEntity)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {
@@ -949,7 +963,7 @@ public class FeedRestController {
             EntityVersionDifference diff = getMetadataService().getFeedVersionDifference(feedId, fromVerId, toVerId);
             return Response.ok(diff).build();
         } catch (FeedNotFoundException e) {
-            return Response.status(Status.NOT_FOUND).build();
+            return Response.status(Status.NOT_FOUND).entity("Feed not found: " + feedId).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {

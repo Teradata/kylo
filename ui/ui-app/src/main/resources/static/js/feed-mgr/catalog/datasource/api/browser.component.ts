@@ -311,7 +311,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
             }
 
             this.state.go(this.getStateName(), params, options).then((res:any) =>{
-                console.log('transitioned!! ',res)
+
             },(err:any) => {
                 console.log('error ',err)
             });
@@ -422,7 +422,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
      * @param value
      */
     preview(row:BrowserObject,column:BrowserColumn,value:any) {
-        console.log('preview ',row,column,value)
+
         this.selectionService.clearSelected(this.datasource.id);
         this.selectionStrategy.toggleChild(this.node, row.name, true);
         this.initSelection();

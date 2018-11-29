@@ -77,6 +77,7 @@ public class SearchEsIntegrationTestBase extends IntegrationTestBase {
     protected static final long FOUR_SECONDS_IN_MILLIS = 4000;
     protected static final long FIVE_SECONDS_IN_MILLIS = 5000;
     protected static final long TEN_SECONDS_IN_MILLIS = 10000;
+    protected static final long TWENTY_SECONDS_IN_MILLIS = 20000;
 
 
     protected static int stepNumber;
@@ -207,5 +208,13 @@ public class SearchEsIntegrationTestBase extends IntegrationTestBase {
 
     protected static void resetStepNumbers() {
         stepNumber = 0;
+    }
+
+    protected void deleteKyloCategory(String categoryId) {
+        deleteCategory(categoryId);
+    }
+
+    protected void deleteKyloFeed(String feedId) {
+        deleteFeed(feedId);
     }
 }

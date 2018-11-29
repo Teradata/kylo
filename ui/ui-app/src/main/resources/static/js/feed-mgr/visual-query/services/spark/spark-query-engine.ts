@@ -288,7 +288,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         // Send the request
         let transformId: string;
 
-        console.log("SaveTransform !!!! ",body)
+
 
         return this.$http.post<TransformResponse>(this.apiUrl + "/transform", JSON.stringify(body), {
             headers: {"Content-Type": "application/json"},
@@ -503,7 +503,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             deferred.error(message);
         };
 
-        console.log("TRANSFORMING!!!! ",body)
+
 
         // Send the request
         self.$http.post<TransformResponse>(this.apiUrl + "/transform", JSON.stringify(body), {

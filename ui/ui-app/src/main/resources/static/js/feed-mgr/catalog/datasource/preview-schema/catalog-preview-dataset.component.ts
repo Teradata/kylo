@@ -154,14 +154,14 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
     protected  startLoading(){
         this.loading = true;
         this._tdLoadingService.register(CatalogPreviewDatasetComponent.LOADER);
-        console.log("START LOADING ",CatalogPreviewDatasetComponent.LOADER)
+
 
     }
 
     protected   finishedLoading(){
         this.loading = false;
         this._tdLoadingService.resolve(CatalogPreviewDatasetComponent.LOADER);
-        console.log("FINISHED LOADING ",CatalogPreviewDatasetComponent.LOADER)
+
     }
 
 
@@ -246,8 +246,4 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
         }
     }
-
-
-
-
 }

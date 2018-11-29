@@ -73,7 +73,7 @@ export class SelectDatasetStepComponent  extends DatasourceComponent implements 
      }
 
 onBrowserComponentFiltered(files:BrowserObject[]){
-        console.log('FINISHED UPDATING COMPONENT ',files)
+
     this.cd.markForCheck();
 }
 
@@ -127,7 +127,7 @@ onBrowserComponentFiltered(files:BrowserObject[]){
         this.initDataSource();
 
 
-        console.log("DS Changed!!!")
+
     }
 
     /**

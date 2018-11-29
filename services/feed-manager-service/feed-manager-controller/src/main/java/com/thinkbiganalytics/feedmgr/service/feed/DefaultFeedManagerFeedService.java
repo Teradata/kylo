@@ -755,12 +755,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         // Check existence of required category and template entities with service privileges.
         metadataAccess.read(() -> {
             //Read all the feeds as System Service account to ensure the feed name is unique
-            if (feedMetadata.isNew()) {
-                Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
-                if (existing != null) {
-                    throw new DuplicateFeedNameException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
-                }
 
+            Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+            if (existing != null && !existing.getId().toString().equalsIgnoreCase(feedMetadata.getId())) {
+                throw new DuplicateFeedNameException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
+            }
+
+            if (feedMetadata.isNew()) {
                 // Ensure the template exists
                 FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
                 if (domainTemplate == null) {
@@ -780,7 +781,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             // Check services access to be able to create a feed
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
-            // Read all the feeds as System Service account to ensure the feed name is unique
+
             if (feedMetadata.isNew()) {
                 Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
 

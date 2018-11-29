@@ -92,7 +92,7 @@ export class BroadcastService {
                 const subscription = subject.subscribe(event => callback(event, ...event.args));
                 if (eventOrScope != null) {
                     (eventOrScope as angular.IScope).$on("$destroy", () => {
-                        console.log('Unsubscribe ',event, eventOrScope)
+
                         subscription.unsubscribe()
                     });
                 }

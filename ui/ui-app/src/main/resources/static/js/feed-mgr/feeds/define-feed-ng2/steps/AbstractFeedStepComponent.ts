@@ -86,7 +86,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     }
 
     private _onFeedEditStateChange(event: FeedEditStateChangeEvent) {
-        console.log("FEED STATE CHANGED!!!!", event)
+
         this.feed.readonly = event.readonly;
         this.feed.accessControl = event.accessControl;
         this.feedStateChange(event);
@@ -106,7 +106,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
 
         // subscribe to the stream
         formValueChanges$.debounceTime(debounceTime).subscribe(changes => {
-            console.log("FORM CHANGED ",changes)
+
             this.formValid = changes == "VALID" //&&  this.tableForm.validate(undefined);
             this.step.valid = this.formValid;
             this.step.validator.hasFormErrors = !this.formValid;
@@ -147,7 +147,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
     }
 
     public onStepStateChangeEvent(event:StepStateChangeEvent){
-        console.log('STEP Component, step CHANGED!!!',this,event)
+
         this.defineFeedService.onStepStateChangeEvent(event)
     }
 
@@ -170,7 +170,7 @@ export abstract class AbstractFeedStepComponent implements OnInit, OnDestroy {
      * Callback when a form changes state
      */
     public onFormChanged(change: any) {
-        console.log('FORM CHANGED ', change)
+
         if (!this.feed.readonly) {
             this.step.markDirty();
         }

@@ -70,7 +70,7 @@ class Route {
                     const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
                     return import(/* webpackChunkName: "home.module" */ './main/HomeController')
                         .then(mod => {
-                            console.log('imported home controller', mod);
+
                             $ocLazyLoad.load(mod);
                         })
                         .catch(err => {
@@ -101,13 +101,13 @@ class Route {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
                 return import(/* webpackChunkName: "feedmgr.import-feed.module" */ "./feed-mgr/feeds/define-feed/module")
                     .then(mod => {
-                        console.log('imported feed-mgr/feeds/define-feed/module', mod);
+
                         $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
                             $stateProvider.stateService.go('import-feed', transition.params());
                             return args;
                         }, function error(err: any) {
-                            console.log("Error loading import-feed ", err);
+                            console.error("Error loading import-feed ", err);
                             return err;
                         });
                     })
@@ -147,13 +147,13 @@ class Route {
                 const $ocLazyLoad = transition.injector().get('$ocLazyLoad');
                 return import(/* webpackChunkName: "admin.registered-templates.module" */ "././feed-mgr/templates/module")
                     .then(mod => {
-                        console.log('imported templates mod', mod);
+
                         return $ocLazyLoad.load({name: mod.default.module.name}).then(function success(args: any) {
                             //upon success go back to the state
                             $stateProvider.stateService.go('registered-templates')
                             return args;
                         }, function error(err: any) {
-                            console.log("Error loading registered-templates ", err);
+                            console.error("Error loading registered-templates ", err);
                             return err;
                         });
                     })
@@ -282,7 +282,7 @@ class Route {
                     $stateProvider.stateService.go('ops-feed-details', transition.params())
                     return args;
                 }, function error(err: any) {
-                    console.log("Error loading ops-feed-details ", err);
+                    console.error("Error loading ops-feed-details ", err);
                     return err;
                 });
             }
@@ -300,7 +300,7 @@ class Route {
                     $stateProvider.stateService.go('feed-stats', transition.params())
                     return args;
                 }, function error(err: any) {
-                    console.log("Error loading feed-stats ", err);
+                    console.error("Error loading feed-stats ", err);
                     return err;
                 });
             }
@@ -376,7 +376,7 @@ class Route {
                             $stateProvider.stateService.go('scheduler', transition.params())
                             return args;
                         }, function error(err: any) {
-                            console.log("Error loading scheduler ", err);
+                            console.error("Error loading scheduler ", err);
                             return err;
                         });
                     })
@@ -493,7 +493,7 @@ class Route {
                     $stateProvider.stateService.go('projects')
                     return args;
                 }, function error(err: any) {
-                    console.log("Error loading projects ", err);
+                    console.error("Error loading projects ", err);
                     return err;
                 });
             }
@@ -508,7 +508,7 @@ class Route {
                     $stateProvider.stateService.go('project-details', transition.params())
                     return args;
                 }, function error(err: any) {
-                    console.log("Error loading projects ", err);
+                    console.error("Error loading projects ", err);
                     return err;
                 });
             }
@@ -527,7 +527,7 @@ class Route {
                     const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
                     return import(/* webpackChunkName: "accessDenied.module" */ './main/AccessDeniedController')
                         .then(mod => {
-                            console.log('imported access denied controller', mod);
+
                             $ocLazyLoad.load(mod);
                         })
                         .catch(err => {
@@ -563,7 +563,7 @@ class Route {
 
 
         var checkAccess = (trans: any) => {
-            console.log("check access for ", trans.to(), ' is accessControlService.initialized ? ',accessControlService.initialized, 'is Future: ',accessControlService.isFutureState(trans.to().name));
+
             if (!accessControlService.isFutureState(trans.to().name)) {
                 //if we havent initialized the user yet, init and defer the transition
                 if (!accessControlService.initialized) {
@@ -572,7 +572,7 @@ class Route {
                         //if not allowed, go to access-denied
                         if (!accessControlService.hasAccess(trans)) {
                             if (trans.to().name != 'access-denied') {
-                                console.log("REDIRECT TO 'access-denied!!!! ", trans.to());
+
                                 let redirect = "access-denied";
                                 if(trans.to().data) {
                                     redirect = trans.to().data.accessRedirect != undefined ? trans.to().data.accessRedirect : "access-denied";
@@ -591,7 +591,7 @@ class Route {
                 else {
                     if (!accessControlService.hasAccess(trans)) {
                         if (trans.to().name != 'access-denied') {
-                            console.log("REDIRECT TO 'access-denied!!!! ", trans.to());
+
                             let redirect = "access-denied";
                             if(trans.to().data) {
                                 redirect = trans.to().data.accessRedirect != undefined ? trans.to().data.accessRedirect : "access-denied";

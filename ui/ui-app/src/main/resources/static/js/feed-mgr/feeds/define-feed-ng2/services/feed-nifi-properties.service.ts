@@ -89,7 +89,7 @@ export class FeedNifiPropertiesService {
                 NifiFeedPropertyUtil.updateDisplayValue(property);
             });
         }
-        console.log('feed.inputProcessors',feed.inputProcessors,'feed',feed)
+
 
 
     }

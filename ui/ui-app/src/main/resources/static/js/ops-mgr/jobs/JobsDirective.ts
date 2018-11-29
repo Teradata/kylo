@@ -122,7 +122,7 @@ export class JobsCardController implements ng.IComponentController{
             return this.filter;
         }, (newVal: any, oldVal: any)=> {
             if (newVal != oldVal) {
-                console.log('filter changed ',newVal,oldVal)
+
                 return this.loadJobs(true).promise;
             }
         });

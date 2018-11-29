@@ -53,7 +53,6 @@ public class CatalogMetadataConfig {
 
     private static final Logger log = LoggerFactory.getLogger(CatalogMetadataConfig.class);
 
-
     @Bean
     public ConnectorProvider connectorProvider() {
         return new JcrConnectorProvider();
@@ -76,7 +75,7 @@ public class CatalogMetadataConfig {
                 doPluginSyncAction(pluginMgr, metadata);
             } catch (ConnectorAlreadyExistsException e) {
                 log.warn("Encountered an error attempting to synchronize plugins", e);
-                log.info("Rebuilding modeshape indexes to ensure the are accurately synchronized with the data.   Please be patient as this may take a long time!");
+                log.info("Rebuilding modeshape indexes to ensure they are accurately synchronized with the data.   Please be patient as this may take a long time!");
 
                 try {
                     reindex(metadata);
@@ -90,13 +89,12 @@ public class CatalogMetadataConfig {
     }
 
 
-
     private void reindex(MetadataAccess metadata) {
         metadata.commit(() -> {
             Session session = JcrMetadataAccess.getActiveSession();
             Workspace workspace = (Workspace) session.getWorkspace();
             workspace.reindex();
-        });
+        }, MetadataAccess.SERVICE);
     }
 
 

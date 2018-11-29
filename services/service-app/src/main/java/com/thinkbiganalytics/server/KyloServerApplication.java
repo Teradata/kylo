@@ -69,11 +69,17 @@ public class KyloServerApplication implements SchedulingConfigurer {
         KyloUpgrader upgrader = new KyloUpgrader();
 
         if (upgrader.isUpgradeRequired()) {
-            KyloVersion currentVersion = upgrader.getCurrentVersion();
-            log.info("*****  Upgrade required - this may take some time  *****");
-            log.info("Beginning upgrade from version {} ...", currentVersion == null ? "unknown" : currentVersion);
-            upgrader.upgrade();
-            log.info("*****  Upgrading complete  *****");
+            try {
+                KyloVersion currentVersion = upgrader.getCurrentVersion();
+                log.info("*****  Upgrade required - this may take some time  *****");
+                log.info("Beginning upgrade from version {} ...", currentVersion == null ? "unknown" : currentVersion);
+                upgrader.upgrade();
+                log.info("*****  Upgrading complete  *****");
+            } catch (Exception e) {
+                log.error("Error during upgrade: {}", e.getMessage());
+                log.error("*****  Upgrading failed  *****");
+                System.exit(1);
+            }
         } else {
             log.info("Kylo v{} is up to date.  Starting the application.", KyloVersionUtil.getBuildVersion());
         }

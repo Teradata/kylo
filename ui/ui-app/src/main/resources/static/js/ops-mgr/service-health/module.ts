@@ -29,7 +29,7 @@ class ModuleFactory  {
                 loadPage: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.service-health-details.controller" */ './module-require')
                         .then(mod => {
-                            console.log('imported ops-mgr/service-health/module-require mod', mod);
+
                             return $ocLazyLoad.load({name: moduleName})
                         })
                         .catch(err => {
@@ -60,7 +60,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.service-health-details.controller" */ './ServiceHealthDetailsController')
                         .then(mod => {
-                            console.log('imported ServiceHealthDetailsController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {
@@ -90,7 +90,7 @@ class ModuleFactory  {
                 loadMyCtrl: ['$ocLazyLoad', ($ocLazyLoad: any) => {
                     return import(/* webpackChunkName: "opsmgr.service-component-health-details.controller" */ './ServiceComponentHealthDetailsController')
                         .then(mod => {
-                            console.log('imported ServiceComponentHealthDetailsController mod', mod);
+
                             return $ocLazyLoad.load(mod.default)
                         })
                         .catch(err => {

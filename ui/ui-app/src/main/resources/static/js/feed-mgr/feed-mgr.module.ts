@@ -92,7 +92,7 @@ import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-ac
 })
 export class KyloFeedManagerModule {
     constructor(injector: Injector) {
-        console.log("Loading KyloFeedManagerModule");
+
         require("./module");
         injector.get("$ocLazyLoad").inject(moduleName);
         require("./module-require");

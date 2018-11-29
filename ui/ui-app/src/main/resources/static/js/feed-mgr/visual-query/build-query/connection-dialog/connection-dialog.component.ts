@@ -126,7 +126,7 @@ export class ConnectionDialog {
      * Closes this dialog and returns the ConnectionDialogResponse
      */
     apply() {
-        console.log("APPLY ", this.form);
+        
         let values = this.form.value;
         let response: ConnectionDialogResponse = {
             id: this.data.connectionDataModel.id,
