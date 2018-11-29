@@ -65,6 +65,7 @@ export class DefineFeedPropertiesComponent extends AbstractFeedStepComponent{
 
     ngAfterViewInit(){
         this.subscribeToFormDirtyCheck(this.formGroup);
+        this.subscribeToFormChanges(this.formGroup);
 
        let formGroup =  this.formGroup.get('userPropertyForm');
        if(formGroup) {

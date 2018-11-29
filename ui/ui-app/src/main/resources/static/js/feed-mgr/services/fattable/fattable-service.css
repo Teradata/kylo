@@ -47,7 +47,7 @@
   background: white;
 }
 .fattable .fattable-header-container .fattable-viewport > div:first-child {
-  /*padding-left: 24px;*/
+  padding-left: 24px;
   padding-right: 0;
 }
 .fattable .fattable-header-container .fattable-viewport > div {
@@ -72,7 +72,7 @@
 }
 .fattable .fattable-body-container .fattable-viewport > div.first-column {
   letter-spacing: 0.01em;
-  /* padding-left: 24px; */
+  padding-left: 24px;
   padding-right: 5px;
 }
 .fattable .ui-grid-header-cell-label {

@@ -17,7 +17,7 @@
       <mat-card-actions *ngIf="!feed.readonly && displayEditActions">
         <button mat-button (click)="onCancel()">Cancel</button>
         <span fxFlex></span>
-        <button mat-button color="primary"(click)="onSave()" >Save</button>
+        <button mat-raised-button color="accent" [disabled]="!step.valid" (click)="onSave()">Save</button>
       </mat-card-actions>
     </mat-card>
 
