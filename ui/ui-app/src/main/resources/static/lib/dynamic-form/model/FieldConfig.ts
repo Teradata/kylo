@@ -59,7 +59,7 @@ export class FieldConfig<T> {
         this.placeholder = options.placeholder || '';
         this.model = (options.model && options.model.hasOwnProperty(this.modelValueProperty)) ? options.model : this;
         this.hint = options.hint || '';
-        this.readonlyValue = options.readonlyValue || this.model.value;
+        this.readonlyValue = options.readonlyValue || this.model[this.modelValueProperty];
         this.pattern = options.pattern;
         this.disabled = options.disabled || false;
         this.styleClass = options.styleClass || '';

@@ -155,6 +155,8 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
      */
     tableSchema: any = null;
 
+    catalogNiFiControllerServiceIds:string[] = null;
+
     constructor(private http: HttpClient, private dialog: MatDialog, @Inject("FeedService") private feedService: any, @Inject("DBCPTableSchemaService") private tableSchemaService: any) {
         // Handle connection service changes
         this.form.valueChanges.pipe(
@@ -189,6 +191,19 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 return this.queryTablesSearch(value)
             })
         );
+
+        this.fetchCatalogJbdcSources();
+    }
+
+    updateDbConnectionPropertyOptions(){
+        if(this.dbConnectionProperty && this.catalogNiFiControllerServiceIds != null){
+            (this.dbConnectionProperty.propertyDescriptor.allowableValues as any[])
+                .filter((allowableValue: any) => allowableValue.displayName.indexOf("**") == -1 && this.catalogNiFiControllerServiceIds.indexOf(allowableValue.value) >=0)
+                .forEach((allowableValue:any) =>  {allowableValue.displayName +="**";
+                            allowableValue.catalogSource = true;
+                });
+              }
+
     }
 
     ngOnInit() {
@@ -213,6 +228,19 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         }
         this.dbConnectionProperty = this.findProperty(this.connectionServiceKey, false);
 
+        //update the hint only when editing
+        const hintSuffix = ".  ** indicates an existing catalog data source";
+        if(this.dbConnectionProperty) {
+            let desc = this.dbConnectionProperty.propertyDescriptor.origDescription || this.dbConnectionProperty.propertyDescriptor.description;
+            if (!this.processor.form.disabled) {
+                if(desc.indexOf(hintSuffix) == -1){
+                    this.dbConnectionProperty.propertyDescriptor.origDescription = desc;
+                    this.dbConnectionProperty.propertyDescriptor.description = desc+hintSuffix;
+                }
+            } else {
+                this.dbConnectionProperty.propertyDescriptor.description = desc;
+            }
+        }
         /**
          * Autocomplete objected used in the UI html page
          */
@@ -239,8 +267,18 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 this.editIncrementalLoadDescribeTable()
             }
         }
+        this.updateDbConnectionPropertyOptions();
 
         this.initializing = false;
+    }
+
+    fetchCatalogJbdcSources(){
+        let url = "/proxy/v1/catalog/datasource/plugin-id?pluginIds=jdbc";
+        this.http.get(url).subscribe((responses:any[]) => {
+            this.catalogNiFiControllerServiceIds = responses.map((source:any) => source.nifiControllerServiceId);
+            this.updateDbConnectionPropertyOptions();
+        });
+
     }
 
     ngOnChanges(changes: SimpleChanges): void {

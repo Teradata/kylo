@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, SimpleChanges} from "@angular/core";
+import {Component, Input, OnChanges, OnInit, SimpleChanges} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import * as _ from "underscore"
 
@@ -104,6 +104,9 @@ export class FieldConfigurationBuilder {
         //build the generic options to be used by all fields
         let label = property.propertyDescriptor.displayName || property.propertyDescriptor.name;
         let configBuilder = new ConfigurationFieldBuilder().setKey(property.nameKey).setOrder(this.state.getAndIncrementFieldOrder()).setPlaceholder(label).setRequired(property.required).setValue(property.value).setModel(property).setHint(property.propertyDescriptor.description);
+        if(property.displayValue){
+            configBuilder.setReadonlyValue(property.displayValue)
+        }
 
         if (this.isInputText(property)) {
             //get the correct input type
@@ -207,7 +210,7 @@ export class FieldConfigurationBuilder {
       <dynamic-form [form]="form" [fieldGroups]="fieldGroups" [readonly]="readonly"></dynamic-form>
     `
 })
-export class ProcessorFormComponent implements OnChanges {
+export class ProcessorFormComponent implements OnChanges, OnInit {
 
     @Input()
     addSectionHeader: boolean | string;
@@ -229,6 +232,10 @@ export class ProcessorFormComponent implements OnChanges {
     private fieldConfigurationState: FieldConfigurationState = new FieldConfigurationState();
 
     constructor(private dynamicFormService: DynamicFormService) {
+    }
+
+    ngOnInit(): void {
+
     }
 
     ngOnChanges(changes: SimpleChanges): void {

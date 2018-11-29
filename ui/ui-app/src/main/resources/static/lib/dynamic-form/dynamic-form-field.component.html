@@ -17,7 +17,7 @@
       <div fxLayout="row">
         <span fxFlex="30%">{{field.placeholder}}</span>
         <span fxFlex="5%"></span>
-        <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.model[field['modelValueProperty']]}}</span>
+        <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.readonlyValue}}</span>
       </div>
       <mat-hint class="hint">{{field.hint}}</mat-hint>
     </div>
