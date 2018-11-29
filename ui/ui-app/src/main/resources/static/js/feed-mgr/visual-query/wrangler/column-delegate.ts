@@ -230,7 +230,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     deleteNullRows(column: any) {
         const formula = "filter(not(isnull(" + ColumnUtil.getColumnFieldName(column) + ")))";
-        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_containing", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " if null"});
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_outline", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " if null"});
     }
 
     /**
@@ -254,7 +254,7 @@ export class ColumnDelegate implements IColumnDelegate {
     deleteRowsEqualTo(value: string, column: any) {
         let fieldName = ColumnUtil.getColumnFieldName(column);
         const formula = `filter(${fieldName} != '${value}')`;
-        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_containing", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_outline", name: "Delete " + ColumnUtil.getColumnDisplayName(column) + " equal to " + value});
     }
 
     /**
