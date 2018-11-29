@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 
 import {UserDatasource} from "../../../model/user-datasource";
-import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, VisualQueryModel} from "../../../services/VisualQueryService";
+import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, VisualQueryModel, VisualQueryService} from "../../../services/VisualQueryService";
 import {QueryParser} from "../../wrangler/query-parser";
 import {SparkConstants} from "./spark-constants";
 
@@ -131,7 +131,7 @@ export class SparkQueryParser extends QueryParser {
      * @throws {Error} if the join expression is not valid
      */
     private getJoinScript(expr: JoinExpr | RangeVar, tablesByAlias: { [s: string]: RangeVar }, first: boolean): string {
-        if (expr.type === this.VisualQueryService.NodeTag.RangeVar) {
+        if (expr.type === VisualQueryService.NodeTag.RangeVar) {
             let rangeVar = expr as RangeVar;
             tablesByAlias[rangeVar.aliasName] = rangeVar;
             if (first) {
@@ -139,14 +139,14 @@ export class SparkQueryParser extends QueryParser {
             } else {
                 return ".join(" + rangeVar.aliasName + ")";
             }
-        } else if (expr.type === this.VisualQueryService.NodeTag.JoinExpr) {
+        } else if (expr.type === VisualQueryService.NodeTag.JoinExpr) {
             let joinExpr = expr as JoinExpr;
             tablesByAlias[joinExpr.rarg.aliasName] = joinExpr.rarg;
 
             let script = this.getJoinScript(joinExpr.larg, tablesByAlias, first);
             script += ".join(" + joinExpr.rarg.aliasName;
 
-            if (joinExpr.jointype !== this.VisualQueryService.JoinType.JOIN) {
+            if (joinExpr.jointype !== VisualQueryService.JoinType.JOIN) {
                 script += ", ";
                 if (joinExpr.quals !== null) {
                     script += this.getQualifierScript(joinExpr.quals);
@@ -155,11 +155,11 @@ export class SparkQueryParser extends QueryParser {
                 }
 
                 script += ", ";
-                if (joinExpr.jointype === this.VisualQueryService.JoinType.JOIN_INNER) {
+                if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_INNER) {
                     script += "\"inner\"";
-                } else if (joinExpr.jointype === this.VisualQueryService.JoinType.JOIN_LEFT) {
+                } else if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_LEFT) {
                     script += "\"left_outer\"";
-                } else if (joinExpr.jointype === this.VisualQueryService.JoinType.JOIN_RIGHT) {
+                } else if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_RIGHT) {
                     script += "\"right_outer\"";
                 } else {
                     throw new Error("Not a supported join type: " + joinExpr.jointype);
@@ -181,11 +181,11 @@ export class SparkQueryParser extends QueryParser {
      * @throws {Error} if the qualifier expression is not valid
      */
     private getQualifierScript(qualifier: A_Expr | BoolExpr): string {
-        if (qualifier.type === this.VisualQueryService.NodeTag.A_Expr) {
+        if (qualifier.type === VisualQueryService.NodeTag.A_Expr) {
             let aExpr = qualifier as A_Expr;
             return aExpr.lexpr.fields[0] + ".col(\"" + StringUtils.escapeScala(aExpr.lexpr.fields[1]) + "\").equalTo(" + aExpr.rexpr.fields[0] + ".col(\""
                 + StringUtils.escapeScala(aExpr.rexpr.fields[1]) + "\"))";
-        } else if (qualifier.type === this.VisualQueryService.NodeTag.BoolExpr) {
+        } else if (qualifier.type === VisualQueryService.NodeTag.BoolExpr) {
             let boolExpr = qualifier as BoolExpr;
             return this.getQualifierScript(boolExpr.args[0]) + ".and(" + this.getQualifierScript(boolExpr.args[1]) + ")";
         } else {
