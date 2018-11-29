@@ -1,8 +1,6 @@
 import "feed-mgr/module";
 import { UnderscoreStatic } from "underscore";
 import { Injectable } from "@angular/core";
-import { PreviewDataSet } from "../catalog/datasource/preview-schema/model/preview-data-set";
-
 declare const _: UnderscoreStatic;
 declare const angular: angular.IAngularStatic;
 
@@ -40,50 +38,6 @@ export class SqlBuilder {
      */
     selectedColumnsAndTables_: any;
 
-      /**
-     * Type of boolean expression.
-     *
-     * @public
-     * @readonly
-     * @enum {number}
-     */
-    public static BoolExprType = {
-        AND_EXPR: 0
-    };
-
-    /**
-     * Identifier of the Hive datasource.
-     * @type {string}
-     */
-    public static HIVE_DATASOURCE: string = "HIVE";
-
-    /**
-     * Enums for types of relation joins.
-     *
-     * @public
-     * @readonly
-     * @enum {number}
-     */
-    public static JoinType = {
-        JOIN: 0,
-        JOIN_INNER: 1,
-        JOIN_LEFT: 2,
-        JOIN_RIGHT: 3
-    };
-
-    /**
-     * Type of node.
-     *
-     * @public
-     * @readonly
-     * @enum {string}
-     */
-    public static NodeTag = {
-        A_Expr: "A_Expr",
-        BoolExpr: "BoolExpr",
-        JoinExpr: "JoinExpr",
-        RangeVar: "RangeVar"
-    };
 
     constructor(model: VisualQueryModel, dialect: SqlDialect) {
         this.dialect = dialect;
@@ -192,26 +146,26 @@ export class SqlBuilder {
      * @throws {Error} if the model is invalid
      */
     addFromClause(expr: any, fromTables: any, joinClauses: any) {
-        if (expr.type === SqlBuilder.NodeTag.RangeVar) {
+        if (expr.type === VisualQueryService.NodeTag.RangeVar) {
             fromTables.push(this.quoteSql(expr.schemaname) + "." + this.quoteSql(expr.relname) + " " + expr.aliasName);
-        } else if (expr.type === SqlBuilder.NodeTag.JoinExpr) {
+        } else if (expr.type === VisualQueryService.NodeTag.JoinExpr) {
             this.addFromClause(expr.larg, fromTables, joinClauses);
 
             var sql = "";
             switch (expr.jointype) {
-                case SqlBuilder.JoinType.JOIN:
+                case VisualQueryService.JoinType.JOIN:
                     sql += "JOIN";
                     break;
 
-                case SqlBuilder.JoinType.JOIN_INNER:
+                case VisualQueryService.JoinType.JOIN_INNER:
                     sql += "INNER JOIN";
                     break;
 
-                case SqlBuilder.JoinType.JOIN_LEFT:
+                case VisualQueryService.JoinType.JOIN_LEFT:
                     sql += "LEFT JOIN";
                     break;
 
-                case SqlBuilder.JoinType.JOIN_RIGHT:
+                case VisualQueryService.JoinType.JOIN_RIGHT:
                     sql += "RIGHT JOIN";
                     break;
 
@@ -282,8 +236,8 @@ export class SqlBuilder {
         // Use default if missing join keys
         if (angular.isUndefined(connection.joinKeys.destKey) || angular.isUndefined(connection.joinKeys.sourceKey) || angular.isUndefined(connection.joinType)) {
             joinClauses.push({
-                type: SqlBuilder.NodeTag.JoinExpr,
-                jointype: SqlBuilder.JoinType.JOIN,
+                type: VisualQueryService.NodeTag.JoinExpr,
+                jointype: VisualQueryService.JoinType.JOIN,
                 larg: larg,
                 rarg: this.getRangeVar(dst),
                 quals: null
@@ -296,22 +250,22 @@ export class SqlBuilder {
 
         var joinType;
         if (connection.joinType === "INNER JOIN") {
-            joinType = SqlBuilder.JoinType.JOIN_INNER;
+            joinType = VisualQueryService.JoinType.JOIN_INNER;
         } else if (connection.joinType === "LEFT JOIN") {
-            joinType = SqlBuilder.JoinType.JOIN_LEFT;
+            joinType = VisualQueryService.JoinType.JOIN_LEFT;
         } else if (connection.joinType === "RIGHT JOIN") {
-            joinType = SqlBuilder.JoinType.JOIN_RIGHT;
+            joinType = VisualQueryService.JoinType.JOIN_RIGHT;
         } else {
             throw new Error("Not a supported join type: " + connection.joinType);
         }
 
         var tree: any = {
-            type: SqlBuilder.NodeTag.JoinExpr,
+            type: VisualQueryService.NodeTag.JoinExpr,
             jointype: joinType,
             larg: larg,
             rarg: this.getRangeVar(dst),
             quals: {
-                type: SqlBuilder.NodeTag.A_Expr,
+                type: VisualQueryService.NodeTag.A_Expr,
                 name: "=",
                 lexpr: {
                     fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey]
@@ -330,7 +284,7 @@ export class SqlBuilder {
             .forEach((edge: any) => {
                 var lexpr = tree.quals;
                 var rexpr = {
-                    type: SqlBuilder.NodeTag.A_Expr,
+                    type: VisualQueryService.NodeTag.A_Expr,
                     name: "=",
                     lexpr: {
                         fields: [TABLE_PREFIX + edge.source.nodeID, edge.joinKeys.sourceKey]
@@ -340,8 +294,8 @@ export class SqlBuilder {
                     }
                 };
                 tree.quals = {
-                    type: SqlBuilder.NodeTag.BoolExpr,
-                    boolop: SqlBuilder.BoolExprType.AND_EXPR,
+                    type: VisualQueryService.NodeTag.BoolExpr,
+                    boolop: VisualQueryService.BoolExprType.AND_EXPR,
                     args: [lexpr, rexpr]
                 };
 
@@ -477,7 +431,7 @@ export class SqlBuilder {
      */
     getBoolTypeSql(boolType: any) {
         switch (boolType) {
-            case SqlBuilder.BoolExprType.AND_EXPR:
+            case VisualQueryService.BoolExprType.AND_EXPR:
                 return "AND";
 
             default:
@@ -546,9 +500,9 @@ export class SqlBuilder {
      * @returns {string} the SQL
      */
     getQualifierSql(qualifier: any, quoteSchema ?: any) : any {
-        if (qualifier.type === SqlBuilder.NodeTag.A_Expr) {
+        if (qualifier.type === VisualQueryService.NodeTag.A_Expr) {
             return this.getColumnSql(qualifier.lexpr, quoteSchema) + " " + qualifier.name + " " + this.getColumnSql(qualifier.rexpr);
-        } else if (qualifier.type === SqlBuilder.NodeTag.BoolExpr) {
+        } else if (qualifier.type === VisualQueryService.NodeTag.BoolExpr) {
             return this.getQualifierSql(qualifier.args[0]) + " " + this.getBoolTypeSql(qualifier.boolop) + " " + this.getQualifierSql(qualifier.args[1]);
         }
     }
@@ -572,7 +526,7 @@ export class SqlBuilder {
         }
 
         var rangeVar: any = {
-            type: SqlBuilder.NodeTag.RangeVar,
+            type: VisualQueryService.NodeTag.RangeVar,
             schemaname: schema,
             relname: table,
             aliasName: TABLE_PREFIX + node.id
@@ -612,7 +566,50 @@ export enum SqlDialect {
 @Injectable()
 export class VisualQueryService {
 
+      /**
+     * Type of boolean expression.
+     *
+     * @public
+     * @readonly
+     * @enum {number}
+     */
+    public static BoolExprType = {
+        AND_EXPR: 0
+    };
+
+    /**
+     * Identifier of the Hive datasource.
+     * @type {string}
+     */
     public static HIVE_DATASOURCE: string = "HIVE";
+
+    /**
+     * Enums for types of relation joins.
+     *
+     * @public
+     * @readonly
+     * @enum {number}
+     */
+    public static JoinType = {
+        JOIN: 0,
+        JOIN_INNER: 1,
+        JOIN_LEFT: 2,
+        JOIN_RIGHT: 3
+    };
+
+    /**
+     * Type of node.
+     *
+     * @public
+     * @readonly
+     * @enum {string}
+     */
+    public static NodeTag = {
+        A_Expr: "A_Expr",
+        BoolExpr: "BoolExpr",
+        JoinExpr: "JoinExpr",
+        RangeVar: "RangeVar"
+    };
     constructor() {
         this.resetModel();
     }
