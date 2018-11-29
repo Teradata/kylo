@@ -49,9 +49,6 @@ import static com.jayway.restassured.module.jsv.JsonSchemaValidator.matchesJsonS
  * Integration test for searching category metadata indexed in Elasticsearch
  */
 
-// Ignoring test since ES plugin is not loaded by default.
-// TODO: Enable when docker environment is available for running IT tests.
-@Ignore
 public class SearchCategoryMetadataEsIT extends SearchEsIntegrationTestBase implements ISearchEsEntityMetadata {
 
     private static final Logger LOG = LoggerFactory.getLogger(SearchCategoryMetadataEsIT.class);

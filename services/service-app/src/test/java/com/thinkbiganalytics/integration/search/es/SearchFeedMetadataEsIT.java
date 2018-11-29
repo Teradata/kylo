@@ -51,9 +51,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * Integration test for searching feed metadata indexed in Elasticsearch
  */
 
-// Ignoring test since ES plugin is not loaded by default.
-// TODO: Enable when docker environment is available for running IT tests.
-@Ignore
 public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implements ISearchEsEntityMetadata {
 
     private static final Logger LOG = LoggerFactory.getLogger(SearchFeedMetadataEsIT.class);
