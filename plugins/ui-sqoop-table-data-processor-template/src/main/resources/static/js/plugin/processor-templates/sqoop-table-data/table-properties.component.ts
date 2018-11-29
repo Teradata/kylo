@@ -203,8 +203,10 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         if(this.dbConnectionProperty && this.catalogNiFiControllerServiceIds != null){
             (this.dbConnectionProperty.propertyDescriptor.allowableValues as any[])
                 .filter((allowableValue: any) => allowableValue.displayName.indexOf("**") == -1 && this.catalogNiFiControllerServiceIds.indexOf(allowableValue.value) >=0)
-                .forEach((allowableValue:any) =>  {allowableValue.displayName +="**";
+                .forEach((allowableValue:any) =>  {
                             allowableValue.catalogSource = true;
+                            allowableValue.origName = allowableValue.displayName;
+                            allowableValue.displayName +="**";
                 });
               }
 
@@ -468,7 +470,11 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 const service = (this.dbConnectionProperty.propertyDescriptor.allowableValues as any[])
                     .find((allowableValue: any) => allowableValue.value == this.dbConnectionProperty);
                 if (typeof service !== "undefined") {
-                    httpOptions.params.serviceName = service.displayName;
+                    let name = service.displayName;
+                    if(service.catalogSource && service.origName){
+                        name = service.origName;
+                    }
+                    httpOptions.params.serviceName = name
                 }
             }
 
@@ -562,11 +568,17 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
         if (dbcpProperty != null && dbcpProperty.value != null && this.selectedTable != null) {
             this.updateRestrictIncrementalToDateOnly();
             let serviceId = dbcpProperty.value;
-            let serviceNameValue: any = null;
+
+            let serviceName = '';
             if (Array.isArray(dbcpProperty.propertyDescriptor.allowableValues)) {
-                dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => allowableValue.value == serviceId);
+             let service =   dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => allowableValue.value == serviceId);
+             if(service != undefined) {
+                 serviceName = service.displayName;
+                 if (service.catalogSource && service.origName) {
+                     serviceName = service.origName;
+                 }
+             }
             }
-            let serviceName = serviceNameValue != null && serviceNameValue != undefined ? serviceNameValue.displayName : '';
             this.http.get(this.tableSchemaService.DESCRIBE_TABLE_URL(serviceId, this.selectedTable.tableName), {params: {schema: this.selectedTable.schema, serviceName: serviceName}})
                 .subscribe((response) => {
                     this.databaseConnectionError = false;
@@ -593,13 +605,17 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
             this.describingTableSchema = true;
 
             let serviceId = dbcpProperty.value;
-            let serviceNameValue = null;
+            let service = null;
+            let serviceName = '';
             if (dbcpProperty.propertyDescriptor.allowableValues) {
-                serviceNameValue = dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => {
-                    return allowableValue.value == serviceId;
-                });
+                service =   dbcpProperty.propertyDescriptor.allowableValues.find((allowableValue: any) => allowableValue.value == serviceId);
             }
-            let serviceName = serviceNameValue != null && serviceNameValue != undefined ? serviceNameValue.displayName : '';
+            if(service != undefined && service != null) {
+                serviceName = service.displayName;
+                if (service.catalogSource && service.origName) {
+                    serviceName = service.origName;
+                }
+            }
             this.http.get(this.tableSchemaService.DESCRIBE_TABLE_URL(serviceId, this.selectedTable.tableName), {params: {schema: this.selectedTable.schema, serviceName: serviceName}})
                 .subscribe((response) => {
                     this.databaseConnectionError = false;
