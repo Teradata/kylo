@@ -472,7 +472,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                 }
             }
 
-            console.log("get ",this.tableSchemaService.LIST_TABLES_URL(this.dbConnectionProperty.value), 'with ',httpOptions.params)
+
             return this.http.get(this.tableSchemaService.LIST_TABLES_URL(this.dbConnectionProperty.value), httpOptions).pipe(
                 catchError((error: any) => {
                     return Observable.throw(error);
@@ -502,8 +502,6 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     else {
                         this.databaseConnectionErrorMessage = "Unable to connecto to data source.";
                     }
-
-                    this.databaseConnectionErrorMessage +=". If you know the table name and source field names you can manually enter them below."
                     throw error;
                 })
             );
