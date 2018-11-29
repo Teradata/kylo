@@ -198,6 +198,7 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
 
 done
 
+#
 #echo " ";
 #while [[ ! ${install_vault} =~ $yes_no ]]; do
 #    read -p "Would you like me to install a local Vault instance? Please enter y/n: " install_vault
@@ -306,6 +307,7 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     fi
 fi
 
+#
 #if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
 #    echo "Installing Vault"
 #    if [ ${OFFLINE} = true ]
