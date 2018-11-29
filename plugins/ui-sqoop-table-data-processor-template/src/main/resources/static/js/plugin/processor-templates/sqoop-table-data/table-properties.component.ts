@@ -87,7 +87,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
      */
     databaseConnectionError = false;
 
-    databaseConnectionErrorMessage: string;
+    databaseConnectionErrorObject: any;
 
     dbConnectionProperty: any;
 
@@ -492,20 +492,32 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     return query ? tables.filter(this.createFilterForTable(query)) : tables;
                 }),
                 catchError<any, any[]>((error: any) => {
-                    this.databaseConnectionError = true;
-                    if(error && error.error && error.error.message){
-                        this.databaseConnectionErrorMessage = error.error.message;
-                    }
-                    else if(error && error.message ){
-                        this.databaseConnectionErrorMessage = error.message;
-                    }
-                    else {
-                        this.databaseConnectionErrorMessage = "Unable to connecto to data source.";
-                    }
-                    throw error;
+                    this.setDatabaseConnectionError(error)
+                    return Observable.throw(error);
                 })
             );
         }
+    }
+
+    private setDatabaseConnectionError(error:any){
+        if(error && error.error && error.error.message){
+            this.databaseConnectionErrorObject = error.error;
+        }
+        else if(error && error.message ){
+            this.databaseConnectionErrorObject = error;
+        }
+        else {
+            this.databaseConnectionErrorObject = {message:"Unable to connect to data source ",developerMessage:null};
+        }
+        this.databaseConnectionErrorObject.message +=". You can manually enter the table and fields below";
+
+        if(this.tableProperty){
+            this.tableProperty.value = "";
+        }
+        if(this.fieldsProperty) {
+            this.fieldsProperty.value = "";
+        }
+        this.databaseConnectionError = true;
     }
 
     /**
@@ -562,7 +574,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     this.tableFields = this.tableSchema.fields;
                     this.filteredFieldDates = this.tableFields.filter(this.filterFieldDates);
                 }, (error:any) => {
-                    this.databaseConnectionError = true;
+                    this.setDatabaseConnectionError(error);
                     console.error("error",error)
                 });
         }
@@ -621,14 +633,15 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
                     this.model.table.sourceTableSchema.name = this.model.table.existingTableName;
                     this.describingTableSchema = false;
                     this.hideDescribeTableSchemaDialog(dialogRef);
-                }, () => {
-                    this.databaseConnectionError = true;
+                }, (error:any) => {
+                    this.setDatabaseConnectionError(error)
                     this.describingTableSchema = false;
                     this.hideDescribeTableSchemaDialog(dialogRef);
                 });
 
         }
     }
+
 
     onManualTableNameChange() {
         if (this.model.table.method != 'EXISTING_TABLE') {
@@ -653,7 +666,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
             fieldNames.push(col.name);
         });
         this.model.table.sourceTableSchema.fields = [...fields];
-        this.feedService.setTableFields(fields);
+        this.model.table.setTableFields(fields)
 
         this.model.table.sourceFieldsCommaString = fieldNames.join(",");
         this.model.table.sourceFields = fieldNames.join("\n")

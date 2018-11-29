@@ -464,7 +464,7 @@ public class NifiIntegrationRestController {
                 tables = catalogTableManager.getTableNames(dataSource.get(), schema, tableName);
             } catch (final SQLException | InvalidControllerServiceLookupException e) {
                 log.error("Unable to list table names for data source: {}", dataSource.get().getId(), e);
-                throw new InternalServerErrorException(e.getMessage(), e);
+                throw new InternalServerErrorException("Unable to connect to the data source", e);
             }
         } else {
             log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
@@ -472,7 +472,7 @@ public class NifiIntegrationRestController {
             tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
             } catch (final InvalidControllerServiceLookupException e) {
                 log.error("Unable to list table names for controller service: {}", serviceName, e);
-                throw new InternalServerErrorException(e.getMessage(), e);
+                throw new InternalServerErrorException("Unable to connect to the data source", e);
             }
         }
 

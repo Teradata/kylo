@@ -32,14 +32,19 @@
   </mat-form-field>
 
   <div *ngIf="databaseConnectionError == true" fxLayout="column">
-    <div class="layout-padding-top-bottom">{{databaseConnectionErrorMessage}}</div>
+
+    <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography">
+      <mat-icon color="warn" class="push-bottom-sm" style="font-size:40px;">warning</mat-icon>
+      <h2>{{databaseConnectionErrorObject.message}}</h2>
+      <h3>{{databaseConnectionErrorObject.developerMessage}}</h3>
+    </div>
 
     <mat-form-field class="layout-padding-top-bottom" *ngIf="renderLoadStrategyOptions" fxFill>
-      <input matInput placeholder="Table Name" [(ngModel)]="tableProperty.value" (change)="onManualTableNameChange()">
+      <input matInput placeholder="Table Name" [(ngModel)]="tableProperty.value" (change)="onManualTableNameChange()" required>
     </mat-form-field>
 
     <mat-form-field class="layout-padding-top-bottom" *ngIf="renderLoadStrategyOptions" fxFill>
-      <input matInput placeholder="Fields" [(ngModel)]="fieldsProperty.value" (change)="onManualFieldNameChange()">
+      <input matInput placeholder="Fields" [(ngModel)]="fieldsProperty.value" (change)="onManualFieldNameChange()" required>
       <mat-hint>Field names separated by a comma</mat-hint>
     </mat-form-field>
   </div>
