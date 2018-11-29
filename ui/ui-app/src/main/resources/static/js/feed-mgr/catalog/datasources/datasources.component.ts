@@ -142,7 +142,8 @@ export class DataSourcesComponent implements OnInit {
             return this.cachedDataSourceEditEntityAccess[datasource.id] == true;
         }
         else {
-            let access: boolean = this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS, datasource, EntityAccessControlService.entityRoleTypes.DATASOURCE);
+            let access = !this.accessControlService.isEntityAccessControlled()
+                || this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS, datasource, EntityAccessControlService.entityRoleTypes.DATASOURCE);
             this.cachedDataSourceEditEntityAccess[datasource.id] = access;
             return access;
         }
