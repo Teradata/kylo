@@ -71,20 +71,22 @@ public class CatalogMetadataConfig {
 
     @Bean
     public PostMetadataConfigAction connectorPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
-        try {
-            return doPluginSyncAction(pluginMgr, metadata);
-        } catch (ConnectorAlreadyExistsException e) {
-            log.warn("Encountered an error attempting to synchronize plugins", e);
-            log.info("Rebuilding modeshape indexes to ensure the are accurately synchronized with the data.   Please be patient as this may take a long time!");
-
+        return () -> {
             try {
-                reindex(metadata);
-                return doPluginSyncAction(pluginMgr, metadata);
-            } catch (ConnectorAlreadyExistsException e2) {
-                log.error("Unrecoverable fatal exception. Encountered connector already exists after synchronizing modeshape indexes", e2);
-                throw e2;
+                doPluginSyncAction(pluginMgr, metadata);
+            } catch (ConnectorAlreadyExistsException e) {
+                log.warn("Encountered an error attempting to synchronize plugins", e);
+                log.info("Rebuilding modeshape indexes to ensure the are accurately synchronized with the data.   Please be patient as this may take a long time!");
+
+                try {
+                    reindex(metadata);
+                    doPluginSyncAction(pluginMgr, metadata);
+                } catch (ConnectorAlreadyExistsException e2) {
+                    log.error("Unrecoverable fatal exception. Encountered connector already exists after synchronizing modeshape indexes", e2);
+                    throw e2;
+                }
             }
-        }
+        };
     }
 
 
@@ -98,41 +100,39 @@ public class CatalogMetadataConfig {
     }
 
 
-    private PostMetadataConfigAction doPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
-        return () -> {
-            metadata.commit(() -> {
-                List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
-                Map<String, Connector> connectorMap = connectorProvider().findAll(true).stream().collect(Collectors.toMap(Connector::getPluginId, c -> c));
+    private void doPluginSyncAction(ConnectorPluginManager pluginMgr, MetadataAccess metadata) {
+        metadata.commit(() -> {
+            List<ConnectorPlugin> plugins = pluginMgr.getPlugins();
+            Map<String, Connector> connectorMap = connectorProvider().findAll(true).stream().collect(Collectors.toMap(Connector::getPluginId, c -> c));
 
-                for (ConnectorPlugin plugin : plugins) {
-                    Connector connector = connectorMap.get(plugin.getId());
-                    ConnectorPluginDescriptor descr = plugin.getDescriptor();
+            for (ConnectorPlugin plugin : plugins) {
+                Connector connector = connectorMap.get(plugin.getId());
+                ConnectorPluginDescriptor descr = plugin.getDescriptor();
 
-                    if (connector != null) {
-                        connectorMap.get(plugin.getId()).setActive(true);
-                        connectorMap.remove(plugin.getId());
-                    } else {
-                        String title = descr.getTitle();
-                        connector = connectorProvider().create(plugin.getId(), title);
-                    }
-
-                    connector.setIconColor(descr.getColor());
-                    connector.setIcon(descr.getIcon());
-                    if (StringUtils.isNotBlank(descr.getFormat())) {
-                        connector.getSparkParameters().setFormat(descr.getFormat());
-                    }
+                if (connector != null) {
+                    connectorMap.get(plugin.getId()).setActive(true);
+                    connectorMap.remove(plugin.getId());
+                } else {
+                    String title = descr.getTitle();
+                    connector = connectorProvider().create(plugin.getId(), title);
                 }
 
-                // Any left over connectors that do not have a corresponding plugin should be either made inactive if they at 
-                // least one data source, or removed if they don't.
-                for (Connector connector : connectorMap.values()) {
-                    if (connector.getDataSources().isEmpty()) {
-                        connectorProvider().deleteById(connector.getId());
-                    } else {
-                        connector.setActive(false);
-                    }
+                connector.setIconColor(descr.getColor());
+                connector.setIcon(descr.getIcon());
+                if (StringUtils.isNotBlank(descr.getFormat())) {
+                    connector.getSparkParameters().setFormat(descr.getFormat());
                 }
-            }, MetadataAccess.SERVICE);
-        };
+            }
+
+            // Any left over connectors that do not have a corresponding plugin should be either made inactive if they at
+            // least one data source, or removed if they don't.
+            for (Connector connector : connectorMap.values()) {
+                if (connector.getDataSources().isEmpty()) {
+                    connectorProvider().deleteById(connector.getId());
+                } else {
+                    connector.setActive(false);
+                }
+            }
+        }, MetadataAccess.SERVICE);
     }
 }
