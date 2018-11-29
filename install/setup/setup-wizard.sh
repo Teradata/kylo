@@ -305,6 +305,25 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     else
         ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group
     fi
+
+    if [ -f $kylo_home_folder/encrypt.key ]
+    then
+        cp $kylo_home_folder/encrypt.key $nifi_home/ext-config
+    else
+        echo "Please enter the exact contents of the KYLO_INSTALL_HOME/encrypt.key file (ex: <Kylo host>:/opt/kylo/encrypt.key)";
+        read -p "> " -s encrypt_key;
+        echo $encrypt_key > $nifi_home/ext-config/encrypt.key
+    fi
+
+    chnown $nifi_user:$nifi_group $nifi_home/ext-config/encrypt.key
+    chmod 400 $nifi_home/ext-config/encrypt.key
+
+    cat >> $nifi_home/current/bin/nifi-env.sh <<EOF
+
+## Shared key used by NiFi-launched spark jobs to decrypt sensitive values sent from Kylo
+export ENCRYPT_KEY="\$(< $nifi_home/ext-config/encrypt.key)"
+EOF
+
 fi
 
 #
@@ -317,7 +336,6 @@ fi
 #        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group}
 #    fi
 #fi
-
 
 if [ "$USERS_FILE_CREATED" ] ; then
     echo ""
