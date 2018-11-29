@@ -134,12 +134,12 @@ public class FilesystemRepositoryService implements RepositoryService {
 
     @Scheduled(fixedDelay = 5000)
     public void monitorRepositories() throws Exception {
-        log.info("Monitoring kylo repository");
         Set<Path> repositoriesToWatch = listRepositories()
             .stream()
             .map(repo -> Paths.get(repo.getLocation()))
             .collect(Collectors.toSet());
         repositoryMonitor.watchRepositories(repositoriesToWatch);
+        log.info("End of scheduler");
     }
 
     @Override

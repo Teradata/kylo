@@ -54,6 +54,9 @@
               <div title="{{element.description}}" class="column-title column-title-bottom">
                 {{element.description}}
               </div>
+              <div title="{{element.description}}" class="column-title column-title-bottom">
+                Last Updated: {{element.lastModified |  date: 'MM/dd/yyyy'}}
+              </div>
             </div>
             <div fxFlex="30" fxLayoutAlign="end" style="min-width:150px">
               <button mat-button color="primary" (click)="downloadTemplate(element)">

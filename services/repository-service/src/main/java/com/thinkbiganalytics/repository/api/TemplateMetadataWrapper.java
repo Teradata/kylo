@@ -34,6 +34,7 @@ public class TemplateMetadataWrapper {
     private String update;
     private boolean installed;
     private boolean stream;
+    private long lastModified;
 
     private boolean updateAvailable = false;
     private TemplateRepository repository;
@@ -48,6 +49,7 @@ public class TemplateMetadataWrapper {
         this.checksum = m.getChecksum();
         this.stream = m.isStream();
         this.updateAvailable = m.isUpdateAvailable();
+        this.lastModified = m.getLastModified();
     }
 
     public TemplateRepository getRepository() {
@@ -92,5 +94,13 @@ public class TemplateMetadataWrapper {
 
     public List<TemplateChangeComment> getUpdates() {
         return updates;
+    }
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(long lastModified) {
+        this.lastModified = lastModified;
     }
 }

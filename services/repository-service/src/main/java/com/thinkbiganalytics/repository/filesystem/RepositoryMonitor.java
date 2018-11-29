@@ -23,10 +23,15 @@ package com.thinkbiganalytics.repository.filesystem;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
+import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.repository.api.TemplateMetadata;
-
+import com.thinkbiganalytics.security.AccessController;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,20 +39,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.DigestUtils;
 
+import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.*;
+import java.util.Map;
 import java.util.Set;
-
-import javax.inject.Inject;
+import java.util.stream.Collectors;
 
 /**
  * Monitors the default repository and any repositories configured in repositories.json.
@@ -60,15 +60,28 @@ public class RepositoryMonitor {
     @Inject
     ObjectMapper mapper;
 
+
+    @Inject
+    private RegisteredTemplateService registeredTemplateService;
+
+    @Inject
+    TemplateExporter templateExporter;
+
     @Inject
     Cache<String, Boolean> templateUpdateInfoCache;
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
+    @Inject
+    private AccessController accessController;
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryMonitor.class);
 
     private final WatchService watcher;
     private final WatchEvent.Kind[] events = {StandardWatchEventKinds.ENTRY_CREATE,
-                                              StandardWatchEventKinds.ENTRY_DELETE,
-                                              StandardWatchEventKinds.ENTRY_MODIFY};
+            StandardWatchEventKinds.ENTRY_DELETE,
+            StandardWatchEventKinds.ENTRY_MODIFY};
 
     public RepositoryMonitor() {
         WatchService watcher = null;
@@ -82,9 +95,11 @@ public class RepositoryMonitor {
 
     public void watchRepositories(Set<Path> repositoriesToWatch) {
 
+
+        Map<String, RegisteredTemplate> registeredTemplateMap = getAllRegisteredTemplatesAsMap();
         log.info("Started repository monitoring");
         try {
-            repositoriesToWatch.forEach(path -> addMonitorToRepository(path));
+            repositoriesToWatch.forEach(path -> addMonitorToRepository(path, registeredTemplateMap));
             while (true) {
                 WatchKey key = watcher.take();
 
@@ -95,7 +110,7 @@ public class RepositoryMonitor {
                         Path repositoryPath = (Path) key.watchable();
 
                         if (kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
-                            createMetadata(repositoryPath.resolve(ev.context()));
+                            createMetadata(repositoryPath.resolve(ev.context()), getAllRegisteredTemplatesAsMap());
                         } else if (kind == StandardWatchEventKinds.ENTRY_DELETE) {
                             Path json = getMetadataFileName(repositoryPath.resolve(ev.context()));
                             TemplateMetadata metadata = mapper.readValue(json.toFile(), TemplateMetadata.class);
@@ -118,11 +133,18 @@ public class RepositoryMonitor {
         }
     }
 
+    private Map<String, RegisteredTemplate> getAllRegisteredTemplatesAsMap() {
+        return metadataAccess.read(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+                return registeredTemplateService.getRegisteredTemplates().stream().collect(Collectors.toMap(t -> t.getTemplateName(), t -> t));
+            }, MetadataAccess.SERVICE);
+    }
+
     private Path getMetadataFileName(Path templateFile) {
         return templateFile.getParent().resolve(FilenameUtils.getBaseName(templateFile.getFileName().toString()) + ".json");
     }
 
-    private void createMetadata(Path templateFilePath) {
+    private void createMetadata(Path templateFilePath, Map<String, RegisteredTemplate> registeredTemplateMap) {
         RegisteredTemplate tmplt = null;
         try {
             File templateZipFile = templateFilePath.toFile();
@@ -133,13 +155,27 @@ public class RepositoryMonitor {
 
             File json = getMetadataFileName(templateFilePath).toFile();
             String checksum = DigestUtils.md5DigestAsHex(content);
-            //create new
+            boolean updateAvailable = false;
+
             TemplateMetadata metadata = new TemplateMetadata(tmplt.getTemplateName(), tmplt.getDescription(),
-                                                             templateFilePath.getFileName().toString(), checksum,
-                                                             tmplt.isStream(), false, tmplt.getUpdateDate().getTime());
-            //update: no changes required if template was not updated
-            Boolean updated = templateUpdateInfoCache.getIfPresent(tmplt.getTemplateName());
-            if (updated != null) {
+                    templateFilePath.getFileName().toString(), checksum,
+                    tmplt.isStream(), updateAvailable, tmplt.getUpdateDate().getTime());
+
+            //startup or new template is published
+            if (!json.exists()) {
+
+                if (registeredTemplateMap.containsKey(tmplt.getTemplateName())) {
+                    final String templateName = tmplt.getTemplateName();
+                    ExportTemplate zipFile = metadataAccess.read(() -> {
+                        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+                        return templateExporter.exportTemplate(registeredTemplateMap.get(templateName).getId());
+                    }, MetadataAccess.SERVICE);
+                    String digest = DigestUtils.md5DigestAsHex(zipFile.getFile());
+                    updateAvailable = !StringUtils.equals(checksum, digest);
+                    templateUpdateInfoCache.put(templateName, updateAvailable);
+                }
+            }else {
+                //if registered template was updated
                 metadata = mapper.readValue(json, TemplateMetadata.class);
                 if (metadata.getLastModified() >= tmplt.getUpdateDate().getTime()) {
                     return;
@@ -162,18 +198,18 @@ public class RepositoryMonitor {
         }
     }
 
-    private void generateMissingMetadata(Path repositoryPath) throws Exception {
+    private void generateMissingMetadata(Path repositoryPath, Map<String, RegisteredTemplate> registeredTemplateMap) throws Exception {
         Files.find(repositoryPath, 1, (path, attrs) -> attrs.isRegularFile() && path.toString().endsWith(".zip"))
-            .forEach(templateZip -> {
-                if (Files.notExists(getMetadataFileName(templateZip))) {
-                    createMetadata(templateZip);
-                }
-            });
+                .forEach(templateZip -> {
+                    if (Files.notExists(getMetadataFileName(templateZip))) {
+                        createMetadata(templateZip, registeredTemplateMap);
+                    }
+                });
     }
 
-    private void addMonitorToRepository(Path repositoryPath) {
+    private void addMonitorToRepository(Path repositoryPath, Map<String, RegisteredTemplate> registeredTemplateMap) {
         try {
-            generateMissingMetadata(repositoryPath);
+            generateMissingMetadata(repositoryPath, registeredTemplateMap);
             repositoryPath.register(watcher, events);
         } catch (Exception e) {
             log.error("Error occurred while trying to setup {} monitor", repositoryPath, e);

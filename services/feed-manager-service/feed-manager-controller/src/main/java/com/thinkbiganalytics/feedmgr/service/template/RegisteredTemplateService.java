@@ -223,7 +223,7 @@ public class RegisteredTemplateService {
      * @param principals list or principals required to access
      * @return the RegisteredTemplate matching the id or null if not found
      */
-    private RegisteredTemplate findRegisteredTemplateById(final String templateId, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal... principals) {
+    public RegisteredTemplate findRegisteredTemplateById(final String templateId, TEMPLATE_TRANSFORMATION_TYPE transformationType, Principal... principals) {
         if (StringUtils.isBlank(templateId)) {
             return null;
         } else {
