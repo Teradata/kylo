@@ -506,10 +506,6 @@ public class SearchCategoryMetadataEsIT extends SearchEsIntegrationTestBase impl
         Assert.assertEquals("0", searchResult.getTotalHits().toString());
     }
 
-    private void deleteKyloCategory(String categoryId) {
-        deleteCategory(categoryId);
-    }
-
     public List<String> getIndexedFieldsWithJsonPathForEntity() {
         List<String> indexedFields = new ArrayList<>();
         indexedFields.add("_source.'jcr:created'");
