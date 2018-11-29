@@ -315,7 +315,7 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
         echo $encrypt_key > $nifi_home/ext-config/encrypt.key
     fi
 
-    chnown $nifi_user:$nifi_group $nifi_home/ext-config/encrypt.key
+    chown $nifi_user:$nifi_group $nifi_home/ext-config/encrypt.key
     chmod 400 $nifi_home/ext-config/encrypt.key
 
     cat >> $nifi_home/current/bin/nifi-env.sh <<EOF
