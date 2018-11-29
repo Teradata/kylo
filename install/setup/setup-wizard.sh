@@ -310,9 +310,12 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     then
         cp $kylo_home_folder/encrypt.key $nifi_home/ext-config
     else
-        echo "Please enter the exact contents of the KYLO_INSTALL_HOME/encrypt.key file (ex: <Kylo host>:/opt/kylo/encrypt.key)";
-        read -p "> " -s encrypt_key;
-        echo $encrypt_key > $nifi_home/ext-config/encrypt.key
+        echo "Paste the exact contents of the KYLO_INSTALL_HOME/encrypt.key file (including line feeds) followed by a period ('.')"
+        echo "Example (pasted value will be hidden): "
+        echo "CZCIrMA5VYDV+ClWCBw3swtfvvGUHVhQGLhDko+gRFqp+3/dmD4Qg5IQnkEmJLIYbT9j/a2cmUI9
+33BcYCy+Lw==."
+        read -p "> " -d "." -s encrypt_key;
+        echo $encrypt_key | tr " " "\n"  > $nifi_home/ext-config/encrypt.key
     fi
 
     chown $nifi_user:$nifi_group $nifi_home/ext-config/encrypt.key
