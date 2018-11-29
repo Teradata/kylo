@@ -20,11 +20,16 @@ package com.thinkbiganalytics.nifi.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.Objects;
 
 /**
  * The allowable values for a property with a constrained set of options.
  */
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NiFiAllowableValue {
 
     private String displayName;
