@@ -9,7 +9,7 @@
   <parent>
     <artifactId>kylo-nifi-hadoop-bundle</artifactId>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.10.0</version>
   </parent>
 
   <properties>

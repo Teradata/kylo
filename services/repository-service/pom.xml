@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.10.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <properties>
@@ -23,7 +23,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-feed-manager-controller</artifactId>
-      <version>0.10.0-SNAPSHOT</version>
+      <version>0.10.0</version>
       <scope>compile</scope>
     </dependency>
 
