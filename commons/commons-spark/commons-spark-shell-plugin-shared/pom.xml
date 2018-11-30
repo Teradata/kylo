@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.0.1-SNAPSHOT</version>
   </parent>
 
   <description>A collection of classes that can be shared between spark shell plugins.</description>
