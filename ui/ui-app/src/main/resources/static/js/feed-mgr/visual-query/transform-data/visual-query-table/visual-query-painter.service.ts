@@ -119,7 +119,6 @@ export class VisualQueryPainterService extends fattable.Painter {
                 private $templateCache: angular.ITemplateCacheService, private $templateRequest: angular.ITemplateRequestService, private $timeout: angular.ITimeoutService,
                 private $window: angular.IWindowService) {
         super();
-
         //Request the Header template and fill in the contents of any header divs waiting on the template.
         $templateRequest(HEADER_TEMPLATE).then((response) => {
             this.headerTemplateLoaded = true;
@@ -378,11 +377,12 @@ export class VisualQueryPainterService extends fattable.Painter {
 
     private compileHeader(headerDiv: HTMLElement) {
         // Load template
-        headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
+        // headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
+        headerDiv.innerHTML = '<vs-table-header></vs-table-header>';
 
-        let newScope = this.$scope.$new(true)
-        this.headerScopes.push(newScope);
-        this.$compile(headerDiv)(newScope);
+        // let newScope = this.$scope.$new(true);
+        // this.headerScopes.push(newScope);
+        // this.$compile(headerDiv)(newScope);
 
 
     }

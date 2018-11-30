@@ -6,16 +6,35 @@ import {VisualQueryComponent, VisualQueryDirective} from "./angular2";
 
 import AccessConstants from "../../constants/AccessConstants";
 import "../../codemirror-require/module"
+import { VisualQueryTableHeader } from "./transform-data/visual-query-table/visual-query-table-header.component";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatButtonModule } from "@angular/material/button";
+import { MatDividerModule } from "@angular/material/divider";
+import { MatIconModule } from "@angular/material/icon";
+import { TranslateModule } from "@ngx-translate/core";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 const moduleName: string = require("./module-name");
 
 @NgModule({
     declarations: [
         VisualQueryComponent,
-        VisualQueryDirective
+        VisualQueryDirective,
+        VisualQueryTableHeader
+    ],
+    entryComponents : [
+        VisualQueryTableHeader
     ],
     imports: [
         CommonModule,
+        MatFormFieldModule,
+        MatMenuModule,
+        MatButtonModule,
+        MatDividerModule,
+        MatIconModule,
+        TranslateModule,
+        MatTooltipModule,
         UIRouterModule.forChild({
             states: [{
                 name: "visual-query",

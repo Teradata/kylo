@@ -430,9 +430,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
             body["datasources"] = this.datasources_.filter(datasource => datasource.id !== SparkConstants.HIVE_DATASOURCE);
         }
         //add in the datasets
-        if(this.datasets !== null){
-            body["catalogDatasets"] = this.datasets;
-        }
+        // if(this.datasets !== null){
+        //     body["catalogDatasets"] = this.datasets;
+        // }
 
         // Create the response handlers
         let self = this;
