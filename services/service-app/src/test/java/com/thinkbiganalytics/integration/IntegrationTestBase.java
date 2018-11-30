@@ -165,6 +165,7 @@ public class IntegrationTestBase {
     protected static final String FILTER_BY_SLA_ID = "slaId%3D%3D";
 
     protected static final String APP_NIFI = "nifi";
+    protected static final String APP_KYLO_SERVICES = "kylo-services";
     protected static final String APP_HADOOP = "hadoop";
 
     @SuppressWarnings("SpringJavaAutowiringInspection")

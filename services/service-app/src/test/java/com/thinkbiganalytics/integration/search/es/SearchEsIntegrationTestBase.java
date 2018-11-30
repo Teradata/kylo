@@ -99,12 +99,11 @@ public class SearchEsIntegrationTestBase extends IntegrationTestBase {
 
     protected boolean deleteEsIndexes() {
         try {
-            runCommandOnRemoteSystem("sudo "
-                                     + DELETE_KYLO_INDEXES_SCRIPT
+            runCommandOnRemoteSystem(DELETE_KYLO_INDEXES_SCRIPT
                                      + " "
                                      + esRestConfig.getEsHost()
                                      + " "
-                                     + esRestConfig.getEsRestPort(), IntegrationTestBase.APP_NIFI
+                                     + esRestConfig.getEsRestPort(), IntegrationTestBase.APP_KYLO_SERVICES
             );
             return true;
         } catch (Exception e) {
@@ -115,8 +114,7 @@ public class SearchEsIntegrationTestBase extends IntegrationTestBase {
 
     protected boolean createEsIndexes() {
         try {
-            runCommandOnRemoteSystem("sudo "
-                                     + CREATE_KYLO_INDEXES_SCRIPT
+            runCommandOnRemoteSystem(CREATE_KYLO_INDEXES_SCRIPT
                                      + " "
                                      + esRestConfig.getEsHost()
                                      + " "
@@ -124,7 +122,7 @@ public class SearchEsIntegrationTestBase extends IntegrationTestBase {
                                      + " "
                                      + NUM_SHARDS
                                      + " "
-                                     + NUM_REPLICAS, IntegrationTestBase.APP_NIFI);
+                                     + NUM_REPLICAS, IntegrationTestBase.APP_KYLO_SERVICES);
             return true;
         } catch (Exception e) {
             LOG.warn("Unable to create ES indexes to start with a clean environment", e);
