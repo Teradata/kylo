@@ -3,6 +3,10 @@ import "fattable";
 
 import {DomainType} from "../../../services/DomainTypesService.d";
 import {DataCategory} from "../../wrangler/column-delegate";
+import { Injectable, Inject, Injector, ComponentFactoryResolver, ComponentFactory, ViewContainerRef } from "@angular/core";
+import { downgradeInjectable } from "@angular/upgrade/static";
+import {moduleName} from "../../../module-name";
+import { VisualQueryTableHeader } from "./visual-query-table-header.component";
 
 /**
  * Default font.
@@ -19,6 +23,7 @@ const HEADER_TEMPLATE = "js/feed-mgr/visual-query/transform-data/visual-query-ta
  */
 const PIXELS = "px";
 
+@Injectable()
 export class VisualQueryPainterService extends fattable.Painter {
 
     /**
@@ -101,8 +106,6 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @type {boolean}
      */
     private headerTemplateLoaded : boolean = false;
-
-
     /**
      * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
      * Once the template is loaded these elements will get filled
@@ -110,17 +113,21 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     private waitingHeaderDivs : HTMLElement[] = [];
 
-    static readonly $inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
-
+    componentFactory: ComponentFactory<any>;
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
-    constructor(private $compile: angular.ICompileService, private $mdPanel: angular.material.IPanelService, private $scope: angular.IRootScopeService,
-                private $templateCache: angular.ITemplateCacheService, private $templateRequest: angular.ITemplateRequestService, private $timeout: angular.ITimeoutService,
-                private $window: angular.IWindowService) {
+    constructor(@Inject("$injector") private $injector: any,
+                private injector: Injector, 
+                private componentFactoryResolver: ComponentFactoryResolver
+                // private $compile: angular.ICompileService, 
+                //         private $mdPanel: angular.material.IPanelService,
+                //         private $templateCache: angular.ITemplateCacheService, 
+                //         private $templateRequest: angular.ITemplateRequestService, 
+                ) {
         super();
         //Request the Header template and fill in the contents of any header divs waiting on the template.
-        $templateRequest(HEADER_TEMPLATE).then((response) => {
+        this.$injector.get("$templateRequest")(HEADER_TEMPLATE).then((response: any) => {
             this.headerTemplateLoaded = true;
             angular.forEach(this.waitingHeaderDivs,(headerDiv : HTMLElement) => {
                 this.compileHeader(headerDiv);
@@ -137,8 +144,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         }, {passive:true, capture:true});
     */
         // Create menu
-        this.menuPanel = $mdPanel.create({
-            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
+        this.menuPanel = this.$injector.get("$mdPanel").create({
+            animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
             attachTo: angular.element(document.body),
             clickOutsideToClose: true,
             escapeToClose: true,
@@ -149,8 +156,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.menuPanel.attach();
 
         // Create tooltip
-        this.tooltipPanel = $mdPanel.create({
-            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: "md-show", close: "md-hide"}),
+        this.tooltipPanel = this.$injector.get("$mdPanel").create({
+            animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: "md-show", close: "md-hide"}),
             attachTo: angular.element(document.body),
             template: `{{value}}<ul><li ng-repeat="item in validation">{{item.rule}}: {{item.reason}}</li></ul>`,
             focusOnOpen: false,
@@ -286,7 +293,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     hideTooltip() {
         this.tooltipVisible = false;
-        this.$timeout(() => {
+        setTimeout(() => {
             if (this.tooltipVisible === false) {
                 this.tooltipPanel.hide();
             }
@@ -374,25 +381,41 @@ export class VisualQueryPainterService extends fattable.Painter {
         angular.element(table).unbind();
     }
     private headerScopes : IScope[] = []
-
+    private viewContainerRef : ViewContainerRef;
+    public setViewContainerRef(viewContainerRef : ViewContainerRef){
+        this.viewContainerRef = viewContainerRef;
+    }
     private compileHeader(headerDiv: HTMLElement) {
         // Load template
-        // headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
-        headerDiv.innerHTML = '<vs-table-header></vs-table-header>';
-
-        // let newScope = this.$scope.$new(true);
+        this.buildComponent(this.viewContainerRef);
+        // headerDiv.innerHTML = this.$injector.get("$templateCache").get(HEADER_TEMPLATE) as string;
+        // let newScope = this.$injector.get("$scope").$new(true)
         // this.headerScopes.push(newScope);
-        // this.$compile(headerDiv)(newScope);
-
-
+        // this.$injector.get("$compile")(headerDiv)(newScope);
     }
+
+    buildComponent(viewContainerRef: any) {
+        const inj: Injector = this.makeCustomInjector(viewContainerRef);
+        const factory = this.componentFactoryResolver.resolveComponentFactory(VisualQueryTableHeader);
+        const componentRef = viewContainerRef.createComponent(this.componentFactory, undefined, inj);
+      }
+      
+      makeCustomInjector(viewContainerRef: any) {
+        return Injector.create(
+            [{provide: ViewContainerRef, useValue: viewContainerRef}],
+           this.injector
+        )
+      }
+
+      //   providers: [{provide: viewContainerRef, useValue: viewContainer}],
+        //   parent: this.injector
 
     /**
      * Hides the cell menu.
      */
     private hideMenu() {
         this.menuVisible = false;
-        this.$timeout(() => {
+        setTimeout(() => {
             if (this.menuVisible === false) {
                 this.menuPanel.close();
             }
@@ -438,7 +461,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         const column = cell.data("column");
         const header = this.delegate.columns[column];
         const isNull = cell.hasClass("null");
-        const selection = this.$window.getSelection();
+        const selection = window.getSelection();
         const range = selection.getRangeAt(0)
 
         if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
@@ -465,7 +488,7 @@ export class VisualQueryPainterService extends fattable.Painter {
 
         // Update position
         this.menuPanel.updatePosition(
-            this.$mdPanel.newPanelPosition()
+            this.$injector.get("$mdPanel").newPanelPosition()
                 .left(event.clientX + PIXELS)
                 .top(event.clientY + PIXELS)
         );
@@ -483,11 +506,11 @@ export class VisualQueryPainterService extends fattable.Painter {
                 const width = element.width();
 
                 // Fix position if off screen
-                const left = (offset.left + width > this.$window.innerWidth) ? this.$window.innerWidth - width - 8 : event.clientX;
-                const top = (offset.top + height > this.$window.innerHeight) ? this.$window.innerHeight - height - 8 : event.clientY;
+                const left = (offset.left + width > window.innerWidth) ? window.innerWidth - width - 8 : event.clientX;
+                const top = (offset.top + height > window.innerHeight) ? window.innerHeight - height - 8 : event.clientY;
                 if (left !== event.clientX || top !== event.clientY) {
                     this.menuPanel.updatePosition(
-                        this.$mdPanel.newPanelPosition()
+                        this.$injector.get("$mdPanel").newPanelPosition()
                             .left(left + PIXELS)
                             .top(top + PIXELS)
                     );
@@ -511,18 +534,18 @@ export class VisualQueryPainterService extends fattable.Painter {
         let offsetY;
         let yPosition;
 
-        if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > this.$window.innerHeight) {
+        if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > window.innerHeight) {
             offsetY = "-27" + PIXELS;
-            yPosition = this.$mdPanel.yPosition.ABOVE;
+            yPosition = this.$injector.get("$mdPanel").yPosition.ABOVE;
         } else {
             offsetY = "0";
-            yPosition = this.$mdPanel.yPosition.BELOW;
+            yPosition = this.$injector.get("$mdPanel").yPosition.BELOW;
         }
 
         this.tooltipPanel.updatePosition(
-            this.$mdPanel.newPanelPosition()
+            this.$injector.get("$mdPanel").newPanelPosition()
                 .relativeTo(cellDiv)
-                .addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, yPosition)
+                .addPanelPosition(this.$injector.get("$mdPanel").xPosition.ALIGN_START, yPosition)
                 .withOffsetX("28px")
                 .withOffsetY(offsetY)
         );
@@ -540,5 +563,4 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 }
-
-angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);
+angular.module(moduleName).service('VisualQueryPainterService',downgradeInjectable(VisualQueryPainterService));

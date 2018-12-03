@@ -7,6 +7,7 @@ import {VisualQueryComponent, VisualQueryDirective} from "./angular2";
 import AccessConstants from "../../constants/AccessConstants";
 import "../../codemirror-require/module"
 import { VisualQueryTableHeader } from "./transform-data/visual-query-table/visual-query-table-header.component";
+import { VisualQueryPainterService } from "./transform-data/visual-query-table/visual-query-painter.service";
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatButtonModule } from "@angular/material/button";
@@ -26,6 +27,7 @@ const moduleName: string = require("./module-name");
     entryComponents : [
         VisualQueryTableHeader
     ],
+    providers:[VisualQueryPainterService],
     imports: [
         CommonModule,
         MatFormFieldModule,
