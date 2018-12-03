@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
+import {NgModule, Injector, ViewContainerRef} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
@@ -46,6 +46,7 @@ import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
 import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import { VisualQueryPainterService } from "./visual-query/transform-data/visual-query-table/visual-query-painter.service";
+import { INJECTOR, VIEW_CONTAINER_REF } from "./visual-query/transform-data/transform-data.component";
 // import {PropertyListModule} from "./shared/property-list/property-list.module";
 
 @NgModule({
@@ -109,6 +110,8 @@ import { VisualQueryPainterService } from "./visual-query/transform-data/visual-
         UiComponentsService,
         VisualQueryService,
         VisualQueryPainterService,
+        {provide: INJECTOR, useExisting: Injector},
+        {provide : VIEW_CONTAINER_REF, useExisting : ViewContainerRef},
         PolicyInputFormService,
         NiFiService
     ],
