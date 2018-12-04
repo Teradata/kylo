@@ -31,6 +31,7 @@ import {KyloServicesModule} from "../../../services/services.module";
 import {KyloCommonModule} from "../../../common/common.module";
 
 import { UIRouterModule } from "@uirouter/angular";
+import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import {jobDetailsStates} from "./job-details.states";
 
 import { MatSnackBarModule } from "@angular/material/snack-bar";
@@ -41,9 +42,8 @@ import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import * as angular from "angular";
 import { JobDetailsController } from "./JobDetailsController.component";
-import OpsManagerJobService from "../../services/OpsManagerJobService";
-import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
-import IconService from "../../services/IconStatusService";
+import {OpsManagerRestUrlService} from "../../services/OpsManagerRestUrlService";
+import {IconService} from "../../services/IconStatusService";
 import { JobDetailsDirectiveController } from "./JobDetailsDirective.component";
 
 @NgModule({

@@ -1,7 +1,6 @@
 import {Connector} from './connector';
 import {DataSourceTemplate} from './datasource-template';
 
-
 /**
  * DataSource knows how to connect to a source.
  * It has an instance of a Connector's DataSourceTemplate which is
@@ -11,7 +10,11 @@ export class DataSource {
 
     id: string;
 
+    allowedActions?: any;
+
     connector: Connector;
+
+    roleMemberships: any;
 
     title: string;
 

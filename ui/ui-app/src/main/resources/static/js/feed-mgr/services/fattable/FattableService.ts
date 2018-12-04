@@ -86,10 +86,14 @@ export class FattableService {
 
     table : any;
     constructor() {
-
     }
 
-    setupTable (options: any) {
+    destroy(tableContainerId: string) {
+        const eventId = "resize.fattable." + tableContainerId;
+        $(window).unbind(eventId);
+    }
+
+    setupTable(options: any) {
         // console.log('setupTable');
         let scrollXY: number[] = [];
 

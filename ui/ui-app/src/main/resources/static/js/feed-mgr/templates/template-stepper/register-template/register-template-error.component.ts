@@ -3,7 +3,7 @@ import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog
 
 @Component({
     selector: 'register-template-error-dialog',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html'
+    templateUrl: './register-template-error-dialog.html'
 })
 export class RegisterTemplateErrorDialog {
 

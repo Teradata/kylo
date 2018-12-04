@@ -1,13 +1,13 @@
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 import { Component, Input, OnInit, OnDestroy } from "@angular/core";
-import ServicesStatusData from "../services/ServicesStatusService";
+import {ServicesStatusData} from "../services/ServicesStatusService";
 import { BaseFilteredPaginatedTableView } from "../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
 import { TdDataTableService, ITdDataTableColumn } from "@covalent/core/data-table";
 @Component({
     selector: "tba-Service-Health",
-    templateUrl: "js/ops-mgr/service-health/service-health-template.html"
+    templateUrl: "./service-health-template.html"
 })
 export class ServiceHealthComponent extends BaseFilteredPaginatedTableView implements OnInit, OnDestroy {
     pageName: string;

@@ -1,16 +1,16 @@
 import { Component, Inject } from "@angular/core";
-import AccessControlService from '../../../services/AccessControlService';
+import {AccessControlService} from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
-import CategoriesService from '../../services/CategoriesService';
+import {CategoriesService} from '../../services/CategoriesService';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { CloneUtil } from "../../../common/utils/clone-util";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-category-properties',
-    templateUrl: 'js/feed-mgr/categories/details/category-properties.html'
+    templateUrl: './category-properties.html'
 })
 export class CategoryProperties {
 

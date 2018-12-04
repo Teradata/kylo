@@ -19,7 +19,7 @@
  */
 import { Injectable } from '@angular/core';
 @Injectable()
-export default class CommonRestUrlService{
+export class CommonRestUrlService{
     ROOT: any;
     SECURITY_BASE_URL: any;
     SEARCH_URL: any;

@@ -1,0 +1,29 @@
+:host ::ng-deep dataset-simple-table.small table.td-data-table  tr.td-data-table-row {
+  height:10px;
+}
+
+:host ::ng-deep dataset-simple-table.small table.td-data-table  tr.td-data-table-row td.td-data-table-cell  {
+  font-size:10px;
+  line-height: 14px;
+}
+
+:host ::ng-deep dataset-simple-table.small table.td-data-table  tr.td-data-table-column-row {
+  height:14px;
+}
+
+:host ::ng-deep dataset-simple-table.small table.td-data-table  tr.td-data-table-column-row th.td-data-table-column  {
+  font-size:10px;
+  line-height: 14px;
+}
+
+
+:host ::ng-deep dataset-simple-table.small table.td-data-table  tr.td-data-table-column-row th.td-data-table-column .td-data-table-heading {
+  padding-left:2px;
+  padding-right:2px;
+}
+
+:host ::ng-deep dataset-simple-table.small table.td-data-table  tr.td-data-table-row td.td-data-table-cell .td-data-table-cell-content-wrapper{
+  padding-left:2px;
+  padding-right:2px;
+}
+

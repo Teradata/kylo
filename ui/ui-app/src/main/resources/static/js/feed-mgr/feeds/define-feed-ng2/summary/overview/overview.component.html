@@ -1,0 +1,2 @@
+<feed-activity-summary [feed]="feed" *ngIf="feed && !feed.isDraft()"></feed-activity-summary>
+<setup-guide-summary [feed]="feed" [showHeader]="true" *ngIf="feed && feed.isDraft()"></setup-guide-summary>

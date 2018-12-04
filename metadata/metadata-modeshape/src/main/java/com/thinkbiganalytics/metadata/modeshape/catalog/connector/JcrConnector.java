@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSuppli
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -41,25 +42,26 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 /**
  *
  */
-public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, DataSetSparkParamsSupplierMixin, AccessControlledMixin {
+public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements Connector, AuditableMixin, SystemEntityMixin, IconableMixin, DataSetSparkParamsSupplierMixin, AccessControlledMixin {
     
     public static final String NODE_TYPE = "tba:Connector";
     public static final String DATASOURCES_NODE_TYPE = "tba:ConnectorDataSources";
     
     public static final String IS_ACTIVE = "tba:isActive";
     public static final String PLUGIN_ID = "tba:pluginId";
-    public static final String ICON = "tba:icon";
-    public static final String ICON_COLOR = "tba:iconColor";
     public static final String DATASOURCES = "dataSources";
     
     public JcrConnector(Node node) {
@@ -112,6 +114,14 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     public boolean isActive() {
         return getProperty(IS_ACTIVE);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.Connector#setActive(boolean)
+     */
+    @Override
+    public void setActive(boolean flag) {
+        setProperty(IS_ACTIVE, flag);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getPluginId()
@@ -122,28 +132,21 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getIcon()
-     */
-    @Override
-    public String getIcon() {
-        return getProperty(ICON);
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getColor()
-     */
-    @Override
-    public String getColor() {
-        return getProperty(ICON_COLOR);
-    }
-
-    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.Connector#getDataSources()
      */
     @Override
     public List<? extends DataSource> getDataSources() {
-        Node dsNode = JcrUtil.getNode(getNode(), DATASOURCES);
-        return JcrUtil.getJcrObjects(dsNode, JcrDataSource.class);
+        try {
+            Node dsNode = getDataSourcesNode();
+            NodeType type = JcrUtil.getNodeType(getNode().getSession(), JcrDataSource.NODE_TYPE);
+            return JcrUtil.getJcrObjects(dsNode, type, JcrDataSource.class);
+        }catch (RepositoryException e){
+            log.error("Unablt to get datasources for connector ",e);
+            return Collections.emptyList();
+        }
+    }
+    public Node getDataSourcesNode(){
+        return JcrUtil.getNode(getNode(), DATASOURCES);
     }
     
     public static class ConnectorId extends JcrEntity.EntityId implements Connector.ID {

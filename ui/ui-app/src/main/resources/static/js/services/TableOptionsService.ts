@@ -1,11 +1,10 @@
 import {ListTableView} from "./ListTableViewTypes";
-import {Common} from "../common/CommonTypes";
 import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
-
+import {DefaultPaginationDataService} from "./PaginationDataService";
+import {Common} from '../../lib/common/CommonTypes';
 import { Injectable } from "@angular/core";
-import { DefaultPaginationDataService } from "./PaginationDataService";
 
 @Injectable()
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
@@ -15,9 +14,9 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
     newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string):SortOption[]{
         var sortOptions = Object.keys(labelValueMap).map((mapKey:string) => {
             var value = labelValueMap[mapKey];
-            var sortOption = {label: mapKey, value: value, direction: '', reverse: false, type: 'sort',default:'asc'}
+            var sortOption = {label: mapKey, value: value, direction: '', reverse: false, type: 'sort'}
             if (defaultValue && value == defaultValue) {
-                sortOption['default'] = defaultDirection || 'asc';
+                sortOption['default'] = defaultValue;
                 sortOption['direction'] = defaultDirection || 'asc';
                 sortOption['reverse'] = sortOption['direction'] == 'asc' ? false : true;
                 sortOption['icon'] = sortOption['direction'] == 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down';

@@ -17,7 +17,8 @@ declare module fattable {
     // getHeaderSync and getCellSync
     class SyncTableModel extends TableModel {
        getCellSync(i: number, j: number): string;
-       getHeaderSync(j: number): string;
+       getHeaderSync(j: number): any;
+        columnHeaders:string[]
     }
 
     // Extend this class if you have access
@@ -91,6 +92,8 @@ declare module fattable {
     }
 
     class TableView {
+        columnOffset?:number[];
+        columnWidths:any;
         readRequiredParameter(parameters: any, k: any, default_value: any): void;
         constructor(paramaters: any);
         getContainerDimensions(): void;

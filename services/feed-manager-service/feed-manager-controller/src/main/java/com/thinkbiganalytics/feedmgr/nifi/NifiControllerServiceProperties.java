@@ -20,6 +20,8 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
+import com.thinkbiganalytics.db.PoolingDataSourceService;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -34,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Helper class to get Controller Service Properties from Nifi and also merge any of these properties specified in our .properties file
@@ -49,6 +52,9 @@ public class NifiControllerServiceProperties {
 
     @Autowired
     LegacyNifiRestClient nifiRestClient;
+
+    @Autowired
+    DBCPConnectionPoolService dbcpConnectionPoolService;
 
 
     /**
@@ -176,6 +182,21 @@ public class NifiControllerServiceProperties {
             controllerService = getControllerServiceByName(serviceName);
         }
         return controllerService;
+    }
+
+    /**
+     * find and parse a controller service and return its properties
+     * @param serviceId
+     * @return
+     */
+    public Optional<PoolingDataSourceService.DataSourceProperties> parseControllerService(String serviceId) {
+        ControllerServiceDTO controllerServiceDTO = getControllerServiceById(serviceId);
+        if(controllerServiceDTO != null){
+            return Optional.of(dbcpConnectionPoolService.parseControllerService(controllerServiceDTO));
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
     /**

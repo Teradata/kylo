@@ -1,7 +1,8 @@
 import * as _ from "underscore";
 import {TableColumnDefinition} from "./TableColumnDefinition";
-import {KyloObject} from "../../common/common.model";
-import { ObjectUtils } from "../../common/utils/object-utils";
+import {KyloObject} from "../../../lib/common/common.model";
+import {StringUtils} from "../../common/utils/StringUtils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 
 export class TableFieldPartition  implements KyloObject {
 
@@ -79,10 +80,12 @@ export class TableFieldPartition  implements KyloObject {
         }
     }
 
+    public allowPartitionNameChanges() : boolean {
+        return (this.formula && this.formula != 'val');
+    }
+
     updateFieldName() {
-        if(ObjectUtils.isUndefined(this.formula)){
-            this.formula = 'val';
-        }
+        if(ObjectUtils.isUndefined(this.formula)) return;
         if (this.formula != 'val') {
             if (this.sourceField != null && (this.field == null || this.field == '' || this.field == this.sourceField || this.field == this.sourceField + "_")) {
                 this.field = this.sourceField + "_" + this.formula;

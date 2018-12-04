@@ -1,0 +1,42 @@
+<ng-template tdLoading tdLoadingColor="accent" [tdLoadingUntil]="feed.propertiesInitialized" tdLoadingStrategy="replace" tdLoadingType="linear">
+  <form [formGroup]="form">
+    <div fxLayout="column" *ngIf="(mode=='INPUT' || mode == 'ALL')">
+
+      <ng-container *ngIf="!feed.readonly">
+        <mat-form-field fxFlex="50">
+          <mat-select placeholder="Choose a source" [formControl]="inputProcessorControl" required>
+            <mat-option>--</mat-option>
+            <mat-option *ngFor="let inputProcessor of inputProcessors" [value]="inputProcessor">
+              {{inputProcessor.name}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="inputProcessorControl.hasError('required')">Please select a source</mat-error>
+        </mat-form-field>
+      </ng-container>
+
+      <ng-container *ngIf="feed.readonly && inputProcessor">
+        <h3 mat-subheader class="property-heading pull-top-sm"> {{inputProcessor.name}}</h3>
+      </ng-container>
+
+      <ng-container *ngIf="feed.readonly && inputProcessor == undefined">
+        <div fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+          <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+          <h2>No source selected</h2>
+        </div>
+      </ng-container>
+
+      <feed-details-processor-field [processor]="inputProcessor" [readonly]="feed.readonly" *ngIf="inputProcessor != undefined" class="pull-top-sm"></feed-details-processor-field>
+
+    </div>
+
+    <feed-details-processor-field *ngFor="let processor of nonInputProcessors" [processor]="processor" [readonly]="feed.readonly" class="pull-top-sm"></feed-details-processor-field>
+  </form>
+
+  <!--
+  <div *ngIf="noPropertiesExist"  fxLayout="column" fxFlex fxLayoutAlign="flex-start" class="tc-grey-500 mat-typography pad push-left-xxl">
+    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+    <h2>No properties to set</h2>
+  </div>
+  -->
+
+</ng-template>

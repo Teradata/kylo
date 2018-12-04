@@ -35,6 +35,7 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.PositionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.dto.flow.FlowDTO;
@@ -68,6 +69,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 
@@ -80,7 +82,6 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
      * Base path for process group requests
      */
     private static final String BASE_PATH = "/process-groups/";
-
 
 
     /**
@@ -99,10 +100,17 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Nonnull
     @Override
     public ProcessGroupDTO create(@Nonnull String parentProcessGroupId, @Nonnull String name) {
+       return create(parentProcessGroupId,name,null,null);
+    }
+
+    public ProcessGroupDTO create(@Nonnull String parentProcessGroupId, @Nonnull String name, @Nullable Double x, @Nullable Double y ) {
         final ProcessGroupEntity entity = new ProcessGroupEntity();
 
         final ProcessGroupDTO processGroup = new ProcessGroupDTO();
         processGroup.setName(name);
+        if(x != null && y != null) {
+            processGroup.setPosition(new PositionDTO(x, y));
+        }
         entity.setComponent(processGroup);
 
         final RevisionDTO revision = new RevisionDTO();

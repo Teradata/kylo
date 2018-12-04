@@ -1,20 +1,20 @@
 import * as _ from 'underscore';
-import StateService from "../../../services/StateService";
-import TabService from "../../services/TabService";
+import {StateService} from "../../../services/StateService";
+import {TabService} from "../../../services/tab.service";
 import { DefaultPaginationDataService } from "../../../services/PaginationDataService";
 import { DefaultTableOptionsService } from "../../../services/TableOptionsService";
-import {OpsManagerFeedService} from "../../services/OpsManagerFeedService";
+import {OpsManagerFeedService} from "../../services/ops-manager-feed.service";
 import { Component, Input } from "@angular/core";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import BroadcastService from "../../../services/broadcast-service";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
+import {BroadcastService} from "../../../services/broadcast-service";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent, TdDataTableSortingOrder } from "@covalent/core/data-table";
 import { BaseFilteredPaginatedTableView } from "../../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
 import { IPageChangeEvent } from "@covalent/core/paging";
 
 @Component({
     selector: 'tba-feed-health-table-card',
-    templateUrl:'js/ops-mgr/overview/feed-health/feed-health-table-card-template.html'
+    templateUrl:'./feed-health-table-card-template.html'
 })
 export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView {
     pageName: string;
@@ -117,13 +117,8 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             this.loadFeeds(true, true);
         }
 
-        feedDetails (event: any) {
-            if(event.row.stream) {
-                this.stateService.OpsManager().Feed().navigateToFeedStats(event.row.feed);
-            }
-            else {
-                this.stateService.OpsManager().Feed().navigateToFeedDetails(event.row.feed);
-            }
+        feedDetails (event: any, feed: any) {
+            this.stateService.FeedManager().Feed().navigateToFeedDefinition(feed.feedHealth.feedId)
         }
 
         /**

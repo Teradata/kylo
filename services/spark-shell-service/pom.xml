@@ -12,7 +12,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.2-SNAPSHOT</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -23,6 +23,5 @@
     <module>spark-shell-rest-model</module>
     <module>spark-shell-api</module>
     <module>spark-shell-core</module>
-    <module>spark-livy-core</module>
   </modules>
 </project>

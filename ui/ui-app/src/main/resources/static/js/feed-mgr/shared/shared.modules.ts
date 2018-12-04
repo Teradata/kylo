@@ -43,24 +43,21 @@ import { FeedFieldPolicyRuleService } from "./feed-field-policy-rules/services/F
 import { FieldPolicyRuleOptionsFactory } from "./feed-field-policy-rules/services/FieldPolicyRuleOptionsFactory";
 import { FeedFieldPolicyRulesDialogComponent } from "./feed-field-policy-rules/feed-field-policy-rules-dialog.component";
 import { FeedFieldPolicyRuleDialogComponent } from "./feed-field-policy-rules/FeedFieldPolicyRuleDialog";
+import {FieldPoliciesModule} from "./field-policies-angular2/field-policies.module";
 import { FieldPolicyOptionsService } from "./field-policies-angular2/field-policy-options.service";
+import {PropertyListModule} from "./property-list/property-list.module";
 
 @NgModule({
     declarations: [
         PropertiesAdminEditorController,
         PropertiesAdminController,
-        PropertyListComponent,
         PropertyListEditorComponent,
-        FeedFieldPolicyRulesDialogComponent,
         FeedFieldPolicyRuleDialogComponent
-
     ],
     entryComponents: [
         PropertiesAdminEditorController,
         PropertiesAdminController,
-        PropertyListComponent,
         PropertyListEditorComponent,
-        FeedFieldPolicyRulesDialogComponent,
         FeedFieldPolicyRuleDialogComponent
     ],
     imports: [
@@ -88,7 +85,9 @@ import { FieldPolicyOptionsService } from "./field-policies-angular2/field-polic
         MatFormFieldModule,
         MatCardModule,
         MatCheckboxModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        PropertyListModule,
+        FieldPoliciesModule
     ],
     exports: [PropertiesAdminEditorController, PropertiesAdminController, FeedFieldPolicyRuleDialogComponent,
                 PropertyListComponent, PropertyListEditorComponent, FeedFieldPolicyRulesDialogComponent],

@@ -1,0 +1,620 @@
+<mat-progress-bar mode="indeterminate" *ngIf="loading" class="accent"></mat-progress-bar>
+<td-layout-nav color="none">
+  <div td-toolbar-content>
+    <div *ngIf="feed != undefined && feed != null">{{feed.feedName}}</div>
+    <span fxFlex="100"></span>
+  </div>
+  <mat-card class="feed-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon class="kylo-title-icon">{{kyloIcons_Links_versions}}</mat-icon>
+        <span translate>Versions.Name</span>
+      </mat-card-title>
+      <mat-card-subtitle translate>
+        Versions.Description
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+
+      <div fxLayout="row" fxLayoutAlign="start center">
+        <div fxFlex="25" class="property-name">{{"Versions.CompareVersions" | translate}}</div>
+        <div fxFlex="75" fxLayout="row" fxLayoutAlign="start center">
+          <span *ngIf="historyVersionsAvailable()" fxFlex="50">
+          {{"Versions.Current" | translate}}: {{leftVersion.name}}
+          ({{leftVersion.createdDate | date:'medium'}})</span>
+          <span fxFlex="50">
+            <mat-form-field style="min-width:420px">
+              <mat-select placeholder="Select version to compare" (selectionChange)="changeRightVersion($event.value)">
+                <mat-option *ngFor="let historyVersion of historyVersions" [value]="historyVersion">
+                  {{historyVersion.name}} ({{historyVersion.createdDate | date:'medium'}})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="rightVersion != undefined && rightVersion != null && !loading">
+        <mat-divider></mat-divider>
+        <section class="pad-top pad-bottom md-subhead">
+          <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+          {{"Versions.Sections.FeedDefinition" | translate}}
+        </section>
+
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/feedName')" [matTooltip]="interpretDiff(diff('/feedName'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"Versions.CreatedBy" | translate}}  </span>
+          <div fxFlex>
+            {{leftVersion.createdBy}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.createdBy}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/feedName')" [matTooltip]="interpretDiff(diff('/feedName'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-definition.FN" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.feedName}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.feedName}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property">
+          <span fxFlex="25" class="property-name"> {{"views.feed-definition.SN" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.systemFeedName}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.systemFeedName}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/description')" [matTooltip]="interpretDiff(diff('/description'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.import_feed.Description" | translate}} </span>
+          <div fxFlex>
+            {{feed.description}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.description}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property">
+          <span fxFlex="25" class="property-name"> {{"views.feed-definition.FT" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.templateName}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.templateName}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property">
+          <span fxFlex="25" class="property-name"> {{"views.feed-definition.FP" | translate}} </span>
+          <div fxFlex>
+            <div *ngIf="leftFeed.isStream" fxLayout="column" fxLayoutAlign="start start">
+              <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Stream" | translate}} </span>
+              <span class="hint">{{"views.feed-definition.StreamHint" | translate}}</span>
+            </div>
+            <div *ngIf="!leftFeed.isStream" fxLayout="column" fxLayoutAlign="start start">
+              <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Batch" | translate}}</span>
+              <span class="hint"> {{"views.feed-definition.Kwtijas" | translate}} </span>
+            </div>
+          </div>
+
+          <div fxFlex>
+            <div *ngIf="feedService.versionFeedModel.isStream" fxLayout="column" fxLayoutAlign="start start">
+              <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Stream" | translate}} </span>
+              <span class="hint">{{"views.feed-definition.StreamHint" | translate}}</span>
+            </div>
+            <div *ngIf="!feedService.versionFeedModel.isStream" fxLayout="column" fxLayoutAlign="start start">
+              <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Batch" | translate}}</span>
+              <span class="hint"> {{"views.feed-definition.Kwtijas" | translate}} </span>
+            </div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- div only for data transformation template -->
+        <div *ngIf="(leftFeed.registeredTemplate.dataTransformation) && (leftFeed.dataTransformation != null) && (leftFeed.dataTransformation != undefined)">
+          <section class="pad-top pad-bottom md-subhead">
+            <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+            {{"Versions.Sections.DataTransformation" | translate}}
+          </section>
+
+          <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/dataTransformation/sql')" [matTooltip]="interpretDiff(diff('/dataTransformation/sql'))"
+               [matTooltipPosition]=toolTipPosition>
+            <span fxFlex="25" class="property-name">{{"views.transform-feed-details.Query" | translate}}</span>
+            <div fxFlex>
+              {{leftFeed.dataTransformation.sql}}
+            </div>
+            <div fxFlex>
+              {{feedService.versionFeedModel.dataTransformation.sql}}
+            </div>
+          </div>
+
+          <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diffCollection('/dataTransformation/states')" [matTooltip]="interpretDiff(diffCollection('/dataTransformation/states'))"
+               [matTooltipPosition]=toolTipPosition>
+            <span fxFlex="25" class="property-name">{{"views.transform-feed-details.DataTransformations" | translate}}</span>
+            <div fxFlex>
+              <mat-list>
+                <mat-list-item *ngFor="let state of leftFeed.dataTransformation.states; let idx=index" class="feed-property pull-left-md">
+                  <div fxLayout="row" fxLayoutAlign="space-around start" class="feed-property mat-card-14">
+                    <ng-md-icon icon="transform" class="pad-right-sm"></ng-md-icon>
+                    {{state.context.name}}
+                  </div>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
+              </mat-list>
+            </div>
+            <div fxFlex>
+              <mat-list>
+                <mat-list-item *ngFor="let state of feedService.versionFeedModel.dataTransformation.states; let idx=index" class="feed-property pull-left-md">
+                  <div fxLayout="row" fxLayoutAlign="space-around start" class="feed-property mat-card-14">
+                    <ng-md-icon icon="transform" class="pad-right-sm"></ng-md-icon>
+                    {{state.context.name}}
+                  </div>
+                  <mat-divider></mat-divider>
+                </mat-list-item>
+              </mat-list>
+            </div>
+          </div>
+        </div>
+
+        <!-- div only for data ingest template -->
+        <div
+            *ngIf="(!leftFeed.registeredTemplate.dataTransformation)">
+          <section class="pad-top pad-bottom md-subhead">
+            <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+            {{"Versions.Sections.FeedDetails" | translate}}
+          </section>
+          <div fxLayout="row" class="feed-property">
+            <div fxLayout="column">
+              <ng-md-icon icon="input" class="pad-right-sm"></ng-md-icon>
+            </div>
+            <div fxLayout="column">
+              {{"Versions.FeedInput" | translate}}
+            </div>
+          </div>
+
+          <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/inputProcessorName')" [matTooltip]="interpretDiff(diff('/inputProcessorName'))"
+               [matTooltipPosition]=toolTipPosition>
+            <span fxFlex="25" class="property-name"> {{"views.feed-nifi-properties.Source" | translate}} </span>
+            <div fxFlex>
+              {{leftFeed.inputProcessorName}}
+            </div>
+            <div fxFlex>
+              {{feedService.versionFeedModel.inputProcessorName}}
+            </div>
+          </div>
+
+
+          <div *ngFor="let property of getInputProperties(leftFeed.inputProcessorName, leftFeed.inputProcessorType); let idx = index">
+            <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + property.op"
+                 [matTooltip]="interpretDiff(property.op, property.sensitive)" [matTooltipPosition]=toolTipPosition>
+              <div fxFlex="25" fxLayout="column" fxLayoutAlign="start start" class="property-name">
+                <div *ngIf="property.key == 'Backoff Period'" fxFlex>{{"views.feed-nifi-properties.SRP" | translate}}</div>
+                <div *ngIf="property.key != 'Backoff Period'" fxFlex>{{property.key}}</div>
+              </div>
+              <div fxFlex>
+                <span *ngIf="property.key != 'Backoff Period' && !property.sensitive">{{property.leftValue}}</span>
+                <span *ngIf="property.key != 'Backoff Period' && property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
+                <span *ngIf="property.key == 'Backoff Period'">{{property.leftValue | verboseTimeUnit}}</span>
+              </div>
+              <div fxFlex>
+                <span *ngIf="property.key != 'Backoff Period' && !property.sensitive">{{property.rightValue}}</span>
+                <span *ngIf="property.key != 'Backoff Period' && property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
+                <span *ngIf="property.key == 'Backoff Period'">{{property.rightValue | verboseTimeUnit}}</span>
+              </div>
+            </div>
+          </div>
+
+          <div fxLayout="row" class="feed-property" class="pad-top pad-bottom-sm">
+            <div fxLayout="column">
+              <ng-md-icon icon="linear_scale" class="pad-right-sm"></ng-md-icon>
+            </div>
+            <div fxLayout="column">
+              {{"Versions.RestOfFeed" | translate}}
+            </div>
+         </div>
+
+          <div *ngFor="let property of getNonInputProperties(leftFeed.inputProcessorName, leftFeed.inputProcessorType); let idx = index">
+            <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + property.op"
+                 [matTooltip]="interpretDiff(property.op)" [matTooltipPosition]=toolTipPosition>
+              <div fxFlex="25" fxLayout="column" fxLayoutAlign="start start" class="property-name">
+                <div fxFlex>{{property.key}}</div>
+                <div fxFlex class="hint">{{property.processorName}}</div>
+              </div>
+              <div fxFlex>
+                <span *ngIf="!property.sensitive">{{property.leftValue}}</span>
+                <span *ngIf="property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
+              </div>
+              <div fxFlex>
+                <span *ngIf="!property.sensitive">{{property.rightValue}}</span>
+                <span *ngIf="property.sensitive">{{"Versions.MaskForSensitiveValue" | translate}}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <mat-divider></mat-divider>
+        <section class="pad-top pad-bottom md-subhead">
+          <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+          {{"Versions.Sections.TableSchemaAndDataPolicies" | translate}}
+        </section>
+        <div *ngIf="leftFeed.table.method != 'EXISTING_TABLE'" fxLayout="row" class="feed-property">
+          <span flex="25" class="property-name">{{"views.feed-data-policies.SFRF" | translate}}</span>
+          <div fxFlex>
+            {{leftFeed.table.feedFormat}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property pad-bottom">
+          <span flex="25" class="property-name">{{"views.feed-data-policies.DTN" | translate}}</span>
+          <div fxFlex>
+            {{leftFeed.category.systemName}}.{{leftFeed.systemFeedName}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property pad-bottom">
+          <span flex="25" class="property-name">{{"views.feed-data-policies.Schema" | translate}}</span>
+        </div>
+
+        <mat-list class="pull-top">
+          <mat-list-item>
+            <div fxLayout="row" fxFill fxLayoutAlign="space-around center">
+
+              <div matLine fxFlex="25" class="hint" fxLayout="column" fxLayoutAlign="start start">
+                {{"views.feed-data-policies.FN" | translate}}
+              </div>
+
+              <div matLine fxFlex="10" fxLayout="column" fxLayoutAlign="start start" class="hint">
+                <div fxLayout="row" fxLayoutAlign="space-around center" class="hint">{{"views.feed-data-policies.Domain" | translate}}</div>
+                <div fxLayout="row" fxLayoutAlign="space-around center" class="hint">{{"views.feed-data-policies.Type" | translate}}</div>
+              </div>
+
+              <div matLine fxFlex="40" fxLayout="row" fxLayoutAlign="space-around center" class="hint">
+                <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center">
+                  {{"views.feed-data-policies.Primary" | translate}}
+                </div>
+
+                <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center">
+                  <div fxLayout="row" fxLayoutAlign="space-around center" class="hint">{{"views.feed-data-policies.Created" | translate}}</div>
+                  <div fxLayout="row" fxLayoutAlign="space-around center" class="hint">{{"views.feed-data-policies.Date" | translate}}</div>
+                </div>
+
+                <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center">
+                  <div fxLayout="row" fxLayoutAlign="space-around center" class="hint">{{"views.feed-data-policies.Updated" | translate}}</div>
+                  <div fxLayout="row" fxLayoutAlign="space-around center" class="hint"> {{"views.feed-data-policies.UDate" | translate}}</div>
+                </div>
+
+                <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center">
+                  {{"views.feed-data-policies.Index" | translate}}
+                </div>
+
+                <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center">
+                  {{"views.feed-data-policies.Profile" | translate}}
+                </div>
+
+              </div>
+
+              <div matLine fxFlex="25" fxLayout="row" fxLayoutAlign="space-around start" class="hint">
+                <div class="data-policy-item-check-box" fxLayout="column" fxLayoutAlign="start start">
+                  <div fxLayout="row" fxLayoutAlign="space-around start" class="hint">{{"views.feed-data-policies.Standardize" | translate}}</div>
+                  <div fxLayout="row" fxLayoutAlign="space-around start" class="hint">{{"views.feed-data-policies.Validate" | translate}}</div>
+                </div>
+              </div>
+
+            </div>
+          </mat-list-item>
+          <div *ngIf="leftFeed.table.fieldPolicies && leftFeed.table.fieldPolicies.length > 0">
+            <mat-list-item *ngFor="let policy of leftFeed.table.fieldPolicies; let idx=index" class="feed-property">
+              <div matLine fxLayout="row" fxFill fxLayoutAlign="space-around start">
+                <div fxFlex="25" fxLayout="column" fxLayoutAlign="start start" class="mat-card-14">
+                  <div>{{policy.fieldName | charactersPipe: 20}}</div>
+                  <div class="hint">{{fieldNameMap[policy.fieldName].derivedDataType | charactersPipe: 20}}</div>
+                </div>
+
+                <div fxFlex="10" class="hint" fxLayout="column" fxLayoutAlign="start start" [ngClass]="'versions2-' + diff('/table/fieldPolicies/' + idx + '/domainTypeId')"
+                     [matTooltip]="interpretDiff(diff('/table/fieldPolicies/' + idx + '/domainTypeId'))" [matTooltipPosition]=toolTipPosition>
+                  <div *ngIf="policy.domainTypeId != null">
+                    <ng-md-icon icon="{{getDomainType(policy.domainTypeId).icon}}" size="32" title="{{getDomainType(policy.domainTypeId).title}}"></ng-md-icon>
+                  </div>
+                </div>
+
+                <div fxFlex="40" class="hint" fxLayout="row" fxLayoutAlign="space-around start">
+
+                  <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center" [ngClass]="'versions2-' + diff('/table/tableSchema/fields/' + idx + '/primaryKey')"
+                       [matTooltip]="interpretDiff(diff('/table/tableSchema/fields/' + idx + '/primaryKey'))" [matTooltipPosition]=toolTipPosition>
+                    <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="fieldNameMap[policy.fieldName].primaryKey"></ng-md-icon>
+                    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!fieldNameMap[policy.fieldName].primaryKey"></ng-md-icon>
+                  </div>
+                  <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center" [ngClass]="'versions2-' + diff('/table/tableSchema/fields/' + idx + '/createdTracker')"
+                       [matTooltip]="interpretDiff(diff('/table/tableSchema/fields/' + idx + '/createdTracker'))" [matTooltipPosition]=toolTipPosition>
+                    <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="fieldNameMap[policy.fieldName].createdTracker"></ng-md-icon>
+                    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!fieldNameMap[policy.fieldName].createdTracker"></ng-md-icon>
+                  </div>
+
+                  <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center" [ngClass]="'versions2-' + diff('/table/tableSchema/fields/' + idx + '/updatedTracker')"
+                       [matTooltip]="interpretDiff(diff('/table/tableSchema/fields/' + idx + '/updatedTracker'))" [matTooltipPosition]=toolTipPosition>
+                    <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="fieldNameMap[policy.fieldName].updatedTracker"></ng-md-icon>
+                    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!fieldNameMap[policy.fieldName].updatedTracker"></ng-md-icon>
+                  </div>
+
+                  <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center" [ngClass]="'versions2-' + diff('/table/fieldPolicies/' + idx + '/index')"
+                       [matTooltip]="interpretDiff(diff('/table/fieldPolicies/' + idx + '/index'))" [matTooltipPosition]=toolTipPosition>
+                    <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="policy.index"></ng-md-icon>
+                    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!policy.index"></ng-md-icon>
+                  </div>
+
+                  <div class="data-policy-item-check-box hint" fxLayout="column" fxLayoutAlign="start center" [ngClass]="'versions2-' + diff('/table/fieldPolicies/' + idx + '/profile')"
+                       [matTooltip]="interpretDiff(diff('/table/fieldPolicies/' + idx + '/profile'))" [matTooltipPosition]=toolTipPosition>
+                    <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="policy.profile"></ng-md-icon>
+                    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!policy.profile"></ng-md-icon>
+                  </div>
+                </div>
+                <div fxFlex="25" class="hint" fxLayout="row" fxLayoutAlign="space-around start" fxFill [ngClass]="'versions2-' + diffPolicies(idx)"
+                     [matTooltip]="interpretDiff(diffPolicies(idx))" [matTooltipPosition]=toolTipPosition>
+
+                  <div fxLayout="column" fxLayoutAlign="start start">
+                    <div *ngIf="getAllFieldPolicies(policy).length <= 2">
+                      <div *ngFor="let rule of getAllFieldPolicies(policy) | slice:0:2">
+                        {{rule.name}}
+                      </div>
+                    </div>
+                    <div *ngIf="getAllFieldPolicies(policy).length > 2">
+                      <div *ngFor="let rule of getAllFieldPolicies(policy) | slice:0:1">
+                        {{rule.name}}
+                      </div>
+                    </div>
+                    <div *ngIf="getAllFieldPolicies(policy).length > 2">
+                      + {{getAllFieldPolicies(policy).length - 1}} More
+                    </div>
+                  </div>
+
+                  <div fxLayout="column" fxLayoutAlign="start start">
+                    <div *ngIf="getAllVersionedFieldPolicies(idx).length <= 2">
+                      <div *ngFor="let rule of getAllVersionedFieldPolicies(idx) | slice:0:2">
+                        {{rule.name}}
+                      </div>
+                    </div>
+
+                    <div *ngIf="getAllVersionedFieldPolicies(idx).length > 2">
+                      <div *ngFor="let rule of getAllVersionedFieldPolicies(idx) | slice:0:1">
+                        {{rule.name}}
+                      </div>
+                    </div>
+
+                    <div *ngIf="getAllVersionedFieldPolicies(idx).length > 2">
+                      + {{getAllVersionedFieldPolicies(idx).length - 1}} More
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </mat-list-item>
+          </div>
+        </mat-list>
+
+        <div fxLayout="row" class="pad-top-lg pad-bottom-sm property-name">
+          {{"views.feed-data-policies.Partitions" | translate}}
+        </div>
+
+        <div *ngIf="leftFeed.table.partitions.length == 0" fxLayout="row" class="feed-property pad-left-sm pad-bottom" fxFill>
+          {{"views.feed-data-policies.NPIE" | translate}}
+        </div>
+
+        <div *ngIf="leftFeed.table.partitions.length > 0">
+          <mat-list class="pull-top">
+            <mat-list-item>
+              <div class="hint" fxLayout="row" fxFill fxLayoutAlign="space-between center">
+                <div fxFlex="30" fxLayout="column" fxLayoutAlign="start start">
+                  {{"views.feed-data-policies.PN" | translate}}
+                </div>
+                <div fxFlex="30" fxLayout="column" fxLayoutAlign="start start">
+                  {{"views.feed-data-policies.SF" | translate}}
+                </div>
+                <div fxFlex="40" fxLayout="column" fxLayoutAlign="start start">
+                  {{"views.feed-data-policies.PF" | translate}}
+                </div>
+              </div>
+            </mat-list-item>
+
+
+            <mat-list-item *ngFor="let partition of leftFeed.table.partitions" class="mat-list-item-text">
+              <div fxLayout="row" fxFill fxLayoutAlign="space-between center">
+                <div fxFlex="30" class="feed-property mat-card-14" fxLayout="column" fxLayoutAlign="start start">
+                  {{partition.field | translate}}
+                </div>
+                <div fxFlex="30" class="feed-property mat-card-14" fxLayout="column" fxLayoutAlign="start start">
+                  {{partition.sourceField | translate}}
+                </div>
+                <div fxFlex="40" class="feed-property mat-card-14" fxLayout="column" fxLayoutAlign="start start">
+                  {{partition.formula | translate}}
+                </div>
+              </div>
+            </mat-list-item>
+          </mat-list>
+        </div>
+
+        <div *ngIf="leftFeed.table.method != 'EXISTING_TABLE'" fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/table/targetMergeStrategy')"
+             [matTooltip]="interpretDiff(diff('/table/targetMergeStrategy'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-data-policies.MS" | translate}} </span>
+          <div fxFlex>
+            {{mergeStrategyDisplayName(leftFeed)}}
+          </div>
+          <div fxFlex>
+            {{mergeStrategyDisplayName(this.feedService.versionFeedModel)}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/table/targetFormat')" [matTooltip]="interpretDiff(diff('/table/targetFormat'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-data-policies.TF" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.table.targetFormat}}
+          </div>
+          <div fxFlex>
+            {{this.feedService.versionFeedModel.table.targetFormat}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/table/options/compressionFormat')" [matTooltip]="interpretDiff(diff('/table/options/compressionFormat'))"
+             [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-data-policies.Co" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.table.options.compressionFormat}}
+          </div>
+          <div fxFlex>
+            {{this.feedService.versionFeedModel.table.options.compressionFormat}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/options/skipHeader')" [matTooltip]="interpretDiff(diff('/options/skipHeader'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-data-policies.Options" | translate}} </span>
+          <div fxFlex>
+            <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="leftFeed.options.skipHeader"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!leftFeed.options.skipHeader"></ng-md-icon>
+            <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
+          </div>
+          <div fxFlex>
+            <ng-md-icon class="primary-color-1" icon="check_box" *ngIf="this.feedService.versionFeedModel.options.skipHeader"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" *ngIf="!this.feedService.versionFeedModel.options.skipHeader"></ng-md-icon>
+            <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+        <section class="pad-top pad-bottom md-subhead">
+          <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+          {{"Versions.Sections.Properties" | translate}}
+        </section>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/dataOwner')" [matTooltip]="interpretDiff(diff('/dataOwner'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-additional-properties.DO" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.dataOwner}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.dataOwner}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diffCollection('/tags')" [matTooltip]="interpretDiff(diffCollection('/tags'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-additional-properties.Tags" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.tags | join: ',':'name'}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.tags | join: ',':'name'}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" *ngIf="securityGroupsEnabled">
+          <span fxFlex="25" class="property-name"> {{"views.feed-additional-properties.HSG" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.securityGroups | join: ',':'name'}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.securityGroups | join: ',':'name'}}
+          </div>
+        </div>
+
+        <div *ngFor="let userProperty of userProperties; let idx=index">
+          <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + userProperty.op" [matTooltip]="interpretDiff(userProperty.op)" [matTooltipPosition]=toolTipPosition>
+
+            <div *ngIf="userProperty.current.locked; else userPropertyNotLocked" fxLayout="column" fxFlex="25" class="property-name">
+              <span>{{userProperty.displayName}}</span>
+              <span class="hint">{{userProperty.description}}</span>
+            </div>
+            <ng-template #userPropertyNotLocked>
+              <span fxFlex="25" class="property-name">{{userProperty.systemName}}</span>
+            </ng-template>
+
+            <div fxFlex>
+              {{userProperty.current.value}}
+            </div>
+
+            <div fxFlex>
+              {{userProperty.versioned.value}}
+            </div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+        <section class="pad-top pad-bottom md-subhead">
+          <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+          {{"Versions.Sections.Schedule" | translate}}
+        </section>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/schedule/schedulingStrategy')" [matTooltip]="interpretDiff(diff('/schedule/schedulingStrategy'))"
+             [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-schedule.Strategy" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.schedule.schedulingStrategy | translate}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.schedule.schedulingStrategy | translate}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/schedule/schedulingPeriod')" *ngIf="leftFeed.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'"
+             [matTooltip]="interpretDiff(diff('/schedule/schedulingPeriod'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-schedule.Period" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.schedule.schedulingPeriod}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.schedule.schedulingPeriod}}
+          </div>
+        </div>
+
+        <div fxLayout="row" class="feed-property" [ngClass]="'versions2-' + diff('/schedule/executionNode')" *ngIf="isClustered && supportsExecutionNode"
+             [matTooltip]="interpretDiff(diff('/schedule/executionNode'))" [matTooltipPosition]=toolTipPosition>
+          <span fxFlex="25" class="property-name"> {{"views.feed-schedule.ExecutionNode" | translate}} </span>
+          <div fxFlex>
+            {{leftFeed.schedule.executionNode}}
+          </div>
+          <div fxFlex>
+            {{feedService.versionFeedModel.schedule.executionNode}}
+          </div>
+        </div>
+
+        <div *ngIf="leftFeed.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+
+          <mat-divider></mat-divider>
+          <section class="pad-top pad-bottom md-subhead">
+            <ng-md-icon icon="check" class="pad-right-lg" size="24"></ng-md-icon>
+            {{"Versions.Sections.RunPreconditions" | translate}}
+          </section>
+
+          <div *ngIf="leftFeed.schedule.preconditions != null && leftFeed.schedule.preconditions.length > 0" fxFill>
+            <mat-list>
+              <mat-list-item
+                  *ngFor="let rule of leftFeed.schedule.preconditions; let idx = index; let last = last;"
+                  [ngClass]="'versions2-' + diffCollection('/schedule/preconditions/' + idx)"
+                  fxFill fxLayout="column"
+                  [matTooltip]="interpretDiff(diffCollection('/schedule/preconditions/' + idx))" [matTooltipPosition]=toolTipPosition
+              >
+                <div fxLayout="row" fxFill class="pad-top-sm" fxAlign>
+                  <div fxFlex="25" class="property-name mat-card-subtitle"> {{"views.define-feed-schedule.PC" | translate}}</div>
+                  <div fxFlex class="feed-property mat-card-14">
+                    {{rule.propertyValuesDisplayString}}
+                  </div>
+                  <div fxFlex class="feed-property mat-card-14">
+                    {{feedService.versionFeedModel.schedule.preconditions[idx].propertyValuesDisplayString}}
+                  </div>
+                </div>
+                <mat-divider *ngIf="!last"></mat-divider>
+              </mat-list-item>
+            </mat-list>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</td-layout-nav>

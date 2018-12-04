@@ -1,48 +1,85 @@
-import * as angular from "angular";
-import * as _ from "underscore";
-import {Injectable, Injector} from "@angular/core";
-import {Feed} from "../../../model/feed/feed.model";
-import {Step, StepBuilder} from "../../../model/feed/feed-step.model";
-import {Common} from "../../../../common/CommonTypes"
-import { Templates } from "../../../services/TemplateTypes";
-import {Observable} from "rxjs/Observable";
-import {Subject} from "rxjs/Subject";
-import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
-import {HttpClient} from "@angular/common/http";
-import {SaveFeedResponse} from "../model/save-feed-response.model";
-import {DefineFeedStepGeneralInfoValidator} from "../steps/general-info/define-feed-step-general-info-validator";
-import {DefineFeedStepSourceSampleValidator} from "../steps/source-sample/define-feed-step-source-sample-validator";
-import "rxjs/add/observable/empty";
-import "rxjs/add/observable/of";
-import 'rxjs/add/observable/forkJoin'
-import {PreviewDatasetCollectionService} from "../../../catalog/api/services/preview-dataset-collection.service";
-import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
-import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
-import {DefineFeedTableValidator} from "../steps/define-table/define-feed-table-validator";
-import {EntityAccessControlService} from "../../../shared/entity-access-control/EntityAccessControlService";
-import AccessControlService from "../../../../services/AccessControlService";
-import {RestUrlConstants} from "../../../services/RestUrlConstants";
-import {RegisterTemplatePropertyService} from "../../../services/RegisterTemplatePropertyService";
-import {UiComponentsService} from "../../../services/UiComponentsService";
-import {FeedService} from "../../../services/FeedService";
-import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
-import {FeedConstants} from "../../../services/FeedConstants";
-import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
-import {TranslateService} from "@ngx-translate/core";
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpParams} from "@angular/common/http";
+import {Injectable, Injector, ViewContainerRef} from "@angular/core";
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {TdDialogService} from "@covalent/core/dialogs";
-import { CloneUtil } from "../../../../common/utils/clone-util";
+import {TdLoadingService} from "@covalent/core/loading";
+import {TranslateService} from "@ngx-translate/core";
+import {StateService, Transition} from "@uirouter/angular";
+import "rxjs/add/observable/empty";
+import 'rxjs/add/observable/forkJoin'
+import "rxjs/add/observable/of";
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
+import {Observable} from "rxjs/Observable";
+import {PartialObserver} from "rxjs/Observer";
+import {catchError} from "rxjs/operators/catchError";
+import {concatMap} from "rxjs/operators/concatMap";
+import {filter} from "rxjs/operators/filter";
+import {finalize} from "rxjs/operators/finalize";
+import {tap} from "rxjs/operators/tap";
+import {ReplaySubject} from "rxjs/ReplaySubject";
+import {Subject} from "rxjs/Subject";
+import {ISubscription} from "rxjs/Subscription";
+import * as _ from "underscore";
 
+import {ObjectChanged} from "../../../../../lib/common/common.model";
+import {CloneUtil} from "../../../../common/utils/clone-util";
+import {AccessControlService} from "../../../../services/AccessControlService";
+import {SelectionService} from "../../../catalog/api/services/selection.service";
+import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {Category} from "../../../model/category/category.model";
+import {EntityVersion} from "../../../model/entity-version.model";
+import {FEED_DEFINITION_SECTION_STATE_NAME} from "../../../model/feed/feed-constants";
+import {Step} from "../../../model/feed/feed-step.model";
+import {Feed, FeedAccessControl, FeedMode, FeedTemplateType, LoadMode, StepStateChangeEvent} from "../../../model/feed/feed.model";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
+import {FeedService} from "../../../services/FeedService";
+import {RestUrlConstants} from "../../../services/RestUrlConstants";
+import {UiComponentsService} from "../../../services/UiComponentsService";
+import {SaveFeedResponse} from "../model/save-feed-response.model";
+import {NewFeedDialogComponent, NewFeedDialogData, NewFeedDialogResponse} from "../new-feed-dialog/new-feed-dialog.component";
+import {FeedAccessControlService} from "../services/feed-access-control.service";
+import {FeedStepBuilderUtil} from "./feed-step-builder-util";
+import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
+import {DeployEntityVersionResponse} from "../../../model/deploy-entity-response.model";
+import {FeedNifiErrorUtil} from "../../../services/feed-nifi-error-util";
+import {Common} from '../../../../../lib/common/CommonTypes';
+
+export class FeedEditStateChangeEvent{
+
+    public readonly: boolean;
+    public accessControl:FeedAccessControl;
+
+    constructor(readonly:boolean, accessControl:FeedAccessControl){
+        this.readonly = readonly;
+        this.accessControl = accessControl;
+    }
+}
 
 export enum TableSchemaUpdateMode {
     UPDATE_SOURCE=1, UPDATE_TARGET=2, UPDATE_SOURCE_AND_TARGET=3
 }
 
+export interface DefineFeedContainerSideNavEvent {
+    opened:boolean;
+}
+
 @Injectable()
 export class DefineFeedService {
 
+    /**
+     *
+     * The feed in the same state as the server
+     * All Steps will get a copy of the feed that they manipulate and save back to this service.
+     * This object will get updated after each explicit Load or after a Save
+     */
     feed:Feed;
 
-    lastSavedFeed:Feed;
+    /**
+     * the load mode used for this feed
+     */
+    feedLoadMode:LoadMode;
+
 
     stepSrefMap:Common.Map<Step> = {}
 
@@ -59,256 +96,309 @@ export class DefineFeedService {
      */
     private currentStepSubject: Subject<Step>;
 
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public savedFeed$: Observable<SaveFeedResponse>;
-
     /**
      * The datasets subject for listening
      */
     private savedFeedSubject: Subject<SaveFeedResponse>;
 
+    private feedEditStateChangeSubject: Subject<FeedEditStateChangeEvent>;
 
+    private feedLoadedSubject: Subject<Feed>;
 
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public beforeSave$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private beforeSaveSubject: Subject<Feed>;
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public cancelFeedEdit$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private cancelFeedEditSubject: Subject<Feed>;
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public feedEdit$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private feedEditSubject: Subject<Feed>;
-
-
-    /**
-     * Allow other components to listen for changes to the currentStep
-     *
-     */
-    public feedStateChange$: Observable<Feed>;
-
-    /**
-     * The datasets subject for listening
-     */
-    private feedStateChangeSubject: Subject<Feed>;
+    private defineFeedContainerSideNavState: Subject<DefineFeedContainerSideNavEvent>;
 
     private uiComponentsService :UiComponentsService;
 
-    private registerTemplatePropertyService :RegisterTemplatePropertyService;
 
     private feedService :FeedService;
 
+    private accessControlService: AccessControlService;
 
-    /**
-     * Listen for when a user chooses a new source
-     */
-    private previewDatasetCollectionService:PreviewDatasetCollectionService;
+
+    private loadingFeedCache :Common.Map<Observable<EntityVersion>> = {}
+
+    private loadingFeedErrors: Common.Map<string> = {};
+
+
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
-                private _dialogService: TdDialogService){
+                private _dialogService: TdDialogService,
+                private _loadingService:TdLoadingService,
+                private selectionService: SelectionService,
+                private snackBar: MatSnackBar,
+                private stateService:StateService,
+                private feedAccessControlService:FeedAccessControlService){
+
+
         this.currentStepSubject = new Subject<Step>();
         this.currentStep$ = this.currentStepSubject.asObservable();
 
         this.savedFeedSubject = new Subject<SaveFeedResponse>();
-        this.savedFeed$ = this.savedFeedSubject.asObservable();
 
-        this.beforeSaveSubject = new Subject<Feed>();
-        this.beforeSave$ = this.beforeSaveSubject.asObservable();
+        this.feedLoadedSubject = new Subject<Feed>();
 
-
-        this.feedStateChangeSubject = new Subject<Feed>();
-        this.feedStateChange$ = this.feedStateChangeSubject.asObservable();
-
-        this.cancelFeedEditSubject = new Subject<Feed>();
-        this.cancelFeedEdit$ = this.cancelFeedEditSubject.asObservable();
-
-        this.feedEditSubject = new Subject<Feed>();
-        this.feedEdit$ = this.feedEditSubject.asObservable();
-
-        this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
-        this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
+        this.defineFeedContainerSideNavState = new Subject<DefineFeedContainerSideNavEvent>();
 
         this.uiComponentsService = $$angularInjector.get("UiComponentsService");
 
-        this.registerTemplatePropertyService = $$angularInjector.get("RegisterTemplatePropertyService");
 
         this.feedService = $$angularInjector.get("FeedService");
+
+        this.feedEditStateChangeSubject = new Subject<FeedEditStateChangeEvent>();
 
 
     }
 
+
+    toPreviewDataSet(dataset:SparkDataSet):PreviewDataSet{
+        let existingPreview = dataset.preview || {}
+        let preview = new PreviewDataSet(existingPreview);
+        preview.displayKey =dataset.id;
+        preview.dataSource = dataset.dataSource;
+        preview.schema = dataset.schema;
+        preview.items = [dataset.previewPath ? dataset.previewPath : dataset.resolvePath()];
+        preview.sparkOptions = dataset.options;
+        if(preview.sparkOptions) {
+            preview.sparkOptions['format'] = dataset.format;
+        }
+        return preview;
+
+    }
+
+
+
+    updateFeedRoleMemberships(roleMemberships: any) {
+        this.feed.roleMemberships = roleMemberships;
+        this.feed.roleMembershipsUpdated = true;
+
+        //notify subscribers of updated feed role memberships
+        let savedFeed = new SaveFeedResponse(this.feed, true, "Updated role memberships");
+        this.savedFeedSubject.next(savedFeed);
+    }
+
+    cloneFeed(feed?:Feed){
+        let feedToClone = feed != undefined ? this.getFeed() : feed;
+
+            let template = feedToClone.registeredTemplate;
+            let config:NewFeedDialogData = new NewFeedDialogData(template," Clone "+feedToClone.getFullName());
+            this._dialogService.open(NewFeedDialogComponent, {data: config, width:'800px'})
+                .afterClosed()
+                .filter(value => typeof value !== "undefined").subscribe((newFeedData:NewFeedDialogResponse) => {
+                    this._loadingService.register("processingFeed")
+                let template = newFeedData.template;
+                let feedName = newFeedData.feedName;
+                let systemFeedName = newFeedData.systemFeedName;
+                let category:Category = newFeedData.category;
+                let copy = this.feed.copyModelForSave();
+                copy.id = undefined;
+                copy.deployedVersion = undefined;
+                copy.feedName = feedName;
+                copy.systemFeedName = systemFeedName
+                copy.category = newFeedData.category;
+                copy.versionId = undefined;
+                copy.versionName = undefined;
+                this.saveFeed(copy).subscribe((response:SaveFeedResponse) => {
+                    if(response.success){
+                        let feed = response.feed;
+                        this.openSnackBar("Successfully cloned the feed ",5000)
+                        this._loadingService.resolve("processingFeed")
+                        this.stateService.go(FEED_DEFINITION_SECTION_STATE_NAME+".setup-guide",{feedId:feed.id},{"location":"replace"})
+                    }
+                    else {
+                        //ERROR
+                        this._loadingService.resolve("processingFeed")
+                        this.openSnackBar("Error cloning feed ",5000)
+                    }
+                }, error1 => {
+                    //ERROR!!!!!
+                    this._loadingService.resolve("processingFeed")
+                    this.openSnackBar("Error cloning feed ",5000)
+                })
+            });
+
+    }
+
+
+
     /**
-     * Load a feed based upon its UUID
+     * Load a feed based upon its UUID and return a copy to the subscribers
      *
      * @param {string} id
      * @return {Observable<Feed>}
      */
-    loadFeed(id:string, force?:boolean) :Observable<Feed> {
+    loadFeed(id:string, loadMode:LoadMode = LoadMode.LATEST, force?:boolean) :Observable<Feed> {
 
         let feed = this.getFeed();
-        if((feed && feed.id != id) || (feed == undefined && id != undefined) || force == true) {
+        if((feed && (feed.id != id || this.feedLoadMode != loadMode)) || (feed == undefined && id != undefined) || force == true) {
 
-            let observable = <Observable<Feed>> this.http.get("/proxy/v1/feedmgr/feeds/" + id)
-            observable.subscribe((feed) => {
-                console.log("LOADED ", feed)
-                //reset the collection service
-                this.previewDatasetCollectionService.reset();
-                //convert it to our needed class
-                let feedModel = new Feed(feed)
-                //reset the propertiesInitalized flag
-                feedModel.propertiesInitialized = false;
+            //if asking for a deployed feed and the feed matches the id to load and the feed is deployed
+            if(feed && feed.id == id && loadMode == LoadMode.DEPLOYED && feed.isDeployed()){
+                return Observable.of(this.feed.copy())
+            }
+            else  if(feed && feed.id == id && loadMode == LoadMode.DRAFT && feed.isDraft()){
+                return Observable.of(this.feed.copy())
+            }
 
-                this.initializeFeedSteps(feedModel);
-                feedModel.validate(true);
-                this.setFeed(feedModel)
-                this.lastSavedFeed = feedModel.copy();
-                //reset the dataset collection service
-                this.previewDatasetCollectionService.reset();
-            });
-            return observable;
+
+            if (LoadMode.LATEST == loadMode) {
+               return this.loadLatestFeed(id, true,force);
+
+            }
+            else if (LoadMode.DEPLOYED == loadMode) {
+                return this.loadDeployedFeed(id, false,force).pipe(
+                    catchError((error1: any) => {
+                        console.log("unable to load deployed feed... retry against latest", id, error1);
+                        return this.loadLatestFeed(id, true, false)
+                    }));
+
+            }
+            else if (LoadMode.DRAFT == loadMode) {
+                return this.loadDraftFeed(id,true,force)
+            }
         }
         else if(feed){
-            return Observable.of(this.getFeed())
+            return Observable.of(this.feed.copy())
         }
         else {
             return Observable.empty();
         }
     }
 
-    onFeedEdit(){
-        this.feed.readonly = false;
-        this.feedEditSubject.next(this.feed);
-        this.feedStateChangeSubject.next(this.feed)
+    ensureSparkShell(){
+        this.http.post(RestUrlConstants.SPARK_SHELL_SERVICE_URL+ "/start", null).subscribe((response)=> {
+        },(error1 => {
+            console.error("ERROR STARTING spark shell ",error1)
+        }));
+    }
+    private loadingCacheKey(feedId:string, loadMode:LoadMode){
+        return feedId+"-"+loadMode;
+    }
+
+
+
+
+    loadLatestFeed(feedId:string, alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
+         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/latest";
+       return  this._loadFeedVersion(feedId, url,LoadMode.LATEST, true, true, force)
+    }
+
+    loadDeployedFeed(feedId:string, alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed";
+       return  this._loadFeedVersion(feedId, url,LoadMode.DEPLOYED, true, true, force)
+    }
+
+    loadDraftFeed(feedId:string,alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
+        return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, true, true, force)
+    }
+
+    getDraftFeed(feedId:string):Observable<Feed>{
+
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
+        return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, false, true, true)
+    }
+
+    deployedVersionExists(feedId:string):Observable<string> {
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed/exists";
+        return <Observable<string>>this.http.get(url,{responseType:'text'});
+    }
+
+    draftVersionExists(feedId:string):Observable<string> {
+        const headers = new HttpHeaders({'Content-Type':'text/plain; charset=utf-8'});
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft/exists";
+        return <Observable<string>>this.http.get(url,{headers:headers,responseType:'text'});
     }
 
     /**
-     * Restore the last saved feed effectively removing all edits done on the current feed
-     */
-    restoreLastSavedFeed() : Feed{
-        if(this.lastSavedFeed) {
-            this.feed.update(this.lastSavedFeed.copy());
-            this.cancelFeedEditSubject.next(this.feed);
-            this.feedStateChangeSubject.next(this.feed)
-            return this.getFeed();
-        }
-        else {
-            this.cancelFeedEditSubject.next(this.feed);
-            this.feedStateChangeSubject.next(this.feed)
-        }
-    }
-
-
-
-    sortAndSetupFeedProperties(feed:Feed){
-        if((feed.inputProcessors == undefined || feed.inputProcessors.length == 0) && feed.registeredTemplate){
-            feed.inputProcessors = feed.registeredTemplate.inputProcessors;
-        }
-
-        feed.inputProcessors= _.sortBy(feed.inputProcessors, 'name')
-        // Find controller services
-        _.chain(feed.inputProcessors.concat(feed.nonInputProcessors))
-            .pluck("properties")
-            .flatten(true)
-            .filter((property) => {
-                return property != undefined && property.propertyDescriptor && property.propertyDescriptor.identifiesControllerService && (typeof property.propertyDescriptor.identifiesControllerService == 'string' );
-            })
-            .each((property:any) => this.feedService.findControllerServicesForProperty(property));
-
-        //find the input processor associated to this feed
-        feed.inputProcessor = feed.inputProcessors.find((processor: Templates.Processor) => {
-            if (feed.inputProcessorName) {
-                return   feed.inputProcessorType == processor.type && feed.inputProcessorName.toLowerCase() == processor.name.toLowerCase()
-            }
-            else {
-                return    feed.inputProcessorType == processor.type;
-            }
-        });
-        if(feed.inputProcessor == undefined && feed.inputProcessors && feed.inputProcessors.length >0){
-            feed.inputProcessor = feed.inputProcessors[0];
-        }
-    }
-
-    setupFeedProperties(feed:Feed,template:any, mode:string) {
-        if(feed.isNew()){
-            this.registerTemplatePropertyService.initializeProperties(template, 'create', feed.properties);
-        }
-        else {
-            this.registerTemplatePropertyService.initializeProperties(template, "edit", []);
-        }
-
-      this.sortAndSetupFeedProperties(feed);
-
-
-        // this.inputProcessors = template.inputProcessors;
-        feed.allowPreconditions = template.allowPreconditions;
-
-        //merge the non input processors
-        feed.nonInputProcessors = this.registerTemplatePropertyService.removeNonUserEditableProperties(template.nonInputProcessors, false);
-
-    }
-
-    /**
-     * Sets the feed
+     * Updates the main step state for the main feed in the service which is shared.
      * @param {Feed} feed
+     * @param {Step} step
      */
-    setFeed(feed:Feed) : void{
-        this.feed = feed;
-        this.feed.steps.forEach(step => {
-            this.stepSrefMap[step.sref] = step;
-        })
-    }
-
-    beforeSave() {
-        this.beforeSaveSubject.next(this.feed);
+    updateStepState(feed:Feed,step:Step) {
+        //make sure the feeds match
+        if(this.feed.id == feed.id){
+            const feedStep = this.feed.getStepBySystemName(step.systemName);
+            if(feedStep){
+                feedStep.update(step);
+            }
+        }
     }
 
     /**
      * Save the Feed
      * Users can subscribe to this event via the savedFeedSubject
-     * @return {Observable<Feed>}
+     * @param {Feed} feed
+     * @param {boolean} validateFeed  should we enforce validation of the entire feed (should be called on deploy)
+     * @param {Step} step  pass in the current step to validate the step before saving
+     * @return {Observable<SaveFeedResponse>}
      */
-    saveFeed() : Observable<Feed>{
+    saveFeed(feed:Feed,validateFeed:boolean = false,step?:Step) : Observable<SaveFeedResponse>{
 
-        let valid = this.feed.validate(false);
-        if(valid) {
-            return this._saveFeed();
-        }
-        else {
+        let valid = validateFeed ? feed.validate(false) : step ? step.validate(feed) : true;
+         if (!valid) {
+             if(step){
+                 step.saved=false;
+             }
+                this._dialogService.openAlert({
+                    title: "Validation Error",
+                    message: "Error saving feed " + feed.feedName + ". You have validation errors"
+                })
+                let response = new SaveFeedResponse(feed, false, "Error saving feed " + feed.feedName + ". You have validation errors");
+                // Allow other components to listen for changes to the currentStep
+                return Observable.throw(response);
+            }
+            else {
+             if(step){
+                 step.saved=true;
+             }
+                return this._saveFeed(feed);
+            }
+
+
+       // if(feed.isDraft() || (!feed.isDraft() && valid)) {
+        //    return this._saveFeed(feed);
+       // }
+      /**  else {
             //errors exist before we try to save
             //notify watchers that this step was saved
             let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            this.savedFeedSubject.next(response);
-            return null;
+            // Allow other components to listen for changes to the currentStep
+            let  savedFeedSubject: Subject<SaveFeedResponse> = new Subject<SaveFeedResponse>();
+            let  savedFeed$: Observable<SaveFeedResponse> = savedFeedSubject.asObservable();
+            savedFeedSubject.next(response);
+            return savedFeed$;
         }
+       */
     }
 
-    deleteFeed():Observable<any> {
+    public deleteFeed(viewContainerRef?:ViewContainerRef){
+        this._dialogService.openConfirm({
+            message: 'Delete '+this.feed.feedName+' and all associated data?',
+            disableClose: true,
+            viewContainerRef: viewContainerRef, //OPTIONAL
+            title: 'Confirm Delete', //OPTIONAL, hides if not provided
+            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
+            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
+            width: '500px', //OPTIONAL, defaults to 400px
+        }).afterClosed().subscribe((accept: boolean) => {
+            if (accept) {
+                this._loadingService.register("processingFeed");
+                this._deleteFeed().subscribe(() => {
+                    this.openSnackBar("Deleted the feed")
+                    this._loadingService.resolve("processingFeed");
+                    this.stateService.go('feeds')
+                },(error:any) => {
+                    this.openSnackBar("Error deleting the feed ")
+                    this._loadingService.resolve("processingFeed");
+                })
+            } else {
+                // DO SOMETHING ELSE
+            }
+        });
+    }
+
+
+    private _deleteFeed():Observable<any> {
         if(this.feed && this.feed.id) {
             return this.http.delete("/proxy/v1/feedmgr/feeds" + "/" + this.feed.id);
         }
@@ -317,46 +407,91 @@ export class DefineFeedService {
         }
     }
 
-
     /**
      * Set the current step reference and notify any subscribers
      * @param {Step} step
      */
     setCurrentStep(step:Step){
-        this.currentStep = step;
-        //notify the observers of the change
-        this.currentStepSubject.next(this.currentStep)
-    }
-
-    /**
-     * Make a copy of this feed
-     * @return {Feed}
-     */
-    copyFeed() :Feed{
-        let feed =this.getFeed();
-        let feedCopy :Feed = undefined;
-        if(feed != undefined) {
-            //copy the feed data for this step
-            feedCopy = CloneUtil.deepCopy(feed);
-            //set the steps back to the core steps
-            feedCopy.steps = feed.steps;
+        if(this.currentStep == undefined || this.currentStep != step){
+            //notify of change
+            this.currentStepSubject.next(step);
         }
-        return feedCopy;
+        this.currentStep = step;
     }
-
 
     getCurrentStep(){
         return this.currentStep;
     }
 
+    subscribeToSideNavChanges(observer:PartialObserver<DefineFeedContainerSideNavEvent>) :ISubscription {
+        return this.defineFeedContainerSideNavState.subscribe(observer);
+    }
+
+    subscribeToStepChanges(observer:PartialObserver<Step>) :ISubscription{
+      return  this.currentStepSubject.subscribe(observer);
+    }
+
+    subscribeToFeedSaveEvent(observer: PartialObserver<SaveFeedResponse>): ISubscription {
+        if (this.savedFeedSubject.isStopped) {
+            this.savedFeedSubject = new Subject<SaveFeedResponse>();
+        }
+        return this.savedFeedSubject.subscribe(observer);
+    }
+
+    subscribeToFeedEditStateChangeEvent(observer:PartialObserver<FeedEditStateChangeEvent>){
+        return this.feedEditStateChangeSubject.subscribe(observer);
+    }
+
+
+    subscribeToFeedLoadedEvent(observer:PartialObserver<Feed>){
+        return this.feedLoadedSubject.subscribe(observer);
+    }
+
+    sideNavStateChanged(event:DefineFeedContainerSideNavEvent){
+        this.defineFeedContainerSideNavState.next(event);
+    }
+
+    onStepStateChangeEvent(stepChanges:StepStateChangeEvent){
+        if(this.feed && stepChanges.feed.id == this.feed.id){
+            //update this feed with the new step changes
+            stepChanges.changes.forEach((change:ObjectChanged<Step>) => {
+
+                let newStep = change.newValue;
+                let currStep = this.feed.getStepBySystemName(newStep.systemName);
+                if(currStep){
+                    currStep.update(newStep);
+                }
+            })
+        }
+    }
+
+
+
+    markFeedAsEditable(){
+
+        if(this.feed && this.feed.loadMode != LoadMode.DEPLOYED){
+            this.feed.readonly = false;
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.accessControl))
+        }
+        else if(this.feed && this.feed.loadMode == LoadMode.DEPLOYED){
+            console.log("Unable to Edit a deployed feed ",this.feed)
+        }
+    }
+
+    markFeedAsReadonly(){
+        if(this.feed){
+            this.feed.readonly = true;
+            this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(this.feed.readonly,this.feed.accessControl))
+        }
+    }
+
     /**
-     * Gets the current feed
+     * Gets a copy of the current feed
      * @return {Feed}
      */
     getFeed(): Feed{
-        return this.feed;
+        return this.feed != undefined && this.feed.copy() || undefined;
     }
-
     /**
      * gets the step from the sRef
      * @param {string} sRef
@@ -375,214 +510,426 @@ export class DefineFeedService {
      * @param {Feed} feed
      */
     initializeFeedSteps(feed:Feed){
-        let templateTableOption = feed.templateTableOption ? feed.templateTableOption : (feed.registeredTemplate? feed.registeredTemplate.templateTableOption : '')
-        if(templateTableOption == "DEFINE_TABLE"){
-            feed.steps = this.newDefineTableFeedSteps();
+        let templateType = feed.getTemplateType()
+        //feed.steps = this.getStepsForTemplate(templateType)
+        feed.steps = this.getStepsForFeed(feed)
+    }
+
+    /**
+     * Initialize the Feed Steps based upon the feed template type
+     * @param {Feed} feed
+     */
+    getStepsForTemplate(templateType:string, registeredTemplate?:any){
+
+        let stepUtil = new FeedStepBuilderUtil(this._translateService);
+        if(templateType){
+            templateType == FeedTemplateType.SIMPLE_FEED;
         }
-        //else if(feed.templateTableOption == "DATA_TRANSFORMATION"){
-        //
-        // }
+        if(FeedTemplateType.DEFINE_TABLE == templateType){
+            return stepUtil.defineTableFeedSteps();
+        }
+        else if(FeedTemplateType.DATA_TRANSFORMATION == templateType){
+            return stepUtil.dataTransformationSteps()
+        }
         else {
-            feed.steps = this.newSimpleFeedSteps();
+            return  stepUtil.simpleFeedSteps();
         }
     }
 
 
-    generalInfoStep(steps:Step[]):Step{
-        let name = this._translateService.instant("views.define-feed-stepper.GeneralInfo")
-        return new StepBuilder().setNumber(1).setName(name).setSystemName(FeedStepConstants.STEP_GENERAL_INFO).setDescription("Feed name and desc").setSref("general-info").setAllSteps(steps).setDisabled(false).setRequired(true).setValidator(new DefineFeedStepGeneralInfoValidator()).build();
-    }
-
-    feedDetailsStep(steps:Step[], stepNumber:number):Step {
-        let name = this._translateService.instant("views.define-feed-stepper.FeedDetails")
-        return new StepBuilder().setNumber(stepNumber).setName(name).setSystemName(FeedStepConstants.STEP_FEED_DETAILS).setDescription("Update NiFi processor settings").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("feed-details").setDisabled(true).setRequired(true).build();
-    }
-
-    private newDefineTableFeedSteps() :Step[] {
-        let steps :Step[] = []
-        let generalInfoStep = this.generalInfoStep(steps);
-        let sourceSampleStep = new StepBuilder().setNumber(2).setSystemName(FeedStepConstants.STEP_SOURCE_SAMPLE).setDescription("Browse catalog for sample").addDependsUpon(FeedStepConstants.STEP_GENERAL_INFO).setAllSteps(steps).setSref("datasources").setDisabled(true).setRequired(true).setValidator(new DefineFeedStepSourceSampleValidator()).build();
-        let table = new StepBuilder().setNumber(3).setSystemName(FeedStepConstants.STEP_FEED_TARGET).setDescription("Define target table").addDependsUpon(FeedStepConstants.STEP_SOURCE_SAMPLE).setAllSteps(steps).setSref("feed-table").setDisabled(true).setRequired(true).setValidator(new DefineFeedTableValidator()).build();
-        let feedDetails = this.feedDetailsStep(steps,4);
-        steps.push(generalInfoStep);
-        steps.push(sourceSampleStep);
-        steps.push(table)
-        steps.push(feedDetails);
+    /**
+     * Initialize the Feed Steps based upon the feed template type
+     * @param {Feed} feed
+     */
+    getStepsForFeed(feed:Feed){
+        let steps:Step[] = [];
+        let templateType = feed.getTemplateType()
+        let stepUtil = new FeedStepBuilderUtil(this._translateService);
+        if(templateType){
+            templateType == FeedTemplateType.SIMPLE_FEED;
+        }
+        if(FeedTemplateType.DEFINE_TABLE == templateType){
+            steps = stepUtil.defineTableFeedSteps();
+        }
+        else if(FeedTemplateType.DATA_TRANSFORMATION == templateType){
+            steps = stepUtil.dataTransformationSteps()
+            steps.filter(step => step.systemName == FeedStepConstants.STEP_FEED_SOURCE).forEach(step => {
+                step.hidden = !feed.renderSourceStep();
+            });
+        }
+        else {
+             steps =  stepUtil.simpleFeedSteps();
+        }
         return steps;
     }
 
 
-    private newSimpleFeedSteps() :Step[] {
-        let steps :Step[] = []
-        let generalInfoStep = this.generalInfoStep(steps);
-        let feedDetails = this.feedDetailsStep(steps,2);
-        steps.push(generalInfoStep);
-        steps.push(feedDetails);
-        return steps;
+
+
+    /**
+     * is the user allowed to leave this component and transition to a new state?
+     * @return {boolean}
+     */
+    uiCanExit(step:Step,newTransition: Transition) :(Promise<any> | boolean) {
+        if(step.isDirty()){
+
+            let observable =  this._dialogService.openConfirm({
+                message: 'You have unsaved changes.  Are you sure you want to exit? ',
+                disableClose: true,
+                title: 'Unsaved Changes', //OPTIONAL, hides if not provided
+                cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
+                acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
+                width: '500px', //OPTIONAL, defaults to 400px
+            }).afterClosed();
+            observable.subscribe((accept: boolean) => {
+                if (accept) {
+                    return true;
+                } else {
+                    // no op
+                    return false;
+                }
+            });
+            return observable.toPromise();
+        }
+        else {
+            return true;
+        }
     }
-
-
 
     /**
      * Call kylo-services and save the feed
      * @return {Observable<Feed>}
      * @private
      */
-    private _saveFeed() : Observable<Feed>{
-        let body = this.feed.copyModelForSave();
+    private _saveFeed(feed:Feed) : Observable<SaveFeedResponse>{
+        let body = feed.copyModelForSave();
+
+        let subject = new Subject<SaveFeedResponse>();
+        let savedFeedObservable$ = subject.asObservable();
 
 
         let newFeed = body.id == undefined;
         //remove circular steps
+        let steps :Step[] = CloneUtil.deepCopy(body.steps);
+        steps.forEach(step => {
+            delete step.allSteps;
+            delete step.validator;
+        });
+
+        // Ensure data sets are uploaded with no title. Titles must be unique if set.
+        if (body.sourceDataSets) {
+            body.sourceDataSets.filter(ds=> ds.isUpload == true).forEach(dataSet => dataSet.title = null);
+        }
+
+        //push the steps into the new uiState object on the feed to persist the step status
+        body.uiState[Feed.UI_STATE_STEPS_KEY] = JSON.stringify(steps);
         delete body.steps;
-        let observable : Observable<Feed> = <Observable<Feed>> this.http.post("/proxy/v1/feedmgr/feeds",body,{ headers: {
+
+        let url = "/proxy/v1/feedmgr/feeds/draft/entity";
+
+        if(!feed.isNew()){
+            url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft/entity";
+        }
+
+        let observable : Observable<Feed> = <Observable<Feed>> this.http.post(url,body,{ headers: {
                 'Content-Type': 'application/json; charset=UTF-8'
             }});
+
+        let checkForDraft = !feed.isDraft() ;
+
+        let accessControl = feed.accessControl;
         observable.subscribe((response: any)=> {
-            let steps = this.feed.steps;
-            let updatedFeed = response.feedMetadata;
+            this.clearLoadingFeedCache(feed.id)
+
+            let updatedFeed = response;
+            //when a feed is initially created it will have the data in the "feedMetadata" property
+            if(response.feedMetadata){
+                updatedFeed = response.feedMetadata
+            }
             //turn the response back into our Feed object
             let savedFeed = new Feed(updatedFeed);
+            savedFeed.steps = feed.steps;
+
+            //if the incoming feed has a templateTableOption set, and the saved feed doesnt... update it
+            if(feed.templateTableOption && !savedFeed.templateTableOption) {
+                savedFeed.templateTableOption = feed.templateTableOption;
+            }
 
             //if the properties are already initialized we should keep those values
-            if(this.feed.propertiesInitialized){
-                savedFeed.inputProcessor =  this.feed.inputProcessor;
-                savedFeed.inputProcessors = this.feed.inputProcessors;
-                savedFeed.nonInputProcessors = this.feed.nonInputProcessors;
+            if(feed.propertiesInitialized){
+                savedFeed.inputProcessor =  feed.inputProcessor;
+                savedFeed.inputProcessors = feed.inputProcessors;
+                savedFeed.nonInputProcessors = feed.nonInputProcessors;
             }
-            this.feed.update(savedFeed);
+           // feedCopy.update(savedFeed);
 
             //reset it to be editable
-            this.feed.readonly = false;
-            //set the steps
-            this.feed.steps = steps;
-            this.feed.updateDate = new Date(updatedFeed.updateDate);
-            this.feed.validate(true);
-            //mark the last saved feed
-            this.lastSavedFeed = this.feed.copy();
+            savedFeed.readonly = false;
+            //reassign accessControl
+            savedFeed.accessControl = accessControl;
+            if(newFeed && savedFeed.accessControl == FeedAccessControl.NO_ACCESS){
+                // give it edit permisisons
+                savedFeed.accessControl = FeedAccessControl.adminAccess();
+            }
+
+            savedFeed.updateDate = new Date(updatedFeed.updateDate);
+            let valid = savedFeed.validate(true);
+
             //notify watchers that this step was saved
-            let saveFeedResponse = new SaveFeedResponse(this.feed,true,"Successfully saved "+this.feed.feedName);
+            let message = "Successfully saved "+feed.feedName;
+            if(!valid){
+                message = "Saved the feed, but you have validation errors.  Please review."
+            }
+            if(checkForDraft){
+                //fill in this feeds deployedVersion
+                savedFeed.deployedVersion = {id:feed.versionId,name:feed.versionName,createdDate:(feed.createdDate ? feed.createdDate.getDate() : undefined),entityId:feed.id}
+            }else if(feed.deployedVersion){
+                savedFeed.deployedVersion = feed.deployedVersion;
+            }
+            this.feed = savedFeed;
+            let saveFeedResponse = new SaveFeedResponse(savedFeed,true,message);
             saveFeedResponse.newFeed = newFeed;
+
+            //notify any subscribers to this single function
+            subject.next(saveFeedResponse)
+            //notify any global subscribers
             this.savedFeedSubject.next(saveFeedResponse);
         },(error: any) => {
+
             console.error("Error",error);
-            let response = new SaveFeedResponse(this.feed,false,"Error saving feed "+this.feed.feedName+". You have validation errors");
-            this.savedFeedSubject.next(response);
+            let response = new SaveFeedResponse(feed,false,"Error saving feed "+feed.feedName+". You have validation errors");
+            //notify any subscribers to this single function
+            subject.error(response)
+            //notify any global subscribers
+            this.savedFeedSubject.error(response);
         });
-        return observable;
+        return savedFeedObservable$
     }
 
-    /**
-     * Update the feed table schemas for a given dataset previewed
-     * @param {PreviewDataSet} dataSet
-     * @param {TableSchemaUpdateMode} mode
-     * @private
-     */
-    private _updateTableSchemas(dataSet:PreviewDataSet,mode:TableSchemaUpdateMode){
-        if(dataSet){
-            let sourceColumns: TableColumnDefinition[] = [];
-            let targetColumns: TableColumnDefinition[] = [];
-            let feedColumns: TableColumnDefinition[] = [];
+    deployFeed(feed:Feed) :Observable<DeployEntityVersionResponse|any> {
+        feed.validate(false)
+        if(feed.isDraft() && feed.isValid && feed.isComplete()){
+            let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+            let params :HttpParams = new HttpParams();
+            params =params.append("action","VERSION,DEPLOY")
 
-            let columns: TableColumn[] = dataSet.schema
-            if(columns) {
-                columns.forEach(col => {
-                    let def = _.extend({}, col);
-                    def.derivedDataType = def.dataType;
-                    //sample data
-                    if (dataSet.preview) {
-                        let sampleValues: string[] = dataSet.preview.columnData(def.name)
-                        def.sampleValues = sampleValues
-                    }
-                    sourceColumns.push(new TableColumnDefinition((def)));
-                    targetColumns.push(new TableColumnDefinition((def)));
-                    feedColumns.push(new TableColumnDefinition((def)));
-                });
-            }
-            else {
-                //WARN Columns are empty.
-                console.log("EMPTY columns for ",dataSet);
-            }
-            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
-                this.feed.sourceDataSets = [dataSet.toSparkDataSet()];
-                this.feed.table.sourceTableSchema.fields = sourceColumns;
-            }
-            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
-                this.feed.table.feedTableSchema.fields = feedColumns;
-                this.feed.table.tableSchema.fields = targetColumns;
-                this.feed.table.fieldPolicies = targetColumns.map(field => {
-                    let policy = TableFieldPolicy.forName(field.name);
-                    policy.field = field;
-                    field.fieldPolicy = policy;
-                    return policy;
-                });
-                //flip the changed flag
-                this.feed.table.schemaChanged = true;
-            }
+            let headers :HttpHeaders = new HttpHeaders();
+            headers =headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
 
+           // this._loadingService.register("processingFeed")
 
+           return this.http.post(url,null,{ params:params,headers:headers})
+               .map((version:DeployEntityVersionResponse) => {
+                this.clearLoadingFeedCache(feed.id)
+                this.openSnackBar("Deployed feed v."+version.name,5000)
+                   return version;
+            }).catch((error1:HttpErrorResponse,caught:Observable<any>) => {
+                if(error1.error){
+                    this.clearLoadingFeedCache(feed.id)
+                    let content = error1.error as DeployEntityVersionResponse;
+                    content.httpStatus = error1.status;
+                    content.httpStatusText = error1.statusText;
+                    //fill the entity.errors object
+                    FeedNifiErrorUtil.parseDeployNiFiFeedErrors(content);
+
+                }
+                console.log(error1, caught);
+             //   this._loadingService.resolve("processingFeed")
+                  return Observable.throw(error1);
+            }).share();
         }
         else {
-            if(TableSchemaUpdateMode.UPDATE_SOURCE == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode){
-                this.feed.sourceDataSets = [];
-                this.feed.table.sourceTableSchema.fields = [];
-            }
-            if(TableSchemaUpdateMode.UPDATE_TARGET == mode || TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET == mode) {
-                this.feed.table.feedTableSchema.fields = [];
-                this.feed.table.tableSchema.fields = [];
-                this.feed.table.fieldPolicies = [];
-            }
+            this.openSnackBar("Unable to deploy this feed",5000)
+            return null;
+        }
+    }
+
+    revertDraft(feed: Feed): void {
+        feed.validate(false);
+        if (feed.isDraft()) {
+            this._translateService.get("FeedDefinition.Dialogs.RemoveDraft").pipe(
+                concatMap(text => {
+                    return this._dialogService.openConfirm({
+                        message: text.Message,
+                        disableClose: true,
+                        title: text.Title,
+                        cancelButton: text.Cancel,
+                        acceptButton: text.Accept,
+                        width: "500px",
+                    }).afterClosed()
+                }),
+                filter((accept: boolean) => accept),
+                tap(() => this._loadingService.register("processingFeed")),
+                concatMap(() => {
+                    let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+                    let params: HttpParams = new HttpParams();
+                    params = params.append("action","REMOVE");
+                    let headers: HttpHeaders = new HttpHeaders();
+                    headers = headers.append("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+                    return this.http.post<EntityVersion>(url, null, {params: params, headers: headers});
+                }),
+                finalize(() => this._loadingService.resolve("processingFeed"))
+            ).subscribe(
+                (version: EntityVersion) => {
+                    this.openSnackBar("Removed draft "+version.id, 5000);
+                    this.clearLoadingFeedCache(feed.id)
+                    this.stateService.go("feed-definition.summary.setup-guide",{feedId:feed.id, refresh:true}, {location:'replace'})
+                },
+                error => {
+                    console.log(error);
+                    this.clearLoadingFeedCache(feed.id)
+                    this.openSnackBar("Failed to remove draft.", 5000);
+                }
+            );
         }
     }
 
 
-    /**
-     * Listener for changes from the collection service
-     * @param {PreviewDataSet[]} dataSets
-     */
-    onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
-        let dataSet :PreviewDataSet = dataSets[0];
-        //compare existing source against this source
-    //    let existingSourceColumns = this.feed.table.sourceTableSchema.fields.map(col => col.name+" "+col.derivedDataType).toString();
-     //   let dataSetColumns = dataSet.schema.map(col => col.name+" "+col.dataType).toString();
 
-        // check if the dataset source and item name match the feed
-        let previewSparkDataSet = dataSet.toSparkDataSet();
-        let key = previewSparkDataSet.id
-        let dataSourceId = previewSparkDataSet.dataSource.id;
-        let matchingFeedDataSet =this.feed.sourceDataSets.find(sparkDataset => sparkDataset.id == key && sparkDataset.dataSource.id == dataSourceId);
+    public openSnackBar(message:string, duration?:number){
+        if(duration == undefined){
+            duration = 3000;
+        }
+        this.snackBar.open(message, null, {
+            duration: duration,
+        });
+    }
 
-        if(matchingFeedDataSet == undefined ){
-            //the source differs from the feed source and if we have a target defined.... confirm change
-            if(this.feed.table.tableSchema.fields.length >0){
-                this._dialogService.openConfirm({
-                    message: 'The source schema has changed.  A target schema already exists for this feed.  Do you wish to reset the target schema to match the new source schema? ',
-                    disableClose: true,
-                    title: 'Source dataset already defined', //OPTIONAL, hides if not provided
-                    cancelButton: 'Cancel', //OPTIONAL, defaults to 'CANCEL'
-                    acceptButton: 'Accept', //OPTIONAL, defaults to 'ACCEPT'
-                    width: '500px', //OPTIONAL, defaults to 400px
-                }).afterClosed().subscribe((accept: boolean) => {
+    private clearLoadingFeedCache(feedId:string) {
+        Object.keys(this.loadingFeedCache).filter((cacheKey:string) => cacheKey.indexOf(feedId) >=0).forEach((key:string) => {
+            delete this.loadingFeedCache[key]
+        });
+        //remove the error map
+        delete this.loadingFeedErrors[feedId];
+    }
 
-                    if (accept) {
-                        this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET)
-                    } else {
-                        // no op
-                        this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE);
+
+
+    private _loadFeedVersion(id:string,url:string, loadMode:LoadMode,load:boolean = true, alertOnError:boolean = true, force:boolean = false ){
+        let loadFeedSubject = new ReplaySubject<Feed>(1);
+        let loadFeedObservable$ :Observable<Feed> = loadFeedSubject.asObservable();
+
+        /**
+         * subject for the http request.
+         * Any subsequent request asking for this same entity/loadMode will return this as a cached observable rather than hitting the http client
+         * @type {}
+         */
+        let entitySubject: ReplaySubject<EntityVersion> = new ReplaySubject<EntityVersion>(1);
+
+        let feed = this.getFeed();
+
+        //clear the cache if we are switching feeds
+        if(feed && (feed.id != id )){
+          this.clearLoadingFeedCache(feed.id)
+        }
+
+        let key = this.loadingCacheKey(id,loadMode);
+
+        //setup the observable we will return
+        let observable: Observable<EntityVersion> = null;
+
+        if(!force && this.loadingFeedCache[key]){
+            observable = this.loadingFeedCache[key]
+        } else {
+            //make the http request and then assign the result to the 'entitySubject' for others to subscribe to
+             this.http.get(url).subscribe((entityVersion:EntityVersion) => {
+                entitySubject.next(entityVersion);
+            }, error1 => {
+                if(load && alertOnError && this.loadingFeedErrors[id] == undefined) {
+                    this.loadingFeedErrors[id] = id;
+                    let message = "There was an error attempting to load the feed";
+                    if (error1.status == 404) {
+                        message = "Feed not found";
                     }
-                });
+                    this._dialogService.openAlert({
+                        title:"Error loading feed",
+                        message: message
+                    });
+                }
+                loadFeedSubject.error(error1)
+            });
+             //set the observable and cache
+            observable = entitySubject.asObservable()
+            this.loadingFeedCache[key] = observable;
+        }
+
+        observable.subscribe((entityVersion:EntityVersion) => {
+
+            let feed:Feed = <Feed>entityVersion.entity;
+            //remove the error map
+            delete this.loadingFeedErrors[feed.id];
+            feed.mode = entityVersion.name == "draft" ? FeedMode.DRAFT : FeedMode.DEPLOYED;
+            feed.versionId = entityVersion.id;
+            feed.versionName = entityVersion.name;
+            if(entityVersion.deployedVersion == undefined && feed.mode ==  FeedMode.DEPLOYED) {
+                //create a copy of this entityVersion without the entity as the deployed version
+                entityVersion.deployedVersion = {id:entityVersion.id,
+                    createdDate:entityVersion.createdDate,
+                    name:entityVersion.name,
+                    entityId:entityVersion.entityId,
+                    draft:entityVersion.draft }
             }
-            else {
-                //this will be if its the first time a source is selected for a feed
-                this._updateTableSchemas(dataSet, TableSchemaUpdateMode.UPDATE_SOURCE_AND_TARGET);
+            feed.deployedVersion = entityVersion.deployedVersion;
+
+            feed.createdDate = entityVersion.createdDate != null ? new Date(entityVersion.createdDate) : undefined;
+
+            const hasBeenDeployed = feed.mode != FeedMode.DRAFT
+            this.selectionService.reset()
+            //convert it to our needed class
+            let uiState = feed.uiState;
+
+            let feedModel = new Feed(feed)
+            //reset the propertiesInitalized flag
+            feedModel.propertiesInitialized = false;
+
+
+            //get the steps back from the model
+            //let defaultSteps = this.getStepsForTemplate(feedModel.getTemplateType());
+            let defaultSteps = this.getStepsForFeed(feedModel);
+            //merge in the saved steps
+            let savedStepJSON = feedModel.uiState[Feed.UI_STATE_STEPS_KEY] || "[]";
+            let steps :Step[] = JSON.parse(savedStepJSON);
+            //group by stepName
+            let savedStepMap = _.indexBy(steps,'systemName')
+            let mergedSteps:Step[] = defaultSteps.map(step => {
+                if(savedStepMap[step.systemName]){
+                    step.update(savedStepMap[step.systemName]);
+                }
+                if(hasBeenDeployed){
+                    step.visited = true;
+                    step.saved = true;
+                    step.complete = true;
+                }
+                return step;
+            });
+            feedModel.steps = mergedSteps;
+
+            feedModel.validate(true);
+            feedModel.loadMode = loadMode;
+            if(load) {
+
+                this.feed = feedModel;
+                this.feedLoadMode = loadMode;
             }
 
-        }
-        else {
-            console.log("No change to source schema found.  ");
-        }
+            this.feedAccessControlService.accessControlCheck(feedModel).subscribe((accessControl:FeedAccessControl) => {
+                feedModel.accessControl = accessControl;
+                if(load) {
+                    this.feedEditStateChangeSubject.next(new FeedEditStateChangeEvent(feedModel.readonly, feedModel.accessControl))
+                }
+            })
+
+
+            if(load) {
+                //notify subscribers of a copy
+                this.feedLoadedSubject.next(feedModel.copy());
+            }
+            loadFeedSubject.next(feedModel.copy());
+        })
+        return loadFeedObservable$;
 
     }
+
 
 
 

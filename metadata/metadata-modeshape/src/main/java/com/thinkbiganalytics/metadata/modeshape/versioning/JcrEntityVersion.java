@@ -26,38 +26,39 @@ package com.thinkbiganalytics.metadata.modeshape.versioning;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.jcr.version.Version;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
-import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
  */
-public class JcrEntityVersion<E> implements EntityVersion<E> {
+public class JcrEntityVersion<I, E> implements EntityVersion<I, E> {
 
     private Version version;
     private VersionId id;
-    private Optional<E> entity;
+    private ChangeComment changeComment;
+    private I entityId;
+    private E entity;
     
-    public JcrEntityVersion(Version version) {
-        this(version, null);
+    public JcrEntityVersion(Version version, Optional<ChangeComment> comment, I entId) {
+        this(version, comment, entId, null);
     }
     
-    public JcrEntityVersion(Version version, E entity) {
+    public JcrEntityVersion(Version version, Optional<ChangeComment> comment, I entId, E entity) {
         if (version != null) {
             this.version = version;
             this.id = new VersionId(JcrPropertyUtil.getIdentifier(JcrUtil.getNode(version, "jcr:frozenNode")));
-//        this.id = new VersionId(JcrPropertyUtil.getIdentifier(version));
         }
-        this.entity = Optional.ofNullable(entity);
+        this.changeComment = comment.orElse(null);
+        this.entityId = entId;
+        this.entity = entity;
     }
 
     /* (non-Javadoc)
@@ -83,19 +84,46 @@ public class JcrEntityVersion<E> implements EntityVersion<E> {
     public DateTime getCreatedDate() {
         return JcrPropertyUtil.getProperty(this.version, "jcr:created");
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersion#getChangeComment()
+     */
+    public Optional<ChangeComment> getChangeComment() {
+        return Optional.ofNullable(changeComment);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersion#getEntityId()
+     */
+    @Override
+    public I getEntityId() {
+        return this.entityId;
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersion#getEntity()
      */
     @Override
     public Optional<E> getEntity() {
-        return this.entity;
+        return Optional.ofNullable(this.entity);
+    }
+    
+    /**
+     * @return the version
+     */
+    public Version getVersion() {
+        return version;
     }
 
     protected void setId(VersionId id) {
         this.id = id;
     }
-    
+
+    @Override
+    public boolean isFirstVersion() {
+        return "1.0".equalsIgnoreCase(getName());
+    }
+
     public static class VersionId implements ID {
 
         private static final long serialVersionUID = 1L;

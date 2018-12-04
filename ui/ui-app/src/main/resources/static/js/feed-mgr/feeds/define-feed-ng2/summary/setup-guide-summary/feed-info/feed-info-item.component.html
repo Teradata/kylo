@@ -1,0 +1,29 @@
+<mat-list-item *ngIf="!editing">
+  <mat-icon matListAvatar >{{icon}}</mat-icon>
+  <h3 matLine *ngIf="!customReadonlyLayout">{{name}}</h3>
+  <p matLine *ngIf="!customReadonlyLayout">{{description}}</p>
+  <ng-content select=".readonly-content" *ngIf="customReadonlyLayout && !readonlyList"></ng-content>
+
+  <div *ngIf="readonlyList" matLine fxLayout="column">
+    <div matLine *ngFor="let item of readonlyList">
+      {{item}}
+    </div>
+  </div>
+
+  <span></span>
+  <button mat-icon-button (click)="onEdit()" *ngIf="feed.canEdit() && !feed.readonly && !editing && editable">
+    <mat-icon ngClass="tc-grey-600">edit</mat-icon>
+  </button>
+</mat-list-item>
+<div *ngIf="editing" class="pad-sm">
+  <div class="mat-subheading-2 pull-bottom-none">Edit {{description}}</div>
+  <mat-divider></mat-divider>
+  <div class="pad">
+  <ng-content #content></ng-content>
+  </div>
+  <mat-divider></mat-divider>
+  <div fxLayout="row" class="pad-sm">
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="isSaveDisabled">Save</button>
+    <button mat-button (click)="onCancel()">Cancel</button>
+  </div>
+</div>

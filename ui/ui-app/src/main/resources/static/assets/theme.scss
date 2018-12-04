@@ -1,11 +1,27 @@
+//---------------------------------------------------------------------------
+// Material Design Icons (https://materialdesignicons.com/)
+//---------------------------------------------------------------------------
 @import '../../../../../node_modules/@angular/material/theming';
 @import '../../../../../node_modules/@covalent/core/theming/all-theme';
 
+$font-family-text: Arial, Helvetica, sans-serif;
+/*
+  $headline: mat-typography-level(24px, 32px 700),
+  $subheading-2:  mat-typography-level(14px, 24px, 400),
+  $subheading-1:  mat-typography-level(12px, 20px, 400),
+  $body-2:        mat-typography-level(14px, 24px, 500),
+  $body-1:        mat-typography-level(12px, 20px, 400),
+  $caption:       mat-typography-level(12px, 20px, 400)
+
+   $subheading-2:  mat-typography-level(14px, 24px, 400),
+  $body-1:        mat-typography-level(12px, 20px, 400)
+ */
+
 // Custom typography
 $typography: mat-typography-config(
-  $font-family: 'Roboto, monospace',
   $button: mat-typography-level(14px, 14px, 400),
-  $headline: mat-typography-level(32px, 48px 700)
+  $font-family: 'Arial, Helvetica, sans-serif'
+
 );
 $toolbar-typography: mat-typography-config(
   $title: mat-typography-level(20px, 32px, 400)
@@ -15,6 +31,8 @@ $toolbar-typography: mat-typography-config(
 // have to load a single css file for Angular Material in your app.
 @include mat-core($typography);
 
+@import './teradata-branding';
+
 // Setting the toolbar to the proper spec weight
 @include mat-toolbar-typography($toolbar-typography);
 
@@ -23,7 +41,7 @@ $toolbar-typography: mat-typography-config(
 
 // Include material icons
 //$mat-font-url: '../js/vendor/material-icons/';
-@include covalent-material-icons();
+//@include covalent-material-icons();
 
 // Include covalent utility classes
 @include covalent-utilities();
@@ -37,103 +55,89 @@ $toolbar-typography: mat-typography-config(
 // Include covalent color classes
 @include covalent-colors();
 
-// Define the palettes for your theme using the Material Design palettes available in palette.scss
-// (imported above). For each palette, you can optionally specify a default, lighter, and darker
-// hue.
-$primaryBlue: (
-  50: #e3f2fd,
-  100: #bbdefb,
-  200: #90caf9,
-  300: #64b5f6,
-  400: #42a5f5,
-  500: #3483BA,
-  600: #1e88e5,
-  700: #1976d2,
-  800: #1565c0,
-  900: #2B6C9A,
-  A100: #82b1ff,
-  A200: #448aff,
-  A400: #2979ff,
-  A700: #2962ff,
-  contrast: (
-    50: $black-87-opacity,
-    100: $black-87-opacity,
-    200: $black-87-opacity,
-    300: $black-87-opacity,
-    400: $black-87-opacity,
-    500: white,
-    600: white,
-    700: white,
-    800: $white-87-opacity,
-    900: $white-87-opacity,
-    A100: $black-87-opacity,
-    A200: white,
-    A400: white,
-    A700: white,
-  )
-);
-$accentOrange: (
-        50: #fff3e0,
-        100: #ffe0b2,
-        200: #ffcc80,
-        300: #ffb74d,
-        400: #ffa726,
-        500: #ff9800,
-        600: #fb8c00,
-        700: #f57c00,
-        800: #ef6c00,
-        900: #e65100,
-        A100: #ffd180,
-        A200: #F08C38,
-        A400: #ff9100,
-        A700: #ff6d00,
-        contrast: (
-                50: $black-87-opacity,
-                100: $black-87-opacity,
-                200: $black-87-opacity,
-                300: $black-87-opacity,
-                400: $black-87-opacity,
-                500: $black-87-opacity,
-                600: $black-87-opacity,
-                700: $black-87-opacity,
-                800: white,
-                900: white,
-                A100: $black-87-opacity,
-                A200: white,
-                A400: $black-87-opacity,
-                A700: black,
-        )
-);
+/*
+Orange
+$primary: mat-palette($td-slate, 700, 100, 900);
+$accent:  mat-palette($td-orange, 800, 100, 900);
+$warn:    mat-palette($mat-deep-orange, 800, 100, 900);
+*/
 
-$primary: mat-palette($primaryBlue, 900);
-$accent: mat-palette($accentOrange, A200);
+/*
+Teal theme
+*/
+$primary: mat-palette($td-slate, 700, 100, 900);
+$accent:  mat-palette($td-teal, 800, 100, 900);
+$warn:    mat-palette($mat-deep-orange, 800, 100, 900);
 
-// The warn palette is optional (defaults to red).
-$warn: mat-palette($mat-red, 600);
-
-// Create the theme object (a Sass map containing all of the palettes).
 $theme: mat-light-theme($primary, $accent, $warn);
 
 // Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
+// Alternatively, you can import and @include the theme mixins for each .item-title component
 // that you are using.
 @include angular-material-theme($theme);
-@include covalent-theme($theme, $typography);
+@include covalent-theme($theme);
+@include teradata-brand($theme);
+
 
 // Active icon color in list nav
 mat-nav-list {
   [mat-list-item].active {
     mat-icon[matListAvatar] {
       background-color: mat-color($accent);
-      color: mat-color($accent, default-contrast)
+      color: mat-color($accent, default-contrast);
+      fill: mat-color($accent, default-contrast);
     }
     mat-icon[matListIcon] {
       color: mat-color($accent);
+      fill: mat-color($accent);
     }
   }
 }
 
-// Background and text colors
+// allow a link in a mat-list
+mat-list {
+  a[mat-list-item] {
+    text-decoration: none;
+    color: inherit;
+    &:hover, &:focus {
+      outline: none;
+      .mat-list-item {
+        background: rgba(black, 0.04);
+      }
+    }
+  }
+}
+/*
+mat-list[dense] {
+  [mat-list-item] {
+      font-size:14px;
+   }
+  .mat-list-item {
+    font-size:14px;
+  }
+}
+*/
+.mat-list[dense] .mat-list-item {
+  font-size:14px !important;
+}
+
+/* ------------------------------------------------------------------------------- */
+$foreground: map-get($theme, foreground);
+$background: map-get($theme, background);
+
+// Default theme
+.tc-primary {
+  color: mat-color($primary);
+}
+.tc-accent {
+  color: mat-color($accent);
+}
+.tc-warn {
+  color: mat-color($warn);
+}
+.kylo-action-button {
+  color: mat-color($primary,600);
+}
 .bgc-primary {
   background-color: mat-color($primary);
 }
@@ -143,12 +147,154 @@ mat-nav-list {
 .bgc-warn {
   background-color: mat-color($warn);
 }
-.tc-primary {
+.bgc-white,
+.bgc {
+  background-color: white;
+}
+.tc-faded {
+  color: rgba(0, 0, 0, 0.5);
+}
+.bgc-dark {
+  background-color: mat-color($background, app-bar);
+}
+.bgc-contrast {
+  background-color: #ececec;
+}
+// Teradata.com websites white theme
+.mat-toolbar.mat-white {
+  background-color: white;
+  color: mat-color($td-slate, 800);
+}
+// State colors
+.tc-positive {
+  color: map-get($td-positive, foreground-light) !important;
+}
+.tc-caution {
+  color: map-get($td-caution, foreground-light) !important;
+}
+.tc-negative {
+  color: map-get($td-negative, foreground-light) !important;
+}
+.tc-neutral {
+  color: map-get($td-neutral, foreground-light) !important;
+}
+.tc-emphasis-1 {
+  color: map-get($td-emphasis1, foreground-light) !important;
+}
+.tc-emphasis-2 {
+  color: map-get($td-emphasis2, foreground-light) !important;
+}
+.bgc-positive {
+  background-color: map-get($td-positive, background-light) !important;
+}
+.bgc-caution {
+  background-color: map-get($td-caution, background-light) !important;
+}
+.bgc-negative {
+  background-color: map-get($td-negative, background-light) !important;
+}
+.bgc-neutral {
+  background-color: map-get($td-neutral, background-light) !important;
+}
+.bgc-emphasis-1 {
+  background-color: map-get($td-emphasis1, background-light) !important;
+}
+.bgc-emphasis-2 {
+  background-color: map-get($td-emphasis2, background-light) !important;
+}
+
+md-progress-circular {
+  stroke: mat-color($accent);
+}
+
+md-progress-linear {
+  background-color: mat-color($accent);
+}
+
+
+/*
+// App theme
+.app-theme {
+  $primary-app: mat-palette($td-slate, 700, 100, 900);
+  $accent-app:  mat-palette($td-teal, 800, 200, 900);
+  $warn-app:    mat-palette($mat-deep-orange, 800, 200, 900);
+  $app-theme: mat-light-theme($primary-app, $accent-app, $warn-app);
+
+  @include angular-material-theme($app-theme);
+  @include covalent-theme($app-theme);
+}
+*/
+
+.nvd3 text {
+  font-family: $font-family-text;
+}
+body {
+  font-family: $font-family-text;
+}
+
+
+.primary-color-1 {
   color: mat-color($primary);
+  fill: mat-color($primary);
 }
-.tc-accent {
-  color: mat-color($accent);
+
+
+.accent-color, .accent-color-1 {
+  color:mat-color($accent);
+  fill: mat-color($accent);
 }
-.tc-warn {
+
+.grey {
+  color:rgba(0, 0, 0, 0.54);
+  fill:rgba(0, 0, 0, 0.54);
+}
+
+.info-notification {
+ /* color: #0288d1;
+  bckground-color: #0288d126;
+  */
+  color: mat-color($primary);
+  background-color:mat-color($primary);
+}
+
+
+.warn {
   color: mat-color($warn);
+  fill: mat-color($warn);
+}
+
+md-list .md-button:not(.md-no-style).selected {
+  color: mat-color($accent);
+  fill: mat-color($accent);
+}
+
+md-list .md-button:not(.md-no-style) {
+  font-weight: 400;
+  text-align: left;
+  text-transform: none;
+  color: mat-color($primary);
+  fill: mat-color($primary);
+}
+
+md-sidenav .collapse-btn {
+  padding: 10px;
+  color: mat-color($primary);
+  background-color: #F9F9F9;
+  cursor: pointer;
+}
+
+.versions2-add {
+  background-color: mat-color($mat-grey,300);
+}
+
+.versions2-remove {
+  background-color: mat-color($mat-grey,300);
+}
+
+.versions2-replace {
+  background-color: mat-color($mat-grey,300);
+}
+
+button.mat-menu-item {
+  font-size: 14px;
 }

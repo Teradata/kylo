@@ -73,7 +73,7 @@
 
       </div>
       <div ng-if="vm.loading">
-        <md-progress-circular md-diameter="36px"></md-progress-circular>
+        <md-progress-circular md-diameter="36px" class="md-accent"></md-progress-circular>
       </div>
       <thinkbig-step-buttons can-continue="vm.isValid && vm.feedDetailsForm.$valid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
     </ng-form>

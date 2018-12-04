@@ -1,0 +1,13 @@
+<div fxLayout="row" fxFill>
+  <span>
+    <mat-icon [style.color]="color">{{icon}}</mat-icon>
+  </span>
+  <div fxLayout="column">
+    <div class="mat-title">Custom GetFile Processor</div>
+    <div class="mat-hint"> A toast will appear when the property changes</div>
+  </div>
+</div>
+<div>
+  <!-- iterate through the properties that are visible for this processor. -->
+  <processor-form [form]="form" [processor]="processor" [readonly]="form.disabled"></processor-form>
+</div>

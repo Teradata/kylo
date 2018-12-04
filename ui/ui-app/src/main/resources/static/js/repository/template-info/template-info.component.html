@@ -1,6 +1,6 @@
 <!--
   #%L
-  thinkbig-ui-feed-manager
+  template-info.component.html
   %%
   Copyright (C) 2017 ThinkBig Analytics
   %%
@@ -17,56 +17,68 @@
   limitations under the License.
   #L%
   -->
-
-<div fxLayout="row" class="centered">
-  <mat-card fxFlex="65%">
-    <!--<mat-spinner *ngIf="loading" aria-label="Loading template"></mat-spinner>-->
-    <mat-card-content>
-      <mat-progress-bar mode="indeterminate" *ngIf="loading || enabling || disabling"></mat-progress-bar>
-      <div *ngIf="!loading">
-      <div class="card-title" flex>{{template.templateName}}
-        <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" icon="{{template.icon.title}}" size="20" style="fill:green"></ng-md-icon>
+<td-layout-nav color="none">
+  <div td-toolbar-content>
+    <div class="cursor-pointer" (click)="cancel()">Templates</div>
+  </div>
+  <mat-progress-bar mode="indeterminate" color="accent" *ngIf="loading || enabling || disabling"></mat-progress-bar>
+  <div fxLayout="row" class="centered push-top">
+    <mat-card fxFlex="65%" *ngIf="!loading">
+      <div layout="row">
+        <div class="card-title push-top push-left tc-grey-800 push-bottom">{{template.templateName}}</div>
+        <span flex></span>
+        <ng-md-icon *ngIf="template.icon && template.state != 'NOT REGISTERED'" [icon]="template.icon" class="push-right" size="30" [style.fill]="template.iconColor"></ng-md-icon>
       </div>
-      <h2 class="card-sub-header">{{template.description}}</h2>
-      <div layout="column" class="layout-padding-top">
-        <div layout="column" class="layout-padding-top-bottom">
-          <div class="hint">State</div>
-          <div ng-class="{'enabled':template.state == 'ENABLED','disabled':template.state != 'ENABLED'}">
-              <ng-md-icon icon="{{template.stateIcon}}" size="20"  style="fill:green" *ngIf="template.state != 'NOT REGISTERED'"></ng-md-icon> {{template.state}}</div>
-        </div>
+      <mat-card-subtitle>{{template.description}}</mat-card-subtitle>
+      <mat-divider></mat-divider>
+      <mat-card-content>
+        <div layout="column">
+          <div layout="column" class="layout-padding-top-bottom">
+            <div class="hint">State</div>
+            <div ng-class="{'enabled':template.state == 'ENABLED','disabled':template.state != 'ENABLED'}">
+              <ng-md-icon [icon]="template.state == 'ENABLED' ? 'check_circle' : 'block'" size="20" [class]="template.state == 'ENABLED' ? 'tc-positive' : 'disabled'">
+              </ng-md-icon>
+              {{template.state}}
+            </div>
+          </div>
 
-        <div layout="column" class="layout-padding-top-bottom">
-          <div class="hint">Last Updated</div>
-          <div>{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</div>
+          <div layout="column" class="layout-padding-top-bottom">
+            <div class="hint">Last Updated</div>
+            <div>{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</div>
+          </div>
+          <div layout="column" class="layout-padding-top-bottom">
+            <div class="hint">Feeds</div>
+            <div>{{template.feedsCount}}</div>
+          </div>
+          <div layout="column" class="layout-padding-top-bottom" *ngIf="template.changeComments && template.changeComments.length > 0">
+            <div class="hint">Change History</div>
+            <div>
+              <template-change-comments [updates]="template.changeComments"></template-change-comments>
+            </div>
+          </div>
         </div>
-        <div layout="column" class="layout-padding-top-bottom">
-          <div class="hint">Feeds</div>
-          <div>  {{template.feedsCount}}</div>
-        </div>
+      </mat-card-content>
+      <mat-divider inset="false"></mat-divider>
+      <mat-card-actions>
         <div fxLayout="row" fxLayoutAlign="end center">
-          <button mat-button color="primary" *ngIf="allowEdit" (click)="editTemplate()">
-            <ng-md-icon icon="edit" size="20" style="fill:#F08C38"> </ng-md-icon>
-            <span class="md-body-2">Edit</span>
+          <button mat-button color="primary" class="text-upper" *ngIf="allowEdit" (click)="editTemplate()">
+            <ng-md-icon icon="edit" size="20" class="tc-accent"></ng-md-icon>
+            <span>Edit</span>
           </button>
-          <button mat-button color="primary" *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">
-            <ng-md-icon icon="check_circle" size="20" style="fill:#F08C38"> </ng-md-icon>
-            <span class="md-body-2">Enable</span>
+          <button mat-button color="primary"  class="text-upper"  *ngIf="template.state == 'DISABLED'" (click)="enableTemplate()">
+            <ng-md-icon icon="check_circle" size="20"></ng-md-icon>
+            <span>Enable</span>
           </button>
-          <button mat-button color="primary" *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">
-            <ng-md-icon icon="block" size="20" style="fill:#F08C38"> </ng-md-icon>
-            <span class="md-body-2">Disable</span>
+          <button mat-button color="primary"  class="text-upper"  *ngIf="template.state == 'ENABLED'" (click)="disableTemplate()">
+            <ng-md-icon icon="block" size="20"></ng-md-icon>
+            <span>Disable</span>
           </button>
-          <button mat-button color="primary" *ngIf="allowExport" (click)="confirmPublish()">
-            <ng-md-icon icon="publish" size="20" style="fill:#F08C38"> </ng-md-icon>
-            <span class="md-body-2">Publish</span>
-          </button>
-          <button mat-button color="primary" (click)="cancel()">
-            <ng-md-icon icon="arrow_back" size="20" style="fill:#F08C38"> </ng-md-icon>
-            <span class="md-body-2">Back</span>
+          <button mat-button color="primary" class="text-upper"   *ngIf="allowExport" (click)="confirmPublish()">
+            <ng-md-icon icon="publish" size="20" ></ng-md-icon>
+            <span>Publish</span>
           </button>
         </div>
-      </div>
-      </div>
-    </mat-card-content>
-  </mat-card>
-</div>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</td-layout-nav>

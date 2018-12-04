@@ -6,7 +6,7 @@ import {ConnectorPlugin} from '../api/models/connector-plugin';
 import {DataSource} from '../api/models/datasource';
 import {SelectionService} from '../api/services/selection.service';
 import {Node} from '../api/models/node'
-import {PreviewDatasetCollectionService} from "../api/services/preview-dataset-collection.service";
+import {DatasetChangeEvent, PreviewDatasetCollectionService} from "../api/services/preview-dataset-collection.service";
 import {PreviewDataSet} from "./preview-schema/model/preview-data-set";
 import {ISubscription} from "rxjs/Subscription";
 import { CloneUtil } from "../../../common/utils/clone-util";
@@ -16,7 +16,7 @@ import { CloneUtil } from "../../../common/utils/clone-util";
  */
 @Component({
     selector: "catalog-dataset",
-    templateUrl: "js/feed-mgr/catalog/datasource/datasource.component.html"
+    templateUrl: "./datasource.component.html"
 })
 export class DatasourceComponent implements OnInit, OnDestroy {
 
@@ -37,12 +37,6 @@ export class DatasourceComponent implements OnInit, OnDestroy {
     tabs: ConnectorTab[] = [];
 
     /**
-     * Shared service with the Visual Query to store the datasets
-     * Shared with Angular 1 component
-     */
-    previewDatasetCollectionService : PreviewDatasetCollectionService
-
-    /**
      * the total number of items in the collection
      * @type {number}
      */
@@ -58,9 +52,9 @@ export class DatasourceComponent implements OnInit, OnDestroy {
      * @param {SelectionService} selectionService
      * @param {Injector} $$angularInjector
      */
-    constructor(protected state: StateService, protected stateRegistry: StateRegistry, protected selectionService: SelectionService,  private $$angularInjector: Injector) {
-        this.previewDatasetCollectionService = $$angularInjector.get("PreviewDatasetCollectionService");
-       this.dataSetChangedSubscription = this.previewDatasetCollectionService.datasets$.subscribe(this.onDataSetCollectionChanged.bind(this))
+    constructor(protected state: StateService, protected stateRegistry: StateRegistry, protected selectionService: SelectionService,  protected previewDatasetCollectionService: PreviewDatasetCollectionService) {
+        this.dataSetChangedSubscription = this.previewDatasetCollectionService.subscribeToDatasetChanges(this.onDataSetCollectionChanged.bind(this))
+        this.selectionService.multiSelectionStrategy();
     }
 
     protected initTabs(statePrefix?:string ) {
@@ -79,6 +73,7 @@ export class DatasourceComponent implements OnInit, OnDestroy {
     }
 
     public ngOnInit() {
+
         this.selectionService.reset(this.datasource.id);
         this.initTabs();
         // Go to the first tab
@@ -87,6 +82,10 @@ export class DatasourceComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(){
         this.dataSetChangedSubscription.unsubscribe();
+    }
+
+    public testGo(){
+        this.state.go("catalog.datasource.preview");//, {location: "replace"});
     }
 
     public isDisabled(tab: ConnectorTab) {
@@ -103,8 +102,8 @@ export class DatasourceComponent implements OnInit, OnDestroy {
      * Listener for changes from the collection service
      * @param {PreviewDataSet[]} dataSets
      */
-    onDataSetCollectionChanged(dataSets:PreviewDataSet[]){
-        this.dataSetCollectionSize = dataSets.length;
+    onDataSetCollectionChanged(event:DatasetChangeEvent){
+        this.dataSetCollectionSize = event.totalDatasets;
     }
 
     /**

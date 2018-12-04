@@ -96,13 +96,15 @@ public interface UserService {
      * Adds or updates the specified group.
      *
      * @param group the group
+     * @return TODO
      */
-    void updateGroup(@Nonnull UserGroup group);
+    UserGroup updateGroup(@Nonnull UserGroup group);
 
     /**
      * Adds or updates the specified user.
      *
      * @param user the user
+     * @return TODO
      */
-    void updateUser(@Nonnull User user);
+    User updateUser(@Nonnull User user);
 }

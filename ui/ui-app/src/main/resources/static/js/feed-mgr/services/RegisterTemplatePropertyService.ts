@@ -1,3 +1,9 @@
+import {HttpClient} from "@angular/common/http";
+import {Injectable} from "@angular/core";
+import 'pascalprecht.translate';
+import "rxjs/add/observable/empty";
+import "rxjs/add/observable/of";
+import {Subject} from "rxjs/Subject";
 /*-
  * #%L
  * thinkbig-ui-feed-manager
@@ -7,9 +13,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,24 +24,16 @@
  * #L%
  */
 import * as _ from "underscore";
-import 'pascalprecht.translate';
-import { Templates } from "./TemplateTypes";
-import { Common } from "../../common/CommonTypes";
-
-
-import Property = Templates.Property;
-import PropertyRenderType = Templates.PropertyRenderType;
-import PropertyAndProcessors = Templates.PropertyAndProcessors;
-import Processor = Templates.Processor;
-import MetadataProperty = Templates.MetadataProperty;
-import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
+import {Common} from '../../../lib/common/CommonTypes';
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
+import {DefaultFeedPropertyService} from "./DefaultFeedPropertyService";
 import {FeedDetailsProcessorRenderingHelper} from "./FeedDetailsProcessorRenderingHelper";
-import "rxjs/add/observable/empty";
-import "rxjs/add/observable/of";
-import { DefaultFeedPropertyService } from "./DefaultFeedPropertyService";
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Subject } from "rxjs/Subject";
+import {FeedInputProcessorPropertiesTemplateService} from "./FeedInputProcessorPropertiesTemplateService";
+import MetadataProperty = Templates.MetadataProperty;
+import Processor = Templates.Processor;
+import Property = Templates.Property;
+import PropertyAndProcessors = Templates.PropertyAndProcessors;
+import PropertyRenderType = Templates.PropertyRenderType;
 
 @Injectable()
 export class RegisterTemplatePropertyService {
@@ -454,7 +452,7 @@ export class RegisterTemplatePropertyService {
                 }
 
                 //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
-                this.feedPropertyService.initSensitivePropertyForEditing(property);
+                this.feedPropertyService.initSensitivePropertyForEditing([property]);
 
                 this.feedPropertyService.updateDisplayValue(property);
 

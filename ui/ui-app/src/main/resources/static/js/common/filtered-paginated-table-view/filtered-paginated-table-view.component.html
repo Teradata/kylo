@@ -1,0 +1,85 @@
+<div>
+  <mat-progress-bar mode="indeterminate" *ngIf="loading" class="accent"></mat-progress-bar>
+  <div *ngIf="!loading">
+    <mat-card fxFlex="100" *ngIf="cardView">
+      <mat-card-title *ngIf="showToolbar">
+        <ng-container
+            *ngTemplateOutlet="searchTemplate;context:ctx">
+        </ng-container>
+       </mat-card-title>
+      <mat-card-content>
+        <ng-container
+            *ngTemplateOutlet="tableContent;context:ctx">
+        </ng-container>
+      </mat-card-content>
+    </mat-card>
+    <div *ngIf="!cardView" fxLayout="column" fxFlex>
+
+      <div *ngIf="showToolbar">
+        <ng-container
+            *ngTemplateOutlet="searchTemplate;context:ctx">
+        </ng-container>
+      </div>
+
+      <ng-container
+          *ngTemplateOutlet="tableContent;context:ctx">
+      </ng-container>
+
+    </div>
+
+  </div>
+</div>
+
+<ng-template #searchTemplate>
+
+<div fxLayout="row" fxFlex="100" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
+
+  <span *ngIf="!searchBox.searchVisible" class="push-left-sm">
+    <span class="mat-title">{{cardTitle}}</span>
+  </span>
+  <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Filter" (searchDebounce)="search($event)"
+                 [showUnderline]="true" fxFlex>
+  </td-search-box>
+
+</div>
+
+</ng-template>
+
+
+
+
+<ng-template #tableContent >
+
+  <td-data-table #dataTable
+                 [data]="filteredData"
+                 [columns]="columns"
+                 [clickable]="true"
+                 [sortable]="true"
+                 [sortOrder]="sortOrder"
+                 [sortBy]="sortBy"
+                 (sortChange)="sort($event)"
+                 (rowClick)="onRowClick($event)"
+                 [style.height.px]="tableHeight">
+    <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
+      <h3>No results to display.</h3>
+    </div>
+    <ng-content></ng-content>
+  </td-data-table>
+  <!-- paging not working because of this bug in mat-select https://github.com/angular/material2/issues/11063 -->
+  <td-paging-bar #pagingBar
+                 [firstLast]="false"
+                 [pageSize]="pageSize"
+                 [total]="filteredTotal"
+                 (change)="pageSizeChange($event)">
+    <span hide-xs>Rows per page:</span>
+    <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+      <mat-option *ngFor="let size of allowedPageSize" [value]="size">
+        {{size}}
+      </mat-option>
+    </mat-select>
+    {{pagingBar.range}}
+    <span hide-xs *ngIf="showTotal">of {{pagingBar.total}}</span>
+  </td-paging-bar>
+
+
+</ng-template>

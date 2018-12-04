@@ -3,13 +3,13 @@ import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 import { Component, OnInit, ViewContainerRef } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import ServicesStatusData from "../services/ServicesStatusService";
+import {ServicesStatusData} from "../services/ServicesStatusService";
 import { BaseFilteredPaginatedTableView } from "../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
 import { TdDataTableService, ITdDataTableColumn } from "@covalent/core/data-table";
 
 @Component({
     selector: "service-Component-Health-Details-Controller",
-    templateUrl: "js/ops-mgr/service-health/service-component-detail.html",
+    templateUrl: "./service-component-detail.html",
     styles: [`.ListItemContainer{
         padding: 0px !important;
         line-height: inherit;

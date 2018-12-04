@@ -51,6 +51,187 @@ define([
             .useLocalStorage();  // saves selected language to localStorage
 
 
+        //custom td themes
+
+        var tdOrange = $mdThemingProvider.extendPalette('orange', {
+            "50": "#FCE3DB",
+            "100": "#FCE3DB",
+            "200": "#FAC7B7",
+            "300": "#FAC7B7",
+            "400": "#F7AA93",
+            "500": "#F7AA93",
+            "600": "#F58E6F",
+            "700": "#F58E6F",
+            "800": "#F3753F",
+            "900": "#F3753F",
+            "contrastDefaultColor": "light",
+            "contrastDarkColors": [
+                "50",
+                "100",
+                "200",
+                "A100"
+            ],
+            "contrastLightColors": [
+                "300",
+                "400",
+                "500",
+                "600",
+                "700",
+                "800",
+                "900",
+                "A200",
+                "A400",
+                "A700"
+            ]
+        });
+
+
+
+        $mdThemingProvider.definePalette("td-orange", tdOrange);
+
+        var tdSlate = $mdThemingProvider.extendPalette('grey', {
+            "50": "#D8DBDC",
+            "100": "#D8DBDC",
+            "200": "#B0B6B9",
+            "300": "#B0B6B9",
+            "400": "#899296",
+            "500": "#899296",
+            "600": "#616D73",
+            "700": "#616D73",
+            "800": "#394851",
+            "900": "#394851",
+            "contrastDefaultColor": "dark",
+            "contrastDarkColors": [
+                "50",
+                "100",
+                "200",
+                "300",
+                "400",
+                "500",
+                "800",
+                "900",
+                "A100",
+                "A200",
+                "A400",
+                "A700"
+            ],
+            "contrastLightColors": [
+                "600",
+                "700"
+
+            ]
+        });
+
+        $mdThemingProvider.definePalette("td-slate", tdSlate);
+
+        var tdTeal = $mdThemingProvider.extendPalette('teal',{
+            "50": "#CFF0EF",
+            "100": "#CFF0EF",
+            "200": "#9FE1E0",
+            "300": "#9FE1E0",
+            "400": "#6FD2D0",
+            "500": "#6FD2D0",
+            "600": "#3FC3C1",
+            "700": "#3FC3C1",
+            "800": "#00B2B1",
+            "900": "#00B2B1",
+            "contrastDefaultColor": "dark",
+            "contrastDarkColors": [
+                "50",
+                "100",
+                "200",
+                "300",
+                "400",
+                "500",
+                "600",
+                "700",
+                "A100",
+                "A200",
+                "A400",
+                "A700"
+            ],
+            "contrastLightColors": [
+                "800",
+                "900"
+            ]
+        });
+        $mdThemingProvider.definePalette("td-teal", tdTeal);
+
+        var tdYellow = $mdThemingProvider.extendPalette('yellow',{
+            "50": "#FFF4DF",
+            "100": "#FFF4DF",
+            "200": "#FEE9C0",
+            "300": "#FEE9C0",
+            "400": "#FEDEA0",
+            "500": "#FEDEA0",
+            "600": "#FDD381",
+            "700": "#FDD381",
+            "800": "#FEC64D",
+            "900": "#FEC64D",
+            "contrastDefaultColor": "light",
+            "contrastDarkColors": [
+                "50",
+                "100",
+                "200",
+                "A100"
+            ],
+            "contrastLightColors": [
+                "300",
+                "400",
+                "500",
+                "600",
+                "700",
+                "800",
+                "900",
+                "A200",
+                "A400",
+                "A700"
+            ]
+        });
+
+        $mdThemingProvider.definePalette("td-yellow", tdYellow)
+
+
+
+
+        var tdBlue = $mdThemingProvider.extendPalette("blue", {
+            "50": "#D1EAF4",
+            "100": "#D1EAF4",
+            "200": "#A4D6E8",
+            "300": "#A4D6E8",
+            "400": "#76C1DD",
+            "500": "#76C1DD",
+            "600": "#49ADD1",
+            "700": "#49ADD1",
+            "800": "#0098C9",
+            "900": "#0098C9",
+            "contrastDefaultColor": "light",
+            "contrastDarkColors": [
+                "50",
+                "100",
+                "200",
+                "A100"
+            ],
+            "contrastLightColors": [
+                "300",
+                "400",
+                "500",
+                "600",
+                "700",
+                "800",
+                "900",
+                "A200",
+                "A400",
+                "A700"]
+        });
+
+        $mdThemingProvider.definePalette("td-blue", tdBlue);
+
+
+
+
+
+
 
         //read in any theme info from the __env
         if(__env.themes) {
@@ -102,22 +283,10 @@ define([
             }
         }
         else {
-            //default blue/orange kylo theme
-            var primaryBlue = $mdThemingProvider.extendPalette('blue', {
-                '500': '3483BA',
-                '900':'2B6C9A'
-            });
-
-            var accentOrange = $mdThemingProvider.extendPalette('orange', {
-                'A200': 'F08C38'
-            });
-            $mdThemingProvider.definePalette('primaryBlue', primaryBlue);
-            $mdThemingProvider.definePalette('accentOrange', accentOrange);
             $mdThemingProvider.theme('kylo')
-                .primaryPalette('primaryBlue', {
-                    'hue-2':'900'
-                })
-                .accentPalette('accentOrange');
+                .primaryPalette('td-slate', {'default':'700','hue-1':'100', 'hue-2':'900'})
+                .accentPalette('td-teal',{'default':'800','hue-1':'100', 'hue-2':'900'})
+                .warnPalette('deep-orange',{'default':'800','hue-1':'100', 'hue-2':'900'})
         }
 
         $mdThemingProvider.setDefaultTheme('kylo');

@@ -1,137 +1,219 @@
-import { ObjectUtils } from "../common/utils/object-utils";
+import {HttpErrorResponse, HttpEvent, HttpEventType, HttpHandler, HttpHeaders, HttpInterceptor, HttpRequest, HttpResponse} from "@angular/common/http";
+import {Injectable, Injector} from "@angular/core";
+import { ObjectUtils } from "../../lib/common/utils/object-utils";
 import * as angular from 'angular';
+import {Observable} from "rxjs/Observable";
+import {_throw} from "rxjs/observable/throw";
+import {catchError} from "rxjs/operators/catchError";
+import {map} from "rxjs/operators/map";
 
-let moduleName = "kylo.services";
+import {moduleName} from './module-name';
+import {NotificationService} from "./notification.service";
+import "./module";
 
-export default class httpInterceptor {
-    
-     constructor($provide: any,
-                 $httpProvider: any) {
-        $provide.factory('httpInterceptor', ["$q","$location","$window","$injector","Utils",
-                        function($q: any, $location: any, $window: any, $injector: any, Utils: any) {
-            return {
-                /**
-                 * Intercepts and modifies HTTP requests.
-                 *
-                 * @param {Object} request the HTTP request
-                 */
-                request: function(request: any) {
-                    // Add X-Requested-With header to disable basic auth
-                    if (ObjectUtils.isUndefined(request.headers)) {
-                        request.headers = {};
-                    }
-                    request.headers["X-Requested-With"] = "XMLHttpRequest";
-                    return request;
-                },
+const X_REQUESTED_WITH = "X-Requested-With";
+const XML_HTTP_REQUEST = "XMLHttpRequest";
 
-                /**
-                 * Intercepts and handles HTTP responses.
-                 *
-                 * @param {Object} response the response
-                 * @returns {Promise} the response
-                 */
-                response: function(response: any) {
-                    //injected manually to get around circular dependency problem.
-                    var NotificationService = $injector.get('NotificationService');
+@Injectable()
+export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInterceptor {
 
-                    // Check if login needed
-                    var redirectLocation;
+    private notificationService: NotificationService;
 
-                    if (response.headers() && response.headers()['Location'] && response.headers()['Location'].endsWith('login.html')) {
-                        redirectLocation = null;
-                    } else if (response.data && response.config && !Utils.endsWith(response.config.url, ".html") && typeof response.data == 'string') {
-                        if (response.data.indexOf('<!-- login.html -->') >= 0) {
-                            redirectLocation = "/login.html";
-                        }
-                    }
+    static readonly $inject = ["$$angularInjector"];
 
-                    if (ObjectUtils.isDefined(redirectLocation)) {
-                        NotificationService.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
-                        if (redirectLocation !== null) {
-                            $window.location.href = redirectLocation;
-                        }
-                    }
+     constructor(private $injector: Injector) {
+    }
 
-                    return response || $q.when(response);
-                },
+    /**
+     * Angular 4: Intercept the outgoing HTTP request and transform the response.
+     */
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        const headers = {};
+        headers[X_REQUESTED_WITH] = XML_HTTP_REQUEST;
 
-                /**
-                 * Intercepts and handles HTTP error responses.
-                 *
-                 * @param {Object} rejection the response
-                 * @returns {Promise} the response
-                 */
-                responseError: function(rejection: any) {
-                    //injected manually to get around circular dependency problem.
-                    var NotificationService = $injector.get('NotificationService');
-
-                    if (rejection.data == undefined) {
-                        rejection.data = {};
-                    }
-                    if (rejection.status === 401) {
-                        NotificationService.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
-                        $window.location.href = "/login.html";
-                    }
-                    else if (rejection.status <= 0) {
-                        //Usually -1 means aborted request
-                        //for now remove this logic as it is cause errors to appear which are not errors.
-                        //re visit if needed
-                        /*   if(rejection.config && rejection.config.timeout && rejection.config.timeout.$$state && rejection.config.timeout.$$state ==1){
-                         //aborted
-                         }
-                         else {
-                         //internet is down
-                         NotificationService.errorWithGroupKey("Connection Error", "Not Connected. Server is down.", "Connection Error");
-                         }
-                         */
-                    }
-                    else if (rejection.status === 400) {
-                        // Bad Request
-                        var message = "An error occurred ";
-                        var errorMessage = rejection.data["message"];
-                        var groupKey = errorMessage;
-                        if (groupKey == undefined || groupKey == '') {
-                            groupKey = 'OtherError';
-                        }
-                        var url = rejection.data["url"];
-                        if (url != undefined && url != null && url != "") {
-                            message += " attempting to access: " + url
-                        }
-                        message += ".";
-                        if (rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
-                            if (rejection.data["url"]) {
-                                NotificationService.errorWithGroupKey("Error", message, url, errorMessage);
-                            }
-                            else {
-                                NotificationService.errorWithGroupKey("Error", message, groupKey, errorMessage);
-                            }
-                        }
-
-                    }
-                    else {
-                        if (rejection.config && rejection.config.acceptStatus === rejection.status) {
-                            //sometimes 404 response is a valid response for which we don't want to show error message with NotificationService
-                            return $q.when(rejection);
-                        }
-
-                        if (rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
-                            var message = "An error occurred ";
-                            var rejectionMessage = rejection.data['message'];
-                            if (rejectionMessage == undefined || rejectionMessage == '') {
-                                rejectionMessage = 'OtherError';
-                            } else if (rejectionMessage.startsWith("AnalysisException:")) {
-                                // Don't notify for messages from wrangler. These are handled.
-                                return $q.reject(rejection);
-                            }
-                            NotificationService.errorWithGroupKey("Error", message, rejectionMessage, rejection.data["message"]);
-                        }
-                    }
-                    return $q.reject(rejection);
+        return next.handle(req.clone({setHeaders: headers})).pipe(
+            map(response => {
+                if (response.type === HttpEventType.Response) {
+                    this.checkResponse(response);
                 }
-            };
-        }]);
-        $httpProvider.interceptors.push('httpInterceptor');
-    } // ending constructor here
+                return response;
+            }),
+            catchError(event => {
+                if (event instanceof HttpErrorResponse) {
+                    this.checkErrorResponse(event);
+                }
+                return _throw(event)
+            })
+        );
+    }
+
+    /**
+     * AngularJS: Intercepts and modifies HTTP requests.
+     */
+    request(request: angular.IRequestConfig): angular.IRequestConfig | angular.IPromise<angular.IRequestConfig> {
+        // Add X-Requested-With header to disable basic auth
+        if (ObjectUtils.isUndefined(request.headers)) {
+            request.headers = {};
+        }
+        request.headers[X_REQUESTED_WITH] = XML_HTTP_REQUEST;
+        return request;
+    }
+
+    /**
+     * AngularJS: Intercepts and handles HTTP responses.
+     */
+    response<T>(response: angular.IHttpResponse<T>): angular.IPromise<angular.IHttpResponse<T>> | angular.IHttpResponse<T> {
+        this.checkResponse(this.toHttpResponse(response));
+        return response || <any> Promise.resolve(response);
+    }
+
+    /**
+     * AngularJS: Intercepts and handles HTTP error responses.
+     */
+    responseError<T>(rejection: any): angular.IPromise<angular.IHttpResponse<T>> | angular.IHttpResponse<T> {
+        if (rejection.config && rejection.config.acceptStatus === rejection.status) {
+            //sometimes 404 response is a valid response for which we don't want to show error message with NotificationService
+            return <any> Promise.resolve(rejection);
+        } else {
+            this.checkErrorResponse(this.toHttpErrorResponse(rejection));
+            return <any> Promise.reject(rejection);
+        }
+    }
+
+    /**
+     * Handle error responses and redirect to login page if necessary.
+     */
+    private checkErrorResponse(rejection: HttpErrorResponse): void {
+        const data = rejection.error || {};
+
+        if (rejection.status === 401) {
+            this.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
+            window.location.href = "/login.html";
+        } else if (rejection.status <= 0) {
+            //Usually -1 means aborted request
+            //for now remove this logic as it is cause errors to appear which are not errors.
+            //re visit if needed
+            /*   if(rejection.config && rejection.config.timeout && rejection.config.timeout.$$state && rejection.config.timeout.$$state ==1){
+             //aborted
+             }
+             else {
+             //internet is down
+             NotificationService.errorWithGroupKey("Connection Error", "Not Connected. Server is down.", "Connection Error");
+             }
+             */
+        } else if (rejection.status === 400) {
+            // Bad Request
+            let message = "An error occurred ";
+            let errorMessage = data["message"];
+            let groupKey = errorMessage;
+            if (groupKey == undefined || groupKey == '') {
+                groupKey = 'OtherError';
+            }
+            let url = data["url"];
+            if (url != undefined && url != null && url != "") {
+                message += " attempting to access: " + url
+            }
+            message += ".";
+            if (data['handledException'] == undefined || (data['handledException'] != undefined && data['handledException'] == false)) {
+                if (data["url"]) {
+                    this.errorWithGroupKey("Error", message, url, errorMessage);
+                } else {
+                    this.errorWithGroupKey("Error", message, groupKey, errorMessage);
+                }
+            }
+        } else if (data['handledException'] == undefined || (data['handledException'] != undefined && data['handledException'] == false)) {
+            let message = "An error occurred ";
+            let detailedMessage = data['message'] ? data['message'] : (Array.isArray(data['errorMessages']) ? data['errorMessages'][0] : null);
+            let rejectionMessage = data['message'];
+            if (rejectionMessage == undefined || rejectionMessage == '') {
+                rejectionMessage = 'OtherError';
+            } else if (rejectionMessage.startsWith("AnalysisException:")) {
+                // Don't notify for messages from wrangler. These are handled.
+                return;
+            }
+            this.errorWithGroupKey("Error", message, rejectionMessage, detailedMessage);
+        }
+    }
+
+    /**
+     * Handle success response and redirect to login page if necessary.
+     */
+    private checkResponse(response: HttpResponse<any>): void {
+        // Check if login needed
+        let redirectLocation = null;
+
+        if (response.headers.has("Location") && response.headers.get("Location").endsWith("login.html")) {
+            redirectLocation = null;
+        } else if (!response.url.endsWith(".html") && typeof response.body === "string" && response.body.indexOf("<!-- login.html -->") >= 0) {
+            redirectLocation = "/login.html";
+        }
+
+        if (redirectLocation !== null) {
+            this.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
+            window.location.href = redirectLocation;
+        }
+    }
+
+    /**
+     * Broadcast the specified error notification.
+     */
+    private errorWithGroupKey(errorType: string, message: string, groupKey: string, detailMsg?: string): void {
+        if (this.notificationService == null) {
+            //injected manually to get around circular dependency problem.
+            try {
+                this.notificationService = this.$injector.get(NotificationService);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        if (this.notificationService != null) {
+            this.notificationService.errorWithGroupKey(errorType, message, groupKey, detailMsg);
+        } else {
+            console.warn(errorType + ": " + message);
+        }
+    }
+
+    /**
+     * Converts the specified AngularJS rejection to an Angular 4 error response.
+     */
+    private toHttpErrorResponse(rejection: any): HttpErrorResponse {
+        return new HttpErrorResponse({
+            error: rejection.data,
+            headers: new HttpHeaders(rejection.headers()),
+            status: rejection.status,
+            statusText: rejection.statusText,
+            url: rejection.config.url
+        });
+    }
+
+    /**
+     * Converts the specified AngularJS response to an Angular 4 response.
+     */
+    private toHttpResponse<T>(response: angular.IHttpResponse<T>): HttpResponse<T> {
+        return new HttpResponse<T>({
+            body: response.data,
+            headers: new HttpHeaders(response.headers()),
+            status: response.status,
+            statusText: response.statusText,
+            url: response.config.url
+        });
+    }
 }
 
-angular.module(moduleName).config(['$provide', '$httpProvider',httpInterceptor]);
+function buildHttpInterceptor($injector: any) {
+    const interceptor = new AngularHttpInterceptor($injector);
+    return {
+        request: (request: any) => interceptor.request(request),
+        response: (response: any) => interceptor.response(response),
+        responseError: (rejection: any) => interceptor.responseError(rejection)
+    };
+}
+
+function registerHttpInterceptor($httpProvider: angular.IHttpProvider) {
+    $httpProvider.interceptors.push("httpInterceptor");
+}
+
+angular.module(moduleName)
+    .factory("httpInterceptor", [...AngularHttpInterceptor.$inject, buildHttpInterceptor])
+    .config(["$httpProvider", registerHttpInterceptor]);

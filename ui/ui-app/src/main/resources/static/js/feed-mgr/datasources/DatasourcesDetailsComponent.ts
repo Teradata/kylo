@@ -1,21 +1,22 @@
 import * as _ from "underscore";
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
+import {StateService} from "../../services/StateService";
 import { DatasourcesService } from '../services/DatasourcesService';
-import { StateService } from '@uirouter/core';
+import { StateService as UiStateService } from '@uirouter/core';
 import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 import { Component, ViewContainerRef, Inject, OnInit } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {IconPickerDialog} from '../../common/icon-picker-dialog/icon-picker-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../common/utils/clone-util';
 
 
 
 const PASSWORD_PLACEHOLDER = "******";
 @Component({
-    templateUrl: "js/feed-mgr/datasources/details.html",
+    templateUrl: "./details.html",
     styles: [' .block { display : block; margin: 18px;}']
 })
 export class DatasourcesDetailsComponent implements OnInit{
@@ -99,8 +100,8 @@ export class DatasourcesDetailsComponent implements OnInit{
                         .then((access: any) => {
                             this.allowChangePermissions = access;
                         });
-                }, () => {
-                    this.stateService.go("datasources");
+                }, (error:any) => {
+                    this.statesService.FeedManager().Datasource().navigateToDatasources();
                 });
         } else {
             this.onEdit();
@@ -117,7 +118,7 @@ export class DatasourcesDetailsComponent implements OnInit{
      * @param {StateService} StateService the page state service 
      */
     constructor(private accessControlService: AccessControlService, private datasourcesService: DatasourcesService, private entityAccessControlService: EntityAccessControlService
-        , private stateService: StateService,private _dialogService: TdDialogService,private _viewContainerRef: ViewContainerRef,private snackBar: MatSnackBar) {
+        , private stateService: UiStateService,private _dialogService: TdDialogService,private _viewContainerRef: ViewContainerRef,private snackBar: MatSnackBar, private statesService: StateService) {
 
         this.model = this.datasourcesService.newJdbcDatasource();
     }
@@ -163,7 +164,7 @@ export class DatasourcesDetailsComponent implements OnInit{
      * Deletes the current data source.
      */
     onDelete () {
-        if (!ObjectUtils.isArray(this.model.sourceForFeeds) || this.model.sourceForFeeds.length === 0) {
+        if (!Array.isArray(this.model.sourceForFeeds) || this.model.sourceForFeeds.length === 0) {
             this.datasourcesService.deleteById(this.model.id)
                 .then(() => {
                     this.snackBar.open("Successfully deleted the data source " + this.model.name + ".","OK",{
@@ -361,7 +362,7 @@ export class DatasourcesDetailsComponent implements OnInit{
 }
 
 @Component({
-    templateUrl: 'js/feed-mgr/datasources/datasource-saving-dialog.html',
+    templateUrl: './datasource-saving-dialog.html',
 })
 export class SaveDatasourceDialogComponent {
     message : string ;

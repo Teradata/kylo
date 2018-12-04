@@ -1,0 +1,4 @@
+{
+  "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData","com.thinkbiganalytics.nifi.v2.ingest.GetTableData"],
+  "module": "plugin/processor-templates/sqoop-table-data/bundles/sqoop-table-data.umd.min#SqoopTableDataModule"
+}

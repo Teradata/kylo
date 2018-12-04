@@ -1,11 +1,12 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../../services/AccessControlService';
+import {AccessControlService} from '../../../services/AccessControlService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 import { EntityAccessControlDialogService } from '../../shared/entity-access-control/EntityAccessControlDialogService';
 import { Transition } from '@uirouter/core';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
+import '../../../plugin/template-table-option/define-table/define-table-feed-details.html';
 
 
 var FeedUploadFileDialogController = function ($scope:any, $mdDialog:any, $http:any, RestUrlService:any
@@ -626,6 +627,13 @@ angular.module(moduleName).filter('capitalizeFirstLetterOfEachWord', () => {
     }
 });
 
+// angular.module(moduleName).component('FeedDetailsController', {
+//     controller: controller,
+//     controllerAs: "vm",
+//     templateUrl: require('./feed-details.html'),
+// });
+
+
 angular.module(moduleName).component('feedDetailsController', {
     templateUrl: 'js/feed-mgr/feeds/edit-feed/feed-details.html',
     controller: FeedDetailsController,
@@ -636,3 +644,6 @@ angular.module(moduleName).component('feedDetailsController', {
 });
 
 angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",FeedUploadFileDialogController]);
+
+const module = angular.module(moduleName);
+export default module;

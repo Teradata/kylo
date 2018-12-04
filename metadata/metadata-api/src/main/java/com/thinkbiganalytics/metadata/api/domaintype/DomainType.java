@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.api.domaintype;
 
+import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 
 import java.io.Serializable;
@@ -27,7 +28,7 @@ import java.io.Serializable;
 /**
  * Defines the domain type (zip, phone, credit card) of a column.
  */
-public interface DomainType extends SystemEntity {
+public interface DomainType extends SystemEntity, Iconable {
 
     /**
      * Gets the unique identifier.
@@ -73,26 +74,6 @@ public interface DomainType extends SystemEntity {
      * Sets the field policy as a JSON document.
      */
     void setFieldPolicyJson(String value);
-
-    /**
-     * Gets the name of the icon.
-     */
-    String getIcon();
-
-    /**
-     * Sets the name of the icon.
-     */
-    void setIcon(String value);
-
-    /**
-     * Gets the icon color.
-     */
-    String getIconColor();
-
-    /**
-     * Sets the icon color.
-     */
-    void setIconColor(String value);
 
     /**
      * Gets the regular expression flags for matching sample data.

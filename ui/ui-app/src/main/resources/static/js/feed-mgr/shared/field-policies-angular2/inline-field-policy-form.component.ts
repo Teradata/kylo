@@ -1,15 +1,15 @@
 import * as _ from "underscore";
-import { Input, Component, OnInit,OnChanges} from '@angular/core';
+import {Input, Output,Component, OnInit, OnChanges, EventEmitter} from '@angular/core';
 import {FieldPolicyOptionsService} from "./field-policy-options.service";
-import {PolicyInputFormService} from "./policy-input-form.service"
+import {PolicyInputFormService} from "../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service"
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 import {FormGroup} from "@angular/forms";
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: "inline-field-policy-form",
-    templateUrl: "js/feed-mgr/shared/field-policies-angular2/inline-field-policy-form.component.html"
+    templateUrl: "./inline-field-policy-form.component.html"
 })
 export class InlinePolicyInputFormComponent implements OnInit {
 
@@ -37,6 +37,9 @@ export class InlinePolicyInputFormComponent implements OnInit {
     @Input()
     policyForm ?:FormGroup;
 
+    @Output()
+    selectedPolicyRuleChange:EventEmitter<any> = new EventEmitter<any>();
+
     loadingPolicies :boolean = true;
 
     /**
@@ -54,7 +57,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
         if(this.policyForm == undefined){
             this.policyForm = new FormGroup({});
         }
-        console.log('policyParameter',this.policyParameter)
+
         this.fieldPolicyOptionsService.getOptionsForType(this.policyParameter).subscribe( (response:any) => {
             var currentFeedValue = null;
             var results = [];
@@ -75,7 +78,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
                 }
             }
             else if(ObjectUtils.isDefined(this.selectedPolicyRule)){
-                this.skipChangeHandler = true;
+              //  this.skipChangeHandler = true;
                 //this.ruleType = this.selectedPolicyRule
                 this.ruleType = this.findRuleType(this.selectedPolicyRule.name)
                 this.showAdvancedOptions = (this.selectedPolicyRule.properties && this.selectedPolicyRule.properties.length > 0);
@@ -117,12 +120,14 @@ export class InlinePolicyInputFormComponent implements OnInit {
                 rule.editable = true;
                 //reset the model
                 this.selectedPolicyRule = rule;
+                this.selectedPolicyRuleChange.emit(this.selectedPolicyRule)
             }
             this.showAdvancedOptions = (this.ruleType.properties && this.ruleType.properties.length > 0);
             this.skipChangeHandler = false;
         }
         else {
             this.selectedPolicyRule = null;
+            this.selectedPolicyRuleChange.emit(this.selectedPolicyRule)
         }
     }
 
@@ -133,7 +138,7 @@ export class InlinePolicyInputFormComponent implements OnInit {
 
     ngOnChanges(changes :SimpleChanges) {
         if(changes.selectedPolicyRule.currentValue){
-            this.skipChangeHandler = true;
+         //   this.skipChangeHandler = true;
             var rule = this.selectedPolicyRule;
             rule.groups = this.policyInputFormService.groupProperties(this.selectedPolicyRule)
             this.policyInputFormService.updatePropertyIndex(rule);

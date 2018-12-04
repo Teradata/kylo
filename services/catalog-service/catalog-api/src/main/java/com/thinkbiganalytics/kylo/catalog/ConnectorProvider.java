@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
+ * @deprecated use the metadata API provider
  */
+@Deprecated
 public interface ConnectorProvider {
     
     public List<Connector> findAllConnectors();

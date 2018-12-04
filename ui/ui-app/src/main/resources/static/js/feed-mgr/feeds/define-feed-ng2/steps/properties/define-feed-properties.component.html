@@ -1,0 +1,23 @@
+<define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (cancelEdit)="onCancelEdit()" (saved)="onSave()" [displayEditActions]="displayEditActions">
+
+  <feed-step-readonly-content>
+    <div fxLayout="column" *ngIf="feed.readonly">
+      <metadata-indexing [editable]="false" [allowIndexing]="feed.allowIndexing"></metadata-indexing>
+      <!-- feed properties -->
+      <thinkbig-property-list [editable]="false" [properties]="feed.userProperties"></thinkbig-property-list>
+
+    </div>
+
+  </feed-step-readonly-content>
+
+  <feed-step-edit-content>
+   <form [formGroup]="formGroup" *ngIf="!feed.readonly">
+     <metadata-indexing [editable]="true" [parentFormGroup]="formGroup" [(allowIndexing)]="feed.allowIndexing" (allowIndexingChange)="onAllowIndexingChange($event)"></metadata-indexing>
+     <!-- feed properties -->
+     <thinkbig-property-list #propertyList  [editable]="true" [parentFormGroup]="formGroup" [(properties)]="feed.userProperties" (propertiesChange)="onPropertiesChanged($event)"></thinkbig-property-list>
+
+   </form>
+
+  </feed-step-edit-content>
+
+</define-feed-step-card>

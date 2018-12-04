@@ -113,7 +113,7 @@ public class PathValidator {
         final Optional<List<String>> dataSourcePaths = DataSourceUtil.getPaths(dataSource);
         if (dataSourcePaths.isPresent()) {
             final Stream<String> allowedPaths = dataSourcePaths.get().stream();
-            final String pluginId = dataSource.getConnector().getId();
+            final String pluginId = dataSource.getConnector().getPluginId();
             final Optional<ConnectorPlugin> plugin = this.pluginManager.getPlugin(pluginId);
 
             if (plugin.isPresent()) {

@@ -2,7 +2,7 @@
 
 // Unfortunately there's no typing for the `__karma__` variable. Just declare it as any.
 declare const __karma__: any;
-declare const System: any;
+declare const SystemJS: any;
 
 // "No stacktrace"" is usually best for app testing.
 // (Error as any).stackTraceLimit = 0;
@@ -39,7 +39,7 @@ const allSpecFiles = Object.keys((window as any).__karma__.files)
     .filter(isSpecFile)
     .filter(isBuiltFile);
 
-System.config({
+SystemJS.config({
     // Base URL for System.js calls. 'base/' is where Karma serves files from.
     baseURL: 'base/src/main/resources/static/js',
     defaultJSExtensions: true,
@@ -238,16 +238,16 @@ System.config({
         'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize','ng-text-truncate'], exports:'app', format: "amd"},
         'routes':{deps:['app'], exports:'routes', format: "amd"}
     }
-});
+} as any);
 
 initTestBed().then(initTesting);
 
 function initTestBed(){
     return Promise.all([
-        System.import('@angular/core/testing'),
-        System.import('@angular/platform-browser-dynamic/testing'),
-        System.import('@uirouter/angular-hybrid'),
-        System.import('@uirouter/core')
+        SystemJS.import('@angular/core/testing'),
+        SystemJS.import('@angular/platform-browser-dynamic/testing'),
+        SystemJS.import('@uirouter/angular-hybrid'),
+        SystemJS.import('@uirouter/core')
     ])
 
         .then(function (providers) {
@@ -267,7 +267,7 @@ function initTestBed(){
 
 // Import all spec files and start karma
 function initTesting () {
-    return System.import('routes')
-        .then(() => Promise.all(allSpecFiles.map(moduleName => System.import(moduleName))))
+    return SystemJS.import('routes')
+        .then(() => Promise.all(allSpecFiles.map(moduleName => SystemJS.import(moduleName))))
         .then(__karma__.start, __karma__.error);
 }

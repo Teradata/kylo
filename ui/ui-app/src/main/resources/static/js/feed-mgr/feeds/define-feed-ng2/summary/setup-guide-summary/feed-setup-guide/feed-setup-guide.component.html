@@ -1,0 +1,47 @@
+<mat-card class="steps feed-card" >
+  <mat-card-header >
+    <mat-card-title>
+      <!-- <mat-icon>playlist_add_check</mat-icon> -->
+      <span>Setup Guide</span>
+    </mat-card-title>
+    <mat-card-subtitle>Required and optional steps</mat-card-subtitle>
+    <span fxFlex></span>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-list role="list" dense>
+      <mat-divider *ngIf="requiredSteps.length >0"></mat-divider>
+      <h3 mat-subheader *ngIf="requiredSteps.length >0">Required</h3>
+      <mat-divider *ngIf="requiredSteps.length >0"></mat-divider>
+
+      <ng-container *ngFor="let step of requiredSteps; let $last=last">
+        <ng-template [ngTemplateOutlet]="setupStepSummary"
+                     [ngTemplateOutletContext]="{$implicit:step, $last:$last}">
+        </ng-template>
+      </ng-container>
+      <mat-divider *ngIf="optionalSteps.length >0"></mat-divider>
+      <h3 mat-subheader *ngIf="optionalSteps.length >0">Optional</h3>
+      <mat-divider *ngIf="optionalSteps.length >0"></mat-divider>
+      <ng-container *ngFor="let step of optionalSteps; let $last=last">
+        <ng-template [ngTemplateOutlet]="setupStepSummary"
+                     [ngTemplateOutletContext]="{$implicit:step, $last:$last}">
+        </ng-template>
+      </ng-container>
+
+    </mat-list>
+  </mat-card-content>
+</mat-card>
+
+
+<ng-template #setupStepSummary let-step let-$last="$last">
+  <mat-list-item (click)="onStepSelected(step)" [ngClass]="{'disabled-step':step.disabled}" class="overview-step">
+    <mat-icon matListAvatar color="green" *ngIf="step.complete">check_circle</mat-icon>
+    <mat-icon matListAvatar color="accent" *ngIf="!step.complete && step.icon">{{step.icon}}</mat-icon>
+    <h3 matLine [ngClass]="{'completed-step':step.complete}">
+      {{step.name}}
+    </h3>
+    <p matLine [ngClass]="{'completed-step':step.complete}"> {{step.description}}</p>
+    <span></span>
+    <mat-icon color="accent">keyboard_arrow_right</mat-icon>
+  </mat-list-item>
+  <mat-divider *ngIf=" !$last"></mat-divider>
+</ng-template>

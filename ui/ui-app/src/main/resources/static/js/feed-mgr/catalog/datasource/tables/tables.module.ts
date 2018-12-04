@@ -1,4 +1,5 @@
 import {NgModule} from "@angular/core";
+import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 import {TablesComponent} from "./tables.component";
 import {tablesStates} from "./tables.states";
@@ -21,6 +22,8 @@ import {CovalentPagingModule} from '@covalent/core/paging';
 import {CommonModule} from '@angular/common';
 import {BrowserModule} from '../api/browser.module';
 import {CovalentLoadingModule} from '@covalent/core/loading';
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
     declarations: [
@@ -28,6 +31,9 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
     ],
     entryComponents: [
         TablesComponent,
+    ],
+    exports:[
+        TablesComponent
     ],
     imports: [
         BrowserModule,
@@ -47,11 +53,22 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
         MatDividerModule,
         MatListModule,
         MatProgressBarModule,
+        MatToolbarModule,
         MatSelectModule,
         MatCheckboxModule,
         MatDialogModule,
-        UIRouterModule.forChild({states: tablesStates})
+        MatIconModule,
+        UIRouterModule,
+        TranslateModule
     ]
 })
 export class TablesModule {
+}
+@NgModule({
+    imports: [
+        TablesModule,
+        UIRouterModule.forChild({states: tablesStates})
+    ]
+})
+export class TablesRouterModule {
 }

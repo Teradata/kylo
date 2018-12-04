@@ -37,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotFoundException;
@@ -178,5 +180,13 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
             }
         }
         return Optional.empty();
+    }
+
+    public Set<ConnectionDTO> findConnectionsToEntity(String processGroupId, String entityId) {
+        return client.processGroups().getConnections(processGroupId)
+            .stream()
+            .filter(connectionDTO -> (connectionDTO.getSource() != null && connectionDTO.getSource().getId().equalsIgnoreCase(entityId)) ||
+                                     (connectionDTO.getDestination() != null && connectionDTO.getDestination().getId().equalsIgnoreCase(entityId)))
+            .collect(Collectors.toSet());
     }
 }

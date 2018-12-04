@@ -1,344 +1,530 @@
-<div fxLayout="row">
-  <define-feed-step-card [(feed)]="feed" [(step)]="step" mode="custom" fxFlex="80">
+<define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="false">
+  <feed-step-custom-content>
 
-    <ng-container *ngIf="feed.readonly">
-      <div fxLayout="row" fxFlex="100">
-        <div fxLayout="column" fxFlex="100">
-          <div fxLayout="row">
-            <div fxFlex="30">Name</div>
-            <div fxFlex="25">Data Type</div>
-            <div fxFlex="10">Index</div>
-            <div fxFlex="10">Profile</div>
-            <div fxFlex="10"></div>
-            <div class="scrollbar-width"></div>
+    <ng-container *ngIf="showSourceSample">
+      <form class="source-sample-container" [formGroup]="sourceSampleForm">
+        <mat-card class="feed-card source-sample-card" fxFlex>
+          <mat-card-header>
+            <mat-card-title>Sample Data</mat-card-title>
+            <mat-card-subtitle>Provide a sample data set to generate the schema and default rules</mat-card-subtitle>
+            <span fxFlex></span>
+          </mat-card-header>
+          <mat-card-content class="pull-top-md">
+            <define-feed-step-source-sample [allowEdit]="!tablePermissions.tableLocked && !feed.readonly" [showSkipSourceButton]="true" [(showCatalog)]="showSourceSampleCatalog"
+                                            (showCatalogChange)="onShowCatalogChange($event)" (sampleSaved)="onSampleSourceSaved($event)" (showCatalogCanceled)="onCatalogCanceled($event)"
+                                            [feed]="feed" [step]="step"></define-feed-step-source-sample>
+          </mat-card-content>
+        </mat-card>
+      </form>
+    </ng-container>
+
+
+    <td-expansion-panel [expand]="schemaPanelExpanded" class="push-left-sm push-right-sm" (expanded)="onSchemaPanelExpanded()"
+                        (collapsed)="onSchemaPanelCollapsed()" *ngIf="(skippedSourceSample || (feed.readonly && feed.table.tableSchema.fields.length >0) || (!feed.readonly && feed.table.feedDefinitionTableSchema.fields.length >0))">
+      <ng-template td-expansion-panel-header>
+        <div fxLayout="row" class="pad">
+          <div fxLayout="column">
+            <div class="mat-card-title" style="font-size:20px">Target Table</div>
+            <div class="mat-card-subtitle" *ngIf="defineTableForm.invalid">
+              <mat-icon color="warn">error</mat-icon> Invalid form.
+            </div>
+            <div class="mat-card-subtitle">
+              Define target schema and field options
+            </div>
           </div>
-          <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
-            <ng-template let-row="row"
-                         let-index="index"
-                         let-first="first"
-                         let-last="last"
-                         let-odd="odd"
-                         let-even="even"
-                         tdVirtualScrollRow>
-              <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
-                <span fxFlex="30" [class.strike]="row.deleted">{{row.name}}</span>
+          <span fxFlex></span>
+          <div>
+            <button *ngIf="!feed.readonly && schemaPanelExpanded" mat-raised-button class="text-upper push-top" (click)="onSchemaPanelCancel($event)" [disabled]="defineTableForm.invalid">Next</button>
+            <button mat-icon-button class="push-right" color="accent" (click)="onSchemaPanelEdit($event)" *ngIf="!schemaPanelExpanded" matTooltip="Edit schema options"><mat-icon color="accent">edit
+            </mat-icon></button>
+          </div>
+        </div>
 
-                <div fxLayout="row" fxFlex="25" [class.strike]="row.deleted">
+      </ng-template>
 
-                  <span>{{row.derivedDataType}}</span>
+      <div fxLayout="row" style="background-color:#e0e0e0" >
 
-                  <span *ngIf="row.precisionScale != undefined">({{row.precisionScale}})</span>
+        <mat-card class="feed-card" fxFlex="{{targetFields.length >0 ? 80 : 100}}" *ngIf="targetFields.length > 0 || skippedSourceSample">
+
+          <mat-card-content>
+            <ng-container *ngIf="feed.readonly">
+              <div fxLayout="row" fxFlex="100" *ngIf="targetFields.length >0">
+                <div fxLayout="column" fxFlex="100">
+                  <div fxLayout="row" class="push-bottom-md">
+                    <div fxFlex="30">Name</div>
+                    <div fxFlex="40">Data Type</div>
+                    <div fxFlex="10">Index</div>
+                    <div fxFlex="10">Profile</div>
+                    <div class="scrollbar-width"></div>
+                  </div>
+                  <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
+                    <ng-template let-row="row"
+                                 let-index="index"
+                                 let-first="first"
+                                 let-last="last"
+                                 let-odd="odd"
+                                 let-even="even"
+                                 tdVirtualScrollRow>
+                      <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
+                        <span fxFlex="30" [class.strike]="row.deleted">{{row.name}}</span>
+
+                        <div fxLayout="row" fxFlex="40" [class.strike]="row.deleted" style="overflow:hidden;text-overflow: ellipsis;">
+
+                          <span>{{row.derivedDataType}}</span>
+
+                          <span *ngIf="row.precisionScale != undefined">({{row.precisionScale}})</span>
+                        </div>
+
+                        <div fxFlex="10" class="push-top-sm">
+                          <mat-icon class="grey" *ngIf="row.fieldPolicy.index">check</mat-icon>
+                          <mat-icon class="grey" *ngIf="!row.fieldPolicy.index">check_box_outline_blank</mat-icon>
+                        </div>
+
+                        <div fxFlex="10" class="push-top-sm">
+                          <mat-icon class="grey" *ngIf="row.fieldPolicy.profile">check</mat-icon>
+                          <mat-icon class="grey" *ngIf="!row.fieldPolicy.profile">check_box_outline_blank</mat-icon>
+                        </div>
+                        <div fxFlex="" class="push-top-sm"></div>
+                      </div>
+
+                    </ng-template>
+                  </td-virtual-scroll-container>
                 </div>
-
-                <div fxFlex="10">
-                  <mat-icon class="grey" *ngIf="row.fieldPolicy.index">check</mat-icon>
-                  <mat-icon class="grey" *ngIf="!row.fieldPolicy.index">check_box_outline_blank</mat-icon>
-                </div>
-
-                <div fxFlex="10">
-                  <mat-icon class="grey" *ngIf="row.fieldPolicy.profile">check</mat-icon>
-                  <mat-icon class="grey" *ngIf="!row.fieldPolicy.profile">check_box_outline_blank</mat-icon>
-                </div>
-                <div fxFlex="10"></div>
 
 
               </div>
 
-            </ng-template>
-          </td-virtual-scroll-container>
-        </div>
+              <div *ngIf="feed.table.tableSchema.fields.length == 0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+                <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+                <h2>Target schema incomplete</h2>
+              </div>
 
+            </ng-container>
 
-      </div>
-    </ng-container>
+            <ng-container *ngIf="!feed.readonly">
+              <div *ngIf="targetFields.length >0">
+                <form [formGroup]="defineTableForm">
+                  <div fxLayout="row" fxFlex="100" class="push-bottom-xs">
+                    <div fxFlex="15">Name</div>
+                    <div fxFlex="5"></div>
+                    <div fxFlex="55">Data Type</div>
+                    <div fxFlex="5"></div>
+                    <div fxFlex="5">
+                      <a href="" (click)="onIndexCheckAllChange()">Index</a>
+                    </div>
+                    <div fxFlex="5">
+                      <a href="" (click)="onProfileCheckAllChange()">Profile</a>
+                    </div>
+                    <div fxFlex="5"></div>
+                    <div fxFlex="5" style="margin-right:6px"></div>
+                  </div>
+                  <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="targetFields">
+                    <ng-template let-row="row"
+                                 let-index="index"
+                                 let-first="first"
+                                 let-last="last"
+                                 let-odd="odd"
+                                 let-even="even"
+                                 tdVirtualScrollRow>
+                      <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
 
-    <ng-container *ngIf="!feed.readonly">
+                        <mat-form-field fxFlex="15">
+                          <input matInput [class.strike]="row.deleted" [formControlName]="'name_'+row._id" required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
+                          <mat-error *ngIf="hasTableFormError('name',row,'required')">
+                            Feed name is required
+                          </mat-error>
+                          <mat-error *ngIf="hasTableFormError('name',row,'notUnique')">
+                            Feed name needs to be unique
+                          </mat-error>
+                          <mat-error *ngIf="hasTableFormError('name',row,'length')">
+                            Feed name is too long
+                          </mat-error>
+                          <mat-error *ngIf="hasTableFormError('name',row,'reserved')">
+                            Name reserved. Please choose a different name.
+                          </mat-error>
+                        </mat-form-field>
+                        <div fxFlex="5"></div>
+                        <div fxLayout="row" fxFlex="55">
 
-      <form [formGroup]="defineTableForm">
-        <div fxLayout="row" fxFlex="100" >
-          <div fxFlex="30">Name</div>
-          <span fxFlex="5"></span>
-          <div fxFlex="25">Data Type</div>
-          <div fxFlex="10">Index<br/>
-            <mat-checkbox formControlName="indexCheckAll" (change)="onIndexCheckAllChange()" [checked]="indexCheckAll.isChecked" [indeterminate]="indexCheckAll.isIndeterminate"></mat-checkbox>
-          </div>
-          <div fxFlex="10">Profile<br/>
-            <mat-checkbox formControlName="profileCheckAll" (change)="onProfileCheckAllChange()" [checked]="profileCheckAll.isChecked" [indeterminate]="profileCheckAll.isIndeterminate"></mat-checkbox>
-          </div>
-          <div fxFlex="10">Remove</div>
-          <div fxFlex="10"></div>
-          <div class="scrollbar-width"></div>
-        </div>
-        <td-virtual-scroll-container #virtualScroll [style.height.px]="400" [data]="feed.table.tableSchema.fields">
-          <ng-template let-row="row"
-                       let-index="index"
-                       let-first="first"
-                       let-last="last"
-                       let-odd="odd"
-                       let-even="even"
-                       tdVirtualScrollRow>
-            <div fxLayout="row" fxFlex="100" (click)="onSelectedColumn(row)" class="pointer">
+                          <mat-form-field style="width:100%">
+                            <mat-select [formControlName]="'dataType_'+row._id" [(ngModel)]="row.derivedDataType" (change)="onDataTypeChange(row)">
+                              <mat-option *ngFor="let dataType of availableDefinitionDataTypes" [value]="dataType">
+                                {{dataType}}
+                              </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="hasTableFormError('dataType',row,'required')">
+                              Data Type is required
+                            </mat-error>
+                          </mat-form-field>
 
-              <mat-form-field fxFlex="30">
-                <input matInput [class.strike]="row.deleted" [formControlName]="'name_'+row._id"  required [(ngModel)]="row.name" (change)="onNameFieldChange(row,index)">
-                <mat-error *ngIf="hasTableFormError('name',row,'required')">
-                  Feed Name is required
-                </mat-error>
-                <mat-error *ngIf="hasTableFormError('name',row,'notUnique')">
-                  Feed Name needs to be unique
-                </mat-error>
-                <mat-error *ngIf="hasTableFormError('name',row,'length')">
-                  Feed Name is too long
-                </mat-error>
-                <mat-error *ngIf="hasTableFormError('name',row,'reserved')">
-                  The name is reserved. Please choose a different name
-                </mat-error>
-              </mat-form-field>
-              <span fxFlex="5"></span>
-              <div fxLayout="row" fxFlex="25">
+                          <mat-form-field fxFlex="30" *ngIf="row.derivedDataType == 'decimal'"  class="push-left-sm">
+                            <input matInput [formControlName]="'precisionScale_'+row._id" placeholder="10,0" required [(ngModel)]="row.precisionScale">
+                            <mat-error *ngIf="hasTableFormError('precisionScale',row,'precisionScale')">
+                              Precision value is invalid. It must be in the format of #,# (i.e. 10,2)
+                            </mat-error>
+                          </mat-form-field>
+                        </div>
+                        <div fxFlex="5"></div>
+                        <div fxFlex="5" class="push-top-sm">
+                          <mat-checkbox [formControlName]="'index_'+row._id" (change)="onIndexChange(row)"></mat-checkbox>
+                        </div>
 
-                <mat-form-field>
-                  <mat-select [formControlName]="'dataType_'+row._id" [(ngModel)]="row.derivedDataType" (change)="onDataTypeChange(row)">
-                    <mat-option *ngFor="let dataType of availableDefinitionDataTypes" [value]="dataType">
-                      {{dataType}}
+                        <div fxFlex="5" class="push-top-sm">
+                          <mat-checkbox [formControlName]="'profile_'+row._id" (change)="onProfileChange(row)"></mat-checkbox>
+                        </div>
+
+                        <div fxFlex="5" >
+                          <button mat-icon-button style="margin-top:-2px" [disabled]="!tablePermissions.canRemoveFields || row.deleted" *ngIf="!tablePermissions.tableLocked"
+                                  (click)="removeColumn(index)">
+                            <mat-icon class="tc-grey-500">delete</mat-icon>
+                          </button>
+                        </div>
+
+                        <div fxFlex="5">
+                          <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1 && !tablePermissions.tableLocked">
+                            <mat-icon class="grey">undo</mat-icon>
+                          </button>
+                        </div>
+                      </div>
+
+                    </ng-template>
+                  </td-virtual-scroll-container>
+                  <button mat-button [disabled]="feed.sampleDataSet" (click)="addColumn()" *ngIf="tablePermissions.canAddFields">Add Column</button>
+                </form>
+              </div>
+
+              <div *ngIf="targetFields.length == 0 && skippedSourceSample" fxLayout="column" fxFlex fxLayoutAlign="center center"
+                   class="tc-grey-500 mat-typography pad">
+                <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+                <h2>Target schema incomplete</h2>
+                <ng-container *ngIf="!tablePermissions.tableLocked">
+                  <h3>Upload a sample or add a column to build your schema</h3>
+                  <button mat-raised-button color="accent" (click)="addColumn()">Add Column</button>
+                </ng-container>
+              </div>
+
+            </ng-container>
+          </mat-card-content>
+
+        </mat-card>
+
+        <mat-card *ngIf="targetFields.length >0" fxFlex="20" class="feed-card selected-column-card">
+          <mat-card-header>
+            <mat-card-title *ngIf="selectedColumn == undefined">Column Details</mat-card-title>
+            <mat-card-title *ngIf="selectedColumn != undefined" class="text-truncate" [matTooltip]="selectedColumn.field.name">{{selectedColumn.field.name}}</mat-card-title>
+            <mat-card-subtitle *ngIf="selectedColumn != undefined">{{selectedColumn.field.dataTypeDisplay}}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <span *ngIf="selectedColumn == undefined">Select a column for additional details</span>
+            <div *ngIf="selectedColumn != undefined" fxLayout="column">
+              <ng-container *ngIf="feed.readonly">
+                <div fxLayout="column" class="pad-sm">
+                  <span>{{selectedColumn.field.description || "Not set"}}</span>
+                  <mat-hint>Description</mat-hint>
+                </div>
+
+                <div fxLayout="column" class="pad-sm">
+                  <span>{{selectedColumn.tagList || "Not set"}}</span>
+                  <mat-hint>Tags</mat-hint>
+                </div>
+
+                <div *ngIf="selectedColumn.field.sampleValues.length >0" class="pad-sm">
+                  <mat-select placeholder="Sample Values">
+                    <mat-option *ngFor="let sample of selectedColumn.field.sampleValues" [value]="sample">
+                      {{sample}}
                     </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="hasTableFormError('dataType',row,'required')">
-                    Data Type is required
-                  </mat-error>
+                </div>
+
+                <div fxLayout="column" class="pad-sm">
+                  <span>{{selectedColumn.standardizerCount}} Standardizers</span>
+                  <span>{{selectedColumn.validatorCount}} Validators</span>
+                </div>
+
+                <div fxLayout="column" class="pad-sm">
+                  <span>{{selectedColumn.getDomainTypeName()}}</span>
+                  <mat-hint>Domain Types</mat-hint>
+                </div>
+
+
+                <div fxLayout="row" class="pad-sm">
+                  <mat-icon class="grey" *ngIf="selectedColumn.field.primaryKey">check</mat-icon>
+                  <mat-icon class="grey" *ngIf="!selectedColumn.field.primaryKey">check_box_outline_blank</mat-icon>
+                  <mat-hint class="unchecked-text">Primary Key</mat-hint>
+                </div>
+
+                <div fxLayout="row" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
+                  <mat-icon class="grey" *ngIf="selectedColumn.field.createdTracker">check</mat-icon>
+                  <mat-icon class="grey" *ngIf="!selectedColumn.field.createdTracker">check_box_outline_blank</mat-icon>
+                  <mat-hint class="unchecked-text">Create Date</mat-hint>
+                </div>
+
+                <div fxLayout="row" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
+                  <mat-icon class="grey" *ngIf="selectedColumn.field.updatedTracker">check</mat-icon>
+                  <mat-icon class="grey" *ngIf="!selectedColumn.field.updatedTracker">check_box_outline_blank</mat-icon>
+                  <mat-hint class="unchecked-text">Update Date</mat-hint>
+                </div>
+
+
+              </ng-container>
+
+              <ng-container *ngIf="!feed.readonly">
+
+                <mat-form-field class="pad-sm">
+                  <textarea placeholder="Description" matInput [(ngModel)]="selectedColumn.field.description" rows="2"></textarea>
                 </mat-form-field>
 
-                <mat-form-field fxFlex="30" *ngIf="row.derivedDataType == 'decimal'">
-                  <input matInput [formControlName]="'precisionScale_'+row._id" placeholder="10,0" required [(ngModel)]="row.precisionScale">
-                  <mat-error *ngIf="hasTableFormError('precisionScale',row,'precisionScale')">
-                    Precision Scale is invalid. It must be in the format of #,# (i.e. 10,2)
-                  </mat-error>
-                </mat-form-field>
-              </div>
+
+                <td-chips class="pull-top" [chipAddition]="true"
+                          [chipRemoval]="true"
+                          [items]="selectedColumn.origTagNames"
+                          [(ngModel)]="selectedColumn.tagNames"
+                          placeholder="Tags"
+                          [inputPosition]="'after'" class="pad-sm"
+                          (remove)="selectedColumn.onRemoveTag($event)"
+                          (add)="selectedColumn.onAddTag($event)">
+                  <ng-template td-chip let-chip="chip">
+                    {{chip}}
+                  </ng-template>
+                  <ng-template td-autocomplete-option let-option="option">
+                    {{option}}
+                  </ng-template>
+                </td-chips>
+
+                <div *ngIf="selectedColumn.field.sampleValues.length >0">
+                  <mat-form-field class="pad-sm">
+                    <mat-select placeholder="Sample Values">
+                      <mat-option *ngFor="let sample of selectedColumn.field.sampleValues" [value]="sample">
+                        {{sample}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div fxLayout="row" class="pad-left-sm pad-right-sm pad-bottom-sm pad-top">
+                  <div fxLayout="column">
+                    <mat-hint>{{selectedColumn.standardizerCount}} Standardizers</mat-hint>
+                    <mat-hint>{{selectedColumn.validatorCount}} Validators</mat-hint>
+                  </div>
+                  <button mat-icon-button color="primary" (click)="onFieldPoliciesClicked(selectedColumn)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                </div>
+
+                <div fxLayout="column" class="pad-sm">
+                  <mat-form-field>
+                    <mat-select placeholder="Domain Type" [(ngModel)]="selectedColumn.fieldPolicy.domainTypeId" [disabled]="selectedColumn.field.isComplex()"
+                                (change)="onDomainTypeChange(selectedColumn)">
+                      <mat-option>None</mat-option>
+                      <mat-option *ngFor="let domainType of availableDomainTypes" [value]="domainType.id">
+                        <ng-md-icon [icon]="domainType.icon" [ngStyle]="{'fill':domainType.iconColor}"></ng-md-icon>
+                        {{domainType.title}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
 
 
-              <div fxFlex="10">
-                <mat-checkbox [formControlName]="'index_'+row._id" (change)="onIndexChange(row)"></mat-checkbox>
-              </div>
+                <div fxLayout="column" class="pad-sm">
+                  <mat-checkbox [(ngModel)]="selectedColumn.field.primaryKey">Primary Key</mat-checkbox>
+                </div>
+                <div fxLayout="column" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
+                  <mat-checkbox [(ngModel)]="selectedColumn.field.createdTracker">Create Date</mat-checkbox>
+                </div>
 
-              <div fxFlex="10">
-                <mat-checkbox [formControlName]="'profile_'+row._id" (change)="onProfileChange(row)"></mat-checkbox>
-              </div>
+                <div fxLayout="column" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
+                  <mat-checkbox [(ngModel)]="selectedColumn.field.updatedTracker">Update Date</mat-checkbox>
+                </div>
 
-              <div fxFlex="10">
-              <button mat-icon-button [disabled]="!tablePermissions.canRemoveFields || row.deleted" (click)="removeColumn(index)">
-                <mat-icon class="grey">delete</mat-icon>
-              </button>
-              </div>
 
-              <div fxFlex="10">
-              <button mat-icon-button (click)="undoColumn(index)" *ngIf="row.history.length >1">
-                <mat-icon  class="grey">undo</mat-icon>
-              </button>
-              </div>
+              </ng-container>
 
             </div>
+          </mat-card-content>
+        </mat-card>
 
-          </ng-template>
-        </td-virtual-scroll-container>
-        <button mat-button (click)="addColumn()">Add Column</button>
-      </form>
+      </div>
+    </td-expansion-panel>
 
-    </ng-container>
-  </define-feed-step-card>
-
-
-  <mat-card *ngIf="feed.table.tableSchema.fields.length >0" fxFlex="20">
-    <mat-card-header>
-      <mat-card-title *ngIf="selectedColumn == undefined">Column Details</mat-card-title>
-      <mat-card-title *ngIf="selectedColumn != undefined">{{selectedColumn.field.name}} </mat-card-title>
-      <mat-card-subtitle  *ngIf="selectedColumn != undefined">{{selectedColumn.field.dataTypeDisplay}}</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <span *ngIf="selectedColumn == undefined">Select a column for additional details</span>
-      <div *ngIf="selectedColumn != undefined" fxLayout="column">
-        <ng-container *ngIf="feed.readonly">
-          <div fxLayout="column" class="pad-sm">
-            <span>{{selectedColumn.field.description || "Not set"}}</span>
-            <mat-hint>Description</mat-hint>
-          </div>
-
-          <div fxLayout="column" class="pad-sm">
-            <span>{{selectedColumn.tagList || "Not set"}}</span>
-            <mat-hint>Tags</mat-hint>
-          </div>
-
-          <div *ngIf="selectedColumn.field.sampleValues.length >0" class="pad-sm">
-              <mat-select placeholder="Sample Values" >
-                <mat-option *ngFor="let sample of selectedColumn.field.sampleValues" [value]="sample">
-                  {{sample}}
-                </mat-option>
-              </mat-select>
-          </div>
-
-          <div fxLayout="column" class="pad-sm">
-            <span>{{selectedColumn.standardizerCount}} Standardizers</span>
-            <span>{{selectedColumn.validatorCount}} Validators</span>
-          </div>
-
-          <div fxLayout="column" class="pad-sm">
-            <span>{{selectedColumn.getDomainTypeName()}}</span>
-            <mat-hint>Domain Types</mat-hint>
-          </div>
-
-
-          <div fxLayout="row" class="pad-sm">
-            <mat-icon class="grey" *ngIf="selectedColumn.field.primaryKey">check</mat-icon>
-            <mat-icon class="grey" *ngIf="!selectedColumn.field.primaryKey">check_box_outline_blank</mat-icon>
-            <mat-hint class="unchecked-text">Primary Key</mat-hint>
-          </div>
-
-          <div fxLayout="row" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
-            <mat-icon class="grey" *ngIf="selectedColumn.field.createdTracker">check</mat-icon>
-            <mat-icon class="grey" *ngIf="!selectedColumn.field.createdTracker">check_box_outline_blank</mat-icon>
-            <mat-hint class="unchecked-text">Create Date</mat-hint>
-          </div>
-
-          <div fxLayout="row" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
-            <mat-icon class="grey" *ngIf="selectedColumn.field.updatedTracker">check</mat-icon>
-            <mat-icon class="grey" *ngIf="!selectedColumn.field.updatedTracker">check_box_outline_blank</mat-icon>
-            <mat-hint class="unchecked-text">Update Date</mat-hint>
-          </div>
-
-
-        </ng-container>
-
-        <ng-container *ngIf="!feed.readonly">
-
-          <mat-form-field class="pad-sm">
-            <textarea placeholder="Description" matInput [(ngModel)]="selectedColumn.field.description" rows="2"></textarea>
-          </mat-form-field>
-
-
-          <td-chips class="pull-top" [chipAddition]="true"
-                    [chipRemoval]="true"
-                    [items]="selectedColumn.origTagNames"
-                    [(ngModel)]="selectedColumn.tagNames"
-                    placeholder="Tags"
-                    [inputPosition]="'after'" class="pad-sm"
-                    (remove)="selectedColumn.onRemoveTag($event)"
-                    (add)="selectedColumn.onAddTag($event)">
-            <ng-template td-chip let-chip="chip">
-              {{chip}}
-            </ng-template>
-            <ng-template td-autocomplete-option let-option="option">
-              {{option}}
-            </ng-template>
-          </td-chips>
-
-          <div *ngIf="selectedColumn.field.sampleValues.length >0">
-          <mat-form-field class="pad-sm">
-            <mat-select placeholder="Sample Values" >
-              <mat-option *ngFor="let sample of selectedColumn.field.sampleValues" [value]="sample">
-                {{sample}}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          </div>
-
-
-          <div fxLayout="row" class="pad-left-sm pad-right-sm pad-bottom-sm pad-top">
-            <div fxLayout="column">
-            <mat-hint>{{selectedColumn.standardizerCount}} Standardizers</mat-hint>
-            <mat-hint>{{selectedColumn.validatorCount}} Validators</mat-hint>
+    <div [hidden]="targetFields.length ==0 || (!feed.readonly && schemaPanelExpanded)">
+      <mat-card class="feed-card">
+        <mat-card-header>
+          <mat-card-title>Table Partitions</mat-card-title>
+          <mat-card-subtitle>Define partitions on the target table</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="feed.readonly">
+            <div class="push-bottom-md" fxLayout="row" *ngIf="feed.table.partitions.length > 0">
+              <span flex="20">Field</span>
+              <span flex="20">Formula</span>
+              <span flex="20">Partition name</span>
             </div>
-            <button mat-icon-button color="primary" (click)="onFieldPoliciesClicked(selectedColumn)"><mat-icon>edit</mat-icon></button>
+            <div *ngFor="let partition of feed.table.partitions" fxLayout="row">
+              <span flex="20">{{partition.columnDef.name}}</span>
+              <span flex="20">{{partition.formula}}</span>
+              <span flex="20">{{partition.field}}</span>
+            </div>
+            <div *ngIf="feed.table.partitions.length == 0" fxLayout="column" fxFlex fxLayoutAlign="left top" class="tc-grey-500 mat-typography">
+                <h3>No partitions defined</h3>
+            </div>
           </div>
-
-          <div fxLayout="column" class="pad-sm">
-            <mat-form-field>
-              <mat-select placeholder="Domain Type" [(ngModel)]="selectedColumn.fieldPolicy.domainTypeId" [disabled]="selectedColumn.field.isComplex()" (change)="onDomainTypeChange(selectedColumn)">
-                <mat-option>None</mat-option>
-                <mat-option *ngFor="let domainType of availableDomainTypes" [value]="domainType.id">
-                  <ng-md-icon [icon]="domainType.icon" [ngStyle]="{'fill':domainType.iconColor}"></ng-md-icon>
-                  {{domainType.title}}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-
-          <div fxLayout="column" class="pad-sm">
-            <mat-checkbox [(ngModel)]="selectedColumn.field.primaryKey">Primary Key</mat-checkbox>
-          </div>
-          <div fxLayout="column" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
-            <mat-checkbox [(ngModel)]="selectedColumn.field.createdTracker">Create Date</mat-checkbox>
-          </div>
-
-          <div fxLayout="column" class="pad-sm" *ngIf="selectedColumn.field.isDate()">
-            <mat-checkbox [(ngModel)]="selectedColumn.field.updatedTracker">Update Date</mat-checkbox>
-          </div>
-
-
-        </ng-container>
-
-      </div>
-    </mat-card-content>
-  </mat-card>
-</div>
-
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Table Partitions</mat-card-title>
-    <mat-card-subtitle>Define partitions on the table</mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
-    <div *ngIf="feed.readonly">
-      <div *ngFor="let partition of feed.table.partitions" fxLayout="row">
-        <span>{{partition.columnDef.name}}</span>
-        <span>{{partition.formula}}</span>
-        <span>{{partition.field}}</span>
-      </div>
-    </div>
-    <div *ngIf="!feed.readonly">
-      <form [formGroup]="definePartitionForm">
-        <div fxFlex="column">
-        <ng-template let-partition let-last="last" let-index="index" ngFor [ngForOf]="feed.table.partitions">
-          <div fxFlex="row">
-                    <mat-form-field>
-                      <mat-select required placeholder="Partition Column" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef"
+          <div *ngIf="!feed.readonly">
+            <form [formGroup]="definePartitionForm">
+              <div fxLayout="column">
+                <ng-template let-partition let-last="last" let-index="index" ngFor [ngForOf]="feed.table.partitions">
+                  <div fxLayout="row" fxLayoutGap="10px">
+                    <mat-form-field fxFlex="20">
+                      <mat-select required placeholder="Partition column" [formControlName]="'partitionColumnRef_'+partition._id" [(ngModel)]="partition.columnDef"
                                   (change)="onPartitionSourceFieldChange(partition, feed)">
-                        <mat-option *ngFor="let field of feed.table.tableSchema.fields" [value]="field">
+                        <mat-option *ngFor="let field of feed.table.feedDefinitionTableSchema.getVisibleColumns()" [value]="field">
                           {{field.name}}
                         </mat-option>
                       </mat-select>
-                      <mat-error *ngIf="hasPartitionFormError('partition',partition,'required')">
+                      <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partition',partition,'required')">
                         Partition field is required
                       </mat-error>
                     </mat-form-field>
 
-
-                    <mat-form-field>
-                      <mat-select required placeholder="Partition Formula" [formControlName]="'partitionFormula_'+partition._id" [(ngModel)]="partition.formula" (change)="onPartitionFormulaChange(partition)">
-                        <mat-option *ngFor="let formula of partitionFormulas | filterPartitionFormula:partition:feed" [value]="formula">
+                    <mat-form-field fxFlex="20">
+                      <mat-select required placeholder="Partition formula" [formControlName]="'partitionFormula_'+partition._id" [(ngModel)]="partition.formula"
+                                  (change)="onPartitionFormulaChange(partition)">
+                        <mat-option *ngFor="let formula of filterFormula(partition, feed)" [value]="formula">
                           {{formula}}
                         </mat-option>
                       </mat-select>
-                      <mat-error *ngIf="hasPartitionFormError('partitionFormula',partition,'required')">
+                      <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partitionFormula',partition,'required')">
                         Partition formula is required
                       </mat-error>
                     </mat-form-field>
 
-                    <mat-form-field fxFlex="30">
+                    <mat-form-field fxFlex="20" class="push-bottom-md">
                       <input matInput [formControlName]="'partitionName_'+partition._id" placeholder="Name" required [(ngModel)]="partition.field" (change)="onPartitionNameChange(partition)">
-                      <mat-error *ngIf="hasPartitionFormError('partitionName',partition,'required')">
+                      <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partitionName',partition,'required')">
                         Partition name is required
+                      </mat-error>
+                      <mat-error class="mat-error-font-12" *ngIf="hasPartitionFormError('partitionName',partition,'notUnique')">
+                        Partition name must be unique and not match a field name unless using the val() formula
                       </mat-error>
                     </mat-form-field>
 
-                    <button mat-icon-button (click)="removePartitionField(index)">
+                    <button mat-icon-button (click)="removePartitionField(index)" *ngIf="!tablePermissions.tableLocked">
                       <mat-icon class="grey">delete</mat-icon>
                     </button>
+                  </div>
+                </ng-template>
+
+                <div *ngIf="feed.table.partitions.length == 0" fxLayout="column" fxFlex fxLayoutAlign="left top" class="tc-grey-500 mat-typography">
+                  <h3>No partitions defined</h3>
+                  <div><button color="primary" *ngIf="!tablePermissions.partitionsLocked" mat-raised-button (click)="addPartitionField()">Add Partition</button></div>
+
+                </div>
+
+              </div>
+              <button mat-button (click)="addPartitionField()" *ngIf="!tablePermissions.partitionsLocked && feed.table.partitions.length > 0">Add Partition</button>
+            </form>
           </div>
-        </ng-template>
-        <button mat-button (click)="addPartitionField()">Add Partition</button>
-        </div>
-      </form>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="feed-card" *ngIf="!feed.isDataTransformation()">
+        <mat-card-header>
+          <mat-card-title translate="">views.define-feed-general-info.AdditionalFeedOptions</mat-card-title>
+          <mat-card-subtitle>Define additional options for the source (feed) table</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div fxLayout="column" class="pad-bottom">
+            <mat-checkbox [(ngModel)]="feed.options.skipHeader" [disabled]="feed.readonly" [ngModelOptions]="{standalone: true}">{{"views.feed-data-policies.Shr" | translate}}</mat-checkbox>
+          </div>
+
+          <div fxLayout="row">
+            <mat-form-field class="mat-form-field-width push-top" fxFlex>
+              <textarea #storageFormat matInput placeholder="Raw Storage Format" [disabled]="true" [ngModelOptions]="{standalone: true}" [(ngModel)]="feed.table.feedFormat"
+                        [disabled]="feed.readonly"></textarea>
+              <mat-hint>Specify the storage format clause for feed Hive table</mat-hint>
+            </mat-form-field>
+            <button mat-icon-button (click)="storageFormat.disabled = false" class="push-right" *ngIf="!feed.readonly">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="feed-card">
+        <mat-card-header>
+          <mat-card-title>Merge Strategy</mat-card-title>
+          <mat-card-subtitle>Define how new data is inserted into the target</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+
+          <div fxLayout="row" *ngIf="feed.readonly">
+            <div fxLayout="column" *ngIf="mergeStrategy">
+              <span>{{mergeStrategy.name}}</span>
+              <span class="hint">{{mergeStrategy.hint}}</span>
+            </div>
+          </div>
+
+          <form [formGroup]="mergeStrategiesForm">
+            <mat-radio-group *ngIf="!feed.readonly" [(ngModel)]="feed.table.targetMergeStrategy"
+                             class="push-top-md"
+                             name="targetMergeStrategy"
+                             formControlName="targetMergeStrategy">
+              <div fxLayout="row wrap" flex="75" style="place-content: flex-start space-between;">
+                <div *ngFor="let strategy of mergeStrategies">
+                  <mat-radio-button [value]="strategy.type"
+                                    [aria-label]="strategy.name"
+                                    [disabled]="strategy.disabled" class="push-bottom">
+                    {{strategy.name}}
+                    <div class="hint">{{strategy.hint}}</div>
+                  </mat-radio-button>
+                </div>
+              </div>
+            </mat-radio-group>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="feed-card">
+        <mat-card-header>
+          <mat-card-title>Target Format</mat-card-title>
+          <mat-card-subtitle>Define data format of the target</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <form>
+            <div fxLayout="column">
+              <div fxLayout="row">
+                <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex>
+                  <mat-select formControlName="targetFormat" placeholder="Target Format" [(ngModel)]="feed.table.targetFormat">
+                    <mat-option *ngFor="let opt of targetFormatOptions" [value]="opt.value">
+                      {{opt.label}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div fxLayout="row">
+                <mat-form-field [formGroup]="targetFormatOptionsForm" class="mat-form-field-width" fxFlex>
+                  <mat-select formControlName="compressionFormat" placeholder="Compression options" [(ngModel)]="feed.table.options.compressionFormat">
+                    <mat-option *ngFor="let opt of compressionOptions; let i = index" [value]="opt">
+                      {{opt}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
     </div>
-  </mat-card-content>
-</mat-card>
+
+  </feed-step-custom-content>
+</define-feed-step-card>
+
+
+<ng-template #toolbarActionTemplate>
+  <div fxLayout="row">
+    <feed-toolbar-actions [(feed)]="feed" (onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false"></feed-toolbar-actions>
+    <div *ngIf="!feed.readonly">
+      <button mat-raised-button color="accent" (click)="onSave()" [disabled]="feed.table.feedDefinitionTableSchema.fields.length == 0 || schemaPanelExpanded || parentForm.invalid">Save</button>
+    </div>
+  </div>
+</ng-template>

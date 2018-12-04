@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 
 import org.springframework.stereotype.Component;
@@ -36,7 +37,7 @@ import javax.annotation.Nonnull;
 public class DatasourceProviderFactoryV1 implements DatasourceProviderFactory {
 
     @Override
-    public DatasourceProvider getDatasourceProvider(@Nonnull final Collection<Datasource> datasources) {
-        return new DatasourceProviderV1(datasources);
+    public DatasourceProvider getDatasourceProvider(@Nonnull final Collection<Datasource> datasources, Collection<DataSource> catalogDataSources) {
+        return new DatasourceProviderV1(datasources, catalogDataSources);
     }
 }

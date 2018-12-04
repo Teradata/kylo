@@ -1,0 +1,43 @@
+<ng-container *ngIf="datasource">
+    <div fxLayout="column" [class.upload-dataset-container]="datasourceSref=='.upload'">
+      <form [formGroup]="formGroup" fxFlex="1 1 auto" fxLayout="column">
+        <catalog-file-browser  [datasource]="datasource" [useRouterStates]="false" [params]="params" (onCheckboxChange)="onCheckboxChange($event)" (onSelectionChange)="onSelectionChange($event)"
+                              *ngIf="datasourceSref=='.browse'">
+        </catalog-file-browser>
+
+        <catalog-table-browser [datasource]="datasource" [useRouterStates]="false" [params]="params"(onCheckboxChange)="onCheckboxChange($event)" (onSelectionChange)="onSelectionChange($event)" *ngIf="datasourceSref=='.connection'">
+        </catalog-table-browser>
+
+        <local-files #fileUpload [displayInCard]="false" [datasource]="datasource" *ngIf="datasourceSref=='.upload'" (onUploadFilesChange)="onUploadFilesChange($event)"></local-files>
+
+        <input type="hidden" formControlName="hiddenValidFormCheck" required >
+      </form>
+    </div>
+</ng-container>
+<ng-template #fileRowTemplate let-file="file" let-columns="columns"  let-parent="parent">
+
+
+        <td td-data-table-cell>
+          <mat-checkbox [checked]="parent.isChildSelected(file.name)"
+                        [hidden]="parent.isSelectChildDisabled(file.name)"
+                        (change)="onToggleChange($event,file,parent)"></mat-checkbox>
+
+          <td-notification-count *ngIf="parent.numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="parent.numberOfSelectedDescendants(file.name)"
+                                 [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
+
+        </td>
+        <td td-data-table-cell *ngFor="let column of columns"
+            [numeric]="column.numeric" [width]="column.width" (click)="parent.rowClick(file)">
+
+                <div class="cell-content">
+                        <span class="cell-icon" *ngIf="column.icon" [matTooltip]="column.tooltip ? file[column.name] : ''" ><ng-md-icon color="accent" [icon]="file.getIcon(column)"></ng-md-icon></span>
+                        <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
+                </div>
+        </td>
+  <!--
+  <td td-data-table-cell>
+    <button mat-icon-button  color="accent" *ngIf="!parent.isSelectChildDisabled(file.name)" (click)="preview(file)"><mat-icon>find_in_page</mat-icon> </button>
+  </td>
+  -->
+</ng-template>
+

@@ -56,9 +56,10 @@ public class JcrVersionUtil {
     
     private static final Logger log = LoggerFactory.getLogger(JcrVersionUtil.class);
     
-    public static Node createAutoCheckoutProxy(Node node) {
-        InvocationHandler handler = new VersionableNodeInvocationHandler(node);
-        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), new Class<?>[] { Node.class }, handler);
+    public static Node createAutoCheckoutProxy(Node node, boolean autoCheckin) {
+        Class<?>[] types = new Class<?>[] { Node.class };
+        InvocationHandler handler = new VersionableNodeInvocationHandler(node, types, autoCheckin);
+        return (Node) Proxy.newProxyInstance(Node.class.getClassLoader(), types, handler);
     }
 
     /**
@@ -83,13 +84,43 @@ public class JcrVersionUtil {
         return versionMgr;
     }
     
+    public static boolean isCheckedOut(Node node) {
+        try {
+            return node.isCheckedOut();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check if the node is checked out", e);
+        }
+    }
+    
     /**
-     * Ensures that the given node, or a versionable ancestor, is checked out.
+     * Ensures that the given node, or a versionable ancestor, is checked out with auto-checkin set.
      * Passing a node that is not in a versionable hierarch has no effect.
      * @param n the node to whose hierarchy is to be checked out
      */
     public static void ensureCheckoutNode(Node node) {
-        getVersionableAncestor(node).ifPresent(a -> JcrMetadataAccess.ensureCheckoutNode(a));
+        ensureCheckoutNode(node, true);
+    }
+    
+    /**
+     * Ensures that the given node, or a versionable ancestor, is checked out, and
+     * specify whether the node should be auto-checked in on commit.
+     * Passing a node that is not in a versionable hierarch has no effect.
+     * @param n the node to whose hierarchy is to be checked out
+     */
+    public static void ensureCheckoutNode(Node node, boolean autoCheckin) {
+        getVersionableAncestor(node).ifPresent(a -> JcrMetadataAccess.ensureCheckoutNode(a, autoCheckin));
+    }
+    
+    /**
+     * Ensures that the given node, or a versionable ancestor, is set to automatically
+     * be checked in on commit.  If the node's hierarchy is is not versionable or has not
+     * been checked then no action is taken.
+     * @param node the node to whose hierarchy was checked out
+     */
+    public static void ensureAutoCheckin(Node node) {
+        getVersionableAncestor(node)
+            .filter(versionable -> ! JcrMetadataAccess.hasCheckedOutNode(versionable))
+            .ifPresent(versionable -> JcrMetadataAccess.ensureCheckoutNode(versionable, true));
     }
     
     /**
@@ -146,44 +177,41 @@ public class JcrVersionUtil {
      *
      * @param node node to check-out
      */
-    public static void checkout(Node node) throws RepositoryException {
-        getVersionManager(node.getSession()).checkout(node.getPath());
+    public static void checkout(Node node) {
+        try {
+            getVersionManager(node.getSession()).checkout(node.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
+        }
     }
 
 
     /**
-     * Creates for the given node a new version and returns that version. Put the node into the checked-in state.
+     * Saves the current session an then creates and returns a new vesion of the node.
      *
      * @param node node to checkin
      * @return the created version
      */
-    public static Version checkin(Node node) throws RepositoryException {
+    public static Version checkin(Node node) {
         try {
-            // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
-            // if it is null on check-in as the node.isCheckedOut() method does.  This can be null
-            // when the node being checked-in has not been saved after being just made versionable; which 
-            // can occur during upgrade to 0.8.4.
-            if (node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
-                return getVersionManager(node.getSession()).checkin(node.getPath());
-            } else {
-                return null;
-            }
-        } catch (ItemNotFoundException e) {
-            // Ignore if the node being checked in represents a deleted node.
-            return null;
+            node.getSession().save();
+            return doCheckin(node);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
         }
     }
-
+    
     public static void checkinRecursively(Node node) {
         try {
+            node.getSession().save();
+
             NodeIterator it = node.getNodes();
             while (it.hasNext()) {
                 checkinRecursively(it.nextNode());
             }
             if (node.isCheckedOut() && node.isNodeType(NodeType.MIX_VERSIONABLE)) {
-                checkin(node);
+                doCheckin(node);
             }
-
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Could not perform check-in", e);
         }
@@ -203,39 +231,15 @@ public class JcrVersionUtil {
             throw new MetadataRepositoryException("Could not perform check-out", e);
         }
     }
-
-
-    /**
-     * Places a lock on the given node.
-     *
-     * @param node            the node to be locked
-     * @param isDeep          if <code>true</code> this lock will apply to this node and all its descendants; if <code>false</code>, it applies only to this node.
-     * @param isSessionScoped if <code>true</code>, this lock expires with the current session; if <code>false</code> it expires when explicitly or automatically unlocked for some other reason.
-     * @param timeoutHint     desired lock timeout in seconds (servers are free to ignore this value); specify Long.MAX_VALUE for no timeout.
-     * @param ownerInfo       a string containing owner information supplied by the client; servers are free to ignore this value.
-     * @see javax.jcr.lock.LockManager#lock(String, boolean, boolean, long, String)
-     */
-    public static void lock(Node node, boolean isDeep, boolean isSessionScoped, long timeoutHint, String ownerInfo) {
+    
+    public static void restore(Version version) {
         try {
-            getLockManager(node.getSession()).lock(node.getPath(), isDeep, isSessionScoped, timeoutHint, ownerInfo);
+            getVersionManager(version.getSession()).restore(version, true);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Could not perform lock", e);
+            throw new MetadataRepositoryException("Failed to restore version: " + version, e);
         }
     }
 
-    /**
-     * Removes the lock on the given node.
-     *
-     * @param node the node unlock
-     * @see javax.jcr.lock.LockManager#unlock(String)
-     */
-    public static void unlock(Node node) {
-        try {
-            getLockManager(node.getSession()).unlock(node.getPath());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Could not perform unlock", e);
-        }
-    }
 
     public static Version getBaseVersion(Node node) {
         String nodeName = null;
@@ -261,7 +265,6 @@ public class JcrVersionUtil {
             List<Version> versions = new ArrayList<>();
             VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
             VersionIterator itr = history.getAllVersions();
-            String id = history.getVersionableIdentifier();
 
             while (itr.hasNext()) {
                 Version version = itr.nextVersion();
@@ -330,6 +333,28 @@ public class JcrVersionUtil {
             return version.getFrozenNode();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get frozen node of Version: " + version, e);
+        }
+    }
+
+    /**
+     * Performs a checkin on the node.
+     */
+    private static Version doCheckin(Node node) {
+        try {
+            // Checking if the checked-out property exists fixes a ModeShape bug where this property is not checked
+            // if it is null on check-in as the node.isCheckedOut() method does.  This can be null
+            // when the node being checked-in has not been saved after being just made versionable; which 
+            // can occur during upgrade to 0.8.4.
+            if (node.isCheckedOut() && JcrPropertyUtil.hasProperty(node, JcrLexicon.IS_CHECKED_OUT.getString())) {
+                return getVersionManager(node.getSession()).checkin(node.getPath());
+            } else {
+                return null;
+            }
+        } catch (ItemNotFoundException e) {
+            // Ignore if the node being checked in represents a deleted node.
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to checkout the node: " + node, e);
         }
     }
 

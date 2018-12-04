@@ -24,7 +24,7 @@
     </mat-card-title>
     <mat-card-content>
       <ng-container *ngIf="unableToFindJob == false">
-        <div layout="column" class="layout-padding-bottom layout-padding-left-16">
+        <div layout="column" class="layout-padding">
           <div layout="row">
 
             <div flex="40" layout="column">
@@ -52,8 +52,8 @@
             </div>
           </div>
 
-          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;">
+          <div *ngIf="!vm.jobData.running" class="item-title">{{'views.job-details-template.ED' | translate}}</div>
+          <div *ngIf="!vm.jobData.running" class="accent-color-3" style="white-space:pre-wrap;">
             {{jobData.exitDescription | truncate: 150}}
           </div>
         </div>
@@ -63,9 +63,9 @@
           <mat-tab flex>
               <ng-template mat-tab-label>
                 <span class="column-title-bottom {{jobData.cssStatusClass}}">
-                    <ng-md-icon *ngIf="jobData.statusIcon" class="{{jobData.tabIconStyle}}" icon="{{jobData.statusIcon}}" size="20">
+                    <!--<ng-md-icon *ngIf="jobData.statusIcon" class="{{jobData.tabIconStyle}}" icon="{{jobData.statusIcon}}" size="20">
                     </ng-md-icon>
-                    {{'views.job-details-template.JD' | translate}}
+                    -->{{'views.job-details-template.JD' | translate}}
                   </span>
               </ng-template>
             <div>
@@ -88,10 +88,10 @@
                 <mat-list *ngIf="pageState.loading == false" class="list-item-table">
                   <mat-divider></mat-divider>
                   <mat-list-item *ngIf="showJobParameters == true">
-                    <div flex="30" class="item-column md-list-item-text accent-color-3">
+                    <div flex="30" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.Parameters' | translate}}
                     </div>
-                    <div flex="70" class="item-column md-list-item-text accent-color-3">
+                    <div flex="70" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.Values' | translate}}
                     </div>
                     <mat-divider></mat-divider>
@@ -109,10 +109,10 @@
                     </mat-list-item>
                   </div>
                   <mat-list-item *ngIf="showJobParameters == false">
-                    <div flex="30" class="item-column md-list-item-text accent-color-3">
+                    <div flex="30" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.CP' | translate}}
                     </div>
-                    <div flex="70" class="item-column md-list-item-text accent-color-3">
+                    <div flex="70" class="item-column md-list-item-text grey">
                         {{'views.job-details-template.Values' | translate}}
                     </div>
                     <mat-divider></mat-divider>
@@ -147,7 +147,7 @@
               <mat-divider></mat-divider>
               <div flex layout="column" class="tab-content">
                   <mat-list>
-                  <mat-list-item *ngFor="let step of allSteps" class="with-padding item-column">
+                  <mat-list-item *ngFor="let step of allSteps" class="pad-sm pad-left">
                    <div layout="column" layout-fill>
 
                     <div layout="row" (click)="step.content.open == true ? step.content.open = false : step.content.open = true"
@@ -158,7 +158,7 @@
                     <ng-md-icon icon="{{step.content.open == true ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}" size="20">
                     </ng-md-icon>   {{step.title}} - {{step.content.name}}
                    </span>
-                  <span class="column-title-bottom {{step.content.cssStatusClass}}">
+                  <span class="pad-left-md {{step.content.cssStatusClass}}">
                       <ng-md-icon *ngIf="step.content.statusIcon" class="{{step.content.tabIconStyle}}" icon="{{step.content.statusIcon}}" size="20">
                       </ng-md-icon>{{step.content.displayStatus | translate}}</span>
 
@@ -188,17 +188,17 @@
                     <div *ngIf="step.content.open" class="fade-in-out layout-padding-left-16">
 
 
-                      <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
-                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
+                      <div ng-if="step.content.displayStatus != 'COMPLETED'" class="item-title pad-left pad-top-sm pad-bottom-sm">{{'views.job-details-template.ED' | translate}}</div>
+                      <div ng-if="step.content.displayStatus != 'COMPLETED'" class="grey pad-bottom  pad-left" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
                       <mat-list flex layout-fill *ngIf="pageState.loading == false" class="list-item-table">
                         <mat-divider></mat-divider>
                         <mat-list-item>
-                          <div flex="30" class="item-column md-list-item-text accent-color-3">
+                          <div flex="30" class="item-column md-list-item-text grey">
                             {{'views.job-details-template.CP' | translate}}
                           </div>
-                          <div flex="70" class="item-column md-list-item-text accent-color-3">
+                          <div flex="70" class="item-column md-list-item-text grey">
                             {{'views.job-details-template.Values' | translate}}
                           </div>
                           <mat-divider></mat-divider>

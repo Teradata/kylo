@@ -7,7 +7,7 @@ import { HttpClient } from "@angular/common/http";
 
 @Component({
     selector: "icon-picker-dialog",
-    templateUrl: "js/common/icon-picker-dialog/icon-picker-dialog.html"
+    templateUrl: "./icon-picker-dialog.html"
 })
 export class IconPickerDialog {
 

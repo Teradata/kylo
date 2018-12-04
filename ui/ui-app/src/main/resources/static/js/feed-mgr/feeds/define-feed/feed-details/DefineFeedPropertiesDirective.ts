@@ -21,7 +21,7 @@
  
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 export class DefineFeedPropertiesController {
 
@@ -120,5 +120,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedPropertiesController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-properties.html',
+        templateUrl: './define-feed-properties.html',
     });

@@ -1,17 +1,18 @@
 import * as _ from "underscore";
 import "pascalprecht.translate";
-import { OpsManagerFeedService } from "../services/OpsManagerFeedService";
-import OpsManagerJobService from "../services/OpsManagerJobService";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import {OpsManagerFeedUtil} from "../services/ops-manager-feed-util";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
 import { StateService } from '@uirouter/core';
-import BroadcastService from "../../services/broadcast-service";
+import {BroadcastService} from "../../services/broadcast-service";
 import { HttpClient } from "@angular/common/http";
 import { OnDestroy, OnInit, Component } from "@angular/core";
 import { Subscription } from "rxjs";
+import {OpsManagerFeedService} from '../services/ops-manager-feed.service';
+import {OpsManagerJobService} from '../services/ops-manager-jobs.service';
 
 @Component({
     selector: 'ops-mgr-feed-details',
-    templateUrl: "js/ops-mgr/feeds/feed-details.html",
+    templateUrl: "./feed-details.html",
     styles: [`.listItemTitle { padding: 0px }`]
 })
 export class FeedDetailsComponent implements OnDestroy, OnInit {
@@ -79,7 +80,7 @@ export class FeedDetailsComponent implements OnDestroy, OnInit {
                     if (this.feed.feedHealth && this.feed.feedHealth.feedId) {
                         this.feed.feedId = this.feed.feedHealth.feedId
                     }
-                    this.opsManagerFeedService.decorateFeedSummary(this.feed);
+                    OpsManagerFeedUtil.decorateFeedSummary(this.feed);
 
                 }
                 if (this.loading) {

@@ -1,0 +1,22 @@
+.mat-card-header .mat-card-title {
+  font-size: 20px;
+}
+
+.no-data {
+  height: 100%;
+
+  ng-md-icon {
+    height: 96px;
+    margin: 30px 0 10px;
+    width: 96px;
+  }
+}
+
+
+.sla-row {
+  height: 65px;
+}
+
+:host ::ng-deep #content.sla-list {
+  padding:0px !important;
+}

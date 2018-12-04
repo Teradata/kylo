@@ -1,0 +1,49 @@
+<define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (saved)="onSave()" [fxHide]="!feed.readonly">
+  <feed-step-readonly-content>
+    <div fxLayout="column" *ngIf="feed.dataTransformation.dataTransformScript != null && feed.dataTransformation.dataTransformScript.length > 0; else emptyTransform" >
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>VISUAL_QUERY.FEED_STEP.QUERY</div>
+        <div fxFlex>{{feed.dataTransformation.sql}}</div>
+      </div>
+      <div class="read-only-row" fxLayout="row">
+        <div fxFlex="25" translate>VISUAL_QUERY.FEED_STEP.DATA_TRANSFORMATIONS</div>
+        <div fxFlex fxLayout="row">
+          <mat-list fxFlex class="layout-padding-top-bottom">
+            <ng-template ngFor let-item let-last="last" [ngForOf]="feed.dataTransformation.states">
+              <mat-list-item>
+                <ng-md-icon *ngIf="item.context.icon && !item.context.icon.startsWith('mdi')" matListIcon [icon]="item.context.icon"></ng-md-icon>
+                <i *ngIf="item.context.icon && item.context.icon.startsWith('mdi')" matListIcon [class]="item.context.icon + ' material-icons'"></i>
+                <p matLine [matTooltip]="item.context.name" class="tc-black">{{item.context.name}}</p>
+              </mat-list-item>
+              <mat-divider *ngIf="!last" class="relative"></mat-divider>
+            </ng-template>
+          </mat-list>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyTransform>
+      <div fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+        <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+        <h2>Wrangler Incomplete </h2>
+        <h3>No transformation exists yet for this feed</h3>
+      </div>
+    </ng-template>
+  </feed-step-readonly-content>
+</define-feed-step-card>
+
+<div *ngIf="!allowEdit && !feed.readonly" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center" class="layout-padding-top-20">
+  <ng-md-icon class="tc-grey-500" icon="error" size="96"></ng-md-icon>
+  <h2>{{'WRANGLER.DATASOURCES.ACCESS_DENIED.TITLE' | translate}}</h2>
+  <span>{{'WRANGLER.DATASOURCES.ACCESS_DENIED.MESSAGE' | translate}}</span>
+</div>
+
+<visual-query-stepper #visualQuery *ngIf="allowEdit && !feed.readonly" engineName="spark" [toggleSideNavOnDestroy]="false" [showDatasources]="true" [showSaveStep]="false" [(ngModel)]="feed"
+                      [heightOffset]="65" [isFeedSaving]="isFeedSaveInProgress()" (cancel)="onCancelEdit()" (save)="onSave()">
+</visual-query-stepper>
+
+
+<ng-template #toolbarActionTemplate>
+  <feed-toolbar-actions [(feed)]="feed"(onCancelEdit)="cancelFeedEdit($event)" [showEditLink]="feed.canEdit() && feed.readonly" [showDeleteLink]="false" [showCancelLink]="!allowEdit">
+  </feed-toolbar-actions>
+</ng-template>

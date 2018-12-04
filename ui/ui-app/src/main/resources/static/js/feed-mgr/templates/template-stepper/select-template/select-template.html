@@ -24,17 +24,18 @@
 
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
-                <div class="card-title" flex>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</div>
+                <div class="card-title" *ngIf="isNew" flex>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</div>
+        <div class="card-title" *ngIf="!isNew" flex>{{vm.model.templateName}}</div>
                 <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER'" [translateParams]="{before:1,after:5}"></h2>
             </div>
         </mat-card-title>
 
     <mat-card-content class="card-layout-body mat-padding">
-        
-        <ng-container [formGroup]="formGroup">
+
+        <ng-container *ngIf="isNew" [formGroup]="formGroup">
             <mat-form-field>
                 <mat-select placeholder="Template" [(ngModel)]="nifiTemplateId"
-                            formControlName="template" [disabled]="templateSelectionDisabled" 
+                            formControlName="template" [disabled]="templateSelectionDisabled"
                             (change)="changeTemplate()" required>
                     <mat-option test="test" *ngFor="let template of templates" value="{{template.id}}">
                         {{template.name}}
@@ -66,7 +67,7 @@
 
         <div>
             <button (click)="cancelStepper()" mat-button matStepperPrevious>{{'view.main.cancel' | translate}}</button>
-            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP'" [translateParams]="{number:2}"></button>
+            <!--<button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP'" [translateParams]="{number:2}"></button>-->
         </div>
 
     </mat-card-content>
@@ -108,8 +109,8 @@
                 {{'FEEDMGR.TEMPLATES.STEPPER.SELECT.LOADING' | translate}}
             </div>
             <div layout="column" class="layout-padding-top" *ngIf="!model.loading">
-                <mat-progress-linear mode="indeterminate" *ngIf="enabling || disabling"></mat-progress-linear>
-                
+                <mat-progress-linear color="accent" mode="indeterminate" *ngIf="enabling || disabling"></mat-progress-linear>
+
                 <div layout="column" class="layout-padding-top-bottom" >
                     <span [ngClass]="{'enabled':model.state == 'ENABLED','disabled':model.state != 'ENABLED'}">
                         <ng-md-icon icon="{{model.stateIcon}}" size="20" *ngIf="model.state != 'NOT REGISTERED'"></ng-md-icon> {{model.state}}</span>

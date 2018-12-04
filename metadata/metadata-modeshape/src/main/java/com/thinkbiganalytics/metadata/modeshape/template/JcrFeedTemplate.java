@@ -30,20 +30,25 @@ import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrLockingUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
+import org.joda.time.DateTime;
 
 /**
  */
-public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implements FeedManagerTemplate, AuditableMixin, SystemEntityMixin, AccessControlledMixin {
+public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implements FeedManagerTemplate, AuditableMixin, IconableMixin, SystemEntityMixin, AccessControlledMixin {
 
     public static final String NODE_TYPE = "tba:feedTemplate";
 
@@ -51,8 +56,6 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     public static final String DEFINE_TABLE = "tba:defineTable";
     public static final String DATA_TRANSFORMATION = "tba:dataTransformation";
     public static final String ALLOW_PRECONDITIONS = "tba:allowPreconditions";
-    public static final String ICON = "tba:icon";
-    public static final String ICON_COLOR = "tba:iconColor";
     public static final String NIFI_TEMPLATE_ID = "tba:nifiTemplateId";
     public static final String FEEDS = "tba:feeds";
     public static final String ORDER = "tba:order";
@@ -63,9 +66,11 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
 
     public static final String TEMPLATE_TABLE_OPTION = "tba:templateTableOption";
 
+    public static final String CHANGE_COMMENTS = "tba:changeComments";
+
 
     public JcrFeedTemplate(Node node) {
-        super(node);
+        super(JcrLockingUtil.createAutoLockProxy(node, true));
     }
 
     @Override
@@ -126,26 +131,6 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     @Override
     public void setAllowPreconditions(boolean allowedPreconditions) {
         setProperty(ALLOW_PRECONDITIONS, allowedPreconditions);
-    }
-
-    @Override
-    public String getIcon() {
-        return getProperty(ICON, String.class);
-    }
-
-    @Override
-    public void setIcon(String icon) {
-        setProperty(ICON, icon);
-    }
-
-    @Override
-    public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class);
-    }
-
-    @Override
-    public void setIconColor(String iconColor) {
-        setProperty(ICON_COLOR, iconColor);
     }
 
     @Override
@@ -232,6 +217,21 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     @Override
     public String getTemplateTableOption() {
         return getProperty(TEMPLATE_TABLE_OPTION, String.class);
+    }
+
+    @Override
+    public List<ChangeComment> getChangeComments() {
+        return new ArrayList<>(JcrUtil.getJcrObjects(getNode(), CHANGE_COMMENTS, JcrChangeComment.class));
+    }
+
+    @Override
+    public void clearChangeComments() {
+        JcrUtil.getIterableChildren(getNode(), CHANGE_COMMENTS).forEach(node -> JcrUtil.removeNode(node));
+    }
+
+    @Override
+    public ChangeComment addChangeComment(String comment, DateTime dateTime) {
+        return JcrUtil.addJcrObject(getNode(), CHANGE_COMMENTS, JcrChangeComment.NODE_TYPE, JcrChangeComment.class, comment, dateTime);
     }
 
     @Override

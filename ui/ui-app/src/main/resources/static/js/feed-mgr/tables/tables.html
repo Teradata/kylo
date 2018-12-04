@@ -30,7 +30,7 @@
 
     <body-section>
       <div ng-if="vm.loading">
-        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
         <span class="md-body-2 layout-padding-left">{{"views.define-feed-mgr-tables.tables" | translate}}</span>
       </div>
       <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
@@ -45,7 +45,7 @@
                                     </span>
 
                 <div layout="row" class="column-title column-title-bottom">
-                  <ng-md-icon icon="grid_on" size="20" hide-xs style="fill:orange">
+                  <ng-md-icon icon="grid_on" size="20" hide-xs class="accent-color">
                   </ng-md-icon>
                   <span>{{"views.define-feed-mgr-tables.tables2" | translate}}</span>
                 </div>

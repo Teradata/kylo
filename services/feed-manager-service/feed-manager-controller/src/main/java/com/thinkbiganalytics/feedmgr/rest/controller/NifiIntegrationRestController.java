@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,10 +28,15 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
-import com.thinkbiganalytics.feedmgr.rest.model.TemplateRemoteInputPortConnections;
+import com.thinkbiganalytics.feedmgr.nifi.controllerservice.InvalidControllerServiceLookupException;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
@@ -60,6 +65,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,6 +84,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -141,6 +148,18 @@ public class NifiIntegrationRestController {
     @Inject
     private TemplateConnectionUtil templateConnectionUtil;
 
+    @Inject
+    MetadataAccess metadataService;
+
+    @Inject
+    DataSourceProvider dataSourceProvider;
+
+    @Inject
+    CatalogModelTransform catalogTransform;
+
+    @Inject
+    CatalogTableManager catalogTableManager;
+
     @GET
     @Path("/auto-align/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -202,7 +221,7 @@ public class NifiIntegrationRestController {
     }
 
     @GET
-    @Path(FLOW+"/{processGroupId}")
+    @Path(FLOW + "/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow of the specified process group.")
     @ApiResponses({
@@ -351,17 +370,17 @@ public class NifiIntegrationRestController {
         entity.setControllerServiceTypes(legacyNifiRestClient.getControllerServiceTypes());
         return Response.ok(entity).build();
     }
-    
+
     @GET
     @Path("/controller-services/{serviceId}/preview/{schema}/{table}")
     @Produces(MediaType.TEXT_PLAIN)
     @ApiOperation(value = "Generates a preview SELECT query appropriate for the datasource of the service.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "The preview query.", response = String.class),
-        @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
-    public Response generatePreviewQuery(@PathParam("serviceId") final String serviceId, 
+                      @ApiResponse(code = 200, message = "The preview query.", response = String.class),
+                      @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response generatePreviewQuery(@PathParam("serviceId") final String serviceId,
                                          @PathParam("schema") final String schema,
                                          @PathParam("table") final String tableName,
                                          @QueryParam("limit") @DefaultValue("10") final int limit) {
@@ -375,19 +394,19 @@ public class NifiIntegrationRestController {
             throw new NotFoundException("The controller service could not be found.", e);
         }
     }
-    
+
     @POST
     @Path("/controller-services/{serviceId}/preview/{schema}/{table}")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Generates a preview SELECT query appropriate for the datasource of the service.", 
-                    notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
+    @ApiOperation(value = "Generates a preview SELECT query appropriate for the datasource of the service.",
+                  notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Result of the query.", response = QueryResult.class),
-        @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
-    public Response executePreviewQuery(@PathParam("serviceId") final String serviceId, 
+                      @ApiResponse(code = 200, message = "Result of the query.", response = QueryResult.class),
+                      @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response executePreviewQuery(@PathParam("serviceId") final String serviceId,
                                         @PathParam("schema") final String schema,
                                         @PathParam("table") final String tableName,
                                         @QueryParam("limit") @DefaultValue("10") final int limit) {
@@ -436,8 +455,26 @@ public class NifiIntegrationRestController {
                   })
     public Response getTableNames(@PathParam("serviceId") String serviceId, @QueryParam("serviceName") @DefaultValue("") String serviceName, @QueryParam("schema") String schema,
                                   @QueryParam("tableName") String tableName) {
-        log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
-        List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
+        final Optional<DataSource> dataSource = findDataSourceForControllerServiceId(serviceId);
+        final List<String> tables;
+
+        if (dataSource.isPresent()) {
+            log.info("Query for Table Names against data source: {}", dataSource.get().getId());
+            try {
+                tables = catalogTableManager.getTableNames(dataSource.get(), schema, tableName);
+            } catch (final SQLException | InvalidControllerServiceLookupException e) {
+                log.error("Unable to list table names for data source: {}", dataSource.get().getId(), e);
+                throw new InternalServerErrorException("Unable to connect to the data source", e);
+            }
+        } else {
+            log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
+            try {
+            tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
+            } catch (final InvalidControllerServiceLookupException e) {
+                log.error("Unable to list table names for controller service: {}", serviceName, e);
+                throw new InternalServerErrorException("Unable to connect to the data source", e);
+            }
+        }
 
         return Response.ok(tables).build();
     }
@@ -453,8 +490,22 @@ public class NifiIntegrationRestController {
                   })
     public Response describeTable(@PathParam("serviceId") String serviceId, @PathParam("tableName") String tableName, @QueryParam("serviceName") @DefaultValue("") String serviceName,
                                   @QueryParam("schema") String schema) {
-        log.info("Describe Table {} against service: {}({})", tableName, serviceName, serviceId);
-        TableSchema tableSchema = dbcpConnectionPoolTableInfo.describeTableForControllerService(serviceId, serviceName, schema, tableName);
+        final Optional<DataSource> dataSource = findDataSourceForControllerServiceId(serviceId);
+        final TableSchema tableSchema;
+
+        if (dataSource.isPresent()) {
+            log.info("Describe Table {} against data source: {}", tableName, dataSource);
+            try {
+                tableSchema = catalogTableManager.describeTable(dataSource.get(), schema, tableName);
+            } catch (final SQLException e) {
+                log.error("Unable to list table names for data source: {}", dataSource.get().getId(), e);
+                throw new InternalServerErrorException("Unable to connect to data source. " + e.getMessage(), e);
+            }
+        } else {
+            log.info("Describe Table {} against service: {}({})", tableName, serviceName, serviceId);
+            tableSchema = dbcpConnectionPoolTableInfo.describeTableForControllerService(serviceId, serviceName, schema, tableName);
+        }
+
         return Response.ok(tableSchema).build();
     }
 
@@ -487,19 +538,18 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "Unable to find the controller service", response = RestResponseStatus.class)
                   })
     public Response getControllerServiceReferencesMap(@PathParam("serviceId") String serviceId) {
-        Map<String,List<ControllerServiceReferencingComponentDTO>> map = null;
+        Map<String, List<ControllerServiceReferencingComponentDTO>> map = null;
         try {
             final ControllerServiceDTO controllerService = legacyNifiRestClient.getControllerService(null, serviceId);
-            if(controllerService != null){
+            if (controllerService != null) {
                 Optional<ControllerServiceReferencingComponentsEntity> optional = legacyNifiRestClient.getNiFiRestClient().controllerServices().getReferences(serviceId);
-               if(optional.isPresent()) {
-                ControllerServiceReferencingComponentsEntity entity = optional.get();
-                   map =  getReferencingComponents(entity.getControllerServiceReferencingComponents()).values().stream().map(c -> c.getComponent())
-                    .collect(Collectors.groupingBy(x -> x.getReferenceType()));
+                if (optional.isPresent()) {
+                    ControllerServiceReferencingComponentsEntity entity = optional.get();
+                    map = getReferencingComponents(entity.getControllerServiceReferencingComponents()).values().stream().map(c -> c.getComponent())
+                        .collect(Collectors.groupingBy(x -> x.getReferenceType()));
+                } else {
+                    map = Collections.emptyMap();
                 }
-                else {
-                   map = Collections.emptyMap();
-               }
             }
             return Response.ok(map).build();
         } catch (Exception e) {
@@ -564,12 +614,33 @@ public class NifiIntegrationRestController {
     @Path("/root-input-ports")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the remote input ports")
-    public Response getRemoteInputPorts(){
+    public Response getRemoteInputPorts() {
         Set<PortDTO> ports = templateConnectionUtil.getRootProcessGroupInputPorts();
         return Response.ok(ports).build();
     }
 
+    /**
+     * Finds and decrypts the data source for the specified controller service.
+     */
+    @Nonnull
+    private Optional<DataSource> findDataSourceForControllerServiceId(@Nonnull final String controllerServiceId) {
+        // Find data source id using user permissions
+        final String dataSourceId = metadataService.read(() -> {
+            if (accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES)) {
+                return dataSourceProvider.findByNifiControlerServiceId(controllerServiceId).map(ds -> ds.getId().toString()).orElse(null);
+            } else {
+                return null;
+            }
+        });
 
-
-
+        // Retrieve data source with decrypted credentials
+        if (dataSourceId != null) {
+            return metadataService.read(
+                () -> dataSourceProvider.find(dataSourceProvider.resolveId(dataSourceId))
+                    .map(catalogTransform.dataSourceToRestModel(true, false)),
+                MetadataAccess.SERVICE);
+        } else {
+            return Optional.empty();
+        }
+    }
 }

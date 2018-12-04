@@ -8,11 +8,11 @@ import { RestUrlService } from '../../../services/RestUrlService';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
 import { TdDataTableService, TdDataTableSortingOrder } from '@covalent/core/data-table';
-import { ObjectUtils } from '../../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../../lib/common/utils/object-utils';
 
 @Component({
     selector: 'thinkbig-register-processor-properties',
-    templateUrl:'js/feed-mgr/templates/template-stepper/processor-properties/processor-properties.html'
+    templateUrl:'./processor-properties.html'
 })
 export class RegisterProcessorPropertiesController implements OnInit {
 
@@ -78,7 +78,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
         })
 
         this.registerTemplateService.modelTemplateTableOptionObserver.subscribe((model)=>{
-            if (this.model.templateTableOption !== "NO_TABLE" && ObjectUtils.isArray(this.registerTemplatePropertyService.propertyList)) {
+            if (this.model.templateTableOption !== "NO_TABLE" && Array.isArray(this.registerTemplatePropertyService.propertyList)) {
                 this.uiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
                     .then((tableOptionMetadataProperties: any) => {
                         this.availableExpressionProperties = this.registerTemplatePropertyService.propertyList.concat(tableOptionMetadataProperties);
@@ -157,7 +157,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
         });
         // Find controller services
         _.chain(this.allProperties).filter((property: any) => {
-            return ObjectUtils.isObject(property.propertyDescriptor) && ObjectUtils.isString(property.propertyDescriptor.identifiesControllerService);
+            return _.isObject(property.propertyDescriptor) && ObjectUtils.isString(property.propertyDescriptor.identifiesControllerService);
         }).each((property : any) => {this.feedService.findControllerServicesForProperty(property)});
 
     }

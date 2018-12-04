@@ -1,0 +1,51 @@
+.info-item-text {
+  font-size: 12px;
+  padding-left: 16px;
+}
+
+.info-item-edit {
+  padding: 0px 8px;
+}
+
+.info-item-edit .info-item-action-buttons {
+  padding:0px;
+}
+
+
+.info-item-row {
+  padding: 0 16px;
+  align-items: center;
+}
+
+.item-info-row .mat-icon {
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+.info-item-title {
+  font-size: 14px;
+  font-weight:400;
+}
+
+.info-item-description {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.38);
+  padding-top: 0px;
+}
+
+.info-item:first {
+  padding-bottom:16px;
+}
+.info-item:not(first) {
+  padding: 16px 0;
+}
+
+.info-item {
+  min-height: 60px;
+
+}
+
+:host ::ng-deep mat-list.no-padding .mat-list-item .mat-list-item-content{
+  padding:0px !important;
+}

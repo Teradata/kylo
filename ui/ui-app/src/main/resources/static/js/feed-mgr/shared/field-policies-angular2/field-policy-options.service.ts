@@ -1,6 +1,5 @@
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
-import {Http, Headers} from '@angular/http';
 import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';
@@ -8,8 +7,6 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/forkJoin';
 import {EmptyObservable} from 'rxjs/observable/EmptyObservable';
 import {SchemaParser} from "../../model/field-policy";
-import {IPromise} from "angular";
-
 
 export class OptionMetadata{
     name:string;
@@ -134,6 +131,4 @@ export class FieldPolicyOptionsService {
             return new EmptyObservable();
         }
     }
-
-
 }

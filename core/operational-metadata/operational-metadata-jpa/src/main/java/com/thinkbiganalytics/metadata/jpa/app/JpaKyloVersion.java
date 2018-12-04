@@ -120,14 +120,27 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
      *
      * @return the major version
      */
+    @Override
     public String getMajorVersion() {
         return this.majorVersion == null ? "" : this.majorVersion;
+    }
+    
+    @Override
+    public Integer getMajorVersionValue() {
+        String major = getMajorVersion();
+        if (major.contains(".")) {
+            String[] split = major.split("\\.");
+            return Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
+        } else {
+            return Integer.parseInt(major) * 10;
+        }
     }
 
     public void setMajorVersion(String majorVersion) {
         this.majorVersion = majorVersion;
     }
 
+    @Override
     public String getMinorVersion() {
         return this.minorVersion == null ? "" : this.minorVersion;
     }
@@ -143,6 +156,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         }
     }
     
+    @Override
     public String getPointVersion() {
         return pointVersion == null ? "" : this.pointVersion;
     }
@@ -151,6 +165,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         this.pointVersion = pointVersion;
     }
 
+    @Override
     public String getTag() {
         return tag == null ? "" : this.tag;
     }
@@ -165,23 +180,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         ver.id = this.id;
         return ver;
     }
-
-
-    /**
-     * @return the major version number
-     */
-    @Override
-    public Float getMajorVersionNumber() {
-        if (getMajorVersion() != null) {
-            try {
-                return Float.parseFloat(getMajorVersion());
-            } catch (NumberFormatException e) {
-                log.error("error parsing Kylo Major Version of {} to a Float", getMajorVersion());
-            }
-        }
-        return null;
-    }
-
 
     @Override
     public String getDescription() {
@@ -227,10 +225,42 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     @Override
     public int compareTo(KyloVersion o) {
         int result = 0;
-        if ((result = getMajorVersion().compareTo(o.getMajorVersion())) != 0) return result;
+        if ((result = getMajorVersionValue().compareTo(o.getMajorVersionValue())) != 0) return result;
         if ((result = getMinorVersion().compareTo(o.getMinorVersion())) != 0) return result;
         if ((result = getPointVersion().compareTo(o.getPointVersion())) != 0) return result;
         return getTag().compareTo(o.getTag());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean isBefore(String major, String minor, String point) {
+        return compareTo(new Version(major, minor, point, null)) < 0;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean isBefore(String major, String minor, String point, String tag) {
+        return compareTo(new Version(major, minor, point, tag)) < 0;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean isAfter(String major, String minor, String point) {
+        return compareTo(new Version(major, minor, point, null)) > 0;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.KyloVersion#isAfter(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public boolean isAfter(String major, String minor, String point, String tag) {
+        return compareTo(new Version(major, minor, point, tag)) > 0;
     }
 
     /* (non-Javadoc)

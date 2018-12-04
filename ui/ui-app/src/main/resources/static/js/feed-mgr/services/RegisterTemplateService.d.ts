@@ -1,5 +1,4 @@
-import {Templates} from "./TemplateTypes";
-
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import Processor = Templates.Processor;
 import Property = Templates.Property;
 import PropertyAndProcessors = Templates.PropertyAndProcessors;

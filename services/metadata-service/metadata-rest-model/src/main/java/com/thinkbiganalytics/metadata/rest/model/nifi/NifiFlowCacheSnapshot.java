@@ -54,6 +54,18 @@ public class NifiFlowCacheSnapshot {
     private Set<String> allStreamingFeeds = new HashSet<>();
     private Set<String> reusableTemplateProcessorIds = new HashSet<>();
     private Map<String, List<String>> feedToInputProcessorIds = new ConcurrentHashMap<>();
+
+
+    /**
+     * Map of the input processor id to all of its downstream processors
+     */
+    Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations = new ConcurrentHashMap<>();
+
+    /**
+     * map of the source to destinations entities
+     */
+    Map<String,List<String>> connectionSourceToDestination = new ConcurrentHashMap<>();
+
     /**
      * Set of the category.feed names
      */
@@ -110,6 +122,28 @@ public class NifiFlowCacheSnapshot {
             return new HashSet<>();
         }
         return allStreamingFeeds;
+    }
+
+    public Map<String, List<NifiFlowCacheBaseProcessorDTO>> getInputProcessorRelations() {
+        if(inputProcessorRelations == null) {
+            this.inputProcessorRelations = new HashMap<>();
+        }
+        return inputProcessorRelations;
+    }
+
+    public void setInputProcessorRelations(Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations) {
+        this.inputProcessorRelations = inputProcessorRelations;
+    }
+
+    public Map<String, List<String>> getConnectionSourceToDestination() {
+        if(connectionSourceToDestination == null) {
+            return new HashMap<>();
+        }
+        return connectionSourceToDestination;
+    }
+
+    public void setConnectionSourceToDestination(Map<String, List<String>> connectionSourceToDestination) {
+        this.connectionSourceToDestination = connectionSourceToDestination;
     }
 
     public void setAllStreamingFeeds(Set<String> allStreamingFeeds) {
@@ -175,6 +209,8 @@ public class NifiFlowCacheSnapshot {
         connectionIdToConnectionName.putAll(syncSnapshot.getConnectionIdToConnectionName());
         reusableTemplateProcessorIds.addAll(syncSnapshot.getReusableTemplateProcessorIds());
         feedToInputProcessorIds.putAll(syncSnapshot.getFeedToInputProcessorIds());
+        inputProcessorRelations.putAll(syncSnapshot.getInputProcessorRelations());
+        connectionSourceToDestination.putAll(syncSnapshot.getConnectionSourceToDestination());
     }
 
     public static class Builder {
@@ -189,6 +225,17 @@ public class NifiFlowCacheSnapshot {
         private Set<String> streamingFeeds;
 
         private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection;
+
+        /**
+         * Map of the input processor id to all of its downstream processors
+         */
+        Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations = new ConcurrentHashMap<>();
+
+        /**
+         * map of the source to destinations entities
+         */
+        Map<String,List<String>> connectionSourceToDestination = new ConcurrentHashMap<>();
+
 
         /**
          * Set of the category.feed names
@@ -241,6 +288,16 @@ public class NifiFlowCacheSnapshot {
             return this;
         }
 
+        public Builder withInputProcessorRelations(Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations) {
+            this.inputProcessorRelations = inputProcessorRelations;
+            return this;
+        }
+
+        public Builder withConnectionSourceToDestination(Map<String,List<String>> connectionSourceToDestination) {
+            this.connectionSourceToDestination = connectionSourceToDestination;
+            return this;
+        }
+
 
         public NifiFlowCacheSnapshot build() {
             NifiFlowCacheSnapshot
@@ -252,6 +309,8 @@ public class NifiFlowCacheSnapshot {
                 Map<String, String> connectionIdNameMap = connectionIdToConnection.values().stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));
                 snapshot.setConnectionIdToConnectionName(connectionIdNameMap);
             }
+            snapshot.setInputProcessorRelations(inputProcessorRelations);
+            snapshot.setConnectionSourceToDestination(connectionSourceToDestination);
             return snapshot;
         }
 

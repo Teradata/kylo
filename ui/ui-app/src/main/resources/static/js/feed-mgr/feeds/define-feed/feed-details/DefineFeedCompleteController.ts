@@ -1,10 +1,12 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Transition} from "@uirouter/core";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
+import '../../module-require';
+import '../module-require';
 
 
-export default class DefineFeedCompleteController {
+export class DefineFeedCompleteController {
 
     model: any;
     error: any;
@@ -65,12 +67,13 @@ export default class DefineFeedCompleteController {
     }
 }
 
-angular.module(moduleName)
+const module = angular.module(moduleName)
     .component('thinkbigDefineFeedCompleteController', {
         bindings: {
             $transition$: '<'
         },
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
+        templateUrl: './define-feed-complete.html',
         controllerAs: 'vm',
         controller: DefineFeedCompleteController,
     });
+export default module;

@@ -1,6 +1,8 @@
 import {HttpClient, HttpEvent, HttpRequest} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
+import {map} from "rxjs/operators/map";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
 
 import {DataSetFile} from "../models/dataset-file";
 
@@ -29,5 +31,11 @@ export class FileManagerService {
     private static getUploadsUrl(id: string, fileName?: string) {
         const url = `/proxy/v1/catalog/dataset/${encodeURIComponent(id)}/uploads`;
         return fileName ? `${url}/${encodeURIComponent(fileName)}` : url;
+    }
+
+    createDataSet(dataSourceId: string, title: string): Observable<SparkDataSet> {
+        return this.http.post(`/proxy/v1/catalog/datasource/${encodeURIComponent(dataSourceId)}/dataset`, {title: title}).pipe(
+            map(dataSet => new SparkDataSet(dataSet))
+        );
     }
 }

@@ -1,10 +1,12 @@
-import {Templates} from "../services/TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import processors = Templates.Processor; 
 import properties = Templates.Property;
 import NiFiRemoteProcessGroup = Templates.NiFiRemoteProcessGroup;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 import TemplateProcessorDatasourceDefinition = Templates.TemplateProcessorDatasourceDefinition;
 import { Property } from "estree";
+
+
 
 export interface SaveTemplate {
 
@@ -61,7 +63,8 @@ export interface Template {
     isStream: boolean,
     roleMemberships: any[],
     owner: any,
-    roleMembershipsUpdated: boolean
+    roleMembershipsUpdated: boolean,
+    templateTableOption:string
 }
 export class SaveAbleTemplate implements SaveTemplate {
     id: string;
@@ -101,6 +104,8 @@ export class SaveAbleTemplate implements SaveTemplate {
     templateOrder : any[];
     order : number;
     registeredDatasourceDefinitions : any;
+    changeComment: string;
+    changeComments: any[];
     
 };
 export class EmptyTemplate implements Template {
@@ -130,6 +135,9 @@ export class EmptyTemplate implements Template {
     roleMemberships: any[] = [];
     owner: any = null;
     roleMembershipsUpdated: boolean = false;
+    templateTableOption:string= '';
+    changeComment:string= '';
+    changeComments: any[] = [];
 }
 export class ExtendedTemplate implements Template {
     id: string = null;
@@ -167,4 +175,6 @@ export class ExtendedTemplate implements Template {
     registeredDatasourceDefinitions : any;
     allowedActions : any;
     valid : boolean = false;
+    changeComment: string;
+    changeComments: any[];
 }

@@ -1,12 +1,13 @@
 import {Component, Input} from "@angular/core";
 import "@uirouter/angularjs";
-import * as _ from 'underscore';
 import {StateService, TransitionService} from "@uirouter/core";
-import { ObjectUtils } from "../utils/object-utils";
+import * as _ from 'underscore';
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
+import './breadcrumbs.css';
 
 @Component({
     selector: "ui-router-breadcrumbs",
-    templateUrl: "js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html"
+    templateUrl: "./ui-router-breadcrumbs.component.html"
 })
 export class RouterBreadcrumbsComponent {
 
@@ -15,7 +16,6 @@ export class RouterBreadcrumbsComponent {
 
     @Input() displaynameProperty: any;
     @Input() abstractProxyProperty: any;
-    @Input() templateUrl: string;
 
     ngOnInit() {
 
@@ -48,7 +48,7 @@ export class RouterBreadcrumbsComponent {
     }
 
     getDisplayName(state: any) {
-        return state.data.displayName || state.name;
+        return state.data.displayName ; //|| state.name;
     }
 
     isBreadcrumbRoot(state: any){

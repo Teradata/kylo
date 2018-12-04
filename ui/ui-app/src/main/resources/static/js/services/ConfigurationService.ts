@@ -20,7 +20,7 @@ import { Injectable } from "@angular/core";
  * #L%
  */
 @Injectable()
-export default class ConfigurationService {
+export class ConfigurationService {
 MODULE_URLS: any;
 constructor(){
        this.MODULE_URLS= "/proxy/v1/configuration/module-urls";

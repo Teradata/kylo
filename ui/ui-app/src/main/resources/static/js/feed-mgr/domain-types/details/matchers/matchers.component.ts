@@ -7,7 +7,7 @@ import { Component, Input } from "@angular/core";
  */
 @Component({
     selector: 'domain-type-matchers-details',
-    templateUrl: 'js/feed-mgr/domain-types/details/matchers/matchers.component.html'
+    templateUrl: './matchers.component.html'
 })
 export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent {
 

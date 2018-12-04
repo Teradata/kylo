@@ -16,9 +16,9 @@ import {FlexLayoutModule} from "@angular/flex-layout";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import * as angular from "angular";
-import { JcrQueryComponent } from "./jcr/JcrQueryComponent";
-import { ClusterComponent } from "./cluster/ClusterComponent";
-import { adminStates } from "./admin.states";
+import { JcrQueryComponent } from "./jcr/jcr-query.component";
+import {ClusterComponent} from './cluster/cluster.component';
+import { states } from "./admin.states";
 import { MatButtonModule } from "@angular/material/button";
 import {MatTabsModule} from '@angular/material/tabs';
 import {CodemirrorModule} from "ng2-codemirror";
@@ -27,13 +27,13 @@ import { KyloCommonModule } from "../common/common.module";
 import { MatCardModule } from "@angular/material/card";
 import { TranslateModule } from "@ngx-translate/core";
 
-@NgModule({ 
-    declarations: [ 
+@NgModule({
+    declarations: [
         JcrQueryComponent,
         ClusterComponent
-    ], 
-    imports: [ 
-        CommonModule, 
+    ],
+    imports: [
+        CommonModule,
         KyloCommonModule,
         MatProgressBarModule,
         MatDividerModule,
@@ -55,12 +55,12 @@ import { TranslateModule } from "@ngx-translate/core";
         CodemirrorModule,
         CovalentDataTableModule,
         TranslateModule,
-        UIRouterModule.forChild({states: adminStates})
+        UIRouterModule.forChild({states: states})
     ],
     providers : [
         {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
     ],
     schemas : [NO_ERRORS_SCHEMA]
-}) 
-export class AdminModule { 
-} 
+})
+export class AdminModule {
+}

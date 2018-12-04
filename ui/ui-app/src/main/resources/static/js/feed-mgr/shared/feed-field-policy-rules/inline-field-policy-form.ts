@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "../../module-name";
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 
 
 
@@ -103,7 +103,7 @@ angular.module(moduleName)
     .component('inlineFieldPolicyForm', {
         controller: InlineFieldPolicyFormController,
         controllerAs : 'vm',
-        templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/inline-field-policy-form.html',
+        templateUrl: './inline-field-policy-form.html',
         bindings: {
             ngModel: '=',
             policyParameter: '@',

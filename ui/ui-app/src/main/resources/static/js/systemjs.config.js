@@ -2,7 +2,7 @@
 var systemLocate = System.locate;
 System.locate = function (load) {
     return Promise.resolve(systemLocate.call(this, load)).then(function (address) {
-        return address + "?ver=0.9.2-SNAPSHOT"
+        return address + "?ver=0.10.1-SNAPSHOT"
     });
 };
 
@@ -30,6 +30,7 @@ System.config({
         "kylo-services-module":"services/module",
         "kylo-side-nav":"side-nav/module-require",
         "kylo-side-nav-module":"side-nav/module",
+        "kylo-ui-codemirror":"codemirror-require/module",
         "kyloTimer":"common/timer/kylo-timer",
         "ment-io":"vendor/ment.io/mentio",
         "npm:": "../node_modules/",
@@ -75,7 +76,6 @@ System.config({
         '@angular/flex-layout/flex': 'npm:@angular/flex-layout/bundles/flex-layout-flex.umd.js',
         '@angular/flex-layout/server': 'npm:@angular/flex-layout/bundles/flex-layout-server.umd.js',
         '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.min',
-        '@angular/http': 'npm:@angular/http/bundles/http.umd.min',
         '@angular/material/autocomplete': 'npm:@angular/material/bundles/material-autocomplete.umd.min',
         '@angular/material/button': 'npm:@angular/material/bundles/material-button.umd.min',
         '@angular/material/button-toggle': 'npm:@angular/material/bundles/material-button-toggle.umd.min',
@@ -133,6 +133,7 @@ System.config({
         '@covalent/core/steps': 'npm:@covalent/core/bundles/covalent-core-steps.umd.min',
         '@covalent/core/virtual-scroll': 'npm:@covalent/core/bundles/covalent-core-virtual-scroll.umd.min',
         '@covalent/dynamic-forms': 'npm:@covalent/dynamic-forms/bundles/covalent-dynamic-forms.umd',
+        "@kylo/feed": "../lib/feed/index",
         '@kylo/wrangler': 'feed-mgr/visual-query/wrangler/index',
         '@kylo/wrangler/api': 'feed-mgr/visual-query/wrangler/api/index',
         '@ngx-translate/core': 'npm:@ngx-translate/core/bundles/core.umd.min',
@@ -169,6 +170,8 @@ System.config({
         "ng2-dnd": "npm:ng2-dnd/bundles/ng2-dnd.umd.min",
         "ng2-nvd3": "npm:ng2-nvd3/build/index",
         'ng-fx':"bower:ngFx/dist/ngFx.min",
+        "ng2-codemirror": "npm:ng2-codemirror/lib/index",
+        "ng2-nvd3": "npm:ng2-nvd3/build/index",
         "nvd3": "bower:nvd3/build/nv.d3.min",
         "ocLazyLoad":"bower:oclazyload/dist/ocLazyLoad.require",
         "pivottable": "bower:pivottable/dist/pivot.min",
@@ -180,7 +183,8 @@ System.config({
         "ui-grid": "angular-ui-grid",
         "underscore":"bower:underscore/underscore-min",
         "vis":"bower:vis/dist/vis.min",
-        "mdPickers":"bower:mdPickers/dist/mdPickers.min"
+        "mdPickers":"bower:mdPickers/dist/mdPickers.min",
+        "ngx-drag-and-drop-lists":"npm:ngx-drag-and-drop-lists/bundles/ngx-drag-and-drop-lists.umd.min"
     },
     meta: {
         "@angular/core": {deps:["angular"]},
@@ -233,5 +237,14 @@ System.config({
         'vis':{exports:"vis"},
         'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize','ng-text-truncate'], exports:'app', format: "amd"},
         'routes':{deps:['app'], exports:'routes', format: "amd"}
+    },
+    packages: {
+        'plugin': {
+            meta: {
+                './*.js': {
+                    loader: "systemjs-angular-loader.js"
+                }
+            }
+        }
     }
 });

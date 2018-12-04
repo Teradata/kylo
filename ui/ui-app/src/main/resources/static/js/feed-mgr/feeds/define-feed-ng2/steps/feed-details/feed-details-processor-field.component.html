@@ -1,0 +1,14 @@
+<ng-container [ngSwitch]="state">
+
+  <mat-progress-spinner *ngSwitchCase="'LOADING'" diameter="32" color="accent" mode="indeterminate"></mat-progress-spinner>
+
+  <td-message *ngSwitchCase="'ERROR'" [label]="'Failed to load plugin for ' + (processor.name != null ? processor.name : processor.type)" [sublabel]="error" color="warn" icon="error"></td-message>
+
+  <processor-form *ngSwitchCase="'FORM'" [form]="getProcessorForm()" [processor]="processor" [readonly]="readonly"></processor-form>
+
+  <div *ngSwitchCase="'EMPTY'"></div>
+  <ng-template [ngSwitchCase]="'TEMPLATE'">
+    <ng-container *ngComponentOutlet="childType; injector: childInjector; ngModuleFactory: childModule"></ng-container>
+  </ng-template>
+
+</ng-container>

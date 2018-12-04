@@ -8,6 +8,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatGridListModule} from '@angular/material/grid-list';
+import {MatTooltipModule} from "@angular/material/tooltip";
 import { CovalentDialogsModule } from '@covalent/core/dialogs';
 
 
@@ -92,7 +93,8 @@ import { SharedModule } from "../shared/shared.modules";
         MatCardModule,
         MatCheckboxModule,
         ReactiveFormsModule,
-        UIRouterModule.forChild({states: categoriesStates})
+        UIRouterModule.forChild({states: categoriesStates}),
+        MatTooltipModule
     ],
     exports: [CategoriesComponent],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],

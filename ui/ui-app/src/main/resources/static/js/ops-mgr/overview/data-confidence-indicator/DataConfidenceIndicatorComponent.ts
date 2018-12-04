@@ -1,17 +1,17 @@
 import "pascalprecht.translate";
 import * as _ from 'underscore';
 import { Component, Inject } from "@angular/core";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import OpsManagerJobService from "../../services/OpsManagerJobService";
-import BroadcastService from "../../../services/broadcast-service";
+import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
+import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
+import {BroadcastService} from "../../../services/broadcast-service";
 import { TranslateService } from "@ngx-translate/core";
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import StateService from "../../../services/StateService";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import {StateService} from "../../../services/StateService";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 
 @Component({
     selector: 'tba-data-confidence-indicator',
-    templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-indicator-template.html'
+    templateUrl: './data-confidence-indicator-template.html'
 })
 export class DataConfidenceIndicatorComponent {
     refreshing: boolean = false;
@@ -36,7 +36,7 @@ export class DataConfidenceIndicatorComponent {
                 labelSunbeamLayout: false,
                 "margin":{"top":10,"right":10,"bottom":10,"left":10},
                 donut:true,
-                donutRatio:0.65,
+                donutRatio:0.62,
                 showLegend:false,
                 refreshDataOnly: false,
                 valueFormat: (d: any)=>{
@@ -44,10 +44,10 @@ export class DataConfidenceIndicatorComponent {
                 },
                 color:(d: any)=>{
                     if(d.key == 'Healthy'){
-                        return '#009933';
+                        return '#388e3c';
                     }
                     else if( d.key== 'Unhealthy'){
-                        return '#FF0000';
+                        return '#b71c1c';
                     }
                 },
                 pie: {
@@ -139,7 +139,7 @@ export class DataConfidenceIndicatorComponent {
 }
 
 @Component({
-    templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-details-dialog.html'
+    templateUrl: './data-confidence-details-dialog.html'
 })
 export class DataDetailsDialogComponent {
 

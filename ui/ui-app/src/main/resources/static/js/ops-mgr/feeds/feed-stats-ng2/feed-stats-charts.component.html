@@ -1,0 +1,183 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="feed-stats">
+  <div fxLayout="column" *ngIf="dataLoaded">
+
+    <mat-card *ngIf="feedProcessorErrors.visibleData.length >0" class="feed-card">
+      <mat-card-content>
+        <div fxLayout="row" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
+          <span *ngIf="!searchBox.searchVisible" class="push-left-sm">
+           <span translate class="mat-title">views.feed-stats-charts.EM</span>
+          </span>
+          <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Search here" (searchDebounce)="feedProcessorErrorsTable.search($event)" fxFlex>
+          </td-search-box>
+          <div fxLayout="column" fxLayoutAlign="end end" *ngIf="!searchBox.searchVisible">
+            <div fxLayout="row">
+              <mat-slide-toggle matTooltip="Auto refresh the error messages" color="primary" [(ngModel)]="feedProcessorErrors.autoRefresh"
+                                (change)="toggleFeedProcessorErrorsRefresh(feedProcessorErrors.autoRefresh)">
+                Refresh
+              </mat-slide-toggle>
+              <button mat-icon-button color="primary" *ngIf="feedProcessorErrors.autoRefresh == false" (click)="viewNewFeedProcessorErrors()">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </div>
+            <span *ngIf="feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin-top:-10px;"> {{feedProcessorErrors.newErrorCount}} new errors exist.</span>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <td-data-table
+            #dataTable
+            [data]="feedProcessorErrorsTable.filteredData"
+            [columns]="feedProcessorErrorsTable.columns"
+            [sortable]="true"
+            [sortBy]="feedProcessorErrorsTable.sortBy"
+            [sortOrder]="feedProcessorErrorsTable.sortOrder"
+            [style.height.px]="200">
+          <ng-template tdDataTableTemplate="errorMessageTimestamp" let-value="value" let-row="row" let-column="column">
+            <span>{{value | date: 'HH:mm:ss'}}</span>
+          </ng-template>
+        </td-data-table>
+
+        <div class="md-padding" *ngIf="!dataTable.hasData" fxLayout="row" fxLayoutAlign="center center">
+          <h3>No results to display.</h3>
+        </div>
+
+
+      </mat-card-content>
+      </mat-card>
+
+    <div fxLayout="column" fxFlex="100" fxFill>
+        <!-- THE KPIs -->
+        <div fxLayout="row" fxLayoutAlign="space-between center">
+
+          <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
+            <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+              <h1 class="kpi-stat tc-grey-700">{{eventSuccessKpi.value}}%</h1>
+              <mat-icon  class="kpi_icon tc-accent">{{eventSuccessKpi.icon}}</mat-icon>
+              <span class="kpi-title" matTooltip="{{'views.feed-stats-charts.SR' | translate}}">{{"views.feed-stats-charts.SR" | translate}}</span>
+            </mat-card-content>
+          </mat-card>
+
+            <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
+              <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+                <h1 class="kpi-stat tc-grey-700">{{flowRateKpi.value}}/{{"views.feed-stats-charts.sec" | translate}}</h1>
+                <mat-icon class="kpi_icon tc-accent"   >{{flowRateKpi.icon}}</mat-icon>
+                <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.IFR' | translate}}">{{"views.feed-stats-charts.FR" | translate}}</span>
+              </mat-card-content>
+            </mat-card>
+
+
+          <mat-card class="pad-sm" fxLayoutAlign="center center" fxLayout="column" fxFlex="33">
+            <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+              <h1 class="kpi-stat tc-grey-700">{{avgDurationKpi.value}}</h1>
+              <mat-icon class="kpi_icon tc-accent"   >{{avgDurationKpi.icon}}</mat-icon>
+              <span class="kpi-title"  matTooltip="{{'views.feed-stats-charts.FD' | translate}}">{{"views.feed-stats-charts.FD" | translate}}</span>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+        <!-- END KPIs -->
+
+        <div>
+          <mat-card class="feed-card">
+            <mat-card-header>
+              <mat-card-title fxFlex>
+                <span translate>views.feed-stats-charts.AFR</span>
+                <span fxFlex></span>
+              </mat-card-title>
+              <!-- <button mat-button (click)="onResetZoom()" *ngIf="!zoomEnabled">Reset Zoom</button> -->
+              <mat-card-subtitle >Flow activity over time</mat-card-subtitle>
+              <div fxLayout="row" fxLayoutAlign="start" fxFlex>
+                <div fxLayout="column" fxLayoutAlign="start" fxFlex >
+                  <div fxFlex fxLayout="row" fxLayoutAlign="start center">
+                    <span class="hint pad-right-sm">{{timeFrameOptions[0].label}}</span>
+                    <mat-slider  (change)="onTimeFrameChanged()" fxFlex [(ngModel)]="timeFrameOptionIndex" [min]="0" [max]="timeFrameOptionIndexLength - 1"></mat-slider>
+                    <span class="hint pad-left-sm pad-right-md">{{timeFrameOptions[timeFrameOptionIndexLength - 1].label}}</span>
+                  </div>
+                </div>
+
+<!--
+                <div fxLayout="column" class="pad-left">
+                  <div fxLayout="column" fxLayoutAlign="start center">
+                    <mat-slide-toggle color="primary" (change)="completeAutoRefreshChange()" [aria-label]="'Auto Refresh'" [(ngModel)]="autoRefresh" >
+                      Auto Refresh
+                    </mat-slide-toggle>
+                    <button mat-button color="primary" *ngIf="!autoRefresh" (click)="onRefreshButtonClick()" >Refresh</button>
+                  </div>
+                  <div *ngIf="isZoomed" class="hint">At custom zoom level, refresh to reset to '{{timeFrameOptions[timeFrameOptionIndex].label}}'</div>
+                </div>
+                -->
+
+              </div>
+
+            </mat-card-header>
+            <mat-card-content fxFlex="100" style="width: 100%; padding: 0">
+              <div flex fxLayout="row" fxLayoutAlign="start end">
+                <span flex *ngIf="feedTimeChartLoading">
+                  <mat-progress-bar [mode]="indeterminate" class="accent"></mat-progress-bar>
+                </span>
+                <span flex *ngIf="!feedTimeChartLoading">
+                  <mat-progress-bar [mode]="indeterminate" class="accent"></mat-progress-bar>
+                </span>
+              </div>
+
+                 <nvd3 [options]="feedChartOptions" [data]="feedChartData"></nvd3>
+
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+
+        <div>
+          <mat-card class="feed-card">
+
+            <mat-card-header>
+              <mat-card-title>
+                <span translate>views.feed-stats-charts.FPM</span>
+              </mat-card-title>
+              <mat-card-subtitle >Processor performance metrics</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content fxFlex="100" style="width: 100%;" fxLayoutAlign="start" fxLayout="column" ngClass="pull-top-lg">
+
+              <mat-input-container >
+                <label class="md-container-ignore label-small layout-padding-top">{{"views.feed-stats-charts.PM" | translate}}</label>
+                <mat-select [(ngModel)]="selectedProcessorStatisticFunction" (change)="onProcessorChartFunctionChanged()" aria-label="Rule Type">
+                  <mat-option [value]="opt" *ngFor="let opt of processorStatsFunctions">{{  'views.feed-stats-charts.' + opt | translate}}</mat-option>
+                </mat-select>
+              </mat-input-container>
+
+              <nvd3 fxFlex [options]="processorChartOptions" [data]="processorChartData"></nvd3>
+
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+
+      </div>
+
+
+
+
+
+  </div>
+  <div *ngIf="!dataLoaded" class="kpi-loading" fxLayoutAlign="center center" fxLayout="column">
+    <mat-spinner mode="indeterminate" diameter="60" color="accent"></mat-spinner>
+  </div>
+</div>

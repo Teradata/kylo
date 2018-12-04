@@ -118,7 +118,7 @@
                 <span class="hint">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.SELECT_DS' | translate}}</span>
 
                     <div *ngIf="loadingFlowData" layout="column" layout-align="start center" class="layout-padding-top-bottom">
-                    <mat-spinner mode="indeterminate"></mat-spinner>
+                    <mat-spinner mode="indeterminate" class="md-accent"></mat-spinner>
                     <span>{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER_TEMPLATE.LOADING' | translate}}</span>
                 </div>
 
@@ -158,12 +158,25 @@
                 </div>
             </div>
 
+            <div layout="row" layout-align="space-between start" layout-fill>
+            <div flex="100" layout="column">
+                <md-subheader class="md-subhead left-aligned">Comment</md-subheader>
+                <div layout="column">
+                    <md-input-container class="md-block" flex="100">
+                        <label>Give short description of changes made.</label>
+                        <textarea name="changeComment" ng-model="vm.model.changeComment"></textarea>
+                    </md-input-container>
+                </div>
+            </div>
+
+        </div>
+
         </ng-container>
 
         <div style="float:right;">
-            <button class="md-button md-kylo-theme" mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
-            <button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</button>
-        </div> 
+            <!--<button class="md-button md-kylo-theme" mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>-->
+            <!--<button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</button>-->
+        </div>
 
     </mat-card-content>
 </mat-card>

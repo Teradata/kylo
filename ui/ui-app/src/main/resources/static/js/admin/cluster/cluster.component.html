@@ -1,0 +1,119 @@
+<mat-card>
+  <mat-card-content>
+
+    <div fxLayout="column">
+      <div fxLayout="row">
+        <span class="mat-title"> {{"ADMIN.cluster.cluster-test.title" | translate}}</span>
+        <div fxFlex class="layout-padding-left">
+          <mat-icon *ngIf="isClustered" class="healthy">check_circle</mat-icon>
+          <mat-icon *ngIf="!isClustered" class="warn">do_not_disturb</mat-icon>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="isClustered" class="layout-padding-top">
+
+      <div *ngIf="members.length <=1" class="layout-padding-bottom" fxLayout="column">
+        <div fxLayout="row" layout-align="start start">
+            <span>
+              <mat-icon class="warn">warning</mat-icon>
+            </span>
+          <div fxLayout="column" class="layout-padding-left">
+            <span class="mat-subhead">{{"ADMIN.cluster.cluster-test.warning" | translate}}</span>
+            <span class="hint">{{"ADMIN.cluster.cluster-test.ensure.request" | translate}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div fxLayout="column" class="layout-padding-top-bottom">
+        <mat-divider></mat-divider>
+        <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.members" | translate}}</span>
+        <div fxLayout="column" *ngFor="let member of members" class="layout-padding-top layout-padding-left">
+          {{member}}
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div fxLayout="column">
+        <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.sendMessage" | translate}}</span>
+        <div fxLayout="row" fxLayoutGap="10px grid">
+          <mat-form-field>
+            <input matInput placeholder="{{'ADMIN.cluster.cluster-test.sendMessage' | translate}}" [(ngModel)]="simpleMessage" required>
+          </mat-form-field>
+          <div fxFlexAlign="center">
+            <button mat-button mat-raised-button color="accent" (click)="sendMessage();">{{"ADMIN.cluster.cluster-test.sendButton" | translate}}</button>
+          </div>
+        </div>
+      </div>
+
+
+      <mat-divider></mat-divider>
+      <div fxLayout="column">
+        <span class="mat-title layout-padding-top">{{"ADMIN.cluster.cluster-test.receivedMessage" | translate}}</span>
+        <mat-list layout-fill fxLayout="column" class="list-item-table">
+          <mat-list-item *ngFor="let msg of receivedMessages" style="height: 80px">
+            <div fxLayout="row" layout-fill>
+              <div fxFlex="60" fxLayout="column" class="item-column mat-list-item-text ">
+                <span class="item-title">{{msg.message}}</span>
+                <span class="column-title column-title-bottom">
+                {{"ADMIN.cluster.cluster-test.messageText" | translate}}
+            </span>
+              </div>
+
+              <div fxLayout="column" fxFlex="20" class="item-column mat-list-item-text ">
+                <span class="item-title">{{msg.from}}</span>
+                <span class="column-title column-title-bottom">
+                {{"ADMIN.cluster.cluster-test.fromText" | translate}}
+            </span>
+              </div>
+              <div fxLayout="column" fxFlex="20" class="item-column mat-list-item-text ">
+                <span class="item-title">{{msg.dateTime | date:'HH:mm:ss'}}</span>
+                <span class="column-title column-title-bottom">
+                {{"views.common.date" | translate}}
+            </span>
+              </div>
+
+            </div>
+            <mat-divider *ngIf="!$last"></mat-divider>
+          </mat-list-item>
+          <mat-list-item *ngIf="receivedMessages.length == 0">
+            <div style="width:100%" class="item-column">
+              <span class="item-title">{{"ADMIN.cluster.cluster-test.no.messages.receivedText" | translate}}</span>
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </div>
+
+    <div *ngIf="!isClustered" fxLayout="column">
+      <span>{{"ADMIN.cluster.cluster-test.not.clustered.part1" | translate}} <a href="http://kylo.readthedocs.io/en/latest/how-to-guides/KyloClusterConfiguration.html" target="_blank">Clustering Kylo documentation</a> {{"ADMIN.cluster.cluster-test.not.clustered.part2" | translate}}</span>
+      <span class="hint">{{"ADMIN.cluster.cluster-test.default.kylo.conf.text" | translate}} <i>'/opt/kylo/setup/config/kylo-cluster/'</i></span>
+
+      <ul>
+        <li>{{"ADMIN.cluster.cluster-test.modeshape.jgroups.conf" | translate}}</li>
+        <li>
+          <ul>
+            <li [translate]="'ADMIN.cluster.cluster-test.ensure.modeshape.jgroups.part1'" [translateParams]="{fileName:'modeshape-jgroups xml',filePath:'/kylo-services/conf'}"></li>
+            <li [translate]="'ADMIN.cluster.cluster-test.ensure.file.configured'" [translateParams]="{fileName:'metadata-repository.json'}"></li>
+          </ul>
+        </li>
+        <li>{{"ADMIN.cluster.cluster-test.kylo.job.conf.text" | translate}}</li>
+        <li>
+          <ul>
+            <li [translate]="'ADMIN.cluster.cluster-test.ensure.kylo.cluster.conf.part1'" [translateParams]="{fileName:'kylo-cluster-jgroups-config.xml',filePath:'/kylo-services/conf'}"></li>
+            <li [translate]="'ADMIN.cluster.cluster-test.property.kylo.ensure'"
+                [translateParams]="{filePath:'kylo-services/conf/application.properties',fileKey:'kylo.cluster.jgroupsConfigFile=kylo-cluster-jgroups-config.xml'}">
+            </li>
+          </ul>
+        </li>
+        <li>{{"ADMIN.cluster.cluster-test.quartz.scheduler" | translate}}</li>
+        <li>
+          <ul>
+            <li [translate]="'ADMIN.cluster.cluster-test.quartz.ensure'" [translateParams]="{fileName: 'quartz.properties', filePath: '/kylo-services/conf'}"></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </mat-card-content>
+</mat-card>

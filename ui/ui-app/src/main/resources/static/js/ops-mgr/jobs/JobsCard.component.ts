@@ -1,14 +1,14 @@
 import "pascalprecht.translate";
 import * as _ from 'underscore';
-import OpsManagerJobService from "../services/OpsManagerJobService";
-import IconService from "../services/IconStatusService";
-import TabService from "../services/TabService";
-import AccessControlService from "../../services/AccessControlService";
+import {TabService} from "../../services/tab.service";
+import {IconService} from "../services/IconStatusService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { Component, Output, Input, OnChanges, SimpleChanges, Inject, EventEmitter } from "@angular/core";
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
-import BroadcastService from "../../services/broadcast-service";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import StateService from "../../services/StateService";
+import {BroadcastService} from "../../services/broadcast-service";
+import {OpsManagerJobService} from "../services/ops-manager-jobs.service";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
+import {StateService} from "../../services/StateService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { TdDataTableSortingOrder, ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent } from "@covalent/core/data-table";
@@ -18,12 +18,12 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import 'rxjs/add/operator/timeout';
 import { BaseFilteredPaginatedTableView } from "../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
-import { ObjectUtils } from "../../common/utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 import { Subscription } from "rxjs";
 
 @Component({
     selector: 'tba-jobs',
-    templateUrl: 'js/ops-mgr/jobs/jobs-template.html'
+    templateUrl: './jobs-template.html'
 })
 export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
@@ -588,7 +588,7 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
 @Component({
     selector: 'job-filter-help-panel-menu-ctrl',
-    templateUrl: 'js/ops-mgr/jobs/jobs-filter-help-template.html',
+    templateUrl: './jobs-filter-help-template.html',
     styles: [`
         .filter-help-backdrop {
             background: transparent;
@@ -613,7 +613,7 @@ export class JobFilterHelpPanelMenuCtrl implements ng.IComponentController {
  * The Controller used for the abandon all
  */
 @Component({
-    templateUrl: 'js/ops-mgr/jobs/abandon-all-jobs-dialog.html'
+    templateUrl: './abandon-all-jobs-dialog.html'
 })
 export class abandonAllDialogController implements ng.IComponentController {
     counter: number;

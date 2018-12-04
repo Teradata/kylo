@@ -1,0 +1,42 @@
+<td-layout-nav color="none">
+  <div td-toolbar-content>
+    <div *ngIf="feed != undefined">{{feed.feedName}} </div>
+    <span fxFlex="100"></span>
+  </div>
+      <mat-card class="feed-card" >
+       <div fxLayout="row" >
+          <div fxLayout="column" class="mat-card-header" fxLayoutAlign="start start" fxFlex="50">
+          <mat-card-title>
+            <mat-icon class="kylo-title-icon">{{kyloIcons_Links_lineage}}</mat-icon>
+            <span class="feed-card-header" translate>Lineage.Name</span>
+          </mat-card-title>
+          <mat-card-subtitle translate>Lineage.Description</mat-card-subtitle>
+          </div>
+
+          <div fxLayout="row" fxFlex="" fxLayoutAlign="end center" class="pad-right">
+            <mat-button-toggle-group class="mat-button" aria-label="Graph mode"
+                                     #group="matButtonToggleGroup"
+                                     (change)="networkView(group.value)"
+                                     [value]="graphMode">
+              <mat-button-toggle value="{{graphModes.SIMPLE}}">SHOW FEEDS</mat-button-toggle>
+              <mat-button-toggle value="{{graphModes.DETAILED}}">SHOW FEEDS AND SOURCES</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+       </div>
+      <mat-card-content>
+
+        <div kyloDraggable style="position: absolute; z-index: 1" *ngIf="!loading">
+          <div fxLayout="row">
+              <select-network-node [selectedNode]="selectedNode"></select-network-node>
+          </div>
+        </div>
+        <kylo-vis-network #lineageGraph
+                            [data]="data"
+                            [options]="options"
+                            (onLoad)="onLoad($event)"
+                            (onSelect)="onSelect($event)"
+                            (stabilized)="onStabilized($event)"  browser-height browser-height-scroll-y="false" [browser-height-offset]="300" (heightChange)="onHeightChange($event)"
+                             style="width: 100%; height: 550px;"></kylo-vis-network>
+      </mat-card-content>
+    </mat-card>
+</td-layout-nav>

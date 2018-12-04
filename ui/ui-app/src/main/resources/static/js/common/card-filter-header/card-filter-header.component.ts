@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, ElementRef, SimpleChanges } from '@angular/core';
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import * as $ from "jquery";
-import { ObjectUtils } from "../utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 
 @Component({
     selector: 'tba-card-filter-header',
-    templateUrl: 'js/common/card-filter-header/card-filter-header-template.html',
-    styleUrls: ['js/common/card-filter-header/card-filter-header-style.css']
+    templateUrl: './card-filter-header-template.html',
+    styleUrls: ['./card-filter-header-style.css']
 })
 export class CardFilterHeaderComponent {
 

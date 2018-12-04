@@ -1,12 +1,13 @@
 import * as _ from "underscore";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import AccessControlService from "../../services/AccessControlService";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import AccessConstants from '../../constants/AccessConstants';
 import { StateService} from "@uirouter/core";
 import { Component, Inject, Input } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { ObjectUtils } from "../../common/utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
+import {FEED_DEFINITION_SUMMARY_STATE_NAME} from "../../feed-mgr/model/feed/feed-constants";
 
    /** Manages the Alert Details page.
      * @constructor
@@ -16,7 +17,7 @@ import { ObjectUtils } from "../../common/utils/object-utils";
 
 @Component({
     selector: 'tba-alert-details',
-    templateUrl: 'js/ops-mgr/alerts/alert-details-template.html'
+    templateUrl: './alert-details-template.html'
 })
 export class AlertDetailsTemplateComponent {
 
@@ -116,7 +117,7 @@ export class AlertDetailsTemplateComponent {
                         this.loading = false;
 
                 // Set time since created
-                if (ObjectUtils.isNumber(this.alertData.createdTime)) {
+                if (_.isNumber(this.alertData.createdTime)) {
                     this.alertData.createdTimeSince = Date.now() - this.alertData.createdTime;
                 }
 
@@ -156,7 +157,7 @@ export class AlertDetailsTemplateComponent {
                         var jobExecutionId = this.alertData.content;
                         this.alertData.links.push({label: "Job Execution", value: "job-details({executionId:'" + jobExecutionId + "'})"});
                     }
-                    this.alertData.links.push({label:"Feed Details",  value:"ops-feed-details({feedName:'"+this.alertData.entityId+"'})"});
+                    this.alertData.links.push({label:"Feed Details",  value:FEED_DEFINITION_SUMMARY_STATE_NAME+".feed-activity"+"({feedId:'"+this.alertData.entityId+"'})"});
 
                 }
                 else if(this.alertData.type == 'http://kylo.io/alert/alert/sla/violation') {
@@ -206,7 +207,7 @@ export class AlertDetailsTemplateComponent {
 
 @Component({
     selector: 'events-dialog',
-    templateUrl: 'js/ops-mgr/alerts/event-dialog.html'
+    templateUrl: './event-dialog.html'
 })
 export class EventDialogComponent {
     saving: boolean;
@@ -248,7 +249,7 @@ export class EventDialogComponent {
 
 @Component({
     selector: 'alerts-details',
-    templateUrl: 'js/ops-mgr/alerts/alert-details.html'
+    templateUrl: './alert-details.html'
 })
 export class AlertDetailsComponent {
     alertId: any;

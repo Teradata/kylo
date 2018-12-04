@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/ng-packagr/package.schema.json",
+  "name": "kylo-example-ui-get-file-processor-template",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "ng-packagr -p package.json"
+  },
+  "devDependencies": {
+    "@angular/cdk": ">=5",
+    "@angular/common": ">=5",
+    "@angular/compiler": "^5.1.3",
+    "@angular/compiler-cli": "^5.1.3",
+    "@angular/core": ">=5",
+    "@angular/forms": ">=5",
+    "@angular/material": ">=5",
+    "@angular/platform-browser": ">=5",
+    "@kylo/feed": "file:../../../ui/ui-app/target/classes/static/lib",
+    "ng-packagr": "^2.4.5",
+    "rxjs": "^5.5.8",
+    "typescript": "~2.5",
+    "zone.js": "^0.8.25"
+  },
+  "ngPackage": {
+    "lib": {
+      "entryFile": "src/main/resources/static/js/plugin/processor-templates/GetFile/get-file.module.ts",
+      "flatModuleFile": "get-file"
+    },
+    "dest": "target/classes/static/js/plugin/processor-templates/GetFile"
+  }
+}

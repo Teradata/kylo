@@ -21,4 +21,4 @@ test-output/
 **/*.log
 dependency-reduced-pom.xml
 ${modeshape.index.dir}
-
+samples/**/*.json

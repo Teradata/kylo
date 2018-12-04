@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import {Component, Input, Output, EventEmitter, ElementRef} from "@angular/core";
 import * as $ from "jquery";
-import { ObjectUtils } from "../utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 
 @Component({
     selector: "upload-file",
@@ -10,7 +10,7 @@ import { ObjectUtils } from "../utils/object-utils";
                 <div class="md-input-container condensed-no-float md-input-has-placeholder md-kylo-theme flex">
                 <input class="ng-pristine ng-untouched ng-valid md-input ng-empty" id="textInput" size="40" [(ngModel)]="fileNames" type="text" placeholder="{{\'views.file-upload.placeholder\' | translate}}" [readonly]="true">
                 </div>`,
-    styleUrls: ['js/common/file-upload/file-upload-style.css']
+    styleUrls: ['./file-upload-style.css']
 })
 export class UploadFileComponent {
 

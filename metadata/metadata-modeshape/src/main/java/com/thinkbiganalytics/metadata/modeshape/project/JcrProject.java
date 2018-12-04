@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.api.project.Project;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
@@ -35,23 +36,12 @@ import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-public class JcrProject extends JcrEntity<Project.ID> implements Project, AuditableMixin, SystemEntityMixin, AccessControlledMixin {
+public class JcrProject extends JcrEntity<Project.ID> implements Project, AuditableMixin, IconableMixin, SystemEntityMixin, AccessControlledMixin {
 
     /**
      * JCR node type for projects
      */
     public static final String NODE_TYPE = "tba:project";
-
-
-    /**
-     * The icon choice of the user, can be null in Jcr if not previously set
-     */
-    public static String ICON = "tba:icon";
-
-    /**
-     * The icon color choice of the user, can be null in Jcr if not previously set
-     */
-    public static String ICON_COLOR = "tba:iconColor";
 
     /**
      * Name of the {@code containerImage} property
@@ -95,17 +85,6 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
 
     @Override
     @Nullable
-    public String getIconColor() {
-        return super.getProperty(ICON_COLOR, String.class);
-    }
-
-    @Override
-    public void setIconColor(String iconColor) {
-        super.setProperty(ICON_COLOR, iconColor);
-    }
-
-    @Override
-    @Nullable
     public String getContainerImage() {
         return super.getProperty(CONTAINER_IMAGE, String.class);
     }
@@ -113,17 +92,6 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
     @Override
     public void setContainerImage(String image) {
         super.setProperty(CONTAINER_IMAGE, image);
-    }
-
-    @Override
-    @Nullable
-    public String getIcon() {
-        return super.getProperty(ICON, String.class);
-    }
-
-    @Override
-    public void setIcon(String icon) {
-        super.setProperty(ICON, icon);
     }
 
     @Override

@@ -1,10 +1,11 @@
 import {Injectable} from "@angular/core";
 import {Node} from '../models/node';
-import {ObjectUtils} from "../../../../common/utils/object-utils";
-import {KyloObject} from "../../../../common/common.model";
+import {ObjectUtils} from "../../../../../lib/common/utils/object-utils";
+import {KyloObject} from "../../../../../lib/common/common.model";
 import {PreviewDataSet} from "../../datasource/preview-schema/model/preview-data-set";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
+import {SelectedItem} from "../../datasource/api/dialog/selection-dialog.component";
 
 /**
  * Defines what to do when Node is selected/de-selected in BrowserComponent
@@ -162,13 +163,32 @@ export class DefaultSelectionStrategy implements SelectionStrategy {
 @Injectable()
 export class SelectionService {
 
-
+    private singleSelection:boolean;
     private selections: Map<string, any> = new Map<string, any>();
     private lastPath: Map<string, any> = new Map<string, any>();
     private selectionStrategy: SelectionStrategy = new DefaultSelectionStrategy()
         .withPolicy(new DefaultSelectionPolicy())
         .withPolicy(new SingleSelectionPolicy())
         .withPolicy(new BlockParentObjectSelectionPolicy());
+
+    constructor(){
+        this.singleSelection = this.hasPolicy(SingleSelectionPolicy);
+    }
+
+    singleSelectionStrategy(){
+        this.selectionStrategy = new DefaultSelectionStrategy()
+            .withPolicy(new DefaultSelectionPolicy())
+            .withPolicy(new SingleSelectionPolicy())
+            .withPolicy(new BlockParentObjectSelectionPolicy());
+        this.singleSelection = true;
+    }
+
+    multiSelectionStrategy(){
+        this.selectionStrategy = new DefaultSelectionStrategy()
+            .withPolicy(new DefaultSelectionPolicy())
+            .withPolicy(new BlockParentObjectSelectionPolicy());
+        this.singleSelection = false;
+    }
 
     /**
      * Stores selection for data source
@@ -183,8 +203,26 @@ export class SelectionService {
      * Resets selection for data source
      * @param {string} datasourceId
      */
-    reset(datasourceId: string): void {
-        this.selections.delete(datasourceId);
+    reset(datasourceId?: string): void {
+        if(datasourceId) {
+            this.selections.delete(datasourceId);
+        }
+        else {
+            //clear it all
+            this.selections.clear()
+        }
+    }
+
+    clearSelected(datasourceId?: string): void {
+        let root:Node = this.get(datasourceId);
+        if(root){
+            const nodes = root.getSelectedDescendants();
+            if(nodes){
+                nodes.forEach((node:Node) => {
+                   node.setSelected(false)
+                });
+            }
+        }
     }
 
     /**
@@ -238,6 +276,7 @@ export class SelectionService {
 
     setSelectionStrategy(strategy: SelectionStrategy) {
         this.selectionStrategy = strategy;
+        this.singleSelection = this.hasPolicy(SingleSelectionPolicy);
     }
 
     /**
@@ -250,5 +289,13 @@ export class SelectionService {
      */
     hasPolicy<T extends SelectionPolicy>(type: { new(): T ;}):boolean {
         return (<DefaultSelectionStrategy>this.selectionStrategy).hasPolicy(type);
+    }
+
+    isSingleSelection(){
+        return this.singleSelection;
+    }
+
+    isMultiSelection(){
+        return !this.isSingleSelection();
     }
 }

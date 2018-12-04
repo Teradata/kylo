@@ -1,13 +1,12 @@
 import * as _ from "underscore";
 import { DomainType } from "./DomainTypesService";
-import { Common } from "../../common/CommonTypes";
-import AccessControlService from "../../services/AccessControlService";
+import { AccessControlService} from "../../services/AccessControlService";
 import { TableColumnDefinition } from "../model/TableColumnDefinition";
 import { TableFieldPolicy } from "../model/TableFieldPolicy";
 import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
 import { Injectable, Inject, Component } from "@angular/core";
 import { RestUrlService } from "./RestUrlService";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 import { DefaultFeedPropertyService } from "./DefaultFeedPropertyService";
 import { VisualQueryService } from "./VisualQueryService";
 import { FeedCreationErrorService } from "./FeedCreationErrorService";
@@ -16,6 +15,8 @@ import { MatSnackBar } from "@angular/material/snack-bar";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {FeedConstants} from "./FeedConstants";
 import { CloneUtil } from "../../common/utils/clone-util";
+
+import {Common} from '../../../lib/common/CommonTypes';
 
 /**
  * A cache of the controllerservice Id to its display name.
@@ -189,7 +190,7 @@ export class FeedService {
      */
     newCreateFeed() {
         this.createFeedModel = this.getNewCreateFeedModel();
-        this.VisualQueryService.resetModel();
+        this.visualQueryService.resetModel();
         this.FeedCreationErrorService.reset();
     }
     /**
@@ -264,7 +265,7 @@ export class FeedService {
             delete createFeedModel[key];
         })
 
-        this.VisualQueryService.resetModel();
+        this.visualQueryService.resetModel();
         this.FeedCreationErrorService.reset();
     }
 
@@ -597,20 +598,16 @@ export class FeedService {
     }
 
     validateSchemaDidNotChange(model: any) {
-        var valid = true;
+        let valid = true;
         //if we are editing we need to make sure we dont modify the originalTableSchema
         if (model.id && model.originalTableSchema && model.table && model.table.tableSchema) {
             //if model.originalTableSchema != model.table.tableSchema  ... ERROR
             //mark as invalid if they dont match
-            var origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(function (i) {
-                return i.name + " " + i.derivedDataType;
-            }).value().join()
-            var updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(function (i) {
-                return i.name + " " + i.derivedDataType;
-            }).value().join()
+            const origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(_.property("derivedDataType")).value().join(",");
+            const updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(_.property("derivedDataType")).value().join(",");
             valid = origFields == updatedFields;
         }
-        return valid
+        return valid;
     }
     /**
      * Save the model Posting the data to the server
@@ -708,8 +705,24 @@ export class FeedService {
             this.http.get(this.RestUrlService.OPS_MANAGER_FEED_NAMES).toPromise().then(successFn, errorFn);
         });
     }
-    /**
-     * Call the server to get a list of all the available Preconditions that can be used when saving/scheduling the feed
+
+     /**
+             * Call server to return a list of Feed Names (from JCR)
+             * @returns {angular.IHttpPromise<any>}
+             */
+            getFeedNamesFromJcr() {
+                let successFn = (response: any) => {
+                    return response;
+                };
+                let errorFn = (err: any) => {
+                    console.log("Error getting list of feed names from JCR " + err);
+                };
+                let promise = this.http.get(this.RestUrlService.GET_FEED_NAMES_URL).toPromise();
+                promise.then(successFn, errorFn);
+                return promise;
+            }
+
+            /*** Call the server to get a list of all the available Preconditions that can be used when saving/scheduling the feed
      * @returns {HttpPromise}
      */
     getPossibleFeedPreconditions() {
@@ -961,7 +974,7 @@ export class FeedService {
     }
 
     constructor(private RestUrlService: RestUrlService,
-        private VisualQueryService: VisualQueryService,
+        private visualQueryService: VisualQueryService,
         private FeedCreationErrorService: FeedCreationErrorService,
         private FeedPropertyService: DefaultFeedPropertyService,
         private accessControlService: AccessControlService,
@@ -1009,7 +1022,7 @@ export class FeedService {
  */
 @Component({
     selector: 'feed-saving-dialog-controller',
-    templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html'
+    templateUrl: '../feeds/edit-feed/details/feed-saving-dialog.html'
 })
 export class FeedSavingDialogController {
 

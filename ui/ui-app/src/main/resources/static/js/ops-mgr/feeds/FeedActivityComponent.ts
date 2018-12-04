@@ -1,11 +1,11 @@
 import "pascalprecht.translate";
 import { Component, Input, OnInit } from "@angular/core";
-import Utils from "../../services/Utils";
-import ChartJobStatusService from "../services/ChartJobStatusService";
-import BroadcastService from "../../services/broadcast-service";
+import {Utils} from "../../services/Utils";
+import {BroadcastService} from "../../services/broadcast-service";
 import { TranslateService } from "@ngx-translate/core";
 import { HttpClient } from "@angular/common/http";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
+import {OpsManagerChartJobService} from "../services/ops-manager-chart-job.service";
 
 // d3 and nvd3 should be included somewhere
 import 'd3';
@@ -15,7 +15,7 @@ declare const d3: any;
 
 @Component({
     selector: "tba-feed-activity",
-    templateUrl: "js/ops-mgr/feeds/feed-activity-template.html",
+    templateUrl: "./feed-activity-template.html",
     styles: [`.btn-border {
         background-color: white;
         text-align: center !important;
@@ -87,7 +87,7 @@ export class FeedActivityComponent implements OnInit {
     constructor(
         private Utils: Utils,
         private opsManagerRestUrlService: OpsManagerRestUrlService,
-        private chartJobStatusService: ChartJobStatusService,
+        private chartJobService: OpsManagerChartJobService,
         private broadcastService: BroadcastService,
         private translate: TranslateService,
         private http: HttpClient) {
@@ -133,7 +133,7 @@ export class FeedActivityComponent implements OnInit {
         }
     };
     createChartData(responseData: any) {
-        this.chartData = this.chartJobStatusService.toChartData(responseData);
+        this.chartData = this.chartJobService.toChartData(responseData);
 
     };
     parseDatePart() {

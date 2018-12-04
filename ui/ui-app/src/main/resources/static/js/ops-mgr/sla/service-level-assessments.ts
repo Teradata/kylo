@@ -1,15 +1,15 @@
 import * as _ from 'underscore';
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import IconService from "../services/IconStatusService";
-import TabService from "../services/TabService";
-import AccessControlService from "../../services/AccessControlService";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
+import {IconService} from "../services/IconStatusService";
+import {TabService} from "../../services/tab.service";
+import {AccessControlService} from "../../services/AccessControlService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
-import BroadcastService from "../../services/broadcast-service";
+import {BroadcastService} from "../../services/broadcast-service";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 import { Component, Input } from "@angular/core";
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 import { Subscription } from 'rxjs/Subscription';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 import { ITdDataTableColumn, TdDataTableService, ITdDataTableSortChangeEvent, TdDataTableSortingOrder } from '@covalent/core/data-table';
@@ -17,10 +17,10 @@ import { IPageChangeEvent } from '@covalent/core';
 
 @Component({
     selector: 'kylo-service-level-assessments',
-    templateUrl: 'js/ops-mgr/sla/service-level-assessments-template.html'
+    templateUrl: './service-level-assessments-template.html'
 })
 export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView {
-    
+
     @Input() pageName: string = ObjectUtils.isDefined(this.pageName) ? this.pageName : 'service-level-assessments';
     @Input() cardTitle: string
     loaded: boolean = false;
@@ -55,7 +55,7 @@ export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView 
 
         //Pagination
         this.paginationData = this.paginationDataService.paginationData(this.pageName);
-        
+
         //Setup the Tabs
         this.tabs = this.tabService.registerTabs(this.pageName, this.tabNames, this.paginationData.activeTab);
         this.tabMetadata= this.tabService.metadata(this.pageName);
@@ -81,7 +81,7 @@ export class kyloServiceLevelAssessments extends BaseFilteredPaginatedTableView 
                 public _dataTableService: TdDataTableService){
                     super(_dataTableService);
     } // end of constructor
-    
+
     //Tab Functions
     onTabSelected (tab: any) {
         this.loaded = false;

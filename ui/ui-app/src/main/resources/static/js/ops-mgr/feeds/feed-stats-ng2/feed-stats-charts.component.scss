@@ -1,0 +1,33 @@
+.md-slider-container{
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  box-orient: horizontal;
+  box-direction: normal;
+  -webkit-flex-direction: row;
+  flex-direction: row;
+}
+mat-card {
+  padding: 8px;
+}
+
+.kpi_icon{
+  margin-top:-16px;
+  font-size:50px;
+  height:50px;
+  width:50px;
+}
+
+.kpi-stat{
+  font-weight: bold;
+  font-size: 36px;
+  margin: 0 0 16px;
+}
+
+.kpi-title {
+  font: 500 20px/32px;
+  margin: 0 0 16px;
+}

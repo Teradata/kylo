@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -559,7 +560,7 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
 
-            Value weakRef = node.getSession().getValueFactory().createValue(ref, true);
+            Value weakRef = createValue(node.getSession(), true);
             node.setProperty(name, weakRef);
 
         } catch (AccessDeniedException e) {
@@ -671,72 +672,20 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to get the node property set: " + propName, e);
         }
     }
-
-    public static boolean addToSetProperty(Node node, String name, Object value) {
-        return addToSetProperty(node, name, value, false);
-    }
-
-    public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
-        try {
-//            JcrVersionUtil.ensureCheckoutNode(node);
-
-            if (node == null) {
-                throw new IllegalArgumentException("Cannot set a property on a null-node!");
-            }
-            if (name == null) {
-                throw new IllegalArgumentException("Cannot set a property without a provided name");
-            }
-
-            Set<Value> values = null;
-
-            if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues())
-                    .map(v -> {
-                        if (PropertyType.REFERENCE == v.getType() && weakReference) {
-                            try {
-                                Node n = JcrPropertyUtil.asValue(v, node.getSession());
-                                return n.getSession().getValueFactory().createValue(n, true);
-                            } catch (AccessDeniedException e) {
-                                log.debug("Access denied", e);
-                                throw new AccessControlException(e.getMessage());
-                            } catch (RepositoryException e) {
-                                throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
-                            }
-                        } else {
-                            return v;
-                        }
-                    }).collect(Collectors.toSet());
-            } else {
-                values = new HashSet<>();
-            }
-
-            Value newVal = createValue(node.getSession(), value, weakReference);
-
-            boolean result = values.add(newVal);
-            if (weakReference) {
-                Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]), PropertyType.WEAKREFERENCE);
-            } else {
-                Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
-            }
-
-            return result;
-        } catch (AccessDeniedException e) {
-            log.debug("Access denied", e);
-            throw new AccessControlException(e.getMessage());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
-        }
-    }
     
     public static <E> List<E> getPropertyValuesList(Node node, String propName) {
+        return getPropertyValuesList(node, propName, false);
+    }
+
+    public static <E> List<E> getPropertyValuesList(Node node, String propName, boolean weakRefs) {
         try {
             Property prop;
             try {
                 prop = node.getProperty(propName);
+                return new MultiValuePropertyList<>(prop);
             } catch (PathNotFoundException e) {
-                prop = node.setProperty(propName, new Value[0]);
+                return new MultiValuePropertyList<>(node, propName);
             }
-            return new MultiValuePropertyList<>(prop);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
             throw new AccessControlException(e.getMessage());
@@ -746,14 +695,18 @@ public class JcrPropertyUtil {
     }
     
     public static <E> Set<E> getPropertyValuesSet(Node node, String propName) {
+        return getPropertyValuesSet(node, propName, false);
+    }
+    
+    public static <E> Set<E> getPropertyValuesSet(Node node, String propName, boolean weakRefs) {
         try {
             Property prop;
             try {
                 prop = node.getProperty(propName);
+                return new MultiValuePropertySet<>(prop);
             } catch (PathNotFoundException e) {
-                prop = node.setProperty(propName, new Value[0]);
+                return new MultiValuePropertySet<>(node, propName);
             }
-            return new MultiValuePropertySet<>(prop);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
             throw new AccessControlException(e.getMessage());
@@ -762,9 +715,8 @@ public class JcrPropertyUtil {
         }
     }
 
-    public static boolean removeAllFromSetProperty(Node node, String name) {
+    public static boolean removeAllFromCollectionProperty(Node node, String name) {
         try {
-//            JcrVersionUtil.ensureCheckoutNode(node);
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
@@ -772,8 +724,7 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot remove a property without a provided name");
             }
 
-            Set<Value> values = new HashSet<>();
-            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            node.setProperty(name, (Value[]) null);
             return true;
 
         } catch (AccessDeniedException e) {
@@ -783,35 +734,99 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to remove set property: " + name, e);
         }
     }
+    
+    public static boolean addToListProperty(Node node, String name, Object value) {
+        return addToCollectionProperty(node, name, value, false, () -> new ArrayList<Value>());
+    }
+    
+    public static boolean addToListProperty(Node node, String name, Object value, boolean weakReference) {
+        return addToCollectionProperty(node, name, value, weakReference, () -> new ArrayList<Value>());
+    }
+    
+    public static boolean addToSetProperty(Node node, String name, Object value) {
+        return addToCollectionProperty(node, name, value, false, () -> new HashSet<Value>());
+    }
 
+    public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
+        return addToCollectionProperty(node, name, value, weakReference, () -> new HashSet<Value>());
+    }
+
+    private static boolean addToCollectionProperty(Node node, String name, Object value, boolean weakReference, Supplier<Collection<Value>> collectionSupplier) {
+        try {
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+            
+            Collection<Value> values = null;
+            
+            if (node.hasProperty(name)) {
+                values = Arrays.stream(node.getProperty(name).getValues())
+                                .map(v -> {
+                                    if (PropertyType.REFERENCE == v.getType() && weakReference) {
+                                        try {
+                                            Node n = JcrPropertyUtil.asValue(v, node.getSession());
+                                            return n.getSession().getValueFactory().createValue(JcrUtil.dereference(n), true);
+                                        } catch (AccessDeniedException e) {
+                                            log.debug("Access denied", e);
+                                            throw new AccessControlException(e.getMessage());
+                                        } catch (RepositoryException e) {
+                                            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+                                        }
+                                    } else {
+                                        return v;
+                                    }
+                                }).collect(Collectors.toCollection(collectionSupplier));
+            } else {
+                values = collectionSupplier.get();
+            }
+            
+            Value newVal = createValue(node.getSession(), value, weakReference);
+            
+            boolean result = values.add(newVal);
+            if (weakReference) {
+                node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]), PropertyType.WEAKREFERENCE);
+            } else {
+                node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            }
+            
+            return result;
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+        }
+    }
 
     public static boolean removeFromSetProperty(Node node, String name, Object value) {
-        return removeFromSetProperty(node, name, value, false);
+        return removeFromCollectionProperty(node, name, value, false, () -> new HashSet<Value>());
     }
 
     public static boolean removeFromSetProperty(Node node, String name, Object value, boolean weakRef) {
+        return removeFromCollectionProperty(node, name, value, weakRef, () -> new HashSet<Value>());
+    }
+    
+    private static boolean removeFromCollectionProperty(Node node, String name, Object value, boolean weakRef, Supplier<Collection<Value>> collectionSupplier) {
         try {
-//            JcrVersionUtil.ensureCheckoutNode(node);
-
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
             if (name == null) {
                 throw new IllegalArgumentException("Cannot remove a property without a provided name");
             }
-
-            Set<Value> values = new HashSet<>();
-
+            
             if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toSet());
+                Collection<Value> values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toCollection(collectionSupplier));
+                Value existingVal = createValue(node.getSession(), value, values.stream().anyMatch(v -> v.getType() == PropertyType.WEAKREFERENCE));
+                boolean result = values.remove(existingVal);
+                node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+                return result;
             } else {
-                values = new HashSet<>();
+                return false;
             }
-
-            Value existingVal = createValue(node.getSession(), value, values.stream().anyMatch(v -> v.getType() == PropertyType.WEAKREFERENCE));
-            boolean result = values.remove(existingVal);
-            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
-            return result;
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
             throw new AccessControlException(e.getMessage());
@@ -857,7 +872,8 @@ public class JcrPropertyUtil {
             } else if (value instanceof Enum) {
                 return factory.createValue(((Enum) value).name());
             } else if (value instanceof JcrObject) {
-                return factory.createValue(((JcrObject) value).getNode(), weakRef);
+                Node node = ((JcrObject) value).getNode();
+                return factory.createValue(JcrUtil.dereference(node), weakRef);
 //                return factory.createValue(((JcrObject) value).getNode().getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
             } else if (value instanceof Value) {
                 return (Value) value;
@@ -906,6 +922,10 @@ public class JcrPropertyUtil {
     }
 
     public static int getJCRPropertyType(Object obj) {
+        return getJCRPropertyType(obj, false);
+    }
+    
+    public static int getJCRPropertyType(Object obj, boolean weakReference) {
         if (obj instanceof String) {
             return PropertyType.STRING;
         }
@@ -937,12 +957,18 @@ public class JcrPropertyUtil {
             return JcrExtensiblePropertyCollection.COLLECTION_TYPE;
         }
         if (obj instanceof Node) {
-            return PropertyType.REFERENCE;
+            return weakReference ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE;
         }
         return PropertyType.UNDEFINED;
     }
 
     public static Value asValue(ValueFactory factory, Object obj) {
+        return asValue(factory, obj, false);
+    }
+    
+    public static Value asValue(ValueFactory factory, Object obj, boolean weakReference) {
+        boolean useWeak = weakReference;
+        
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
             switch (getJCRPropertyType(obj)) {
@@ -958,8 +984,11 @@ public class JcrPropertyUtil {
                     return obj instanceof Double ? factory.createValue((Double) obj) : factory.createValue(((Float) obj).doubleValue());
                 case PropertyType.BINARY:
                     return factory.createValue((InputStream) obj);
+                case PropertyType.WEAKREFERENCE:
+                    useWeak = true;
                 case PropertyType.REFERENCE:
-                    return factory.createValue((Node) obj);
+                    Node node = (Node) obj;
+                    return factory.createValue(JcrUtil.dereference(node), useWeak);
                 default:
                     return (obj != null ? factory.createValue(obj.toString()) : factory.createValue(StringUtils.EMPTY));
             }
@@ -1100,6 +1129,46 @@ public class JcrPropertyUtil {
     }
 
     /**
+     * Is the node missing any required properties
+     *
+     * @param node
+     * @param fields
+     * @return true if missing, false if they are all set
+     */
+    public static boolean isMissingRequiredUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields) {
+
+        Map<String,String> properties = JcrPropertyUtil.getUserProperties(node);
+        try {
+            return isMissingRequiredUserProperties(fields,properties);
+        } catch(MissingUserPropertyException e){
+           return true;
+        }
+    }
+
+    /**
+     * are the supplied properties missing required ones
+     * @param fields
+     * @param userProperties
+     * @return true if missing, false if they are all set
+     * @throws MissingUserPropertyException
+     */
+    private static boolean isMissingRequiredUserProperties(@Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String,String> userProperties) throws MissingUserPropertyException{
+        boolean missingProperties = false;
+        // Verify required properties are not empty
+        for (final UserFieldDescriptor field : fields) {
+            if (field.isRequired() && StringUtils.isEmpty(userProperties.get(field.getSystemName()))) {
+                missingProperties = true;
+                throw new MissingUserPropertyException("Missing required property: " + field.getSystemName());
+            }
+        }
+        return missingProperties;
+    }
+
+    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
+        setUserProperties(node,fields,properties,false);
+    }
+
+    /**
      * Sets the specified user-defined properties on the specified node.
      *
      * @param node       the target node
@@ -1108,10 +1177,10 @@ public class JcrPropertyUtil {
      * @throws IllegalStateException       if a property name is encoded incorrectly
      * @throws MetadataRepositoryException if the metadata repository is unavailable
      */
-    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
+    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties, boolean enforceRequired) {
         // Verify required properties are not empty
         for (final UserFieldDescriptor field : fields) {
-            if (field.isRequired() && StringUtils.isEmpty(properties.get(field.getSystemName()))) {
+            if (enforceRequired && field.isRequired() && StringUtils.isEmpty(properties.get(field.getSystemName()))) {
                 throw new MissingUserPropertyException("Missing required property: " + field.getSystemName());
             }
         }

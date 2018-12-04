@@ -18,7 +18,7 @@ import * as _ from "underscore";
 import { HttpClient } from '@angular/common/http';
 import { RestUrlService } from './RestUrlService';
 import { Injectable } from '@angular/core';
-import { ObjectUtils } from "../../common/utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 
 /**
  * Defines the domain type (zip, phone, credit card) of a column.
@@ -181,7 +181,7 @@ export class DomainTypesService {
 
                     return (match === true);
                 });
-                return ObjectUtils.isObject(matchingDomainType) ? matchingDomainType : null;
+                return _.isObject(matchingDomainType) ? matchingDomainType : null;
             }
 
             /**

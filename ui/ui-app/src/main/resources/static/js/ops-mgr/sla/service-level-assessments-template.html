@@ -20,28 +20,28 @@
 
   <mat-card class="filter-header">
         <mat-card-title style="font-size:smaller;">
-    
+
             <mat-toolbar style="display:flex">
                 <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
                 <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" [(ngModel)]="filterSLA" placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
                 </td-search-box>
             </mat-toolbar>
         </mat-card-title>
-    
+
         <mat-card-content>
-    
+
             <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
                                 (selectedIndexChange)="onTabSelected($event)"
                                 layout-fill dynamicHeight>
-    
+
                 <mat-tab *ngFor="let tab of tabs"
                         [disabled]="tab.disabled" flex>
                         <ng-template mat-tab-label>{{tab.title}}</ng-template>
                     <div>
                         <mat-progress-bar mode="indeterminate" *ngIf="!loaded"></mat-progress-bar>
                         <mat-divider></mat-divider>
-                        
-                        <filtered-paginated-table-view 
+
+                        <filtered-paginated-table-view
                             [showToolbar]="false"
                             [columns]="columns"
                             [sortable]="true"
@@ -58,15 +58,15 @@
                             (rowClicked)="assessmentDetails($event)"
                             [allowedPageSize]="[5,10,20,50,100]"
                         >
-                        
+
                             <ng-template  tdDataTableTemplate="name" let-value="value" let-row="row" let-column="column">
                                 {{row.agreement.name}}
                             </ng-template>
                             <ng-template tdDataTableTemplate="result" let-value="value" let-row="row" let-column="column">
-                                <span  [ngClass]="{'success':(row.result == 'SUCCESS'),'error':row.result == 'FAILURE','warn':row.result == 'WARNING'}">
-                                    <ng-md-icon *ngIf="row.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
-                                    <ng-md-icon *ngIf="row.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
-                                    <ng-md-icon *ngIf="row.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
+                                <span  [ngClass]="{'tc-positive':(row.result == 'SUCCESS'),'tc-negative':row.result == 'FAILURE','tc-warn':row.result == 'WARNING'}">
+                                    <ng-md-icon *ngIf="row.result == 'FAILURE'" class="tc-negative" icon="error" size="20"></ng-md-icon>
+                                    <ng-md-icon *ngIf="row.result == 'SUCCESS'" class="tc-positive" icon="check_circle" size="20"></ng-md-icon>
+                                    <ng-md-icon *ngIf="row.result == 'WARNING'" class="tc-warn" icon="warning" size="20"></ng-md-icon>
                                     <span hide show-gt-md>{{row.result}}</span>
                                 </span>
                             </ng-template>
@@ -76,7 +76,7 @@
                             <ng-template tdDataTableTemplate="message" let-value="value" let-row="row" let-column="column">
                                 {{row.message}}
                             </ng-template>
-                        
+
                         </filtered-paginated-table-view>
 
                     </div>

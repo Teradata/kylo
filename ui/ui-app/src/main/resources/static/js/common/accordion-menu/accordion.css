@@ -1,8 +1,6 @@
-
 .collapsible-item .title {
   padding: 10px;
-  color: #3483BA;
-  background-color: #F9F9F9;
+  color: #616d73;
   cursor: pointer;
 }
 
@@ -11,7 +9,6 @@
 }
 
 .collapsible-item .title.disabled {
-  background: #eee;
   color: #999;
   cursor: text;
 }

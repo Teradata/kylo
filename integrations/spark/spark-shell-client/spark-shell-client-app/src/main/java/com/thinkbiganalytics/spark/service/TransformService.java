@@ -32,6 +32,7 @@ import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResult;
@@ -57,6 +58,7 @@ import com.thinkbiganalytics.spark.metadata.ValidationStage;
 import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
@@ -79,6 +81,7 @@ import org.slf4j.ext.XLoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -462,25 +465,41 @@ public class TransformService {
 
 
     public TransformResponse kyloReaderResponse(KyloCatalogReadRequest request) throws ScriptException {
-        KyloCatalogClient<?> client = kyloCatalogClientBuilder.build();
-        KyloCatalogReader<?> reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
-        final Object dataFrame;
-        if (!request.getPaths().isEmpty()) {
-            if (request.getPaths().size() > 1) {
-                dataFrame = reader.load(request.getPaths().toArray(new String[0]));
-            } else {
-                dataFrame = reader.load(request.getPaths().get(0));
+        // Change class loader
+        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            // Ensure SessionState is valid
+            if (SessionState.get() == null && sessionState != null) {
+                SessionState.setCurrentSessionState(sessionState);
             }
-        } else {
-            dataFrame = reader.load();
+
+            // Change class loader (after SessionState)
+            Thread.currentThread().setContextClassLoader(engine.getClassLoader());
+
+            // Build DataFrame
+            KyloCatalogClient<?> client = kyloCatalogClientBuilder.build();
+            KyloCatalogReader<?> reader = client.read().options(request.getOptions()).addJars(request.getJars()).addFiles(request.getFiles()).format(request.getFormat());
+            final Object dataFrame;
+            if (!request.getPaths().isEmpty()) {
+                if (request.getPaths().size() > 1) {
+                    dataFrame = reader.load(request.getPaths().toArray(new String[0]));
+                } else {
+                    dataFrame = reader.load(request.getPaths().get(0));
+                }
+            } else {
+                dataFrame = reader.load();
+            }
+
+            // Read DataFrame
+            final DataSet dataSet = sparkContextService.toDataSet(dataFrame);
+
+            TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), request.getPageSpec());
+
+            updateTransformResponse(response, dataSet);
+            return log.exit(response);
+        } finally {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
         }
-
-        final DataSet dataSet = sparkContextService.toDataSet(dataFrame);
-
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), request.getPageSpec());
-
-        updateTransformResponse(response, dataSet);
-        return log.exit(response);
     }
 
     /**
@@ -533,9 +552,12 @@ public class TransformService {
         final List<NamedParam> bindings = new ArrayList<>();
         bindings.add(new NamedParamClass("sparkContextService", SparkContextService.class.getName(), sparkContextService));
 
-        if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
+        if ((request.getDatasources() != null && !request.getDatasources().isEmpty()) || (request.getCatalogDataSources() != null && !request.getCatalogDataSources().isEmpty())) {
             if (datasourceProviderFactory != null) {
-                final DatasourceProvider datasourceProvider = datasourceProviderFactory.getDatasourceProvider(request.getDatasources());
+                List<Datasource> legacyDataSources = request.getDatasources() != null ? request.getDatasources() : new ArrayList<Datasource>();
+                List<DataSource> catalogDataSources = request.getCatalogDataSources() != null ? request.getCatalogDataSources() : new ArrayList<DataSource>();
+
+                final DatasourceProvider datasourceProvider = datasourceProviderFactory.getDatasourceProvider(legacyDataSources,catalogDataSources);
                 bindings.add(new NamedParamClass("datasourceProvider", DatasourceProvider.class.getName() + "[org.apache.spark.sql.DataFrame]", datasourceProvider));
             } else {
                 throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));

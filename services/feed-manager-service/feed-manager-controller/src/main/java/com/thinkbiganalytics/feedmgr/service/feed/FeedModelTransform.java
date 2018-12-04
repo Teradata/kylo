@@ -1,12 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.flipkart.zjsonpatch.JsonDiff;
-import com.flipkart.zjsonpatch.JsonPatch;
-
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -27,6 +20,11 @@ import com.flipkart.zjsonpatch.JsonPatch;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
@@ -44,10 +42,17 @@ import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
@@ -58,16 +63,27 @@ import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.User;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
 import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -75,15 +91,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
 /**
  * Transforms feeds between Feed Manager and Metadata formats.
  */
 public class FeedModelTransform {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedModelTransform.class);
 
     @Inject
     CategoryProvider categoryProvider;
@@ -95,6 +108,12 @@ public class FeedModelTransform {
     private FeedProvider feedProvider;
     
     @Inject
+    private DataSourceProvider dataSourceProvider;
+    
+    @Inject
+    private DataSetProvider dataSetProvider;
+    
+    @Inject
     private SecurityModelTransform securityTransform;
 
     @Inject
@@ -102,6 +121,9 @@ public class FeedModelTransform {
 
     @Inject
     private CategoryModelTransform categoryModelTransform;
+    
+    @Inject
+    private CatalogModelTransform catalogModelTransform;
 
     @Inject
     private HiveService hiveService;
@@ -111,6 +133,9 @@ public class FeedModelTransform {
 
     @Inject
     private EncryptionService encryptionService;
+
+    @Inject
+    private AccessController accessController;
 
     /**
      *
@@ -179,15 +204,11 @@ public class FeedModelTransform {
     @Nonnull
     public Feed feedToDomain(@Nonnull final FeedMetadata feedMetadata) {
         //resolve the id
-        Feed.ID domainId = feedMetadata.getId() != null ? feedProvider.resolveId(feedMetadata.getId()) : null;
-        Feed domain = domainId != null ? feedProvider.findById(domainId) : null;
+        Feed.ID inputId = feedMetadata.getId() != null ? feedProvider.resolveId(feedMetadata.getId()) : null;
+        Feed domain = inputId != null ? feedProvider.findById(inputId) : null;
 
         FeedCategory restCategoryModel = feedMetadata.getCategory();
-        Category category = null;
-
-        if (restCategoryModel != null && (domain == null || domain.getCategory() == null)) {
-            category = categoryProvider.findById(categoryProvider.resolveId(restCategoryModel.getId()));
-        }
+        Category category = restCategoryModel != null ? categoryProvider.findById(categoryProvider.resolveId(restCategoryModel.getId())) : null;
 
         if (domain == null) {
             //ensure the Category exists
@@ -196,17 +217,32 @@ public class FeedModelTransform {
                 throw new RuntimeException("Category cannot be found while creating feed " + feedMetadata.getSystemFeedName() + ".  Category Id is " + categoryId);
             }
             domain = feedProvider.ensureFeed(category.getId(), feedMetadata.getSystemFeedName());
-            domainId = domain.getId();
+            inputId = domain.getId();
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             domain.setState(state);
 
-            Feed.Mode mode = Feed.Mode.valueOf(feedMetadata.getMode());
-            domain.setMode(mode);
             //reassign the domain data back to the ui model....
-            feedMetadata.setFeedId(domainId.toString());
+            feedMetadata.setFeedId(inputId.toString());
             feedMetadata.setState(state.name());
 
         }
+        
+        final Feed.ID domainId = inputId;
+        
+        // Check if the category is changing
+        if (category != null && ! category.getId().equals(domain.getCategory().getId())) {
+            domain = feedProvider.moveFeed(domain, category);
+        }
+        
+        // Check if the feed system name is changing
+        if (! domain.getSystemName().equals(feedMetadata.getSystemFeedName())) {
+            domain = feedProvider.changeSystemName(domain, feedMetadata.getSystemFeedName());
+            // Make sure the table schema name matches the system name.
+            if (feedMetadata.getTable() != null && feedMetadata.getTable().getTableSchema() != null) {
+                feedMetadata.getTable().getTableSchema().setName(feedMetadata.getSystemFeedName());
+            }
+        }
+        
         domain.setDisplayName(feedMetadata.getFeedName());
         if(feedMetadata.getDescription() == null){
             feedMetadata.setDescription("");
@@ -226,10 +262,6 @@ public class FeedModelTransform {
             domain.setState(state);
         }
 
-        if (StringUtils.isNotBlank(feedMetadata.getMode())) {
-            Feed.Mode mode = Feed.Mode.valueOf(feedMetadata.getMode().toUpperCase());
-            domain.setMode(mode);
-        }
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
@@ -297,7 +329,14 @@ public class FeedModelTransform {
         result.setSchedule(source.getSchedule());
         result.setTable(source.getTable());
         result.setTableOption(source.getTableOption());
-        result.setSourceDataSets(source.getSourceDataSets());
+        if(source.getSourceDataSets() != null) {
+            result.setSourceDataSets(source.getSourceDataSets());
+        }
+        if(source.getSampleDataSet() != null) {
+            result.setSampleDataSet(source.getSampleDataSet());
+        }
+        result.setUiState(source.getUiState());
+        result.setActive(source.isActive());
         return result;
     }
 
@@ -308,19 +347,39 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed>> versions, @Nonnull final Feed.ID feedId) {
-        FeedVersions feedVersions = new FeedVersions(feedId.toString());
-        versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer)));
+    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed.ID, Feed>> versions, @Nonnull final Feed.ID feedId, final EntityVersion.ID deployedId) {
+       return domainToFeedVersions(versions,feedId,deployedId,null);
+    }
+
+    /**
+     *
+     * @param versions
+     * @param feedId
+     * @param deployedId
+     * @param allowedActions
+     * @return
+     */
+    public FeedVersions domainToFeedVersions(@Nonnull final List<EntityVersion<Feed.ID, Feed>> versions, @Nonnull final Feed.ID feedId, final EntityVersion.ID deployedId, ActionGroup allowedActions) {
+        String deployed = deployedId != null ? deployedId.toString() : null;
+        FeedVersions feedVersions = new FeedVersions(feedId.toString(), deployed);
+        versions.forEach(domainVer -> feedVersions.getVersions().add(domainToFeedVersion(domainVer,allowedActions)));
         return feedVersions;
     }
     
     @Nonnull
-    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed> domainVer) {
+    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed.ID, Feed> domainVer) {
+      return domainToFeedVersion(domainVer,null);
+    }
+
+    public com.thinkbiganalytics.feedmgr.rest.model.EntityVersion domainToFeedVersion(EntityVersion<Feed.ID, Feed> domainVer, ActionGroup actionGroup) {
         com.thinkbiganalytics.feedmgr.rest.model.EntityVersion version
-            = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(), 
-                                                                         domainVer.getName(), 
-                                                                         domainVer.getCreatedDate().toDate());
-        domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed)));
+            = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(domainVer.getId().toString(),
+                                                                         domainVer.getName(),
+                                                                         domainVer.getCreatedDate().toDate(),
+                                                                         domainVer.getChangeComment().map(chg -> chg.getUser().getName()).orElse(""),
+                                                                         domainVer.getChangeComment().map(chg -> chg.getComment()).orElse(""),
+                                                                         domainVer.getEntityId().toString());
+        domainVer.getEntity().ifPresent(feed -> version.setEntity(domainToFeedMetadata(feed, actionGroup)));
         return version;
     }
 
@@ -332,9 +391,12 @@ public class FeedModelTransform {
      */
     @Nonnull
     public FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain) {
-        return domainToFeedMetadata(domain, null);
+        return domainToFeedMetadata(domain,null, (ActionGroup) null);
     }
 
+    public FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, ActionGroup actionGroup) {
+        return domainToFeedMetadata(domain, null,actionGroup);
+    }
     /**
      * Transforms the specified Metadata feeds to Feed Manager feeds.
      *
@@ -370,7 +432,24 @@ public class FeedModelTransform {
         return deserializeFeedMetadata(domain, true);
     }
 
+    /**
+     * Set the FeedMetadata.registeredTemplate with the template data
+     * @param domain the domain JcrFeed
+     * @param feed the FeedMetata REST object
+     */
+    public void setFeedMetadataRegisteredTemplate(@Nonnull final Feed domain,FeedMetadata feed){
+        FeedManagerTemplate template = domain.getTemplate();
+        if (template != null) {
+            RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+            feed.setRegisteredTemplate(registeredTemplate);
+            feed.setTemplateId(registeredTemplate.getId());
+            feed.setTemplateName(registeredTemplate.getTemplateName());
+        }
+    }
 
+    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap){
+        return this.domainToFeedMetadata(domain, userFieldMap,null);
+    }
     /**
      * Transforms the specified Metadata feed to a Feed Manager feed.
      *
@@ -379,7 +458,7 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
+    private FeedMetadata domainToFeedMetadata(@Nonnull final Feed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap, @Nullable ActionGroup actionGroup) {
 
         FeedMetadata feed = deserializeFeedMetadata(domain, false);
         feed.setId(domain.getId().toString());
@@ -398,20 +477,13 @@ public class FeedModelTransform {
             feed.setUpdateDate(domain.getModifiedTime().toDate());
         }
 
-        FeedManagerTemplate template = domain.getTemplate();
-        if (template != null) {
-            RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-            feed.setRegisteredTemplate(registeredTemplate);
-            feed.setTemplateId(registeredTemplate.getId());
-            feed.setTemplateName(registeredTemplate.getTemplateName());
-        }
+        setFeedMetadataRegisteredTemplate(domain,feed);
+
         Category category = domain.getCategory();
         if (category != null) {
             feed.setCategory(categoryModelTransform.domainToFeedCategorySimple(category));
         }
         feed.setState(domain.getState() != null ? domain.getState().name() : null);
-        feed.setMode(domain.getMode() != null ? domain.getMode().name() : null);
-        feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
 
         // Set user-defined properties
         final Set<UserFieldDescriptor> userFields;
@@ -449,9 +521,37 @@ public class FeedModelTransform {
                 .collect(Collectors.toList());
             feed.setUsedByFeeds(usedByFeeds);
         }
+        
+        List<DataSet> srcDataSets = domain.getSources().stream()
+            .map(FeedConnection::getDataSet)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(dataSet -> {
+                try {
+                    return catalogModelTransform.dataSetToRestModel().apply(dataSet);
+                } catch (final AccessControlException e) {
+                    log.debug("Denied access to data set: {}: {}", domain.getId(), e);
 
-        //add in access control items
-        securityTransform.applyAccessControl(domain, feed);
+                    final DataSource dataSource = new DataSource();
+                    dataSource.setAllowedActions(new ActionGroup());
+                    dataSource.getAllowedActions().setActions(Collections.emptyList());
+
+                    final DataSet model = new DataSet();
+                    model.setId(domain.getId().toString());
+                    model.setDataSource(dataSource);
+                    return model;
+                }
+            })
+            .collect(Collectors.toList());
+        feed.setSourceDataSets(srcDataSets);
+
+        if(actionGroup == null) {
+            //add in access control items
+            securityTransform.applyAccessControl(domain, feed);
+        }
+        else {
+            feed.setAllowedActions(actionGroup);
+        }
 
         return feed;
     }
@@ -485,7 +585,6 @@ public class FeedModelTransform {
         feedSummary.setActive(feedManagerFeed.getState() != null && feedManagerFeed.getState().equals(Feed.State.ENABLED));
 
         feedSummary.setState(feedManagerFeed.getState() != null ? feedManagerFeed.getState().name() : null);
-        feedSummary.setMode(feedManagerFeed.getMode() != null ? feedManagerFeed.getMode().name() : null);
 
         if (feedManagerFeed instanceof Feed) {
 
@@ -535,7 +634,7 @@ public class FeedModelTransform {
      * @return the user-defined fields
      */
     @Nonnull
-    private Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
+    public Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
         final Set<UserFieldDescriptor> userFields = feedProvider.getUserFields();
         return (category != null) ? Sets.union(userFields, categoryProvider.getFeedUserFields(category.getId()).orElse(Collections.emptySet())) : userFields;
     }
@@ -558,11 +657,40 @@ public class FeedModelTransform {
             // This is because we will be providing the "to" entity content so the patch should show the original "from" values.
             JsonNode diff = JsonDiff.asJson(toNode, fromNode);
             com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromNoContent 
-                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), fromVer.getName(), fromVer.getCreatedDate());
+                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), 
+                                                                             fromVer.getName(), 
+                                                                             fromVer.getCreatedDate(), 
+                                                                             fromVer.getCreatedBy(), 
+                                                                             fromVer.getComment(), 
+                                                                             fromVer.getEntityId());
             
-            return new EntityVersionDifference(fromNoContent, toVer, diff);
+            return new EntityVersionDifference(fromVer, toVer, diff);
         } catch (IOException e) {
             throw new ModelTransformException("Failed to generate entity difference between entity versions " + fromVer.getId() + " and " + toVer.getId());
+        }
+    }
+
+    /**
+     * Updates the data sets of the specified feed.
+     */
+    public void updateDataSets(@Nullable final FeedMetadata feed) {
+        if (feed != null && feed.getSourceDataSets() != null) {
+            feed.setSourceDataSets(
+                feed.getSourceDataSets().stream()
+                    .peek(dataSet -> {
+                         com.thinkbiganalytics.metadata.api.catalog.DataSource dataSource = null;
+                        if(dataSet.getDataSource() != null && dataSet.getDataSource().getId() != null) {
+                            final com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                            dataSource = dataSourceProvider.find(dataSourceId).orElse(null);
+                        }
+                        if (dataSource == null || (accessController.isEntityAccessControlled()
+                                                   && !dataSource.getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE, DatasourceAccessControl.ACCESS_DETAILS))) {
+                            dataSet.setDataSource(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSource());
+                            dataSet.getDataSource().setAllowedActions(new ActionGroup());
+                        }
+                    })
+                    .collect(Collectors.toList())
+            );
         }
     }
 }

@@ -22,14 +22,19 @@ package com.thinkbiganalytics.discovery.parsers.csv;
 
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultFileSchema;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
+import com.thinkbiganalytics.file.parsers.util.ParserUtil;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
@@ -49,6 +54,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import com.thinkbiganalytics.file.parsers.csv.CSVAutoDetect;
 
 import javax.annotation.Nonnull;
 
@@ -111,7 +117,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         validate();
 
         // Parse the file
-        String sampleData = ParserHelper.extractSampleLines(is, charset, numRowsToSample);
+        String sampleData = ParserUtil.extractSampleLines(is, charset, numRowsToSample);
         Validate.notEmpty(sampleData, "No data in file");
         CSVFormat format = createCSVFormat(sampleData);
         try (Reader reader = new StringReader(sampleData)) {
@@ -123,6 +129,27 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             // Convert to target schema with proper derived types
             Schema targetSchema = convertToTarget(target, fileSchema);
             return targetSchema;
+        }
+    }
+
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+       return deriveTableSettings(target);
+    }
+
+    public boolean tableSettingsRequireFileInspection(){
+        return false;
+    }
+
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        switch (target){
+            case HIVE:
+                HiveTableSettings tableSettings = new DefaultHiveTableSettings();
+                tableSettings.setHiveFormat(deriveHiveRecordFormat());
+                tableSettings.setStructured(false);
+                return tableSettings;
+            default:
+                return new DefaultTableSettings();
         }
     }
 

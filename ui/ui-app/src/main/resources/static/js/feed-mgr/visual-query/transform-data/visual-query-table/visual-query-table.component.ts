@@ -1,16 +1,18 @@
-import * as angular from "angular";
+import {Directive, ElementRef, Inject, Injector, Input, OnChanges, OnDestroy, OnInit, SimpleChanges} from "@angular/core";
 import "fattable";
 import * as $ from "jquery";
+import "rxjs/add/observable/fromEvent";
+import "rxjs/add/operator/debounceTime";
+import {Observable} from "rxjs/Observable";
 import * as _ from "underscore";
 
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {CloneUtil} from "../../../../common/utils/clone-util";
+import {DomainType} from "../../../services/DomainTypesService";
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {WranglerDataService} from "../services/wrangler-data.service";
 import {WranglerTableService} from "../services/wrangler-table.service";
 import {VisualQueryPainterService} from "./visual-query-painter.service";
 import {WranglerTableModel} from "./wrangler-table-model";
-
-const moduleName: string = require("feed-mgr/visual-query/module-name");
 
 export interface VisualQueryTableCell {
     column: number;
@@ -57,9 +59,10 @@ const MENU_WIDTH = 52;
  * @param $timeout the Angular timeout service
  * @param uiGridConstants the ui-grid constants
  */
-export class VisualQueryTable {
-
-    static readonly $inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants", "$window"];
+@Directive({
+    selector: "visual-query-table"
+})
+export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
 
     /**
      * Indicates a column should be sorted in ascending order.
@@ -75,11 +78,13 @@ export class VisualQueryTable {
      * The columns in this table.
      * @type {Array.<Object>}
      */
+    @Input("table-columns")
     columns: object[];
 
     /**
      * List of the available domain types.
      */
+    @Input("table-domain-types")
     domainTypes: DomainType[];
 
     /**
@@ -88,16 +93,19 @@ export class VisualQueryTable {
      * @type {string} [options.headerFont] the font for the header row
      * @type {string} [options.rowFont] the font for the data rows
      */
+    @Input("table-options")
     options: { headerFont?: string, rowFont?: string };
 
     /**
      * The data rows in this table.
      */
+    @Input("table-rows")
     rows: any[][];
 
     /**
      * Whether the data has been actually modified/transformed (vs simple paging)
      */
+    @Input("table-state")
     tableState: number;
 
     /**
@@ -108,6 +116,7 @@ export class VisualQueryTable {
     /**
      * TODO: Remove Validation results for the data.
      */
+    @Input("table-validation")
     validationResults: TransformValidationResult[][];
 
     /**
@@ -120,9 +129,11 @@ export class VisualQueryTable {
      */
     private lastTableWidth_ = 0;
 
-    private actualRows : number;
+    @Input("actual-rows")
+    actualRows: number;
 
-    private actualCols : number;
+    @Input("actual-cols")
+    actualCols: number;
 
     /**
      * The table view.
@@ -132,14 +143,25 @@ export class VisualQueryTable {
 
     private tableModel: any;
 
-    constructor(private $scope_: angular.IScope, private $element: angular.IAugmentedJQuery, private $timeout_: angular.ITimeoutService, private painter: VisualQueryPainterService,
-                private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any, private $window: angular.IWindowService) {
+    constructor(private $element: ElementRef, private painter: VisualQueryPainterService, private dataService: WranglerDataService, private tableService: WranglerTableService, injector: Injector,
+                @Inject("uiGridConstants") private uiGridConstants_: any) {
         this.painter.delegate = this;
 
+        // Refresh table on resize
+        Observable.fromEvent(window, "resize")
+            .debounceTime(150)
+            .subscribe(() => this.refresh());
+    }
+
+    ngOnDestroy() {
+        this.tableService.unsubscribe();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
         /* Watch on columns indicating model changed */
-        $scope_.$watchCollection(() => this.columns, () => {
+        if (changes.columns && changes.columns.currentValue && (changes.columns.currentValue.length != 0 || (changes.columns.previousValue && changes.columns.previousValue.length != 0))) {
             // On paging, we only need to refresh rows
-            let rowsOnly : boolean = (this.lastState == this.tableState);
+            let rowsOnly: boolean = (this.lastState == this.tableState);
             this.onColumnsChange();
             this.dataService.state = this.tableState;
             this.dataService.columns_ = this.columns;
@@ -152,34 +174,14 @@ export class VisualQueryTable {
             } else {
                 this.refresh();
             }
-        });
-
-        $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
-        $scope_.$watch(() => this.options ? this.options.rowFont : null, () => painter.rowFont = this.options.rowFont);
-
-        let resizeTimeoutPromise: any = null;
-
-        let resizeTimeout = <T>(callback: (...args: any[]) => T, interval: number) => {
-            if (resizeTimeoutPromise != null) {
-                this.$timeout_.cancel(resizeTimeoutPromise);
-            }
-            resizeTimeoutPromise = this.$timeout_(callback, interval);
-        };
-
-        // Refresh table on resize
-        //$scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 50));
-        angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 150));
-
-        // Listen for destroy event
-        $scope_.$on("destroy", () => this.$onDestroy());
+        } else if (changes.options) {
+            this.painter.headerFont = this.options.headerFont;
+            this.painter.rowFont = this.options.rowFont
+        }
     }
 
-    $onDestroy() {
-        this.tableService.unsubscribe();
-    }
-
-    $onInit() {
-        this.rows = angular.copy(this.rows);
+    ngOnInit() {
+        this.rows = (this.rows != null) ? CloneUtil.deepCopy(this.rows) : null;
         this.init(this.$element);
     }
 
@@ -188,17 +190,17 @@ export class VisualQueryTable {
      *
      * @param {jQuery} element the table element
      */
-    init(element: angular.IAugmentedJQuery) {
+    init(element: ElementRef) {
         this.tableModel = new WranglerTableModel(this.dataService);
 
         this.table_ = fattable({
-            container: element.get(0),
+            container: element.nativeElement,
             model: this.tableModel,
             nbRows: 23399,
             rowHeight: VisualQueryPainterService.ROW_HEIGHT,
             headerHeight: VisualQueryPainterService.HEADER_HEIGHT,
             painter: this.painter,
-            columnWidths: [180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180],
+            columnWidths: [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
             autoSetup: false
         });
     }
@@ -206,7 +208,7 @@ export class VisualQueryTable {
     /**
      * Redraws the table.
      */
-    refresh() : void {
+    refresh(): void {
 
         // Skip if table not initialized
         if (this.table_ === null) {
@@ -249,25 +251,25 @@ export class VisualQueryTable {
     }
 
     restorePosition(sp: ScrollPosition) {
-        var ourTable : any  = (this.table_ as any);
+        var ourTable: any = (this.table_ as any);
         ourTable.scroll.setScrollXY(sp.left, sp.top);
     }
 
-    savePosition() : ScrollPosition {
+    savePosition(): ScrollPosition {
         // Preserve scroll position
-        var priorScrollLeft : number = 0;
-        var priorScrollTop : number = 0;
+        var priorScrollLeft: number = 0;
+        var priorScrollTop: number = 0;
 
-        var ourTable : any  = (this.table_ as any);
-        if (!angular.isUndefined(ourTable.scroll)) {
+        var ourTable: any = (this.table_ as any);
+        if (typeof ourTable.scroll !== "undefined") {
             var ratioX = 0;
             var ratioY = 0;
 
             ratioX = ourTable.scroll.scrollLeft / ourTable.W;
-            ratioY = ourTable.scroll.scrollTop  / ourTable.H;
+            ratioY = ourTable.scroll.scrollTop / ourTable.H;
 
-            var newX = (ourTable.W *ratioX) | 0;
-            var newY = (ourTable.H *ratioY) | 0;
+            var newX = (ourTable.W * ratioX) | 0;
+            var newY = (ourTable.H * ratioY) | 0;
 
             if (ourTable.scroll) {
                 var scrollBar = ourTable.scroll;
@@ -280,7 +282,7 @@ export class VisualQueryTable {
                 priorScrollTop = 0;
             }
         }
-        return { left: priorScrollLeft, top: priorScrollTop};
+        return {left: priorScrollLeft, top: priorScrollTop};
     }
 
     /**
@@ -322,28 +324,28 @@ export class VisualQueryTable {
             document.createDocumentFragment().appendChild(canvas);
 
             this.canvasContext_ = canvas.getContext("2d");
-            if (angular.isString(this.options.headerFont)) {
+            if (typeof this.options.headerFont === "string") {
                 this.canvasContext_.font = this.options.headerFont;
             }
         }
         return this.canvasContext_;
     }
 
-   /**
-    * Calculate row widths by sampling values
-   */
-    private sampleMaxWidth(col: number) : string {
+    /**
+     * Calculate row widths by sampling values
+     */
+    private sampleMaxWidth(col: number): string {
 
-         let maxValue : string = "";
-         // Sample up to 20 rows
-         for (var row = 0; row < this.rows.length && row < 20 ; row++) {
-             var val = this.rows[row][col];
-             if (val && val.length > maxValue.length) {
-                 maxValue = val;
-             }
-         }
-         // Avoid letting one column dominate so we limit max
-         return maxValue;
+        let maxValue: string = "";
+        // Sample up to 20 rows
+        for (var row = 0; row < this.rows.length && row < 20; row++) {
+            var val = this.rows[row][col];
+            if (val && val.length > maxValue.length) {
+                maxValue = val;
+            }
+        }
+        // Avoid letting one column dominate so we limit max
+        return maxValue;
     }
 
     /**
@@ -354,7 +356,7 @@ export class VisualQueryTable {
     private getColumnWidths(): number[] {
         var self = this;
         // Skip if no columns
-        if (!angular.isArray(this.columns) || this.columns.length === 0) {
+        if (!Array.isArray(this.columns) || this.columns.length === 0) {
             return [];
         }
 
@@ -417,42 +419,16 @@ export class VisualQueryTable {
      * Sorts and applies filters to rows.
      */
     private onRowsChange() {
-        const self = this;
-
         // Add index column
         if (this.rows && this.rows.length > 0 && this.rows[0].length === this.columns.length) {
             this.rows.forEach((row, index) => row.push(index));
         }
 
         //sorts and filters are now applied server side
-
     }
-
-
-
 }
 
 export class ScrollPosition {
     left: number;
     top: number;
 }
-
-angular.module(moduleName).directive("visualQueryTable", function () {
-    return {
-        bindToController: {
-            columns: "=*tableColumns",
-            domainTypes: "=*tableDomainTypes",
-            options: "=*tableOptions",
-            rows: "=*tableRows",
-            validationResults: "=*tableValidation",
-            tableState: "=",
-            actualCols: "=",
-            actualRows: "="
-        },
-        controller: VisualQueryTable,
-        restrict: "E",
-        link: function ($scope, element, attrs, controller) {
-            //(controller as VisualQueryTable).$onInit();
-        }
-    };
-});

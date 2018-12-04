@@ -1,0 +1,12 @@
+
+<form [formGroup]="formConfig.form">
+  <span>{{formConfig.title}}</span>
+  <br/>
+
+  <dynamic-form [form]="formConfig.form" [fieldGroups]="formConfig.fieldGroups" [readonly]="false"></dynamic-form>
+
+
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button [color]="['primary']" [disabled]="!formConfig.form.valid" (click)="apply()">Apply</button>
+
+</form>

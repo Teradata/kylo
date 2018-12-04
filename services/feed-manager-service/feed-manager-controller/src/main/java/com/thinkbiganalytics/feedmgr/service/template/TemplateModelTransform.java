@@ -23,20 +23,23 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateChangeComment;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.support.FeedNameUtil;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.inject.Inject;
 
 /**
  * Transforms data from the domain {@link FeedManagerTemplate} to the REST object {@link RegisteredTemplate}
@@ -127,6 +130,15 @@ public class TemplateModelTransform {
                 domain.setStream(registeredTemplate.isStream());
                 domain.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
                 prepareForSave(registeredTemplate);
+                FeedManagerTemplate finalDomain = domain;
+                if(StringUtils.isNotBlank(registeredTemplate.getChangeComment())) { //new comment
+                    ChangeComment commentObj = domain.addChangeComment(registeredTemplate.getChangeComment(), DateTime.now());
+                    registeredTemplate.setChangeComment(null);
+//                    registeredTemplate.getChangeComments().add(new TemplateChangeComment(commentObj.getComment(), DateTime.now()));
+                }else { //import
+                    domain.clearChangeComments();
+                    registeredTemplate.getChangeComments().forEach(c -> finalDomain.addChangeComment(c.getComment(), c.getCreateDateTime()));
+                }
                 String json = ObjectMapperSerializer.serialize(registeredTemplate);
                 domain.setJson(json);
                 FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
@@ -179,6 +191,7 @@ public class TemplateModelTransform {
                 template.setState(domain.getState().name());
                 template.setNifiTemplateId(domain.getNifiTemplateId());
                 template.setAllowPreconditions(domain.isAllowPreconditions());
+                template.setChangeComment(null);
                 List<Feed> feeds = domain.getFeeds();
                 template.setFeedsCount(feeds == null ? 0 : feeds.size());
                 template.setStream(domain.isStream());
@@ -194,6 +207,7 @@ public class TemplateModelTransform {
                 }
                 template.setOrder(domain.getOrder());
                 template.setTemplateTableOption(domain.getTemplateTableOption());
+                template.setChangeComments(domain.getChangeComments().stream().map(c -> new TemplateChangeComment(c.getComment(), c.getCreateDateTime())).collect(Collectors.toList()));
 
                 securityTransform.applyAccessControl(domain, template);
 

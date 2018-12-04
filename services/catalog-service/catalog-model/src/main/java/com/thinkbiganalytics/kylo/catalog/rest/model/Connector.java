@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import javax.annotation.Nonnull;
 
@@ -32,13 +33,13 @@ import javax.annotation.Nonnull;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Connector {
+public class Connector extends EntityAccessControl {
 
     /**
      * Unique identifier
      */
     private String id;
-    
+
     /**
      * Connector plugin ID (connector type)
      */
@@ -111,11 +112,11 @@ public class Connector {
     public String getPluginId() {
         return pluginId;
     }
-    
+
     public void setPluginId(String pluginId) {
         this.pluginId = pluginId;
     }
-    
+
     public DataSetTemplate getTemplate() {
         return template;
     }
@@ -131,7 +132,7 @@ public class Connector {
     public void setTitle(String title) {
         this.title = title;
     }
-    
+
     public String getDescription() {
         return description;
     }

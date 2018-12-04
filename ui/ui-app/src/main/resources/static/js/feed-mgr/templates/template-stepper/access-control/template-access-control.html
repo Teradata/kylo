@@ -10,12 +10,12 @@
 
   <form #templateAccessControlForm=ngForm name="templateAccessControlForm">
 
-    <entity-access-control [entity]="model" entityType="template" [theForm]="templateAccessControlForm" [readOnly]="!allowEdit"></entity-access-control>
+    <entity-access-control-ng2 [entity]="model" entityType="template" [parentForm]="templateAccessControlForm" [readOnly]="!allowEdit"></entity-access-control-ng2>
     <br/><br/><br/>
 
     <div>
-      <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
-      <button mat-button matStepperNext (click)="stepper.next()">{{'views.step-buttons.Continue-btn' | translate}}  5</button>
+      <!--<button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>-->
+      <!--<button mat-button matStepperNext (click)="stepper.next()">{{'views.step-buttons.Continue-btn' | translate}}  5</button>-->
     </div>
 
   </form>

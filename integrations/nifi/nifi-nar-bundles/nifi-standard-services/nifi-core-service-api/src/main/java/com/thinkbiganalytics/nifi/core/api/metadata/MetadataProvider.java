@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -207,7 +209,7 @@ public interface MetadataProvider {
      * Gets the feed for given category and feed names
      *
      * @param category category system name
-     * @param feed feed system name
+     * @param feed     feed system name
      * @return the feed definition
      */
     Feed getFeed(@Nonnull final String category, @Nonnull final String feed);
@@ -231,8 +233,19 @@ public interface MetadataProvider {
 
     /**
      * Get the feeds which require history to be reindexed
-     * @return the set of feeds (will be empty if no eligible feeds found)
      *
+     * @return the set of feeds (will be empty if no eligible feeds found)
      */
     FeedsForDataHistoryReindex getFeedsForHistoryReindexing();
+
+    /**
+     * Gets the data set with the specified id.
+     *
+     * @param id data set id
+     * @return the data set, if found
+     */
+    Optional<DataSet> getDataSet(@Nonnull String id);
+
+
+    Optional<DataSource>getCatalogDataSource(@Nonnull String id);
 }

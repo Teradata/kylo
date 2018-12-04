@@ -1,0 +1,138 @@
+<div fxFlex fxLayout="row" layout-xs="column" class="profile-stats-panel">
+  <div fxFlex="20" flex-xs="100">
+    <mat-checkbox aria-label="Profiled" [ngModel]="showOnlyProfiled" (change)="showOnlyProfiledChange()">
+      <span class="hint" translate>Profile.Stats.ShowOnlyProfiled</span>
+    </mat-checkbox>
+
+    <mat-nav-list class="profile-columns">
+      <td-virtual-scroll-container #virtualScroll [data]="sorted" fxFlex>
+        <ng-template let-row="row" let-last="last" tdVirtualScrollRow>
+          <a mat-list-item (click)="selectRowAndUpdateCharts($event, row)" [ngClass]="{'selected-column': isSelected(row)}">
+            <div style="white-space: nowrap">
+              {{row[columns.columnName]}}
+              <span flex> </span>
+              <mat-icon *ngIf="isProfiled(row)" class="profiled-icon">insert_chart</mat-icon>
+            </div>
+          </a>
+          <mat-divider *ngIf="!$last"></mat-divider>
+        </ng-template>
+        <a mat-list-item *ngIf="sorted.length == 0" translate>Profile.Stats.NoResults</a>
+      </td-virtual-scroll-container>
+    </mat-nav-list>
+  </div>
+  <div fxFlex="80" flex-xs="100">
+    <div fxLayout="column">
+
+      <div *ngIf="selectedRow.columnName == '(ALL)'" fxLayout="row" fxFlex="100">
+        <div fxLayout="column" fxFlex="33">
+          <div fxFlex="100">
+            <div class="subhead" translate>Profile.Stats.Summary</div>
+            <nvd3 flex [options]="summaryOptions" [data]="summaryData"></nvd3>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="selectedRow.columnName != '(ALL)'" fxLayout="row" layout-xs="column" fxFlex="100">
+        <div fxLayout="column" fxFlex="33" flex-xs="100" class="stats-panel">
+          <div fxFlex="100">
+            <div class="subhead" translate>Profile.Stats.Summary</div>
+            <nvd3 flex [options]="summaryOptions" [data]="summaryData"></nvd3>
+          </div>
+        </div>
+        <div fxLayout="column" fxFlex="33" flex-xs="100" class="stats-panel">
+          <div class="subhead" translate>Profile.Stats.RelativeStats</div>
+          <div>
+            <nvd3 flex [options]="percOptions" [data]="percData"></nvd3>
+          </div>
+        </div>
+
+        <div fxLayout="column" fxFlex="33" flex-xs="100">
+
+          <div class="stats-panel">
+            <div class="subhead" translate>Profile.Stats.TopValues</div>
+            <mat-list>
+              <mat-list-item>
+                <div fxFlex="90" fxLayout="row">
+                  <div fxFlex="90">
+                    <span class="hint" translate>Profile.Stats.Value</span>
+                  </div>
+                  <div fxFlex="10">
+                    <span class="hint" translate>Profile.Stats.Count</span>
+                  </div>
+                </div>
+                <mat-divider></mat-divider>
+              </mat-list-item>
+              <mat-list-item *ngFor="let row of topvalues; last as isLast;">
+                <div fxFlex="90" fxLayout="row">
+                  <div fxFlex="90">
+                    <span class="" [matTooltip]="row['value']">{{row['value'] | charactersPipe:100}}</span>
+
+                  </div>
+                  <div fxFlex="10">
+                    <span class="">{{row['count']}}</span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!isLast"></mat-divider>
+              </mat-list-item>
+              <mat-list-item *ngIf="topvalues && topvalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
+            </mat-list>
+          </div>
+
+          <div *ngIf="selectedRow.profile == 'Numeric'" fxLayout="column" fxFlex="100" class="stats-panel">
+            <div class="subhead" translate>Profile.Stats.NumericStats</div>
+            <mat-list>
+              <mat-list-item class="md-secondary" *ngFor="let row of numericvalues; last as isLast;">
+                <div fxLayout="row" fxFlex="90">
+                  <div fxFlex="30" >
+                    <span class="hint">{{row['name']}}</span>
+                  </div>
+                  <div fxFlex="70">
+                    <span class="" title="{{row['value']}}">{{row['value']}}</span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!isLast"></mat-divider>
+              </mat-list-item>
+              <mat-list-item *ngIf="numericvalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
+            </mat-list>
+          </div>
+
+          <div *ngIf="selectedRow.profile == 'String'" fxLayout="column" fxFlex="100" class="stats-panel">
+            <div class="subhead" translate>Profile.Stats.StringStats</div>
+            <mat-list>
+              <mat-list-item *ngFor="let row of stringvalues; last as isLast;" class="string-stats-item">
+                <div fxLayout="row" fxFlex="90">
+                  <div fxFlex="30">
+                    <span class="hint">{{row['name']}}</span>
+                  </div>
+                  <div fxFlex="70">
+                    <span class=""  [matTooltip]="row['value']" title="{{row['value']}}">{{row['value'] | charactersPipe:50}}</span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!$last"></mat-divider>
+              </mat-list-item>
+              <mat-list-item *ngIf="stringvalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
+            </mat-list>
+
+            <div *ngIf="selectedRow.profile == 'Time'" fxLayout="column" fxFlex="100" class="stats-panel">
+              <div class="subhead" translate>Profile.Stats.TimeStats</div>
+              <mat-list>
+                <mat-list-item *ngFor="let row of timevalues; last as isLast;">
+                  <div fxLayout="row" fxFlex="100">
+                    <div fxFlex="40">
+                      <span class="hint">{{row['name']}}</span>
+                    </div>
+                    <div fxFlex="60">
+                      <span class="">{{row['value']}}</span>
+                    </div>
+                  </div>
+                  <mat-divider *ngIf="!isLast"></mat-divider>
+                </mat-list-item>
+                <mat-list-item *ngIf="timevalues.length == 0" translate>Profile.Stats.NoResults</mat-list-item>
+              </mat-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

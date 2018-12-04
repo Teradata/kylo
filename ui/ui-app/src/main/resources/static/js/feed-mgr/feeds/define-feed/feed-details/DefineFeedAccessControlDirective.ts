@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 export class DefineFeedAccessControlController {
 
@@ -72,5 +72,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedAccessControlController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-access-control.html',
+        templateUrl: './define-feed-access-control.html',
     });

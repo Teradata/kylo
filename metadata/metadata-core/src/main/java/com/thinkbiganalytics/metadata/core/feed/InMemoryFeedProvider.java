@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.core.feed;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
@@ -72,11 +73,10 @@ import org.springframework.data.domain.Pageable;
 public class InMemoryFeedProvider implements FeedProvider {
 
     private static final Criteria ALL = new Criteria() {
+        @SuppressWarnings("unused")
         public boolean apply(BaseFeed input) {
             return true;
         }
-
-        ;
     };
 
     @Inject
@@ -112,11 +112,6 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, ID dsId) {
-        return ensureFeedSource(feedId, dsId, null);
-    }
-
-    @Override
-    public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId, ServiceLevelAgreement.ID slaId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         Datasource ds = this.datasetProvider.getDatasource(dsId);
 
@@ -128,7 +123,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + dsId);
         }
 
-        return ensureFeedSource(feed, ds, slaId);
+        return ensureFeedSource(feed, ds);
     }
 
     @Override
@@ -186,7 +181,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
         BaseFeed feed = (BaseFeed) ensureFeed(categorySystemName, name, descr);
 
-        ensureFeedSource(feed, sds, null);
+        ensureFeedSource(feed, sds);
         ensureFeedDestination(feed, dds);
 
         return feed;
@@ -234,10 +229,9 @@ public class InMemoryFeedProvider implements FeedProvider {
 
         if (feed != null) {
             // Remove the old one if any
-            FeedPreconditionImpl precond = (FeedPreconditionImpl) feed.getPrecondition();
-            if (precond != null) {
-                this.slaProvider.removeAgreement(precond.getAgreement().getId());
-            }
+            feed.getPrecondition()
+                .map(FeedPreconditionImpl.class::cast)
+                .ifPresent(precond -> slaProvider.removeAgreement(precond.getAgreement().getId()));
 
             ServiceLevelAgreement sla = this.slaProvider.builder()
                 .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
@@ -453,17 +447,16 @@ public class InMemoryFeedProvider implements FeedProvider {
         return null;
     }
 
-    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
+    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
-            srcIds.put(src.getDatasource().getId(), src);
+            src.getDatasource().ifPresent(fds -> srcIds.put(fds.getId(), src));
         }
 
         if (srcIds.containsKey(ds.getId())) {
             return srcIds.get(ds.getId());
         } else {
-            ServiceLevelAgreement sla = this.slaProvider.getAgreement(slaId);
-            FeedSource src = feed.addSource(ds, sla);
+            FeedSource src = feed.addSource(ds);
             return src;
         }
     }
@@ -534,7 +527,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             if (!this.destIds.isEmpty()) {
                 List<? extends FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
-                    if (this.destIds.contains(dest.getDatasource().getId())) {
+                    if (dest.getDatasource().isPresent() && this.destIds.contains(dest.getDatasource().get().getId())) {
                         return true;
                     }
                 }
@@ -544,7 +537,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             if (!this.sourceIds.isEmpty()) {
                 List<? extends FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
-                    if (this.sourceIds.contains(src.getDatasource().getId())) {
+                    if (src.getDatasource().isPresent() && this.sourceIds.contains(src.getDatasource().get().getId())) {
                         return true;
                     }
                 }
@@ -638,16 +631,15 @@ public class InMemoryFeedProvider implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersions(java.io.Serializable, boolean)
      */
     @Override
-    public Optional<List<EntityVersion<Feed>>> findVersions(com.thinkbiganalytics.metadata.api.feed.Feed.ID id, boolean includeEntity) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<EntityVersion<Feed.ID, Feed>> findVersions(com.thinkbiganalytics.metadata.api.feed.Feed.ID id, boolean includeEntity) {
+        return Collections.emptyList();
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findVersion(java.io.Serializable, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID, boolean)
      */
     @Override
-    public Optional<EntityVersion<Feed>> findVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId,
+    public Optional<EntityVersion<Feed.ID, Feed>> findVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId,
                                                      boolean includeEntity) {
         // TODO Auto-generated method stub
         return null;
@@ -657,7 +649,7 @@ public class InMemoryFeedProvider implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider#findLatestVersion(java.io.Serializable, boolean)
      */
     @Override
-    public Optional<EntityVersion<Feed>> findLatestVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeEntity) {
+    public Optional<EntityVersion<Feed.ID, Feed>> findLatestVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeEntity) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -669,5 +661,137 @@ public class InMemoryFeedProvider implements FeedProvider {
     public com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID resolveVersion(Serializable ser) {
         // TODO Auto-generated method stub
         return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#revertDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<com.thinkbiganalytics.metadata.api.feed.Feed.ID, Feed>> revertDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#hasDraftVersion(java.io.Serializable)
+     */
+    @Override
+    public boolean hasDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public EntityVersion<Feed.ID, Feed> createDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createDraftVersion(java.io.Serializable, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID, boolean)
+     */
+    @Override
+    public EntityVersion<Feed.ID, Feed> createDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId,
+                                                  boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#createVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public EntityVersion<Feed.ID, Feed> createVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, String comment, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#setDeployed(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID)
+     */
+    @Override
+    public void setDeployed(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID versionId) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findDeployedVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<com.thinkbiganalytics.metadata.api.feed.Feed.ID, Feed>> findDeployedVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider#findDraftVersion(java.io.Serializable, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<com.thinkbiganalytics.metadata.api.feed.Feed.ID, Feed>> findDraftVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID entityId, boolean includeContent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category.ID)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, com.thinkbiganalytics.metadata.api.category.Category.ID toCatId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category toCat) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#changeSystemName(com.thinkbiganalytics.metadata.api.feed.Feed, java.lang.String)
+     */
+    @Override
+    public Feed changeSystemName(Feed feed, String newName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID)
+     */
+    @Override
+    public FeedSource ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId, boolean isSample) {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedDestination(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID)
+     */
+    @Override
+    public FeedDestination ensureFeedDestination(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#removeFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID)
+     */
+    @Override
+    public void removeFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId) {
+        // TODO Auto-generated method stub
+        
     }
 }

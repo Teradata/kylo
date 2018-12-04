@@ -38,4 +38,6 @@ public interface RepositoryService {
     List<TemplateRepository> listRepositories() throws Exception;
 
     SearchResult getTemplatesPage(TemplateSearchFilter templateSearchFilter);
+
+    List<TemplateMetadataWrapper> listTemplatesByRepository(String repositoryType, String repositoryName) throws Exception;
 }

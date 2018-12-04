@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,25 +20,28 @@ package com.thinkbiganalytics.nifi.rest.client;
  * #L%
  */
 
+import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceReferencingComponentDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.ReportingTaskDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceReferencingComponentEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceReferencingComponentsEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
+import org.apache.nifi.web.api.entity.ReportingTaskEntity;
 import org.apache.nifi.web.api.entity.UpdateControllerServiceReferenceRequestEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +51,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.ClientErrorException;
@@ -59,6 +64,12 @@ import javax.ws.rs.ClientErrorException;
 public abstract class AbstractNiFiControllerServicesRestClient implements NiFiControllerServicesRestClient {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractNiFiControllerServicesRestClient.class);
+
+    private static final String REFERENCE_TYPE_CONTROLLER_SERVICE = "ControllerService";
+
+    private static final String REFERENCE_TYPE_PROCESSOR = "Processor";
+
+    private static final String REFERENCE_TYPE_REPORTING_TASK = "ReportingTask";
 
     /**
      * Asynchronous executor
@@ -95,157 +106,113 @@ public abstract class AbstractNiFiControllerServicesRestClient implements NiFiCo
     }
 
     /**
-     * Updates a controller service
-     * This will first disable the service, stop all referencing components, enable the service, reset the state of the components back to their prior state
+     * Updates a controller service.
+     *
+     * <p>This will first stop all referencing components, disable the service, update the service, enable the service, then reset the state of the components back to their prior state.</p>
      *
      * @param controllerService the service to update with the updated properties
-     * @return the updates service
+     * @return the updated service
      */
+    @Nonnull
     @Override
-    public ControllerServiceDTO updateServiceAndReferencingComponents(ControllerServiceDTO controllerService) {
-        String id = controllerService.getId();
-        //Get all references to this controller service.  this will include processors, other controller services, and reporting tasks
-        Optional<ControllerServiceReferencingComponentsEntity> references = getReferences(id);
+    public ControllerServiceDTO updateServiceAndReferencingComponents(@Nonnull final ControllerServiceDTO controllerService) {
+        // Recursively get all references to this controller service. This will include processors, other controller services, and reporting tasks.
+        final Optional<ControllerServiceReferencingComponentsEntity> referencesEntity = getReferences(controllerService.getId());
+        final Set<ControllerServiceReferencingComponentEntity> references = referencesEntity.isPresent()
+                                                                            ? flattenReferencingComponents(referencesEntity.get()).collect(Collectors.toSet())
+                                                                            : Collections.emptySet();
 
-        //state of the processors prior to update
-        Map<String, String> previousProcessorState = null;
-        //revisions for the processor references
-        Map<String, RevisionDTO> processorRevisions = null;
-
-        //revisions for the controller service references
-        Map<String, RevisionDTO> controllerServiceRevisions = null;
-
-        //a map of component id to reference entity.  this will include all referencing processors, controller services, and reporting tasks
-        Map<String, ControllerServiceReferencingComponentEntity> referencingComponentEntityMap = null;
-
-        //Stop all processor references and also disable any other controller service references
-        if (references.isPresent()) {
-            //build the reference state and revision maps prior to making this update
-            referencingComponentEntityMap = getReferencingComponents(references.get().getControllerServiceReferencingComponents());
-
-            previousProcessorState =
-                referencingComponentEntityMap.values().stream().filter(e -> e.getComponent().getReferenceType().equalsIgnoreCase("PROCESSOR")).map(c -> c.getComponent()).collect(Collectors.toMap(
-                    ControllerServiceReferencingComponentDTO::getId, ControllerServiceReferencingComponentDTO::getState));
-
-            processorRevisions = referencingComponentEntityMap.values().stream().filter(e -> e.getComponent().getReferenceType().equalsIgnoreCase("PROCESSOR")).collect(Collectors.toMap(
-                ControllerServiceReferencingComponentEntity::getId, ControllerServiceReferencingComponentEntity::getRevision));
-
-            controllerServiceRevisions =
-                referencingComponentEntityMap.values().stream().filter(e -> e.getComponent().getReferenceType().equalsIgnoreCase("ControllerService")).collect(Collectors.toMap(
-                    ControllerServiceReferencingComponentEntity::getId, ControllerServiceReferencingComponentEntity::getRevision));
-
-            //Stop the referencing processors and ensure they are in the stopped state
-            if (!processorRevisions.isEmpty()) {
-                String state = NifiProcessUtil.PROCESS_STATE.STOPPED.name();
-                log.info("Stopping all component references to controller service {} ", controllerService.getName());
-                UpdateControllerServiceReferenceRequestEntity stopComponentsRequest = new UpdateControllerServiceReferenceRequestEntity();
-                stopComponentsRequest.setState(state);
-                stopComponentsRequest.setId(controllerService.getId());
-                stopComponentsRequest.setReferencingComponentRevisions(processorRevisions);
-                updateReferences(id, stopComponentsRequest);
-                boolean updatedReferences = ensureComponentsAreOfState(id, "Processor", state, 5, 500, TimeUnit.MILLISECONDS);
-                if (!updatedReferences) {
-                    //error unable to change the state of the references. ... error
-                    throw new NifiClientRuntimeException("Unable to stop processor references to this controller service " + controllerService.getName() + " before making the update");
-                }
+        //build the reference state and revision maps prior to making this update
+        final Map<String, RevisionDTO> referencingSchedulableComponentRevisions = new HashMap<>();
+        final Map<String, RevisionDTO> referencingServiceRevisions = new HashMap<>();
+        references.forEach(reference -> {
+            if (REFERENCE_TYPE_CONTROLLER_SERVICE.equals(reference.getComponent().getReferenceType())) {
+                referencingServiceRevisions.put(reference.getId(), reference.getRevision());
+            } else {
+                referencingSchedulableComponentRevisions.put(reference.getId(), reference.getRevision());
             }
+        });
 
-            //disable any controller service references
-            if (!controllerServiceRevisions.isEmpty()) {
-                UpdateControllerServiceReferenceRequestEntity stopComponentsRequest = new UpdateControllerServiceReferenceRequestEntity();
-                stopComponentsRequest.setState("DISABLED");
-                stopComponentsRequest.setId(controllerService.getId());
-                stopComponentsRequest.setReferencingComponentRevisions(controllerServiceRevisions);
-                updateReferences(id, stopComponentsRequest);
-                boolean updatedReferences = ensureComponentsAreOfState(id, "ControllerService", "DISABLED", 5, 500, TimeUnit.MILLISECONDS);
-                if (!updatedReferences) {
-                    //error unable to change the state of the references. ... error
-                    throw new NifiClientRuntimeException(
-                        "Unable to disable other controller service references to this controller service " + controllerService.getName() + " before making the update");
-                }
-            }
-
-        }
-        //mark this controller service as disabled
-        log.info("Disabling the controller service  {} ", controllerService.getName());
-        //update the service and mark it disabled.  this will throw a RuntimeException if it is not successful
-        ControllerServiceDTO updatedService = updateStateByIdWithRetries(controllerService.getId(), "DISABLED", 5, 500, TimeUnit.MILLISECONDS);
-
-        //Perform the update to this controller service
-        log.info("Updating the controller service  {} ", controllerService.getName());
-        updatedService = update(controllerService);
-        //Enable the service
-        updateStateById(controllerService.getId(), NiFiControllerServicesRestClient.State.ENABLED);
-
-        //Enable any controller service references
-        if (!controllerServiceRevisions.isEmpty()) {
-            log.info("Enabling other controller services referencing this controller service  {} ", controllerService.getName());
-            UpdateControllerServiceReferenceRequestEntity enableReferenceServicesRequest = new UpdateControllerServiceReferenceRequestEntity();
-            enableReferenceServicesRequest.setId(controllerService.getId());
-            enableReferenceServicesRequest.setState(NiFiControllerServicesRestClient.State.ENABLED.name());
-            enableReferenceServicesRequest.setReferencingComponentRevisions(controllerServiceRevisions);
-            updateReferences(id, enableReferenceServicesRequest);
-            boolean updatedReferences = ensureComponentsAreOfState(id, "ControllerService", NiFiControllerServicesRestClient.State.ENABLED.name(), 5, 500, TimeUnit.MILLISECONDS);
-            if (!updatedReferences) {
+        // Update service and referencing components
+        ControllerServiceDTO updatedService = null;
+        Exception updateException = null;
+        try {
+            // Stop the referencing processors and ensure they are in the stopped state
+            log.info("Stopping all component references to controller service {} ", controllerService.getName());
+            if (!referencingSchedulableComponentRevisions.isEmpty() && !updateReferencingSchedulableComponents(controllerService, referencingSchedulableComponentRevisions, false)) {
                 //error unable to change the state of the references. ... error
-                throw new NifiClientRuntimeException("The controller service " + controllerService.getName()
-                                                     + " was updated, but it was unable to enable other controller service references to this controller service.  Please visit NiFi to reconcile and fix any controller service issues. "
-                                                     + controllerService.getName());
-            }
-        }
-        if (references.isPresent() && previousProcessorState != null) {
-            //reset the processor state
-            Map<String, RevisionDTO> finalComponentRevisions = processorRevisions;
-
-            //if all referencing processors of of the same state we can call the quick rest endpoint to update all of them
-            Set<String> distinctStates = previousProcessorState.values().stream().collect(Collectors.toSet());
-            if (distinctStates.size() > 0) {
-                if (distinctStates.size() == 1) {
-                    String state = new ArrayList<>(distinctStates).get(0);
-                    if(!NifiProcessUtil.PROCESS_STATE.STOPPED.name().equals(state)) {
-                        UpdateControllerServiceReferenceRequestEntity startComponentsRequest = new UpdateControllerServiceReferenceRequestEntity();
-
-                        startComponentsRequest.setState(state);
-                        startComponentsRequest.setReferencingComponentRevisions(finalComponentRevisions);
-                        startComponentsRequest.setId(controllerService.getId());
-                        updateReferences(id, startComponentsRequest);
-                        log.info("Updating all component references to be {} for controller service  {} ", state, controllerService.getName());
-                        boolean updatedReferences = ensureComponentsAreOfState(id, "Processor", state, 5, 500, TimeUnit.MILLISECONDS);
-                        if (!updatedReferences) {
-                            //error unable to change the state of the references. ... error
-                            throw new NifiClientRuntimeException("The controller service {} was updated, but it was unable to update the state of the processors as " + state
-                                                                 + ".  Please visit NiFi to reconcile and fix any controller service issues. " + controllerService.getName());
-                        }
-                        log.info("Successfully updated controller service {}", controllerService.getName());
-                    }
-                } else {
-                    log.info(
-                        "The controller service component references ({} total) had mixed states prior to updating {}.  Going through each processor/component and setting its state back to what it was prior to the update.",
-                        previousProcessorState.size(), distinctStates);
-                    //update references back to previous states
-                    List<ProcessorEntity> updatedProcessors = references.get().getControllerServiceReferencingComponents().stream()
-                        .filter(c -> c.getComponent().getReferenceType().equalsIgnoreCase("PROCESSOR"))
-                        .filter(c-> !c.getComponent().getState().equals(NifiProcessUtil.PROCESS_STATE.STOPPED.name()))
-                        .map(referencingComponentEntity -> referencingComponentEntity.getComponent()).map(c -> {
-                            ProcessorEntity entity = new ProcessorEntity();
-                            entity.setRevision(finalComponentRevisions.get(c.getId()));
-                            entity.setId(c.getId());
-                            ProcessorDTO processorDTO = new ProcessorDTO();
-                            processorDTO.setId(c.getId());
-                            processorDTO.setState(c.getState());
-                            entity.setComponent(processorDTO);
-                            return entity;
-                        }).collect(Collectors.toList());
-
-                    updatedProcessors.stream().forEach(p -> getClient().processors().update(p));
-                    log.info("Successfully updated controller service {} and updated {} components back to their prior state ", controllerService.getName(),
-                             previousProcessorState.size());
-                }
+                throw new NifiClientRuntimeException("Unable to stop processor references to this controller service " + controllerService.getName() + " before making the update");
             }
 
+            // Disable any controller service references
+            if (!referencingServiceRevisions.isEmpty() && !updateReferencingServices(controllerService, referencingServiceRevisions, false)) {
+                //error unable to change the state of the references. ... error
+                throw new NifiClientRuntimeException("Unable to disable other controller service references to this controller service " + controllerService.getName() + " before making the update");
+            }
+
+            // Update the service and mark it disabled. This will throw a RuntimeException if it is not successful.
+            log.info("Disabling the controller service  {} ", controllerService.getName());
+            updateStateByIdWithRetries(controllerService.getId(), State.DISABLED.name(), 5, 500, TimeUnit.MILLISECONDS);
+
+            // Perform the update to this controller service
+            log.info("Updating the controller service  {} ", controllerService.getName());
+            updatedService = update(controllerService);
+
+            // Enable the service
+            updateStateById(controllerService.getId(), State.ENABLED);
+        } catch (final Exception e) {
+            log.error("Reverting changes after controller service {} [{}] failed to update: ", controllerService.getId(), controllerService.getName(), e);
+            updateException = e;
         }
+
+        // Enable any controller service references
+        boolean servicesUpdate;
+        try {
+            log.info("Enabling other controller services referencing this controller service  {} ", controllerService.getName());
+            servicesUpdate = updateReferencingServices(controllerService, referencingServiceRevisions, true);
+        } catch (final Exception e) {
+            log.debug("Failed to restore referencing service states for controller service {} [{}]: {}", controllerService.getId(), controllerService.getName(), e, e);
+            servicesUpdate = false;
+        }
+
+        // Update references back to previous states
+        boolean componentsUpdate;
+        try {
+            final Set<ControllerServiceReferencingComponentEntity> runningComponents = references.stream()
+                .filter(reference -> !REFERENCE_TYPE_CONTROLLER_SERVICE.equals(reference.getComponent().getReferenceType()))
+                .filter(reference -> NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(reference.getComponent().getState()))
+                .collect(Collectors.toSet());
+            if (runningComponents.size() == referencingSchedulableComponentRevisions.size()) {
+                log.info("Updating all component references to be RUNNING for controller service  {} ", controllerService.getName());
+                componentsUpdate = updateReferencingSchedulableComponents(controllerService, referencingSchedulableComponentRevisions, true);
+            } else {
+                log.info("The controller service component references ({} total) had mixed states prior to updating. Going through each processor/component and setting its state back to"
+                         + " what it was prior to the update.", referencingSchedulableComponentRevisions.size());
+                componentsUpdate = startSchedulableComponents(runningComponents);
+                log.info("Successfully updated controller service {} and updated {} components back to their prior state ", controllerService.getName(), runningComponents.size());
+            }
+        } catch (final Exception e) {
+            log.debug("Failed to restore referencing component states for controller service {} [{}]: {}", controllerService.getId(), controllerService.getName(), e, e);
+            componentsUpdate = false;
+        }
+
+        // Verify final state
+        if (updateException != null) {
+            throw Throwables.propagate(updateException);
+        }
+        if (!servicesUpdate) {
+            //error unable to change the state of the references. ... error
+            throw new NifiClientRuntimeException("Kylo was unable to enable other controller service references to the " + controllerService.getName() + " controller service. Please visit NiFi"
+                                                 + " to reconcile and fix any controller service issues.");
+        }
+        if (!componentsUpdate) {
+            //error unable to change the state of the references. ... error
+            throw new NifiClientRuntimeException("Kylo was unable to update the state of the processors as RUNNING. Please visit NiFi to reconcile and fix any controller service issues. "
+                                                 + controllerService.getName());
+        }
+
+        log.info("Successfully updated controller service {}", controllerService.getName());
         return updatedService;
-
     }
 
 
@@ -271,6 +238,7 @@ public abstract class AbstractNiFiControllerServicesRestClient implements NiFiCo
 
         // Wait for finished
         for (int count = 0; isPendingState(controllerService.getState(), state) && count < retries; ++count) {
+            log.debug("Waiting for controller service {} to exit pending state {}. Try {} of {}.", id, controllerService.getState(), count + 1, retries);
             Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
             controllerService = findById(id).orElseThrow(() -> new NifiComponentNotFoundException(id, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
         }
@@ -304,49 +272,195 @@ public abstract class AbstractNiFiControllerServicesRestClient implements NiFiCo
         return ("ENABLING".equals(currentState) && "ENABLED".equals(finalState)) || ("DISABLING".equals(currentState) && "DISABLED".equals(finalState));
     }
 
+    /**
+     * Recursively verifies the state of all referencing components.
+     */
+    @Nonnull
+    private Set<ControllerServiceReferencingComponentEntity> pollReferencingComponents(@Nonnull final String controllerServiceId,
+                                                                                       @Nonnull final Predicate<String> referenceTypeFilter,
+                                                                                       @Nonnull final Predicate<ControllerServiceReferencingComponentEntity> statePredicate,
+                                                                                       final int retries,
+                                                                                       final int timeout,
+                                                                                       @Nonnull final TimeUnit timeUnit) {
+        int count = 0;
+        boolean last;
+        final Predicate<ControllerServiceReferencingComponentEntity> preFilter = entity -> referenceTypeFilter.test(entity.getComponent().getReferenceType());
 
-    private boolean ensureComponentsAreOfState(final String id, final String referenceType, final String state, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
-        return ensureComponentsAreOfState(id, referenceType, null, state, retries, timeout, timeUnit);
-    }
+        do {
+            last = ++count >= retries;
 
+            final ControllerServiceReferencingComponentsEntity referencesEntity = getReferences(controllerServiceId)
+                .orElseThrow(() -> new NifiClientRuntimeException("Failed to retrieve references for controller service " + controllerServiceId));
+            final Stream<ControllerServiceReferencingComponentEntity> references = flattenReferencingComponents(referencesEntity);
 
-    private boolean ensureComponentsAreOfState(final String id, final String referenceType, final Set<String> ids, final String state, final int retries, final int timeout,
-                                               @Nonnull final TimeUnit timeUnit) {
-
-        boolean allMatch = false;
-        for (int count = 0; count < retries; ++count) {
-            Optional<ControllerServiceReferencingComponentsEntity> references = getReferences(id);
-            if (references.isPresent()) {
-                allMatch =
-                    references.get().getControllerServiceReferencingComponents().stream().filter(c -> c.getComponent().getReferenceType().equalsIgnoreCase(referenceType))
-                        .filter(c -> ids != null ? ids.contains(c.getComponent().getId()) : true).allMatch(c -> state.equalsIgnoreCase(c.getComponent().getState()));
-                if (allMatch) {
-                    break;
-                } else if (!allMatch && count <= retries) {
-                    Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
-                }
+            if (last) {
+                return references.filter(preFilter).filter(statePredicate.negate()).collect(Collectors.toSet());
+            } else if (references.filter(preFilter).allMatch(statePredicate)) {
+                return Collections.emptySet();
+            } else {
+                Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
             }
-        }
-        return allMatch;
-
+        } while (true);
     }
 
     /**
-     * get all referencing components in a single hashmap
-     *
-     * @param references references
-     * @return the map of id to component entity
+     * Get all referencing components
      */
-    private Map<String, ControllerServiceReferencingComponentEntity> getReferencingComponents(Collection<ControllerServiceReferencingComponentEntity> references) {
-        Map<String, ControllerServiceReferencingComponentEntity> map = new HashMap<>();
-        references.stream().forEach(c -> {
-            map.put(c.getId(), c);
-            if (c.getComponent().getReferencingComponents() != null && !c.getComponent().getReferencingComponents().isEmpty()) {
-                map.putAll(getReferencingComponents(c.getComponent().getReferencingComponents()));
-            }
-        });
-        return map;
+    @Nonnull
+    private Stream<ControllerServiceReferencingComponentEntity> flattenReferencingComponents(@Nonnull final ControllerServiceReferencingComponentEntity entity) {
+        final Set<ControllerServiceReferencingComponentEntity> refs = entity.getComponent().getReferencingComponents();
+        return refs != null ? Stream.concat(refs.stream(), refs.stream().flatMap(this::flattenReferencingComponents)) : Stream.empty();
     }
 
+    /**
+     * Get all referencing components
+     */
+    @Nonnull
+    private Stream<ControllerServiceReferencingComponentEntity> flattenReferencingComponents(@Nonnull final ControllerServiceReferencingComponentsEntity entity) {
+        final Set<ControllerServiceReferencingComponentEntity> refs = entity.getControllerServiceReferencingComponents();
+        return refs != null ? Stream.concat(refs.stream(), refs.stream().flatMap(this::flattenReferencingComponents)) : Stream.empty();
+    }
 
+    /**
+     * Updates the scheduled state of the processors and reporting tasks referencing the specified controller service.
+     *
+     * @param controllerService    controller service
+     * @param referencingRevisions revisions of referencing schedulable components to update
+     * @param running              {@code true} to start components, or {@code false} to stop
+     * @return {@code true} if all components were updated successfully
+     */
+    private boolean updateReferencingSchedulableComponents(@Nonnull final ControllerServiceDTO controllerService, @Nonnull final Map<String, RevisionDTO> referencingRevisions, final boolean running) {
+        // Issue request to update referencing components
+        final UpdateControllerServiceReferenceRequestEntity referenceEntity = new UpdateControllerServiceReferenceRequestEntity();
+        referenceEntity.setId(controllerService.getId());
+        referenceEntity.setState(running ? NifiProcessUtil.PROCESS_STATE.RUNNING.name() : NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+        referenceEntity.setReferencingComponentRevisions(referencingRevisions);
+
+        try {
+            updateReferences(controllerService.getId(), referenceEntity);
+        } catch (final Exception e) {
+            log.error("Failed to update referencing schedulable components for controller service {} [{}]: {}", controllerService.getId(), controllerService.getName(), e, e);
+            return false;
+        }
+
+        // Wait for states to change
+        if (running) {
+            return true;
+        } else {
+            return stopReferencingSchedulableComponents(controllerService, 5, 500, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private boolean startSchedulableComponents(@Nonnull final Set<ControllerServiceReferencingComponentEntity> entities) {
+        boolean updated = true;
+
+        // Update references back to previous states
+        for (final ControllerServiceReferencingComponentEntity entity : entities) {
+            final ControllerServiceReferencingComponentDTO component = entity.getComponent();
+
+            if (StringUtils.equals(component.getReferenceType(), REFERENCE_TYPE_PROCESSOR)) {
+                final ProcessorDTO processorDetails = new ProcessorDTO();
+                processorDetails.setId(component.getId());
+                processorDetails.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+
+                final ProcessorEntity processorEntity = new ProcessorEntity();
+                processorEntity.setId(entity.getId());
+                processorEntity.setRevision(entity.getRevision());
+                processorEntity.setComponent(processorDetails);
+
+                try {
+                    getClient().processors().updateWithRetry(processorEntity, 3, 500, TimeUnit.MILLISECONDS);
+                } catch (final Exception e) {
+                    updated = false;
+                    log.warn("Failed to start processor {} [{}]: {}", component.getId(), component.getName(), e);
+                }
+            } else if (StringUtils.equals(component.getReferenceType(), REFERENCE_TYPE_REPORTING_TASK)) {
+                final ReportingTaskDTO reportingTaskDetails = new ReportingTaskDTO();
+                reportingTaskDetails.setId(component.getId());
+                reportingTaskDetails.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+
+                final ReportingTaskEntity reportingTaskEntity = new ReportingTaskEntity();
+                reportingTaskEntity.setId(entity.getId());
+                reportingTaskEntity.setRevision(entity.getRevision());
+                reportingTaskEntity.setComponent(reportingTaskDetails);
+
+                try {
+                    getClient().reportingTasks().update(reportingTaskDetails);
+                } catch (final Exception e) {
+                    updated = false;
+                    log.warn("Failed to start reporting task {} [{}]: {}", component.getId(), component.getName(), e);
+                }
+            } else {
+                log.warn("Cannot start entity {} of unknown type: {}", entity.getId(), component.getReferenceType());
+            }
+        }
+
+        return updated;
+    }
+
+    /**
+     * Updates the referencing services with the specified state.
+     *
+     * @param controllerService    controller service
+     * @param referencingRevisions revisions of referencing services
+     * @param enabled              {@code true} to enable services, or {@code false} to disable
+     * @return {@code true} if all services were updated successfully
+     */
+    private boolean updateReferencingServices(@Nonnull final ControllerServiceDTO controllerService, @Nonnull final Map<String, RevisionDTO> referencingRevisions, final boolean enabled) {
+        // Issue request to update referencing components
+        final UpdateControllerServiceReferenceRequestEntity referenceEntity = new UpdateControllerServiceReferenceRequestEntity();
+        referenceEntity.setId(controllerService.getId());
+        referenceEntity.setState(enabled ? State.ENABLED.name() : State.DISABLED.name());
+        referenceEntity.setReferencingComponentRevisions(referencingRevisions);
+
+        try {
+            updateReferences(controllerService.getId(), referenceEntity);
+        } catch (final Exception e) {
+            log.error("Failed to update referencing services for controller service {} [{}]: {}", controllerService.getId(), controllerService.getName(), e, e);
+            return false;
+        }
+
+        // Wait for states to change
+        final Predicate<ControllerServiceReferencingComponentEntity> predicate;
+        if (enabled) {
+            predicate = entity -> StringUtils.equalsAny(entity.getComponent().getState(), "ENABLING", State.ENABLED.name());
+        } else {
+            predicate = entity -> StringUtils.equals(entity.getComponent().getState(), State.DISABLED.name());
+        }
+
+        final Predicate<String> typeFilter = REFERENCE_TYPE_CONTROLLER_SERVICE::equals;
+        final Set<ControllerServiceReferencingComponentEntity> failed = pollReferencingComponents(controllerService.getId(), typeFilter, predicate, 5, 500, TimeUnit.MILLISECONDS);
+        if (failed.isEmpty()) {
+            return true;
+        } else {
+            if (log.isErrorEnabled()) {
+                final String referenceIds = failed.stream().map(ControllerServiceReferencingComponentEntity::getId).collect(Collectors.joining(", "));
+                log.error("Failed to stop referencing services for controller service {} [{}]: {}", controllerService.getId(), controllerService.getName(), referenceIds);
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Polls the specified controller service until all referencing schedulable components are stopped (not scheduled and 0 active threads).
+     */
+    private boolean stopReferencingSchedulableComponents(@Nonnull final ControllerServiceDTO controllerService, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
+        final Predicate<String> typeFilter = type -> StringUtils.equalsAny(type, REFERENCE_TYPE_PROCESSOR, REFERENCE_TYPE_REPORTING_TASK);
+        final Predicate<ControllerServiceReferencingComponentEntity> predicate = entity -> {
+            final ControllerServiceReferencingComponentDTO component = entity.getComponent();
+            return !StringUtils.equals(component.getState(), NifiProcessUtil.PROCESS_STATE.RUNNING.name())
+                   && (component.getActiveThreadCount() == null || component.getActiveThreadCount() == 0);
+        };
+        final Set<ControllerServiceReferencingComponentEntity> running = pollReferencingComponents(controllerService.getId(), typeFilter, predicate, retries, timeout, timeUnit);
+
+        if (running.isEmpty()) {
+            return true;
+        } else {
+            if (log.isErrorEnabled()) {
+                final String referenceIds = running.stream().map(ControllerServiceReferencingComponentEntity::getId).collect(Collectors.joining(", "));
+                log.error("Failed to stop referencing schedulable components for controller service {} [{}]: {}", controllerService.getId(), controllerService.getName(), referenceIds);
+            }
+            return false;
+        }
+    }
 }

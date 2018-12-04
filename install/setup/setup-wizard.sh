@@ -198,33 +198,34 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
 
 done
 
-echo " ";
-while [[ ! ${install_vault} =~ $yes_no ]]; do
-    read -p "Would you like me to install a local Vault instance? Please enter y/n: " install_vault
-
-    if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
-        read -p "Enter Vault version you wish to install, hit Enter for '0.9.0': " vault_version
-        if [[ -z "$vault_version" ]]; then
-            vault_version=0.9.0
-        fi
-
-        read -p "Enter the Vault home folder location, hit Enter for '/opt/vault': " vault_home
-        if [[ -z "$vault_home" ]]; then
-            vault_home=/opt/vault
-        fi
-
-        read -p "Enter the user Vault should run as, hit Enter for 'vault': " vault_user
-        if [[ -z "$vault_user" ]]; then
-            vault_user=vault
-        fi
-
-        read -p "Enter the linux group Vault should run as, hit Enter for 'vault': " vault_group
-        if [[ -z "$vault_group" ]]; then
-            vault_group=vault
-        fi
-    fi
-
-done
+#
+#echo " ";
+#while [[ ! ${install_vault} =~ $yes_no ]]; do
+#    read -p "Would you like me to install a local Vault instance? Please enter y/n: " install_vault
+#
+#    if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
+#        read -p "Enter Vault version you wish to install, hit Enter for '0.9.0': " vault_version
+#        if [[ -z "$vault_version" ]]; then
+#            vault_version=0.9.0
+#        fi
+#
+#        read -p "Enter the Vault home folder location, hit Enter for '/opt/vault': " vault_home
+#        if [[ -z "$vault_home" ]]; then
+#            vault_home=/opt/vault
+#        fi
+#
+#        read -p "Enter the user Vault should run as, hit Enter for 'vault': " vault_user
+#        if [[ -z "$vault_user" ]]; then
+#            vault_user=vault
+#        fi
+#
+#        read -p "Enter the linux group Vault should run as, hit Enter for 'vault': " vault_group
+#        if [[ -z "$vault_group" ]]; then
+#            vault_group=vault
+#        fi
+#    fi
+#
+#done
 
 if [ $OFFLINE = true ]
 then
@@ -304,18 +305,40 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
     else
         ./nifi/install-kylo-components.sh $nifi_home $kylo_home_folder $nifi_user $nifi_group
     fi
-fi
 
-if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
-    echo "Installing Vault"
-    if [ ${OFFLINE} = true ]
+    if [ -f $kylo_home_folder/encrypt.key ]
     then
-        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group} ${CURRENT_DIR} -O
+        cp $kylo_home_folder/encrypt.key $nifi_home/ext-config
     else
-        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group}
+        echo "Paste the exact contents of the KYLO_INSTALL_HOME/encrypt.key file (including line feeds) followed by a period ('.')"
+        echo "Example (pasted value will be hidden): "
+        echo "CZCIrMA5VYDV+ClWCBw3swtfvvGUHVhQGLhDko+gRFqp+3/dmD4Qg5IQnkEmJLIYbT9j/a2cmUI9
+33BcYCy+Lw==."
+        read -p "> " -d "." -s encrypt_key;
+        echo $encrypt_key | tr " " "\n"  > $nifi_home/ext-config/encrypt.key
     fi
+
+    chown $nifi_user:$nifi_group $nifi_home/ext-config/encrypt.key
+    chmod 400 $nifi_home/ext-config/encrypt.key
+
+    cat >> $nifi_home/current/bin/nifi-env.sh <<EOF
+
+## Shared key used by NiFi-launched spark jobs to decrypt sensitive values sent from Kylo
+export ENCRYPT_KEY="\$(< $nifi_home/ext-config/encrypt.key)"
+EOF
+
 fi
 
+#
+#if [ "$install_vault" == "y"  ] || [ "$install_vault" == "Y" ] ; then
+#    echo "Installing Vault"
+#    if [ ${OFFLINE} = true ]
+#    then
+#        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group} ${CURRENT_DIR} -O
+#    else
+#        ./vault/install-vault.sh ${kylo_home_folder} ${kylo_user} ${kylo_group} ${vault_version} ${vault_home} ${vault_user} ${vault_group}
+#    fi
+#fi
 
 if [ "$USERS_FILE_CREATED" ] ; then
     echo ""

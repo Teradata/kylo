@@ -1,0 +1,27 @@
+<div [formGroup]="formGroup" fxFlex fxLayoutAlign="row">
+<mat-form-field >
+  <input matInput #category [placeholder]="placeholder" aria-label="Category" formControlName="category" [matAutocomplete]="auto" #input >
+  <mat-error *ngIf="checkRequired(formGroup, 'category')"> {{"views.define-feed-general-info.Req" | translate}} </mat-error>
+  <mat-error *ngIf="checkFeedCreateAccess(formGroup, 'category')" translate [translateParams]="{categoryName: category.value}"> views.define-feed-general-info.FeedCreationNotAllowedInCategory </mat-error>
+
+  <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="categoryAutocompleteDisplay" (optionSelected)="onCategorySelected($event)">
+    <ng-container *ngFor="let category of filteredCategories| async  ">
+      <mat-option  [value]="category" class="autocomplete-option">
+                    <span [class.disabled]="!category.createFeed">
+                         <ng-md-icon [icon]="category.icon" [ngStyle]="{'fill':category.iconColor}" *ngIf="category.createFeed && category.icon"></ng-md-icon>
+                      <ng-md-icon icon="block" class="disabled" *ngIf="!category.createFeed"></ng-md-icon>
+                      <span class="title"> {{category.name}}</span>
+                      <br/>
+                      <span class="sub-title hint">{{category.description}}</span>
+                    </span>
+      </mat-option>
+      <mat-divider></mat-divider>
+    </ng-container>
+  </mat-autocomplete>
+  <mat-hint *ngIf="hint">{{hint}}
+  </mat-hint>
+</mat-form-field>
+
+  <button *ngIf="renderClearButton && input.value" mat-icon-button matTooltip="Clear the category selection" (click)="clearCategorySelection()"><mat-icon>clear</mat-icon></button>
+
+</div>

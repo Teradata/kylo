@@ -21,6 +21,8 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
  */
 
 
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSimpleProcessorDTO;
+
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 

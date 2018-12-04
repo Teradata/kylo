@@ -18,12 +18,12 @@
  * @property {string} systemName unique name
  * @property {string|null} title human-readable name
  */
-import CommonRestUrlService from "./CommonRestUrlService";
+import {CommonRestUrlService} from "./CommonRestUrlService";
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable()
-export default class UserGroupService {
+export class UserGroupService {
     currentUser: any = null;
     /**
      * Interacts with the Users REST API.
@@ -32,7 +32,7 @@ export default class UserGroupService {
     constructor(private http: HttpClient,
         private commonRestUrlService: CommonRestUrlService) {
     }
-    getCurrentUser() {
+    getCurrentUser() : Promise<any>{
         return new Promise((resolve,reject) => {
             var user: any = {
                 "displayName": null,
@@ -41,7 +41,7 @@ export default class UserGroupService {
                 "groups": [],
                 "systemName": null
             };
-    
+
             if (this.currentUser == null) {
                 this.http.get("/proxy/v1/about/me").toPromise().then((response: any) => {
                     this.currentUser = response;

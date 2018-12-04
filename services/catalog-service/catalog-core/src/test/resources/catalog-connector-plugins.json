@@ -1,0 +1,390 @@
+[
+  {
+    "title": "Hive",
+    "pluginId": "hive",
+    "format": "hive",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "options": [
+      {
+        "key": "driver",
+        "label": "Driver"
+      },
+      {
+        "key": "url",
+        "label": "Url",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "user",
+        "label": "User"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password"
+      }
+    ]
+  },
+  {
+    "title": "Amazon S3",
+    "pluginId": "amazon-s3",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "s3a:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "spark.hadoop.fs.s3a.access.key",
+        "label": "Access Key Id"
+      },
+      {
+        "key": "spark.hadoop.fs.s3a.secret.key",
+        "type": "password",
+        "label": "Secret Access Key"
+      }
+    ],
+    "nifiControllerService": {
+      "type": "org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService",
+      "properties": {
+        "Access Key": "${spark.hadoop.fs.s3a.access.key}",
+        "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"
+      }
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.FetchS3Object"],
+        "properties": {
+          "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}",
+          "Bucket": "{{ paths[0].match('s3\\\\w*:\\\\/+([^/]+)')[1] }}",
+          "Object Key": "{{ paths[0].match('s3\\\\w*:\\\\/+[^/]+\\\\/(.*)')[1] }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.sqs.GetSQS"],
+        "properties": {
+          "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.ListS3"],
+        "properties": {
+          "AWS Credentials Provider service": "{{ dataSource.nifiControllerServiceId }}",
+          "Bucket": "{{ paths[0].match('s3\\\\w*:\\\\/+([^/]+)')[1] }}",
+          "prefix": "{{ paths[0].match('s3\\\\w*:\\\\/+[^/]+\\\\/(.*)')[1] }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Azure Storage",
+    "pluginId": "azure-storage",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "optionsMapperId": "azureOptionsMapper",
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "wasb:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "account-name",
+        "label": "Account Name"
+      },
+      {
+        "key": "account-key",
+        "type": "password",
+        "label": "Account Key"
+      }
+    ]
+  },
+  {
+    "title": "Kafka",
+    "pluginId": "kafka",
+    "format": "org.apache.spark.sql.kafka010.KafkaSourceProvider",
+    "options": [
+      {
+        "key": "kafka.bootstrap.servers",
+        "label": "Kafka Server",
+        "type": "select",
+        "value": "localhost:9093",
+        "hint": "Prefer 'Test Server'",
+        "flex": 50,
+        "selections": [
+          {
+            "label": "Dev Server",
+            "value": "localhost:9092"
+          },
+          {
+            "label": "Test Server",
+            "value": "localhost:9093"
+          },
+          {
+            "label": "Prod Server",
+            "value": "prod.server1:9092"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "File Upload",
+    "pluginId": "file-upload",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".upload"
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.FetchFile"],
+        "properties": {
+          "File to Fetch": "{{ paths[0].substring(5) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.GetFile"],
+        "properties": {
+          "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
+          "File Filter": "[^\\.].*"
+        }
+      }
+    ]
+  },
+  {
+    "title": "HDFS",
+    "pluginId": "hdfs",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "hdfs:"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Teradata",
+    "pluginId": "teradata",
+    "format": "jdbc",
+    "color": "orange-700",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "options": [
+      {
+        "key": "driver",
+        "label": "Driver"
+      },
+      {
+        "key": "url",
+        "label": "Url",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "user",
+        "label": "User"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password"
+      }
+    ]
+  },
+  {
+    "title": "JDBC",
+    "pluginId": "jdbc",
+    "format": "jdbc",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "options": [
+      {
+        "key": "driver",
+        "label": "Driver"
+      },
+      {
+        "key": "url",
+        "label": "Url",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "user",
+        "label": "User"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password"
+      }
+    ],
+    "nifiControllerService": {
+      "type": "org.apache.nifi.dbcp.DBCPConnectionPool",
+      "properties": {
+        "Database Connection URL": "${url}",
+        "Database Driver Class Name": "${driver}",
+        "database-driver-locations": "${jars}",
+        "Database User": "${user}",
+        "Password": "${password}"
+      }
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData", "com.thinkbiganalytics.nifi.v2.ingest.GetTableData"],
+        "properties": {
+          "Source Database Connection": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
+      },
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+        "properties": {
+          "Source Connection Service": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Oracle",
+    "pluginId": "oracle",
+    "format": "jdbc",
+    "color": "orange-700",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ]
+  },
+  {
+    "title": "Google Cloud Storage",
+    "pluginId": "google-cloud-storage",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "spark.hadoop.google.cloud.auth.service.account.email",
+        "label": "Email"
+      },
+      {
+        "key": "spark.hadoop.google.cloud.auth.service.account.keyfile",
+        "label": "Key File"
+      }
+    ]
+  },
+  {
+    "title": "Local File System",
+    "pluginId": "local-file-system",
+    "tabs": [
+      {
+        "label": "File",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "file:"
+            }
+          }
+        ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.FetchFile"],
+        "properties": {
+          "File to Fetch": "{{ paths[0].substring(5) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.GetFile"],
+        "properties": {
+          "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
+          "File Filter": "{{ paths[0].substring(paths[0].lastIndexOf('/') + 1) }}"
+        }
+      }
+    ]
+  }
+]

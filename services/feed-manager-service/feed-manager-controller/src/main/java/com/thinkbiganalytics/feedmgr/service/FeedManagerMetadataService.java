@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -53,14 +54,18 @@ import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +74,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -169,6 +177,17 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = feedProvider.createFeed(feedMetadata);
+        afterDeployedFeed(feed);
+        return feed;
+
+    }
+
+    /**
+     * ensure the feed is enabled if it needs to be
+     * @param feed
+     * @return
+     */
+    private void afterDeployedFeed(NifiFeed feed){
         if (feed.isSuccess()) {
             if (feed.isEnableAfterSave()) {
                 enableFeed(feed.getFeedMetadata().getId());
@@ -180,10 +199,12 @@ public class FeedManagerMetadataService implements MetadataService {
                         feed.setSuccess(false);
                         feed.getFeedProcessGroup().setInputProcessor(updatedProcessor.get());
                         feed.getFeedProcessGroup().validateInputProcessor();
-                        if (feedMetadata.isNew() && feed.getFeedMetadata().getId() != null) {
-                            //delete it
+                    /*
+                            if (feedMetadata.isNew() && feed.getFeedMetadata().getId() != null) {
+                            delete it
                             deleteFeed(feed.getFeedMetadata().getId());
-                        }
+                            }
+                            */
                     }
                 }
             }
@@ -191,10 +212,12 @@ public class FeedManagerMetadataService implements MetadataService {
             FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());
             feed.setFeedMetadata(updatedFeed);
         }
-        return feed;
-
     }
-
+    
+    @Override
+    public FeedMetadata saveDraftFeed(FeedMetadata feedMetadata) {
+        return feedProvider.saveDraftFeed(feedMetadata);
+    }
 
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
@@ -240,38 +263,48 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
         // Step 5: Enable NiFi cleanup flow
-        boolean needsCleanup = false;
+        boolean hasCleanupFlow = false;
         final ProcessGroupDTO feedProcessGroup;
         final ProcessGroupDTO categoryProcessGroup = nifiRestClient.getProcessGroupByName("root", feed.getSystemCategoryName(), false, true);
 
         if (categoryProcessGroup != null) {
             feedProcessGroup = NifiProcessUtil.findFirstProcessGroupByName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName());
             if (feedProcessGroup != null) {
-                needsCleanup = nifiRestClient.setInputAsRunningByProcessorMatchingType(feedProcessGroup.getId(), "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
+                hasCleanupFlow = nifiRestClient.setInputAsRunningByProcessorMatchingType(feedProcessGroup.getId(), "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
             }
         }
 
-        // Step 6: Run NiFi cleanup flow
-        if (needsCleanup) {
+        if (hasCleanupFlow) {
             // Wait for input processor to start
             try {
                 Thread.sleep(cleanupDelay);
             } catch (InterruptedException e) {
                 // ignored
             }
-
-            cleanupFeed(feed);
         }
-
-        // Step 7: Remove feed from NiFi
+        
+        // Step 6: Signal the cleanup event.
+        notifyFeedCleanup(feed);
+        
+        // Step 7: Optionally wait for the cleanup job to finish if this feed has a cleanup flow.
+        if (hasCleanupFlow) {
+            waitForFeedCleanup(feed);
+        }
+        
+        // Step 8: Remove feed from NiFi
         if (categoryProcessGroup != null) {
             final Set<ConnectionDTO> connections = categoryProcessGroup.getContents().getConnections();
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
                 nifiRestClient.deleteProcessGroupAndConnections(processGroup, connections);
             }
+            //disable any ports that are not connected to anything
+            nifiRestClient.disableDisconnectedPorts(categoryProcessGroup);
+
+
+
         }
 
-        // Step 8: Delete database entries
+        // Step 9: Delete database entries
         feedProvider.deleteFeed(feedId);
 
     }
@@ -462,16 +495,23 @@ public class FeedManagerMetadataService implements MetadataService {
     public boolean deleteCategory(String categoryId) throws InvalidOperationException {
         return categoryProvider.deleteCategory(categoryId);
     }
+    
+    private void notifyFeedCleanup(@Nonnull final FeedMetadata feed) {
+        Feed.ID id = feedProvider.resolveFeed(feed.getId());
+        
+        // Signal a feed cleanup
+        eventService.notify(new CleanupTriggerEvent(id));
+    }
 
     /**
-     * Runs the cleanup flow for the specified feed.
+     * Waits for the cleanup flow for the specified feed to complete if the feed had one.
      *
      * @param feed the feed to be cleaned up
      * @throws FeedCleanupFailedException  if the cleanup flow was started but failed to complete successfully
      * @throws FeedCleanupTimeoutException if the cleanup flow was started but failed to complete in the allotted time
      * @throws RuntimeException            if the cleanup flow could not be started
      */
-    private void cleanupFeed(@Nonnull final FeedMetadata feed) {
+    private void waitForFeedCleanup(@Nonnull final FeedMetadata feed) {
         // Create event listener
         final FeedCompletionListener listener = new FeedCompletionListener(feed, Thread.currentThread());
         eventService.addListener(listener);
@@ -479,7 +519,6 @@ public class FeedManagerMetadataService implements MetadataService {
         try {
             // Trigger cleanup
             feedProvider.enableFeedCleanup(feed.getId());
-            eventService.notify(new CleanupTriggerEvent(feedProvider.resolveFeed(feed.getId())));
 
             // Wait for completion
             long remaining = cleanupTimeout;
@@ -529,6 +568,43 @@ public class FeedManagerMetadataService implements MetadataService {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
     }
 
+    @Override
+    public Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getLatestFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getDraftFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent) {
+        return feedProvider.getDeployedFeedVersion(feedId, includeContent);
+    }
+    
+    @Override
+    public DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) {
+        DeployResponseEntityVersion version = feedProvider.deployFeedVersion(feedId, versionId, includeContent);
+        afterDeployedFeed(version.getFeed());
+        return version;
+    }
+
+    @Override
+    public EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent) {
+        return feedProvider.createVersionFromDraftFeed(feedId, comment, includeContent);
+    }
+
+    @Override
+    public EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent) {
+        return feedProvider.createDraftFromFeedVersion(feedId, versionId, includeContent);
+    }
+
+    @Override
+    public Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent) {
+        return feedProvider.revertFeedDraftVersion(feedId, includeContent);
+    }
+    
     @Nonnull
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {

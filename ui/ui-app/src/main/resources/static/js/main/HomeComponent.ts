@@ -1,11 +1,11 @@
-import StateService from  "../services/StateService";
-import AccessControlService from "../services/AccessControlService";
+import {StateService} from  "../services/StateService";
+import {AccessControlService} from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
 import { Component } from '@angular/core';
 
 @Component({
     selector:'home-controller',
-    templateUrl: 'js/main/home.html'
+    templateUrl: './home.html'
 })
 export class HomeComponent {
     
@@ -42,10 +42,10 @@ export class HomeComponent {
             return this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
         }
         if (this.accessControlService.hasAction(AccessConstants.USERS_ACCESS, actions)) {
-            return this.StateService.Auth().navigateToUsers();
+            return this.StateService.Auth.navigateToUsers();
         }
         if (this.accessControlService.hasAction(AccessConstants.GROUP_ACCESS, actions)) {
-            return this.StateService.Auth().navigateToGroups();
+            return this.StateService.Auth.navigateToGroups();
         }
 
         this.loading = false;

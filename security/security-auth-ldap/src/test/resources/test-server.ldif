@@ -35,14 +35,17 @@ objectclass: inetOrgPerson
 dn: cn=admin,ou=groups,dc=example,dc=com
 cn: admin
 ou: admin
-member: uid=dladmin,ou=people,dc=example,dc=com
-member: uid=test,ou=people,dc=example,dc=com
+#member: uid=dladmin,ou=people,dc=example,dc=com
+#member: uid=test,ou=people,dc=example,dc=com
+uniqueMember: uid=dladmin,ou=people,dc=example,dc=com
+uniqueMember: uid=test,ou=people,dc=example,dc=com
 objectclass: top
 objectclass: groupOfNames
 
 dn: cn=developer,ou=groups,dc=example,dc=com
 cn: developer
 ou: developer
-member: uid=test,ou=people,dc=example,dc=com
+#member: uid=test,ou=people,dc=example,dc=com
+uniqueMember: uid=test,ou=people,dc=example,dc=com
 objectclass: top
 objectclass: groupOfNames

@@ -28,6 +28,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +132,7 @@ public class DataSetUtil {
                 dst.setJars(new ArrayList<>(src.getJars()));
             }
         }
-        if (src.getFormat() != null) {
+        if (StringUtils.isNotBlank(src.getFormat())) {
             dst.setFormat(src.getFormat());
         }
         if (src.getOptions() != null) {
@@ -142,7 +143,7 @@ public class DataSetUtil {
             }
         }
         if (src.getPaths() != null) {
-            dst.setPaths(src.getPaths());
+            dst.setPaths(new ArrayList<>(src.getPaths()));
         }
     }
 

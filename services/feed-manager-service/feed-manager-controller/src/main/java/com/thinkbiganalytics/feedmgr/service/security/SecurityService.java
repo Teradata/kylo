@@ -70,15 +70,40 @@ public interface SecurityService {
 
     Optional<RoleMembership> changeTemplateRoleMemberships(String id, RoleMembershipChange change);
 
+    @Deprecated
     Optional<ActionGroup> getAvailableDatasourceActions(String id);
 
+    @Deprecated
     Optional<ActionGroup> getAllowedDatasourceActions(String id, Set<Principal> principals);
 
+    @Deprecated
     Optional<ActionGroup> changeDatasourcePermissions(String id, PermissionsChange change);
 
+    @Deprecated
     Optional<RoleMemberships> getDatasourceRoleMemberships(String id);
 
+    @Deprecated
     Optional<RoleMembership> changeDatasourceRoleMemberships(String id, RoleMembershipChange change);
+    
+    Optional<ActionGroup> getAvailableConnectorActions(String id);
+    
+    Optional<ActionGroup> getAllowedConnectorActions(String id, Set<Principal> principals);
+    
+    Optional<ActionGroup> changeConnectorPermissions(String id, PermissionsChange change);
+    
+    Optional<RoleMemberships> getConnectorRoleMemberships(String id);
+    
+    Optional<RoleMembership> changeConnectorRoleMemberships(String id, RoleMembershipChange change);
+    
+    Optional<ActionGroup> getAvailableDataSourceActions(String id);
+    
+    Optional<ActionGroup> getAllowedDataSourceActions(String id, Set<Principal> principals);
+    
+    Optional<ActionGroup> changeDataSourcePermissions(String id, PermissionsChange change);
+    
+    Optional<RoleMemberships> getDataSourceRoleMemberships(String id);
+    
+    Optional<RoleMembership> changeDataSourceRoleMemberships(String id, RoleMembershipChange change);
 
     Optional<PermissionsChange> createFeedPermissionChange(String id, ChangeType changeType, Set<Principal> members);
 
@@ -87,4 +112,6 @@ public interface SecurityService {
     Optional<PermissionsChange> createTemplatePermissionChange(String id, ChangeType changeType, Set<Principal> members);
 
     Optional<PermissionsChange> createDatasourcePermissionChange(String id, ChangeType changeType, Set<Principal> members);
+    
+    Optional<PermissionsChange> createDataSourcePermissionChange(String id, ChangeType changeType, Set<Principal> members);
 }

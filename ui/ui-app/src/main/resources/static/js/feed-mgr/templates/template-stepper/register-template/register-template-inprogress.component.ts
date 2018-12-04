@@ -3,7 +3,7 @@ import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog
 
 @Component({
     selector: 'register-template-inprogress-dialog',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-inprogress-dialog.html'
+    templateUrl: './register-template-inprogress-dialog.html'
 })
 export class RegisterTemplateInprogressDialog {
 

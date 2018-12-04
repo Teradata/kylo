@@ -75,6 +75,21 @@ public interface NiFiPortsRestClient {
      */
     List<PortDTO> findInputPorts(String parentGroupId);
 
+
+    /**
+     * Return a List of all output ports for the parent group id
+     * @param parentGroupId the  parent group id to search for the output ports
+     * @return a list of the output ports under the parent group id
+     */
+    List<PortDTO> findOutputPorts(String parentGroupId);
+
+    /**
+     * Find all input and output ports under a process group
+     * @param parentGroupId the process group id
+     * @return a list of both input and output ports
+     */
+     List<PortDTO> findPorts(String parentGroupId);
+
     /**
      * Deletes an input port with a given id
      * @param portId the port to delete

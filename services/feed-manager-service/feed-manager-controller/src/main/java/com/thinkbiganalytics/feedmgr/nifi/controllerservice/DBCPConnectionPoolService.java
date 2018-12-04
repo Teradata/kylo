@@ -272,7 +272,6 @@ public class DBCPConnectionPoolService {
      * Executes the specified SELECT query in the context of the specified data source.
      *
      * @param datasource the JDBC datasource
-     * @param query      the query to execute
      * @return the query results
      * @throws DataAccessException      if the query cannot be executed
      * @throws IllegalArgumentException if the datasource is invalid
@@ -492,7 +491,7 @@ public class DBCPConnectionPoolService {
         return null;
     }
 
-    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, AbstractControllerServiceRequest serviceProperties) {
+    private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, AbstractControllerServiceRequest serviceProperties) throws InvalidControllerServiceLookupException {
         boolean valid = !isMasked(dataSourceProperties.getPassword());
         if (!valid) {
             List<Datasource> matchingDatasources = metadataAccess.read(() -> {
@@ -523,6 +522,8 @@ public class DBCPConnectionPoolService {
                 String example = propertyKey + "=PASSWORD";
                 log.error("Unable to connect to Controller Service {}, {}.  You need to specify a configuration property as {} with the password for user: {}. ",
                           serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), example, dataSourceProperties.getUser());
+
+                throw new InvalidControllerServiceLookupException("Unable to connect to Controller Service "+serviceProperties.getControllerServiceName()+".  Please ensure Kylo has a configuration property matching ["+example+"] to connect to this source ");
             }
         }
         return valid;
@@ -557,8 +558,19 @@ public class DBCPConnectionPoolService {
         return validationQuery;
     }
 
+    /**
+     * Parse a controll service for its connection properties
+     * @param controllerServiceDTO
+     * @return
+     */
+    public PoolingDataSourceService.DataSourceProperties parseControllerService(ControllerServiceDTO controllerServiceDTO){
+        ControllerServicePropertiesRequest request = ControllerServicePropertiesRequest.newRequest(controllerServiceDTO);
+        Map<String, String> properties = controllerServiceDTO.getProperties();
+        return getDataSourceProperties(properties, request);
+    }
 
-    private TableSchema describeTableForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
+
+    private TableSchema describeTableForControllerService(DescribeTableControllerServiceRequest serviceProperties) throws InvalidControllerServiceLookupException {
 
         String type = serviceProperties.getControllerServiceType();
         if (serviceProperties.getControllerServiceType() != null && serviceProperties.getControllerServiceType().equalsIgnoreCase(type)) {
@@ -575,8 +587,6 @@ public class DBCPConnectionPoolService {
                 DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
                 DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
                 return schemaParser.describeTable(serviceProperties.getSchemaName(), serviceProperties.getTableName());
-            } else {
-                return null;
             }
         }
         return null;
@@ -591,6 +601,7 @@ public class DBCPConnectionPoolService {
 
     public PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, AbstractControllerServiceRequest serviceProperties) {
         String uri = properties.get(serviceProperties.getConnectionStringPropertyKey());
+        String driverLocations = properties.get(serviceProperties.getDriverLocationsKey());
         String user = properties.get(serviceProperties.getUserNamePropertyKey());
         String password = (serviceProperties.getPassword() != null) ? serviceProperties.getPassword() : properties.get(serviceProperties.getPasswordPropertyKey());
         String driverClassName = properties.get(serviceProperties.getDriverClassNamePropertyKey());
@@ -607,6 +618,8 @@ public class DBCPConnectionPoolService {
             validationQuery = parseValidationQueryFromConnectionString(uri);
         }
         boolean testOnBorrow = StringUtils.isNotBlank(validationQuery);
-        return new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
+        PoolingDataSourceService.DataSourceProperties ds = new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
+        ds.setDriverLocation(driverLocations);
+        return ds;
     }
 }

@@ -24,64 +24,81 @@ package com.thinkbiganalytics.metadata.modeshape.common.mixin;
  */
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jcr.Node;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider;
+import com.thinkbiganalytics.metadata.api.versioning.VersionableEntityNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
-import com.thinkbiganalytics.metadata.modeshape.versioning.JcrLatestEntityVersion;
 
 /**
  * A mixin interface to be implemented by any JCR entity provider that supports versionable entities.
  */
 public interface VersionProviderMixin<T, PK extends Serializable> extends EntityVersionProvider<T, PK> {
     
+    @Override
     default EntityVersion.ID resolveVersion(Serializable ser) {
         return new JcrEntityVersion.VersionId(ser);
     }
 
-    default Optional<List<EntityVersion<T>>> findVersions(PK entityId, boolean includeContent) {
+    @Override
+    default List<EntityVersion<PK, T>> findVersions(PK entityId, boolean includeContent) {
+        BiFunction<EntityVersion<PK, T>, EntityVersion<PK, T>, Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
+        
         return findVersionableNode(entityId)
-                        .map(node -> {
-                            List<EntityVersion<T>> result = new ArrayList<>();
-                            // The "current" version may not be needed as it should be equal to the latest version.
-                            // TODO verify upgrades from versions earlier than 0.8.4 have at least one version.
-//                            result.add(new JcrLatestEntityVersion<>(node, includeContent ? asEntity(entityId, node) : null));
-                            
-                            BiFunction<EntityVersion<T>,EntityVersion<T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
-                            List<EntityVersion<T>> versions = JcrVersionUtil.getVersions(node).stream()
-                                            .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
-                                            .map(ver -> new JcrEntityVersion<>(ver, includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null))
-                                            .sorted(desc::apply)
-                                            .collect(Collectors.toList());
-                            result.addAll(versions);
-                            
-                            return result;
-                        });
+                .map(node -> streamVersions(node, entityId, includeContent)
+                    .sorted(desc::apply)
+                    .collect(Collectors.toList()))
+                .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
     
-    default Optional<EntityVersion<T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includedContent) {
-        return findVersions(entityId, includedContent)
-                        .flatMap(list -> {
-                            return list.stream()
-                                .filter(ver -> ver.getId().equals(versionId))
-                                .findFirst();
-                        });
+    @Override
+    default Optional<EntityVersion<PK, T>> findVersion(PK entityId, EntityVersion.ID versionId, boolean includeContent) {
+        return findVersionableNode(entityId)
+                .map(node -> streamVersions(node, entityId, includeContent)
+                    .filter(ver -> ver.getId().equals(versionId))
+                    .findFirst())
+                .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
 
-    default Optional<EntityVersion<T>> findLatestVersion(PK entityId, boolean includedContent) {
+    @Override
+    default Optional<EntityVersion<PK, T>> findLatestVersion(PK entityId, boolean includeContent) {
+        BiFunction<EntityVersion<PK, T>, EntityVersion<PK, T>, Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
+        
         return findVersionableNode(entityId)
-                        .map(node -> new JcrLatestEntityVersion<>(node, includedContent ? asEntity(null, node) : null));
+                .map(node -> streamVersions(node, entityId, includeContent)
+                    .sorted(desc::apply)
+                    .findFirst())
+                .orElseThrow(() -> new VersionableEntityNotFoundException(entityId));
     }
     
+    default Stream<EntityVersion<PK, T>> streamVersions(Node versionable, PK entityId, boolean includeContent) {
+        return JcrVersionUtil.getVersions(versionable).stream()
+                .filter(ver -> ! JcrUtil.getName(ver).equals("jcr:rootVersion"))
+                .map(ver -> (EntityVersion<PK, T>) new JcrEntityVersion<>(ver, 
+                                                                          getChangeComment(entityId, JcrVersionUtil.getFrozenNode(ver)),
+                                                                          entityId, 
+                                                                          includeContent ? asEntity(entityId, JcrVersionUtil.getFrozenNode(ver)) : null));
+    }
+    
+    /**
+     * Retrieve an optional change comment associates with the entity ID and versionable node.
+     * @param id the entity ID
+     * @param versionable the versionable node
+     * @return the optional change comment if one exists
+     */
+    default Optional<ChangeComment> getChangeComment(PK id, Node versionable) {
+        return Optional.empty();
+    }
 
     /**
      * Implementers should return an optional containing the node considered to be the one

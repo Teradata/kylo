@@ -5,22 +5,23 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {TdDialogService} from '@covalent/core/dialogs';
 import * as _ from "underscore";
-
-import AccessControlService from '../../../../services/AccessControlService';
-import AngularModuleExtensionService from '../../../../services/AngularModuleExtensionService';
-import BroadcastService from '../../../../services/broadcast-service';
-import StateService from '../../../../services/StateService';
+import {AccessControlService} from '../../../../services/AccessControlService';
+import {StateService} from '@uirouter/core';
 import {RegisterTemplateServiceFactory} from '../../../services/RegisterTemplateServiceFactory';
+import {BroadcastService} from '../../../../services/broadcast-service';
+
+import {AngularModuleExtensionService} from '../../../../services/AngularModuleExtensionService';
+import {StateService as StateServices} from '../../../../services/StateService';
 import {RestUrlService} from '../../../services/RestUrlService';
 import {UiComponentsService} from '../../../services/UiComponentsService';
 import {EntityAccessControlService} from '../../../shared/entity-access-control/EntityAccessControlService';
 import {TemplateDeleteDialog} from './template-delete-dialog.component';
-import { ObjectUtils } from "../../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../../lib/common/utils/object-utils";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-register-select-template',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/select-template/select-template.html'
+    templateUrl: './select-template.html'
 })
 export class RegisterSelectTemplateController implements OnInit {
 
@@ -35,7 +36,9 @@ export class RegisterSelectTemplateController implements OnInit {
     stepIndex: string;
     stepNumber: number;
     template: any = null;
-    isValid: boolean = false;
+    stepperController: any = null;
+    isValid = false;
+    isNew: boolean;
 
     /**
      * Error message to be displayed if {@code isValid} is false
@@ -77,6 +80,7 @@ export class RegisterSelectTemplateController implements OnInit {
         this.model = this.registerTemplateService.model;
 
         this.registeredTemplateId = this.model.id;
+        this.isNew = (this.model.nifiTemplateId == undefined);
         this.nifiTemplateId = this.model.nifiTemplateId;
 
         this.isValid = this.registeredTemplateId !== null;
@@ -96,7 +100,7 @@ export class RegisterSelectTemplateController implements OnInit {
         /**
          * Get notified when a already registered template is selected and loaded from the previous screen
          */
-        this.broadcastService.subscribe(null, "REGISTERED_TEMPLATE_LOADED", this.onRegisteredTemplateLoaded());
+        this.broadcastService.subscribe(null, "REGISTERED_TEMPLATE_LOADED", () => this.onRegisteredTemplateLoaded());
 
         // TODO: line should be removed once error in service response success function is fixed
         // this.initTemplateTableOptions();
@@ -132,7 +136,8 @@ export class RegisterSelectTemplateController implements OnInit {
                 private _dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
                 private http: HttpClient,
-                private translate : TranslateService) {
+                private translate : TranslateService,
+                private stateServices: StateServices) {
     }
 
     // setup the Stepper types
@@ -234,7 +239,7 @@ export class RegisterSelectTemplateController implements OnInit {
 
                     this.snackBar.open(this.translate.instant('FEEDMGR.TEMPLATES.STEPPER.SELECT.DELETION_SUCCESSFUL'), this.translate.instant('view.main.ok'), {duration: 3000});
                     this.registerTemplateService.resetModel();
-                    this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
+                    this.stateServices.FeedManager().Template().navigateToRegisteredTemplates();
                 }
                 else {
                     this.deleteTemplateError(response.data.message)
@@ -268,7 +273,7 @@ export class RegisterSelectTemplateController implements OnInit {
 
             this.http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).toPromise().then((response: any) => {
                 this.snackBar.open('Successfully published template to repository.', null, {duration: 3000});
-                this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
+                this.stateServices.FeedManager().Template().navigateToRegisteredTemplates();
             }, (response: any) => {
                 this.publishTemplateError(response.data.message)
             });
@@ -364,7 +369,7 @@ export class RegisterSelectTemplateController implements OnInit {
      */
     matchNiFiTemplateIdWithModel() {
         if (!this.isLoading() && this.model.nifiTemplateId != this.nifiTemplateId) {
-            var matchingTemplate = this.templates.find(function (template: any) {
+            var matchingTemplate = this.templates.find((template: any) => {
                 var found = ObjectUtils.isDefined(template.templateDto) ? template.templateDto.id == this.model.nifiTemplateId : template.id == this.model.nifiTemplateId;
                 if (!found) {
                     //check on template name

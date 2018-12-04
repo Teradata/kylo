@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('./module-name');
 
     /**
      * Displays a table option stepper template.

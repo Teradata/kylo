@@ -1,0 +1,69 @@
+<!--<link rel="stylesheet" href="store-options.css"/>-->
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>Data Format Properties</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="hide()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<div mat-dialog-content class="mat-dialog-content">
+  <div style="overflow-x:auto; align:center; padding:10px">
+    <table>
+      <tr>
+        <th>Format</th>
+        <th>Properties</th>
+      </tr>
+      <tr>
+        <td>csv</td>
+        <td>
+          <ul>
+            <li><b>delimiter</b> (default <code>,</code>)</li>
+            <li><b>quote</b> (default <code>"</code>)</li>
+            <li><b>escape</b> (default <code>\</code>)</li>
+            <li><b>escapeQuotes</b> (default <code>true</code>)</li>
+            <li><b>quoteAll</b> (default <code>false</code>)</li>
+            <li><b>header</b> (default <code>false</code>)</li>
+            <li><b>nullValue</b> (default empty string)</li>
+            <li><b>compression</b> (default <code>null</code>)</li>
+            <li><b>dateFormat</b> (default <code>yyyy-MM-dd</code>)</li>
+            <li><b>timestampFormat</b> (default <code>yyyy-MM-dd'T'HH:mm:ss.SSSZZ</code>)</li>
+          </ul>
+          <div><a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#csv(java.lang.String)" target="_blank">View additional details - Part 1</a></div>
+          <div><a href="https://github.com/databricks/spark-csv" target="_blank">View additional details - Part 2</a></div>
+        </td>
+      </tr>
+      <tr>
+        <td>json</td>
+        <td>
+          <ul>
+            <li><b>compression</b> (default <code>null</code>)</li>
+            <li><b>dateFormat</b> (default <code>yyyy-MM-dd</code>)</li>
+            <li><b>timestampFormat</b> (default <code>yyyy-MM-dd'T'HH:mm:ss.SSSZZ</code>)</li>
+          </ul>
+          <a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#json(java.lang.String)" target="_blank">View additional details</a>
+        </td>
+      </tr>
+      <tr>
+        <td>orc</td>
+        <td>
+          <ul>
+            <li><b>compression</b> (<code>default snappy</code>)</li>
+          </ul>
+          <a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#orc(java.lang.String)" target="_blank">View additional details</a>
+        </td>
+      </tr>
+      <tr>
+        <td>parquet</td>
+        <td>
+          <ul>
+            <li><b>compression</b> (default is the value specified in <code>spark.sql.parquet.compression.codec</code>)</li>
+          </ul>
+          <a href="https://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/sql/DataFrameWriter.html#parquet(java.lang.String)" target="_blank">View additional details</a>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div mat-dialog-actions class="mat-dialog-actions">
+  <button mat-raised-button color="primary" (click)="hide()">Close</button>
+</div>

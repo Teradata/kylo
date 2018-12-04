@@ -31,7 +31,7 @@ import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
-import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.text.StrLookup;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -262,11 +263,13 @@ public class PropertyExpressionResolver {
         return variables;
     }
 
+
+
     private String getMetadataPropertyValue(FeedMetadata metadata, String variableName) throws Exception {
         String fieldPathName = StringUtils.substringAfter(variableName, metadataPropertyPrefix);
         Object obj = null;
         try {
-            obj = BeanUtils.getProperty(metadata, fieldPathName);
+            obj = PropertyUtils.getProperty(metadata, fieldPathName);
         } catch (Exception e) {
             //    throw new RuntimeException(e);
         }
@@ -274,12 +277,40 @@ public class PropertyExpressionResolver {
         String matchingProperty = MetadataFields.getInstance().getMatchingPropertyDescriptor(metadata, variableName);
         if (obj == null && matchingProperty != null) {
             matchingProperty = StringUtils.substringAfter(matchingProperty, metadataPropertyPrefix);
-            obj = BeanUtils.getProperty(metadata, matchingProperty);
+            obj = PropertyUtils.getProperty(metadata, matchingProperty);
         }
         if (obj != null) {
-            return obj.toString();
+            //convert collections to comma separated properties
+            if(isCollectionOfStrings(obj)){
+                return stringCollectionToString((Collection<String>)obj);
+            }
+            else if(obj instanceof Collection && ((Collection)obj).isEmpty()){
+                return null;
+            }
+            else {
+                return obj.toString();
+            }
         } else {
             return null;
+        }
+    }
+
+    private String stringCollectionToString(Collection<String> collection){
+        return collection.stream().collect(Collectors.joining(","));
+    }
+
+    private boolean isCollectionOfStrings(Object obj) {
+
+        if (obj instanceof Collection) {
+            return (boolean) ((Collection) obj).stream().findFirst().map(o -> {
+                if (o instanceof String) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }).orElse(false);
+        } else {
+            return false;
         }
     }
 

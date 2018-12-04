@@ -1,0 +1,215 @@
+<svg style="height:2000px;width:2000px;"
+     class="flowchart draggable-container"
+     xmlns="http://www.w3.org/2000/svg"
+     draggable
+     (dragStarted)="onDragStart($event)"
+     (mouseDown)="onMouseDown()"
+     (mouseMove)="onMouseMove($event)"
+     (mouseUp)="onMouseUp($event)"
+>
+  <defs>
+    <linearGradient
+        spreadMethod="pad"
+        y2="0"
+        x2="0"
+        y1="1"
+        x1="0"
+        id="nodeBackgroundGradient"
+    >
+      <stop
+          offset="0"
+          stop-opacity="0.99609"
+          stop-color="#F08C38"
+      />
+      <stop
+          offset="0.63934"
+          stop-opacity="0.99219"
+          stop-color="#FFFFFF"
+      />
+    </linearGradient>
+  </defs>
+
+  <!-- NODES -->
+  <svg:g *ngFor="let node of chart.nodes; let $nodeIndex = index;" class="flow-node" [attr.id]="nodeIdentifier(node,$nodeIndex)"  [attr.transform]="'translate('+node.x()+','+ node.y()+')'" draggable  (dragStarted)="onNodeDragStarted($event)"  (clicked)="onNodeClicked($event)" >
+    <!-- <svg xmlns="http://www.w3.org/2000/svg" style="overflow-y:auto"  attr.viewBox="0 0 {{node.width()}} {{node.height()}}" [attr.width]="node.width()" [attr.height]="node.height()">
+    -->
+    <svg:rect [attr.class]="getNodeClass(node)"
+              x="0"
+              y="0"
+              [attr.width]="node.width()"
+              [attr.height]="node.height()"
+              fill="#FFFFFF">
+    </svg:rect>
+
+    <svg:rect class="accent-color"  x="0"
+              y="0"
+              [attr.width]="node.width()" height="35"></svg:rect>
+    <svg:text  fill="white"
+               style="font-weight:bold;font-size:16px;"
+               [attr.x]="node.width()/2"
+               y="20"
+               text-length="20"
+               text-anchor="middle"
+               alignment-baseline="middle"
+    >
+      {{ node.name() }}
+    </svg:text>
+    <svg fill="#FFFFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" [attr.x]="node.width() - 24" y="0" (click)="chart.deleteSelected()">
+      <path d="M0 0h24v24H0z" class="accent-color"/>
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+    </svg>
+
+    <svg  height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" [attr.class]="getAllCheckboxCheckedClass(node.data.nodeAttributes)"
+          (click)="node.data.nodeAttributes.deselectAll()" y="43" x="20">
+      <path d="M0 0h24v24H0z" fill="#FFFFFF"/>
+      <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+    </svg>
+    <svg  height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"  [attr.class]="getAllCheckboxUnCheckedClass(node.data.nodeAttributes)"
+          (click)="node.data.nodeAttributes.selectAll()" y="43" x="20">
+      <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"  />
+      <path d="M0 0h14v14H0z" fill="#FFFFFF"  transform="translate(5,5)"/>
+    </svg>
+    <svg:text  fill="black"
+               style="font-weight:bold;font-size:14px;"
+               y="60"
+               x="50">Columns</svg:text>
+
+    <svg:g *ngFor="let  attribute of node.data.nodeAttributes.attributes; let $index = index" [attr.transform]="'translate(20,'+(75+($index*25))+')'">
+      <svg:title>{{attribute.description}}</svg:title>
+
+      <!-- checked -->
+      <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"  [attr.class]="getAttrCheckboxCheckedClass(attribute)"
+           (click)="node.data.nodeAttributes.deselect(attribute)">
+        <path d="M0 0h24v24H0z" fill="#FFFFFF"/>
+        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+      </svg>
+      <svg  height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg" [attr.class]="getAttrCheckboxUnCheckedClass(attribute)"
+            (click)="node.data.nodeAttributes.select(attribute)">
+        <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"  />
+        <path d="M0 0h14v14H0z" fill="#FFFFFF"  transform="translate(5,5)"/>
+      </svg>
+
+      <svg:text x="30" y="18">
+        {{attribute.name}} - <tspan class="hint" style="fill:grey">{{attribute.dataTypeWithPrecisionAndScale}}</tspan>
+      </svg:text>
+    </svg:g>
+
+
+
+    <!-- CONNECTORS -->
+    <svg:g draggable  attr.draggableType="connector" [attr.id]="connectorIdentifier(node,$nodeIndex,connector,$index)" (dragStarted)="onConnectorDragStarted($event)"
+           class="flow-connector connector input-connector" *ngFor="let connector of node.connectors; let $index = index"
+    >
+      <svg:text
+          [attr.x]="connector.x()"
+          [attr.y]="connector.y()"
+          text-anchor="left"
+          alignment-baseline="middle"
+      >
+        {{connector.name()}}
+      </svg:text>
+      <svg:circle
+          [attr.class]="getConnectorClass(connector)"
+          [attr.r]="connectorSize"
+          [attr.cx]="connector.x()"
+          [attr.cy]="connector.y()"
+      ></svg:circle>
+
+    </svg:g>
+    <!-- </svg> -->
+  </svg:g>
+
+
+
+  <svg:g>
+
+    <svg:g class="connection flow-connection" [attr.id]="connectionIdentifier(connection,$connectionIndex)" draggable (clicked)="onConnectionClicked($event)" *ngFor="let  connection of chart.connections; let $connectionIndex = index">
+      <svg:path
+          [attr.class]="connectionLineClass(connection)"
+          attr.d="M {{connection.sourceCoordX()}}, {{connection.sourceCoordY()}}
+                     C {{connection.sourceTangentX()}}, {{connection.sourceTangentY()}}
+                       {{connection.destTangentX()}}, {{connection.destTangentY()}}
+                       {{connection.destCoordX()}}, {{connection.destCoordY()}}"
+      >
+      </svg:path>
+
+      <svg:g  attr.transform="translate({{connection.middleX()}},{{connection.middleY()}})"  (click)="connection.edit()">
+        <svg:circle stroke="#3483BA" stroke-width="2" fill="#FFFFFF"
+                    r="15"
+                    cx="12"
+                    cy="12"
+        >
+        </svg:circle>
+        <svg class="accent-color" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"  >
+          <svg:path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+          <svg:path d="M0 0h24v24H0z" fill="none"/>
+        </svg>
+      </svg:g>
+
+
+      <svg:text   [attr.class]="connectionNameClass(connection)"
+                  [attr.x]="connection.middleX()"
+                  [attr.y]="connection.middleY()"
+                  text-anchor="middle"
+                  alignment-baseline="middle"
+      >{{connection.name()}}</svg:text>
+
+      <svg:circle [attr.class]="connectionEndpointClass(connection)"
+                  r="5"
+                  [attr.cx]="connection.sourceCoordX()"
+                  [attr.cy]="connection.sourceCoordY()"
+      >
+      </svg:circle>
+
+      <svg:circle
+          [attr.class]="connectionEndpointClass(connection)"
+          r="5"
+          [attr.cx]="connection.destCoordX()"
+          [attr.cy]="connection.destCoordY()"
+      >
+      </svg:circle>
+    </svg:g>
+
+  </svg:g>
+
+
+  <svg:g *ngIf="dragState.isDraggingConnection()"
+  >
+    <svg:path
+        class="dragging-connection dragging-connection-line"
+        attr.d="M {{dragPoint1.x}}, {{dragPoint1.y}}
+                 C {{dragTangent1.x}}, {{dragTangent1.y}}
+                   {{dragTangent2.x}}, {{dragTangent2.y}}
+                   {{dragPoint2.x}}, {{dragPoint2.y}}"
+    >
+    </svg:path>
+
+    <svg:circle
+        class="dragging-connection dragging-connection-endpoint"
+        r="4"
+        [attr.cx]="dragPoint1.x"
+        [attr.cy]="dragPoint1.y"
+    >
+    </svg:circle>
+
+    <svg:circle
+        class="dragging-connection dragging-connection-endpoint"
+        r="4"
+        [attr.cx]="dragPoint2.x"
+        [attr.cy]="dragPoint2.y"
+    >
+    </svg:circle>
+  </svg:g>
+
+
+  <svg:rect
+      *ngIf="dragState.isSelecting()"
+      class="drag-selection-rect"
+      [attr.x]="dragSelectionRect.x"
+      [attr.y]="dragSelectionRect.y"
+      [attr.width]="dragSelectionRect.width"
+      [attr.height]="dragSelectionRect.height"
+  >
+  </svg:rect>
+
+</svg>

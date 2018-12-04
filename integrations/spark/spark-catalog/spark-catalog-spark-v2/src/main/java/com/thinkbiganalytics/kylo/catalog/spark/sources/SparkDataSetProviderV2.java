@@ -107,4 +107,10 @@ public class SparkDataSetProviderV2 extends AbstractSparkDataSetProvider<Dataset
     protected StructType schema(@Nonnull final Dataset<Row> dataSet) {
         return DataSetProviderUtilV2.schema(dataSet);
     }
+
+    @Nonnull
+    @Override
+    protected Dataset<Row> union(@Nonnull final Dataset<Row> left, @Nonnull final Dataset<Row> right) {
+        return left.union(right);
+    }
 }

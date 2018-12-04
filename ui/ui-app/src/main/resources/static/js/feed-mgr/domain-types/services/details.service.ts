@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
 
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from "../../services/DomainTypesService";
 import { Injectable } from "@angular/core";
 
 /**

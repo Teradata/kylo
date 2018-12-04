@@ -1,0 +1,8 @@
+  <h2 mat-dialog-title>Abandon all jobs for {{feedName | truncate:50}}</h2>
+  <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+    <div class="md-subhead">{{message}}</div>
+    <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
+      <mat-spinner mode="indeterminate" color="accent"></mat-spinner>
+    </div>
+
+  </mat-dialog-content>

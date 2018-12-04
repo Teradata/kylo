@@ -24,6 +24,7 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.entity.ConnectionStatusEntity;
 
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -67,6 +68,15 @@ public interface NiFiConnectionsRestClient {
      * @return
      */
     Optional<ConnectionDTO> update(@Nonnull ConnectionDTO connectionDTO);
+
+
+    /**
+     * Find all connections going in or coming out of a given entity within a processGroup
+     * @param processGroupId
+     * @param entityId
+     * @return
+     */
+    Set<ConnectionDTO> findConnectionsToEntity(String processGroupId, String entityId);
 
 
 }

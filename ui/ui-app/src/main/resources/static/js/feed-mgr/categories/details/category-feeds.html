@@ -32,7 +32,7 @@
         </mat-list>
         <div *ngIf="model.loadingRelatedFeeds">
             {{"views.category-feeds.Loading" | translate}}<br/>
-            <mat-spinner mode="indeterminate" [diameter]="25"></mat-spinner>
+            <mat-spinner color="accent" mode="indeterminate" [diameter]="25"></mat-spinner>
         </div>
         <div *ngIf="!model.loadingRelatedFeeds && (model.relatedFeedSummaries == null || model.relatedFeedSummaries.length === 0)">
             {{"views.category-feeds.Tanfawtc" | translate}}

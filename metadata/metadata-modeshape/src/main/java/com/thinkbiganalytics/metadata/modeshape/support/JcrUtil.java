@@ -24,7 +24,6 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  */
 
 import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
@@ -36,10 +35,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,11 +63,71 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 /**
- * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some methods are duplicates of their JCR equivalents but do not throw the non-runtime RepositoryException.
+ * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some methods are duplicates of their JCR equivalents 
+ * but do not throw the non-runtime exception RepositoryException.
  */
 public class JcrUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JcrUtil.class);
+    
+    /**
+     * Encoding for system names
+     */
+    public static final String ENCODING = "UTF-8";
+    
+    /**
+     * Dereference the underlying node if the argument node is a Proxy delegating to
+     * a NodeModificationInvocationHandler.
+     * @param node the possible proxy node
+     * @return the dereferenced node if it was wrapped, otherwise the original node
+     */
+    public static Node dereference(Node node) {
+        if (Proxy.isProxyClass(node.getClass())) {
+            InvocationHandler handler = Proxy.getInvocationHandler(node);
+            
+            if (handler instanceof NodeModificationInvocationHandler) {
+                NodeModificationInvocationHandler modHandler = (NodeModificationInvocationHandler) handler;
+                return modHandler.getWrappedNode();
+            }
+        }
+        
+        return node;
+    }
+    
+    /**
+     * Generates a lower-case name from some arbitrary text that is both a valid JCR node name
+     * and is consistent with other "system names".
+     * 
+     * @param text
+     * @return a system name
+     */
+    public static String toSystemName(final String text) {
+        return toSystemName(text, false);
+    }
+    
+    /**
+     * Generates a name from some arbitrary text that is both a valid JCR node name
+     * and is consistent with other "system names".  The input is converted by the following: 
+     * <ol>  
+     * <li> Convert to lower case if not case sensitive  
+     * <li> Trims the text  
+     * <li> Substitutes any sequence of white space with with a single underscore 
+     * <li> Replaces any '*' with a '^' (JCR reserved but the URLEncodor won't encode it)   
+     * <li> URL encodes the result   
+     * <li> Substitutes any '%' with a '-' in the encoding  
+     * </ol> 
+     * @param text the input text
+     * @param caseSensitive indicates whether the result should retain case (true) or be lower case
+     * @return a system name
+     */
+    public static String toSystemName(final String text, final boolean caseSensitive) {
+        try {
+            String startText = caseSensitive ? text : text.toLowerCase();
+            return URLEncoder.encode(startText.trim().replaceAll("\\s+", "_").replace('*', '^'), "UTF-8").replace('%', '-');
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("The text could not be converted into a system name: " + text, e);
+        }
+    }
 
     /**
      * Creates a Path out of the arguments appropriate for JCR.
@@ -147,12 +211,27 @@ public class JcrUtil {
         Path newPath = currentPath.getParent().resolve(newName);
         return moveNode(node, newPath);
     }
+    
+    public static Node workspaceMoveNode(Node node, Path newPath) {
+        try {
+            Session session = node.getSession();
+            String path = newPath.toAbsolutePath().toString();
+            session.getWorkspace().move(node.getPath(), path);
+            return session.getNode(path);
+        } catch (AccessDeniedException e) {
+            log.debug("Access denied", e);
+            throw new AccessControlException(e.getMessage());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to move node to path: " + newPath, e);
+        }
+    }
 
     public static Node moveNode(Node node, Path newPath) {
         try {
             Session session = node.getSession();
             String path = newPath.toAbsolutePath().toString();
             session.move(node.getPath(), path);
+            session.save(); // save required for the move to take effect.
             return session.getNode(path);
         } catch (AccessDeniedException e) {
             log.debug("Access denied", e);
@@ -202,6 +281,14 @@ public class JcrUtil {
         return StreamSupport
             .stream(getIterableChildren(parent, name).spliterator(), false)
             .collect(Collectors.toList());
+    }
+    
+    public static Node getRootNode(Node node) {
+        try {
+            return getRootNode(node.getSession());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the session for the node", e);
+        }
     }
 
     public static Node getRootNode(Session session) {
@@ -541,6 +628,26 @@ public class JcrUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
+    }
+    
+    public static void addMixins(Node node, NodeType... mixins) {
+        Arrays.stream(mixins).forEach(mixin -> {
+            try {
+                node.addMixin(mixin.getName());
+            } catch (Exception e) {
+                throw new MetadataRepositoryException("Failed to add mixins to node: " + Arrays.toString(mixins), e);
+            }
+        });
+    }
+    
+    public static void removeMixins(Node node, NodeType... mixins) {
+        Arrays.stream(mixins).forEach(mixin -> {
+            try {
+                node.removeMixin(mixin.getName());
+            } catch (Exception e) {
+                throw new MetadataRepositoryException("Failed to remove mixins from node: " + Arrays.toString(mixins), e);
+            }
+        });
     }
 
 

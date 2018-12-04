@@ -3,49 +3,133 @@
 <head>
   <meta charset="utf-8"/>
   <title>Kylo</title>
-  <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
-  <!-- Material Font Icons (  <md-icon ... >icon_name </md-icon> -->
-  <link rel="stylesheet" href="js/vendor/material-icons/material-icons.css"/>
-  <link rel="stylesheet" href="js/vendor/material-design-icons/css/material-design-iconic-font.min.css"/>
-  <link rel="stylesheet" href="js/common/accordion-menu/accordion.css">
-  <link rel="stylesheet" href="assets/theme.css">
-  <link rel="stylesheet" href="assets/app.css">
-  <link rel="stylesheet" href="assets/feed-mgr.css">
-  <link rel="stylesheet" href="assets/ops-mgr.css">
-  <link rel="stylesheet" href="assets/drag-and-drop-lists.css"/>
-  <link rel="stylesheet" href="assets/styles.css">
+
+  <link rel="stylesheet" href="js/vendor/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="js/vendor/ment.io/styles.css"/>
+  <link rel="stylesheet" href="./bower_components/angular-ui-grid/ui-grid.css">
+
   <link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicons/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="assets/images/favicons/favicon-32x32.png" sizes="32x32">
   <link rel="icon" type="image/png" href="assets/images/favicons/favicon-16x16.png" sizes="16x16">
   <link rel="manifest" href="assets/images/favicons/manifest.json">
   <link rel="mask-icon" href="assets/images/favicons/safari-pinned-tab.svg" color="#ec881d">
 
-  <link rel="stylesheet" href="js/vendor/ment.io/styles.css"/>
-  <script src="assets/env.js"></script>
-  <script src="bower_components/core.js/client/shim.min.js"></script>
-  <script src="js/vendor/tern/plugin/acorn.js"></script>
-  <script src="js/vendor/tern/plugin/acorn_loose.js"></script>
-  <script src="js/vendor/tern/plugin/walk.js"></script>
-  <script src="js/vendor/tern/plugin/polyfill.js"></script>
-  <script src="js/vendor/tern/lib/signal.js"></script>
-  <script src="js/vendor/tern/lib/tern.js"></script>
-  <script src="js/vendor/tern/lib/def.js"></script>
-  <script src="js/vendor/tern/lib/comment.js"></script>
-  <script src="js/vendor/tern/lib/infer.js"></script>
-  <script src="js/vendor/tern/plugin/doc_comment.js"></script>
-
   <meta name="apple-mobile-web-app-title" content="Kylo">
   <meta name="application-name" content="Kylo">
 
-  <script src="node_modules/zone.js/dist/zone.min.js?main=browser"></script>
-  <script src="node_modules/systemjs/dist/system.js"></script>
-  <script src="js/systemjs.config.js"></script>
-  <script>
-      System.import("main.js");
-  </script>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    .bgc-contrast {
+      background-color: #e0e0e0;
+    }
+    .loader,
+    .loader:before,
+    .loader:after {
+      border-radius: 50%;
+    }
+    .loader {
+      color: rgb(0,191,165);
+      font-size: 11px;
+      text-indent: -99999em;
+      margin: 55px auto;
+      position: relative;
+      width: 10em;
+      height: 10em;
+      box-shadow: inset 0 0 0 1em;
+      -webkit-transform: translateZ(0);
+      -ms-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+    .loader:before,
+    .loader:after {
+      position: absolute;
+      content: '';
+    }
+    .loader:before {
+      width: 5.2em;
+      height: 10.2em;
+      background: #e0e0e0;
+      border-radius: 10.2em 0 0 10.2em;
+      top: -0.1em;
+      left: -0.1em;
+      -webkit-transform-origin: 5.2em 5.1em;
+      transform-origin: 5.2em 5.1em;
+      -webkit-animation: load2 2s infinite ease 1.5s;
+      animation: load2 2s infinite ease 1.5s;
+    }
+    .loader:after {
+      width: 5.2em;
+      height: 10.2em;
+      background: #e0e0e0;
+      border-radius: 0 10.2em 10.2em 0;
+      top: -0.1em;
+      left: 5.1em;
+      -webkit-transform-origin: 0 5.1em;
+      transform-origin: 0 5.1em;
+      -webkit-animation: load2 2s infinite ease;
+      animation: load2 2s infinite ease;
+    }
+    @-webkit-keyframes load2 {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes load2 {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
-<body ng-cloak layout-fill>
-<index-controller></index-controller>
+<body layout-fill class="bgc-contrast">
+
+<index-controller>
+  <div style="display:flex;flex-direction:column;justify-content:center;min-height:100%;padding:20px;text-align:center">
+    <mat-icon class="mat-icon" role="img" aria-hidden="true">
+      <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.2" viewBox="0 0 205.32 111.21" height="162px" width="300px">
+        <g style=" stroke:none;fill-rule:evenodd;fill:#e28b3e">
+          <path d="M 190.210938 63.90625 C 188.5625 73.375 181.554688 79.261719 171.90625 79.261719 C 166.402344 79.261719 161.765625 77.496094 158.492188 74.152344 C 154.757812 70.332031 152.726562 64.558594 152.925781 58.3125 C 153.148438 51.316406 156.101562 44.984375 160.820312 41.371094 C 163.902344 39.007812 167.785156 37.707031 171.746094 37.707031 C 177.308594 37.707031 182.726562 40.414062 186.242188 44.945312 C 190.066406 49.871094 191.476562 56.601562 190.210938 63.90625 M 171.929688 28.960938 C 156.117188 28.960938 143.730469 41.949219 143.730469 58.53125 L 143.730469 58.761719 C 143.730469 75.226562 156.019531 88.121094 171.707031 88.121094 C 187.570312 88.121094 200 75.125 200 58.53125 L 200 58.300781 C 200 41.847656 187.671875 28.960938 171.929688 28.960938 " />
+          <path d="M 54.472656 84.273438 C 52.089844 82.6875 49.886719 80.914062 47.910156 78.992188 C 46.730469 77.84375 45.617188 76.625 44.597656 75.371094 C 40.628906 70.46875 28.160156 52.988281 28.160156 52.988281 L 48.753906 31.949219 L 36.410156 31.949219 L 9.65625 59.722656 L 9.65625 22.375 C 8.046875 22.511719 6.332031 23.113281 4.550781 24.160156 C 3.65625 24.6875 2.820312 25.351562 2.0625 26.140625 C 0.734375 27.519531 0 29.40625 0 31.441406 L 0 78.996094 C 0 81.03125 0.734375 82.917969 2.0625 84.296875 C 2.820312 85.085938 3.65625 85.75 4.550781 86.277344 C 6.332031 87.324219 8.046875 88.707031 9.65625 88.84375 L 9.65625 71.945312 L 21.625 59.6875 C 21.625 59.6875 33.914062 77.550781 37.667969 82.527344 C 39.195312 84.554688 44.714844 90.839844 51.535156 86.492188 C 52.707031 85.746094 53.660156 85.027344 54.472656 84.273438 " />
+          <path d="M 117.558594 31.441406 L 117.550781 60.664062 C 117.449219 68.328125 117.847656 73.722656 118.71875 76.691406 C 119.234375 78.449219 119.96875 80.050781 120.894531 81.445312 C 123.570312 85.464844 127.8125 87.777344 133.15625 88.132812 C 138.1875 88.460938 140.300781 86.257812 141.171875 84.511719 C 138.589844 83.542969 134.546875 81.753906 131.730469 79.207031 C 127.128906 75.042969 127.167969 67.96875 127.199219 62.28125 L 127.214844 22.375 C 125.605469 22.511719 123.890625 23.113281 122.105469 24.160156 C 121.214844 24.6875 120.378906 25.351562 119.621094 26.140625 C 118.289062 27.519531 117.558594 29.402344 117.558594 31.441406 " />
+          <path d="M 96.460938 57.050781 C 101.609375 44.527344 105.722656 35.058594 107.078125 31.949219 L 95.582031 31.949219 L 80.769531 70.453125 L 65.417969 31.949219 L 54.414062 31.949219 L 74.972656 80.960938 L 74.867188 81.25 C 74.722656 81.652344 71.175781 90.980469 57.515625 99.273438 L 62.335938 106.03125 C 77.519531 98.171875 85.191406 84.464844 96.460938 57.050781 " />
+          <path d="M 139.757812 0.101562 C 114.59375 1.445312 100.496094 21.964844 97.105469 28.507812 L 108.929688 28.507812 C 114.761719 17.328125 128.105469 7.800781 146.746094 6.648438 C 167.230469 5.382812 181.203125 13.347656 191.964844 25.90625 C 191.972656 25.914062 191.949219 25.902344 191.964844 25.90625 C 178.261719 4.578125 157.34375 -0.835938 139.757812 0.101562 " />
+          <g>
+            <path d="M 30.027344 104.847656 C 18.78125 104.335938 8.34375 99.496094 0.96875 93.992188 C 4.027344 97.714844 14.894531 108.03125 30.027344 110.488281 C 43.429688 112.664062 54.109375 109.425781 59.085938 107.433594 L 54.386719 100.847656 C 52.550781 101.660156 41.929688 105.386719 30.027344 104.847656 " />
+          </g>
+          <g>
+            <path d="M 205.320312 37.242188 L 204.695312 37.242188 L 204.695312 32.71875 L 204.671875 32.71875 L 202.933594 37.242188 L 202.523438 37.242188 L 200.785156 32.71875 L 200.761719 32.71875 L 200.761719 37.242188 L 200.136719 37.242188 L 200.136719 32.191406 L 201.289062 32.191406 L 202.730469 35.921875 L 202.753906 35.921875 L 204.167969 32.191406 L 205.320312 32.191406 Z M 199.199219 32.667969 L 197.59375 32.667969 L 197.59375 37.242188 L 196.96875 37.242188 L 196.96875 32.667969 L 195.359375 32.667969 L 195.359375 32.191406 L 199.199219 32.191406 L 199.199219 32.667969 " />
+          </g>
+        </g>
+      </svg>
+    </mat-icon>
+    <div class="loader">Loading...</div>
+  </div>
+</index-controller>
+
+<script src="node_modules/systemjs/dist/system.js"></script>
+
+<script src="js/vendor/tern/plugin/acorn.js"></script>
+<script src="js/vendor/tern/plugin/acorn_loose.js"></script>
+<script src="js/vendor/tern/plugin/walk.js"></script>
+<script src="js/vendor/tern/plugin/polyfill.js"></script>
+<script src="js/vendor/tern/lib/signal.js"></script>
+<script src="js/vendor/tern/lib/tern.js"></script>
+<script src="js/vendor/tern/lib/def.js"></script>
+<script src="js/vendor/tern/lib/comment.js"></script>
+<script src="js/vendor/tern/lib/infer.js"></script>
+<script src="js/vendor/tern/plugin/doc_comment.js"></script>
+
 </body>
 </html>

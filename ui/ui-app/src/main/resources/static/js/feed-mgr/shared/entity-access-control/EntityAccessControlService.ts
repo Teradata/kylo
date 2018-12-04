@@ -1,17 +1,17 @@
 import * as _ from "underscore";
 import AccessConstants from '../../../constants/AccessConstants';
-import AccessControlService from '../../../services/AccessControlService';
+import {AccessControlService} from '../../../services/AccessControlService';
 import { Injectable, Inject } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 
 @Injectable()
 export class EntityAccessControlService extends AccessConstants{
 
     roleUrlsMap: any;
-    public static entityRoleTypes: any ={ CATEGORY: "category", CATEGORY_FEED: "category-feed", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource" };
+    public static entityRoleTypes: any ={ CATEGORY: "category", CATEGORY_FEED: "category-feed", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource",  CONNECTOR: "connector" };
 
-    constructor(private accessControlService: AccessControlService, 
+    constructor(private accessControlService: AccessControlService,
                 private restUrlService: RestUrlService,
                 @Inject("$injector") private $injector: any) {
         super();
@@ -20,7 +20,8 @@ export class EntityAccessControlService extends AccessConstants{
             "category": restUrlService.CATEGORY_ROLES_URL,
             "category-feed": restUrlService.CATEGORY_FEED_ROLES_URL,
             "template": restUrlService.TEMPLATE_ROLES_URL,
-            "datasource": restUrlService.DATASOURCE_ROLES_URL
+            "datasource": restUrlService.DATASOURCE_ROLES_URL,
+            "connector": restUrlService.CONNECTOR_ROLES_URL
         };
     }
     augmentRoleWithUiModel(roleMembership: any) {
@@ -192,6 +193,8 @@ export class EntityAccessControlService extends AccessConstants{
             url = this.restUrlService.TEMPLATE_ROLES_URL(entityId);
         } else if (entityType === "datasource") {
             url = this.restUrlService.DATASOURCE_ROLES_URL(entityId);
+        }else if (entityType === "connector") {
+            url = this.restUrlService.CONNECTOR_ROLES_URL(entityId);
         }
         //construct a RoleMembershipChange object
         var changes = this.toRoleMembershipChange(roleMemberships);
@@ -213,11 +216,11 @@ export class EntityAccessControlService extends AccessConstants{
             _.each(resolvedResponses, (response: any) => {
                 responses.push(response.data);
             })
-            if (ObjectUtils.isFunction(callbackFn)) {
+            if (typeof callbackFn === "function") {
                 callbackFn(responses);
             }
             defer.resolve(responses);
-        });
+        }, (err: any) => defer.reject(err));
         return defer.promise;
     }
 }

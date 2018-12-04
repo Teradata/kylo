@@ -5,8 +5,8 @@ import * as $ from "jquery";
  */
 @Component({
     selector: 'regexp-editor',
-    templateUrl: 'js/feed-mgr/domain-types/details/matchers/regexp-editor.component.html',
-    styleUrls: ['js/feed-mgr/domain-types/details/matchers/regexp-editor.component.scss']
+    templateUrl: './regexp-editor.component.html',
+    styleUrls: ['./regexp-editor.component.scss']
 })
 export class RegExpEditorComponent {
 

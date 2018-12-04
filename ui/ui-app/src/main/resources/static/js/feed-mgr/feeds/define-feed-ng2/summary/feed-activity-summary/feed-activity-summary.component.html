@@ -1,0 +1,27 @@
+
+<td-layout-nav color="none">
+  <div td-toolbar-content  fxLayout="row" fxFlex >
+    <div *ngIf="feed != undefined">{{feed.feedName}} </div>
+  </div>
+  <ng-container  *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+    <div fxLayout="row">
+      <div fxFlex="70" fxLayout="column">
+        <ng-container *ngIf="feed && !feed.isStream ">
+          <feed-job-activity #feedJobActivity [feed]="feed"></feed-job-activity>
+          <!-- Job table -->
+          <jobs-list #jobsList [feedFilter]="feed.getFullName()"></jobs-list>
+        </ng-container>
+        <ng-container *ngIf="feed && feed.isStream ">
+          <feed-stats-charts  [(feed)]="feed" (feedStatsChange)="onFeedStatsChange($event)"  [refreshIntervalTime]="5000" style="width:100%"></feed-stats-charts>
+        </ng-container>
+      </div>
+      <div fxLayout="column" fxFlex="30%">
+        <feed-operations-health-info [(feed)]="feed" [feedStats]="feedStats" *ngIf="feed != undefined" (feedChange)="onFeedChange($event)" (feedHealthRefreshed)="onFeedHealthRefreshed($event)"></feed-operations-health-info>
+        <!-- Alerts -->
+        <feed-alerts [feed]="feed"></feed-alerts>
+      </div>
+    </div>
+  </ng-container>
+
+
+</td-layout-nav>

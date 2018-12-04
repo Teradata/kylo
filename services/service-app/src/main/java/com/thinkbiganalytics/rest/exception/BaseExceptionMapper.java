@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
 public class BaseExceptionMapper {
 
     private static final Logger log = LoggerFactory.getLogger(BaseExceptionMapper.class);
+
     @Context
     protected HttpServletRequest req;
 

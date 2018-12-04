@@ -249,9 +249,9 @@ public class GenericQueryDslFilter {
             filterConditionsList.stream().forEach(filter -> {
                 Matcher matcher = columnOperatorValuePattern.matcher(filter);
                 while (matcher.find()) {
-                    String field = matcher.group(1);
-                    String operator = matcher.group(2);
-                    String value = matcher.group(3);
+                    String field = matcher.group(1).trim();
+                    String operator = matcher.group(2).trim();
+                    String value = matcher.group(3).trim();
                     searchCriterias.add(new SearchCriteria(field, operator, value));
                 }
             });

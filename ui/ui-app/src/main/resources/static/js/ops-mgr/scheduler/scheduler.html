@@ -22,19 +22,19 @@
         <mat-card-title style="white-space:nowrap" class="card-toolbar2 card-title">
             <div>{{"OPS_MGR.SCHEDULER.TASKS"| translate}}</div>
             <div fxLayout="row" class="layout-padding-top-bottom" fxLayoutAlign="space-between-center" fxFlex>
-                <div class="card-sub-header" fxFlex>{{"OPS_MGR.SCHEDULER.INTERNAL_TASKS"| translate}}</div>
+                <div class="card-sub-header" fxFlex>Schedule for internal maintenance and management tasks</div>
             </div>
         </mat-card-title>
         <mat-card-body>
             <div *ngFor="let group of jobGroups">
-                <div class="md-title layout-padding-left primary-color-1">{{group.name}}</div>
-                <mat-list fxFlex fxFlexFill class="list-item-table">
+                <!-- <div class="md-title layout-padding-left primary-color-1">{{group.name}}</div> -->
+                <mat-list fxFlex fxFlexFill class="list-item-table push-top">
                     <mat-list-item *ngFor="let job of group.jobs" fxLayout="row">
                         <div fxFlex="35" fxLayout="column" class="item-column md-list-item-text ">
                             <span class="item-title">
                                 {{job.jobName}}
                             </span>
-                            <span [ngClass]="{'healthy': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'warn':job.state == 'PAUSED', 'error':job.state == 'UNKNOWN'}"
+                            <span [ngClass]="{'tc-positive': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'tc-warn':job.state == 'PAUSED', 'tc-negative':job.state == 'UNKNOWN'}"
                                 class="column-title-bottom">
                                 <mat-icon size="20" options='{"rotation": "clock"}'>
                                     {{job.stateIcon}}
@@ -95,7 +95,7 @@
             <mat-list class="list-item-table" fxLayout="column">
                 <mat-list-item class="ListItemContainer">
                     <div class="item-column md-list-item-text " fxLayoutAlign="space-between start" fxLayout="column">
-                        <span [ngClass]="{'healthy': schedulerDetails.status == 'RUNNING', 'warn':schedulerDetails.status == 'PAUSED'}">
+                        <span [ngClass]="{'tc-positive': schedulerDetails.status == 'RUNNING', 'tc-warn':schedulerDetails.status == 'PAUSED'}">
                             <mat-icon  size="20" options='{"rotation": "clock"}'>
                                     {{schedulerDetails.statusIcon}}
                             </mat-icon> {{schedulerDetails.status}}

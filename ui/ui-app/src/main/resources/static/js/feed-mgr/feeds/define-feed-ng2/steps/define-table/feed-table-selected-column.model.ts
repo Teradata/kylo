@@ -3,7 +3,7 @@ import {TableFieldPolicy} from "../../../../model/TableFieldPolicy";
 import {DomainType} from "../../../../services/DomainTypesService";
 import * as _ from "underscore";
 import {CloneUtil} from "../../../../../common/utils/clone-util";
-import {ObjectUtils} from "../../../../../common/utils/object-utils";
+import {ObjectUtils} from "../../../../../../lib/common/utils/object-utils";
 
 export class SelectedColumn {
 

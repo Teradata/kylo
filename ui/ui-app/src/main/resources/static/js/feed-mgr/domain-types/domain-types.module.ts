@@ -51,6 +51,9 @@ import { MatChipsModule } from "@angular/material/chips";
 import { FeedTagService } from "../services/FeedTagService";
 import { CovalentChipsModule } from "@covalent/core/chips";
 
+import "./codemirror-regex.css";
+import "./details/matchers/regexp-editor.component.scss";
+
 @NgModule({
     declarations: [
         DomainTypesComponent,

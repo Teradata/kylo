@@ -16,9 +16,9 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   #L%
-  --> 
+  -->
 <div class="flex-container" fxLayoutAlign="center center">
-    <mat-progress-bar flex = "90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <mat-progress-bar color="accent" flex = "90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
     <mat-card *ngIf="!loading" flex = "70">
         <mat-card-title>
             <mat-toolbar style="background: none;">
@@ -30,7 +30,7 @@
         <mat-card-body>
             <form #userForm="ngForm">
                 <vertical-section-layout section-title="'Details'" (on-delete)="onDelete()" [allowDelete]="canDelete" (on-save-edit)="onSave()" (on-edit)="onEdit()" (on-cancel-edit)="onCancel()"
-                                         [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
+                                         [editable]="isEditable" [isValid]="isFormValid() && !deleting" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">{{'view.login.Username' | translate}}</span>
@@ -85,7 +85,7 @@
                                 {{editModel.systemName}}
                             </div>
                         </div>
- 
+
                         <mat-form-field class="block">
                             <mat-label>{{'view.login.Username' | translate}}</mat-label>
                             <input name="displayName" matInput [(ngModel)]="editModel.displayName"/>
@@ -120,7 +120,7 @@
                                 </mat-option>
                             </mat-autocomplete>
                             <mat-hint *ngIf="isMissingGroup()" style="color: red">{{'AUTH.USER.DETAILS_NOGROUPS_WARN' | translate}}</mat-hint>
-                        </mat-form-field> 
+                        </mat-form-field>
                     </editable-section>
                 </vertical-section-layout>
             </form>

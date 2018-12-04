@@ -19,8 +19,12 @@
  */
 
 /**
-Common styles for feed-mgr and ops-mgr
+Common styles for kylo
  */
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
 
 html, body {
   font-size: 14px;
@@ -30,7 +34,7 @@ html, body {
 }
 
 body {
-  background-color: #F9F9F9 !important;
+  background-color: #e0e0e0 !important;
 }
 
 /* Always show scrollbars */
@@ -100,43 +104,23 @@ md-content.md-kylo-theme{
   margin-left:-5px;
 }
 
-.ng-md-icon {
-    margin: auto;
-    background-repeat: no-repeat no-repeat;
-    display: inline-block;
-    vertical-align: middle;
-    fill: currentColor;
-    height: 24px;
-    width: 24px;
-}
-
 .mat-sidenav md-toolbar h1 {
   margin: auto;
 }
 
 /* Sidenav area*/
 
-md-list .md-button:not(.md-no-style) {
-  color: #607D8B;
-  font-weight: 500;
-  text-align: left;
-  text-transform: none;
-}
 
 md-list-item.with-padding.md-no-proxy {
-  padding: 8px !important;
+  padding: 16px;
 }
 
 
 md-list-item .md-no-style, md-list-item:not(.with-padding).md-no-proxy {
-  padding: 0px !important;
+  /* padding: 0px; */
   line-height: inherit;
 }
 
-md-list .md-button:not(.md-no-style).selected {
-  color: #3483BA;
-  fill: #3483BA;
-}
 
 .nav-btn.selected span {
   color:#3483BA !important;
@@ -151,7 +135,7 @@ md-list .md-button:not(.md-no-style).selected {
 }
 
 .mat-sidenav md-list .alerts-count {
-  background-color: red;
+  background-color: #b71c1c;
   color: white;
   padding: 3px;
   font-weight: 900;
@@ -176,12 +160,6 @@ md-list md-datepicker .md-button.md-icon-button {
 }
 
 
-.mat-sidenav .collapse-btn {
-  padding: 10px;
-  color: #3483BA;
-  background-color: #F9F9F9;
-  cursor: pointer;
-}
 
 .pointer {
   cursor: pointer;
@@ -190,14 +168,16 @@ md-list md-datepicker .md-button.md-icon-button {
 /* Primary content area */
 
 #content {
-  background-color: #F9F9F9;
-}
-
-#content {
+  background-color: #e0e0e0;
   padding-left: 25px;
   padding-right: 25px;
   padding-top: 17px;
   padding-bottom: 25px;
+
+}
+
+#content.sla-list, #content.sla-edit, #content.sla-new, #content.template-info {
+  padding:0px !important;
 }
 
 #content, #content .main-content {
@@ -337,6 +317,9 @@ md-list md-datepicker .md-button.md-icon-button {
   transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
   color: grey;
 }
+text-hint {
+  font-size: 12px;
+}
 
 /**
   angular material element styles
@@ -367,6 +350,11 @@ md-autocomplete.md-default-theme, md-autocomplete {
 
 .md-chips .md-chip-input-container md-autocomplete input {
   width: 400px;
+}
+
+.md-chips {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px !important;
 }
 
 md-list.padding-left md-list-item {
@@ -444,7 +432,7 @@ md-list.padding-left md-list-item {
 }
 
 .md-button.border-btn-warn {
-  background-color: rgb(255, 87, 34);
+  background-color: #b71c1c !important;
   text-align: center !important;
   height: 36px;
   font-size: 12px;
@@ -455,7 +443,7 @@ md-list.padding-left md-list-item {
 }
 
 .md-button.border-btn-warn:hover {
-  background-color: rgb(244, 81, 30);
+  background-color: #b71c1c !important;
 }
 
 .md-button.border-btn-white {
@@ -647,7 +635,7 @@ md-tab-content.md-no-scroll {
 }
 
 .md-warn-text {
-  color: rgb(255, 87, 34);
+  color: #b71c1c !important;
 }
 
 md-radio-button.padding-right {
@@ -820,7 +808,7 @@ card-layout.card-full-width section:first-child {
 }
 
 .item-column {
-  padding: 15px;
+  padding: 16px;
 }
 
 .item-column-title {
@@ -846,12 +834,13 @@ card-layout.card-full-width section:first-child {
 }
 
 .item-column:first-child {
-  padding-left: 25px;
+  padding-left: 24px;
 }
 
 .item-column:last-child {
-  padding-right: 25px;
+  padding-right: 24px;
 }
+
 
 .item-title {
   font-size: 16px;
@@ -860,8 +849,15 @@ card-layout.card-full-width section:first-child {
   text-overflow: ellipsis;
 }
 
-.item-title-small {
+.item-title-normal {
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-title-small {
+  font-size: 12px;
   font-weight: 500;
   min-height: 20px;
 }
@@ -891,8 +887,8 @@ Status styles
  */
 
 .error, .unhealthy {
-  color: #FF0000; /*#FF1C1C, a94442*/
-  fill: #FF0000;
+  color: #b71c1c!important;
+  fill: #b71c1c!important;
 }
 
 .running-job-activity {
@@ -900,8 +896,8 @@ Status styles
 }
 
 .healthy, .success, .enabled {
-  color: #009933;
-  fill: #009933;
+  color: #388e3c!important;
+  fill: #388e3c!important;
 }
 
 .abandoned, .unknown, .disabled {
@@ -909,47 +905,12 @@ Status styles
   fill: #969696;
 }
 
-.warn {
-  color: #FF9901;
-  fill: #FF9901;
-}
-
 .info-notification {
   color: #0288d1;
   background-color: #0288d126;
 }
 
-.primary-color-1 {
-  color: #3483BA;
-  fill: #3483BA;
-}
 
-.orange {
-  color: #F08C38;
-  fill: #F08C38;
-}
-
-.accent-color, .accent-color-1 {
-  color: #E4682C;
-  fill: #E4682C;
-}
-
-.grey {
-  color:rgba(0, 0, 0, 0.54);
-}
-
-.accent-color-2 {
-  color: #7d7d7d;
-  fill: #7d7d7d;
-}
-
-.accent-color-3 {
-  color: #767676
-}
-
-.accent-color-4 {
-  color: #666666
-}
 
 .label-small {
   font-size: 11px;
@@ -1010,19 +971,17 @@ Fade a element in/out
 
 /**
 Vertical section directive
- */
-
+*/
 .vertical-step-border {
-  border-left: grey 1px solid;
+  /* border-left: grey 1px solid; */
+  margin-top: -16px
 }
 
 /**
 angular nvd3 styles
  */
 
-.nvd3 text {
-  font-family: Roboto !important;
-}
+
 
 .nvd3.nv-pie .nv-pie-title {
   fill: #807272;
@@ -1371,16 +1330,12 @@ md-input-container.global-search .md-input {
   padding: 20px 30px;
 }
 
-.partial-screen-dialog .mat-dialog-container {
-  padding: 0;
-  overflow: hidden;
-  border-radius: 4px;
-}
 
-.partial-screen-dialog .mat-dialog-content {
-  margin: 0;
-  padding: 0;
-  max-height: 83vh;
+.full-screen-dialog-max-width .mat-dialog-container {
+  /*max-width: none; */
+  width: 65vw;
+  /*height: 80vh;*/
+  /*padding: 0;*/
   overflow: hidden;
 }
 
@@ -1420,6 +1375,181 @@ md-input-container.global-search .md-input {
   margin-top: 20px;
 }
 
+/* Material Stepper */
+mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-stepper-header-container {
+  display: none;
+}
+mat-horizontal-stepper.mat-stepper-no-header > .mat-horizontal-content-container {
+  padding: 0;
+}
+
+
+/** feed-definition **/
+
+.feed-card .mat-card-title, .feed-card-header {
+  font-size: 20px !important;
+}
+
+.feed-card .mat-card-subtitle{
+  font-size: 14px !important;
+}
+
+.feed-card .mat-card-header-text{
+  margin: 0px;
+}
+
+mat-icon.kylo-title-icon {
+  vertical-align: bottom;
+}
+
+
+.mat-card-14{
+  font-size: 14px;
+}
+
+.mat-icon.mat-green {
+  color: #009933;
+}
+
+mat-nav-list a[mat-list-item] .mat-list-item-content {
+   font-size: 14px !important;
+}
+
+/** Hide the scroll bar when on the visual query and wrangler **/
+md-content.visual-query {
+  overflow-y:hidden;
+}
+
+.alert-heading {
+  font-size:16px;
+  font-weight:400;
+  color:rgba(0, 0, 0, 0.87);
+}
+
+.alert-description {
+  font-size:14px;
+  font-weight:400;
+  color: rgba(0, 0, 0, 0.38);
+}
+
+.alert-avatar {
+  color: rgb(216,67,21) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.alert-list-item {
+  padding: 8px 0px 8px 0px;
+}
+
+.kylo-text-toolbar {
+  font-weight: 900;
+  color:#FFFFFF !important;
+}
+
+
+/** Pivot table - Charts UI - Start **/
+.pvtUi { color: #333; }
+
+
+table.pvtTable {
+  font-size: 8pt;
+  text-align: left;
+  border-collapse: collapse;
+}
+table.pvtTable tr th, table.pvtTable tr th {
+  background-color: #e6EEEE;
+  border: 1px solid #CDCDCD;
+  font-size: 8pt;
+  padding: 5px;
+}
+
+table.pvtTable .pvtColLabel {text-align: center;}
+table.pvtTable .pvtTotalLabel {text-align: right;}
+
+table.pvtTable tr td {
+  color: #3D3D3D;
+  padding: 5px;
+  background-color: #FFF;
+  border: 1px solid #CDCDCD;
+  vertical-align: top;
+  text-align: right;
+}
+
+.pvtTotal, .pvtGrandTotal { font-weight: bold; }
+
+.pvtAggregator { margin-bottom: 5px ;}
+
+.pvtAxisContainer, .pvtVals {
+  padding: 5px;
+  min-width: 20px;
+  min-height: 20px;
+}
+.pvtCols,.pvtRows,.pvtUnused {
+  border:2px dashed #c9c9c9;
+}
+.pivot-label {
+  padding-left:3px;
+}
+.pvtAxisContainer li {
+  padding: 8px 6px;
+  list-style-type: none;
+  cursor:move;
+}
+.pvtAxisContainer li.pvtPlaceholder {
+  -webkit-border-radius: 5px;
+  padding: 3px 15px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  border: 1px dashed #aaa;
+}
+
+.pvtAxisContainer li span.pvtAttr {
+  background: #F3F3F3;
+  border: 1px solid #DEDEDE;
+  padding: 2px 5px;
+  white-space:nowrap;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+.pvtTriangle {
+  cursor:pointer;
+  color: grey;
+}
+
+.pvtHorizList li { display: inline-block; }
+.pvtVertList { vertical-align: top; }
+
+.pvtFilteredAttribute { font-style: italic }
+
+.pvtFilterBox{
+  z-index: 100;
+  width: 280px;
+  border: 1px solid gray;
+  background-color: #fff;
+  position: absolute;
+  padding: 20px;
+  text-align: center;
+}
+
+.pvtFilterBox h4{ margin:0; }
+.pvtFilterBox p { margin: 1em auto; }
+.pvtFilterBox label { font-weight: normal; }
+.pvtFilterBox input[type='checkbox'] { margin-right: 5px; }
+
+.pvtCheckContainer{
+  text-align: left;
+  overflow: scroll;
+  width: 100%;
+  max-height: 200px;
+}
+.pvtCheckContainer p{ margin: 5px; }
+
+.pvtRendererArea { padding: 5px;}
+
+/** Pivot table - Charts UI - End **/
+
 accordion-menu .mat-list-item-content {
   padding: 0 !important;
 }
@@ -1446,3 +1576,4 @@ accordion-menu .mat-list-item-content {
   height: auto;
   border: 0px;
 }
+

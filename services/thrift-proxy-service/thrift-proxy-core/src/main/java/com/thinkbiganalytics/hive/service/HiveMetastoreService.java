@@ -213,7 +213,7 @@ public class HiveMetastoreService {
 
     public List<TableSchema> getTableSchemas() throws DataAccessException {
 
-        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME c.TYPE_NAME "
+        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME, c.TYPE_NAME "
                        + "FROM COLUMNS_V2 c "
                        + "JOIN  SDS s on s.CD_ID = c.CD_ID "
                        + "JOIN  TBLS t ON s.SD_ID = t.SD_ID "
@@ -257,6 +257,57 @@ public class HiveMetastoreService {
                 field.setDerivedDataType(columnType);
                 schema.getFields().add(field);
                 return schema;
+            }
+        });
+
+        return metadata;
+
+    }
+
+    public TableSchema getTable(String schema, String table) throws DataAccessException {
+
+        // Must use JDBC metadata for user impersonation
+        if (userImpersonationEnabled) {
+            return hiveService.getTableSchema(schema, table);
+        }
+
+        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME, c.TYPE_NAME "
+                       + "FROM COLUMNS_V2 c "
+                       + "JOIN  SDS s on s.CD_ID = c.CD_ID "
+                       + "JOIN  TBLS t ON s.SD_ID = t.SD_ID "
+                       + "JOIN  DBS d on d.DB_ID = t.DB_ID "
+                       + "WHERE t.TBL_NAME='" + table + "' and d.NAME='" + schema + "' "
+                       + "ORDER BY d.NAME, t.TBL_NAME, c.INTEGER_IDX";
+        if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\",c.\"TYPE_NAME\" "
+                    + "FROM \"COLUMNS_V2\" c "
+                    + "JOIN  \"SDS\" s on s.\"CD_ID\" = c.\"CD_ID\" "
+                    + "JOIN  \"TBLS\" t ON s.\"SD_ID\" = t.\"SD_ID\" "
+                    + "JOIN  \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" "
+                    + "WHERE t.\"TBL_NAME\"='" + table + "' and d.\"NAME\"='" + schema + "' "
+                    + "ORDER BY d.\"NAME\", t.\"TBL_NAME\", c.\"INTEGER_IDX\"";
+
+
+        }
+        final DefaultTableSchema metadata = new DefaultTableSchema();
+
+        hiveMetatoreJdbcTemplate.query(query, new RowMapper<Object>() {
+            @Override
+            public TableSchema mapRow(ResultSet rs, int i) throws SQLException {
+                String dbName = rs.getString("DATABASE_NAME");
+                String columnName = rs.getString("COLUMN_NAME");
+                String tableName = rs.getString("TBL_NAME");
+                String columnType = rs.getString("TYPE_NAME");
+
+                metadata.setName(tableName);
+                metadata.setSchemaName(dbName);
+
+                DefaultField field = new DefaultField();
+                field.setName(columnName);
+                field.setNativeDataType(columnType);
+                field.setDerivedDataType(columnType);
+                metadata.getFields().add(field);
+                return metadata;
             }
         });
 

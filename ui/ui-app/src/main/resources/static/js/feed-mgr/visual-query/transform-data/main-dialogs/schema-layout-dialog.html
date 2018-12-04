@@ -1,0 +1,65 @@
+<form #theForm="ngForm">
+  <mat-toolbar [color]="['primary']">
+    <span>Schema</span>
+    <span fxFlex="1 1 auto"></span>
+    <button mat-icon-button (click)="hide()">
+      <mat-icon arial-label="Close dialog">close</mat-icon>
+    </button>
+  </mat-toolbar>
+  <div mat-dialog-actions class="mat-dialog-actions">
+    <span fxFlex="1 1 auto"></span>
+    <button mat-button (click)="hide()">Cancel</button>
+    <button mat-raised-button style="margin-right:10px" [color]="['primary']" [disabled]="theForm.invalid || !isChanged" (click)="apply()">Apply</button>
+  </div>
+  <mat-divider [inset]="false"></mat-divider>
+
+  <div mat-dialog-content class="mat-dialog-content" style="height:100%;max-height:80vh;padding:0px;padding-top:10px;overflow-x:hidden;overflow-y:auto">
+
+    <div
+        [dndList]
+        [dndPlaceholder]="placeholder"
+        [dndModel]="columns">
+
+      <div *ngFor="let row of columns;let i=index;"
+           [dndType]="'item'"
+           dndNoDrag
+           (dndMoved)="removeMovedItem(row, columns)"
+           [dndDraggable]
+           [dndObject]="row" class="mat-list-item mat-list-item-avatar kylo-mat-list-item">
+
+        <div class="kylo-mat-list-item-content pad-left pad-right" fxLayout="row" fxLayoutAlign="start center">
+
+          <mat-icon matListAvatar class="kylo-mat-list-avatar" color="accent" [(fontIcon)]="row.typeIcon" fontSet="mdi"></mat-icon>
+
+          <div class="kylo-mat-list-text">
+            <mat-form-field mat-line style="width:170px" *ngIf="!row.deleted">
+              <input matInput placeholder="Name" [(ngModel)]="row.newName" (ngModelChange)="setName(row, $event)" class="kylo-mat-list-color" required pattern="^[a-zA-Z_][a-zA-Z0-9_]*$"
+                     name="{{row.origName}}">
+            </mat-form-field>
+          </div>
+
+          <h4 matLine *ngIf="row.deleted" class="kylo-mat-list-color text-deleted">{{row.newName}}</h4>
+
+          <span fxFlex="1 1 auto"></span>
+
+          <button mat-icon-button *ngIf="!row.deleted" (click)="remove(i)">
+            <mat-icon class="mat-24 kylo-mat-list-color">delete</mat-icon>
+          </button>
+
+          <button mat-icon-button *ngIf="row.deleted" (click)="restore(i)">
+            <mat-icon class="mat-24 kylo-mat-list-color">restore_from_trash</mat-icon>
+          </button>
+
+          <mat-icon dndHandle class="mat-24 kylo-mat-list-color kylo-mat-list-handle">drag_handle</mat-icon>
+
+        </div>
+        <mat-divider class="kylo-mat-divider" [inset]="false"></mat-divider>
+      </div>
+
+    </div>
+
+    <div class="dndPlaceholder col-md-12"
+         #placeholder></div>
+
+  </div>
+</form>

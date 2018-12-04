@@ -35,6 +35,11 @@ public interface DataSetSparkParameters {
      * @return the format
      */
     String getFormat();
+    
+    /**
+     * @param format the format
+     */
+    void setFormat(String format);
 
     /**
      * @return files to be placed in the working directory of each executor
@@ -70,4 +75,10 @@ public interface DataSetSparkParameters {
      * @return the value that was assigned to the option, or null if not present
      */
     String removeOption(String name);
+    
+    /**
+     * Removes all options.
+     * @return true if there were at least one option removed
+     */
+    boolean clearOptions();
 }

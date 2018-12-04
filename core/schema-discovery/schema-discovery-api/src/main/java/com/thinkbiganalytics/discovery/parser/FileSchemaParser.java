@@ -20,7 +20,9 @@ package com.thinkbiganalytics.discovery.parser;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 
 import java.io.IOException;
@@ -43,5 +45,19 @@ public interface FileSchemaParser extends Serializable {
      */
     Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException;
 
+    TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException;
 
+    /**
+     * derive the table settings from the type
+     * @param target
+     * @return
+     * @throws IOException
+     */
+    TableSettings deriveTableSettings(TableSchemaType target) throws IOException;
+
+    /**
+     * Do we need to open the file to set the table settings?
+     * @return
+     */
+    boolean tableSettingsRequireFileInspection();
 }

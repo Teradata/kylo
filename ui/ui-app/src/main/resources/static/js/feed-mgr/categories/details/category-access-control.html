@@ -1,10 +1,10 @@
 <ng-form name="categoryAccessControlForm">
-<vertical-section-layout [allowEdit]="allowEdit && !isNew" section-title='{{"views.category-access-control.AC" | translate}}' (on-save-edit)="onSave" (on-edit)="onEdit" keepEditableAfterSave="true" [editable]="isEditable" [isValid]="isValid">
+<vertical-section-layout [allowEdit]="allowEdit && !isNew" section-title='{{"views.category-access-control.AC" | translate}}' (on-save-edit)="onSave" (on-edit)="onEdit" keepEditableAfterSave="true" [editable]="isEditable">
   <readonly-section>
     <div>{{"views.category-access-control.CR" | translate}}</div>
-    <entity-access-control entity="model" entity-type="category" the-form="categoryAccessControlForm" [readonly]="true"></entity-access-control>
+    <entity-access-control-ng2 [entity]="model" entityType="category" [parentForm]="categoryAccessControlForm" [readonly]="true"></entity-access-control-ng2>
     <div>{{"views.category-access-control.RIbF" | translate}}</div>
-    <entity-access-control entity="model" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="categoryAccessControlForm" [readonly]="true"></entity-access-control>
+    <entity-access-control-ng2 [entity]="model" entityType="category-feed" [parentForm]="categoryAccessControlForm" [readonly]="true"></entity-access-control-ng2>
     <div>{{"views.category-access-control.index.control" | translate}}</div>
     <div layout="row" layout-padding>
       <div flex="40" style="align-self:center;">
@@ -28,9 +28,9 @@
   </readonly-section>
   <editable-section>
     <div>{{"views.category-access-control.CR2" | translate}}</div>
-    <entity-access-control entity="editModel" entity-type="category" the-form="categoryAccessControlForm"></entity-access-control>
+    <entity-access-control-ng2 [entity]="editModel" entityType="category" [parentForm]="categoryAccessControlForm"></entity-access-control-ng2>
     <div>{{"views.category-access-control.RIbF2" | translate}}</div>
-    <entity-access-control entity="editModel" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="categoryAccessControlForm"></entity-access-control>
+    <entity-access-control-ng2 [entity]="editModel" entityType="category-feed" [parentForm]="categoryAccessControlForm"></entity-access-control-ng2>
     <div>{{"views.category-access-control.index.control" | translate}}</div>
     <div layout="row" layout-padding>
       <div flex="40" style="align-self:center;">

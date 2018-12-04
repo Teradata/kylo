@@ -1,0 +1,15 @@
+<div [fxLayout]="layout" fxLayoutAlign="start" [formGroup]="formGroup">
+  <div>
+    <mat-form-field [fxFlex]="layout=='row' ? '100' : '50'" >
+      <input matInput formControlName="feedName" placeholder="Feed name"  >
+      <mat-error *ngIf="checkRequired(formGroup, 'feedName')"> {{"views.define-feed-general-info.Req" | translate}} </mat-error>
+    </mat-form-field>
+  </div>
+
+  <div>
+    <mat-form-field [fxFlex]="layout=='row' ? '100' : '50'" [class.pad-left]="layout == 'row'">
+      <input matInput placeholder="System name"  formControlName="systemFeedName">
+    </mat-form-field>
+  </div>
+
+</div>

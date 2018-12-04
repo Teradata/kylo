@@ -10,6 +10,7 @@ import { TdDialogService } from '@covalent/core/dialogs';
 export class HiveService {
 
     loading : boolean = true;
+    refreshCache: boolean;
     loadingHiveSchemas : boolean = true;
     constructor(private http: HttpClient, private _dialogService: TdDialogService) {
 
@@ -23,7 +24,7 @@ export class HiveService {
                 resolve(this.parseTableResponse(response));
             });
         })
-        
+
     };
     parseTableResponse(response: any) {
         var schemaTables = {};
@@ -207,7 +208,7 @@ export class HiveService {
         data.pivotData = null;
         return data;
     };
-    transformQueryResultsToUiGridModel(queryResult: any, hideColumns: any, transformFn: any) {
+    transformQueryResultsToUiGridModel(queryResult: any, hideColumns?: any, transformFn?: any) {
         var data: any = {};
         var rows: any = queryResult.data.rows;
         var columns: any = [];

@@ -17,13 +17,13 @@
  * limitations under the License.
  * #L%
  */
-import CommonRestUrlService from "./CommonRestUrlService";
+import {CommonRestUrlService} from "./CommonRestUrlService";
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Injectable()
-export default class SearchService {
+export class SearchService {
 
     private searchQuery: string = "";
     searchQuerySubject = new BehaviorSubject<string>(this.searchQuery);

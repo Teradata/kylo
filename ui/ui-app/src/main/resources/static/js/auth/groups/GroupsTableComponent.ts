@@ -1,26 +1,26 @@
 import * as _ from 'underscore';
-import UserService from "../services/UserService";
-import AddButtonService from  "../../services/AddButtonService";
+import {UserService} from "../services/UserService";
+import {AddButtonService} from  "../../services/AddButtonService";
 import {DefaultPaginationDataService} from  "../../services/PaginationDataService";
 import {DefaultTableOptionsService} from  "../../services/TableOptionsService";
 // import "../module";
 // import "../module-require";
 import { Component } from '@angular/core';
-import StateService from '../../services/StateService';
+import {StateService} from '../../services/StateService';
 import { TdDataTableSortingOrder, ITdDataTableSortChangeEvent, ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 import { IPageChangeEvent } from '@covalent/core/paging';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 /**
  * Identifier for this page.
  * @type {string}
  */
 const PAGE_NAME:string = "groups";
 @Component({
-    templateUrl: "js/auth/groups/groups-table.html",
+    templateUrl: "./groups-table.html",
     selector: 'groups-Table'
 })
-export default class GroupsTableComponent extends BaseFilteredPaginatedTableView{
+export class GroupsTableComponent extends BaseFilteredPaginatedTableView{
     /**
      * Page title.
      * @type {string}

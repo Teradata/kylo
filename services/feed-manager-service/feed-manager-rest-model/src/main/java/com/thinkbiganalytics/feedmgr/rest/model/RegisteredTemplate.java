@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheBaseProcessorDTO;
 import com.thinkbiganalytics.nifi.rest.model.NiFiRemoteProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
@@ -33,11 +34,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -80,6 +85,15 @@ public final class RegisteredTemplate extends EntityAccessControl {
     private Long order;
 
     private List<String> templateOrder;
+
+    private String changeComment;
+
+    private List<TemplateChangeComment> changeComments = new LinkedList<>();
+
+    /**
+     * Relationship between input processor id and its connected processors
+     */
+    Map<String,List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships = new ConcurrentHashMap<>();
 
     @JsonProperty("isStream")
     private boolean isStream;
@@ -150,7 +164,9 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.setAllowedActions(registeredTemplate.getAllowedActions());
         this.setTemplateTableOption(registeredTemplate.getTemplateTableOption());
         this.setTimeBetweenStartingBatchJobs(registeredTemplate.getTimeBetweenStartingBatchJobs());
+        this.inputProcessorRelationships = registeredTemplate.getInputProcessorRelationships();
         this.initializeProcessors();
+        this.changeComments.addAll(registeredTemplate.getChangeComments());
     }
 
     @JsonIgnore
@@ -466,6 +482,14 @@ public final class RegisteredTemplate extends EntityAccessControl {
         this.remoteProcessGroups = remoteProcessGroups;
     }
 
+    public Map<String, List<NifiFlowCacheBaseProcessorDTO>> getInputProcessorRelationships() {
+        return inputProcessorRelationships;
+    }
+
+    public void setInputProcessorRelationships(Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationships) {
+        this.inputProcessorRelationships = inputProcessorRelationships;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FlowProcessor extends RegisteredTemplate.Processor {
 
@@ -638,4 +662,22 @@ public final class RegisteredTemplate extends EntityAccessControl {
     public void setUpdateAvailable(boolean updateAvailable) {
         this.updateAvailable = updateAvailable;
     }
+
+    public String getChangeComment() {
+        return this.changeComment;
+    }
+
+    public void setChangeComment(String changeComment) {
+        this.changeComment = changeComment;
+    }
+
+    public void setChangeComments(List<TemplateChangeComment> changeComments) {
+        this.changeComments = changeComments;
+    }
+
+    public List<TemplateChangeComment> getChangeComments() {
+        Collections.sort(this.changeComments);
+        return this.changeComments;
+    }
+
 }

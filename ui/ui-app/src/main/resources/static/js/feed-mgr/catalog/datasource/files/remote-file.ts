@@ -14,7 +14,7 @@ export class RemoteFile extends BrowserObject {
         this.name = name;
         this.path = path;
         this.directory = directory;
-        this.length = length;
+        this.length = ( length == null ? 0 : length);
         this.modificationTime = modificationTime;
     }
 
@@ -22,7 +22,7 @@ export class RemoteFile extends BrowserObject {
         return this.directory;
     }
 
-    getIcon(column: BrowserColumn) {
+    getIcon() {
         return this.directory ? 'fa-folder' : 'fa-file-r'
     }
 
@@ -33,11 +33,12 @@ export class RemoteFile extends BrowserObject {
 
 export class RemoteFileDescriptor {
 
-    static FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new TdBytesPipe().transform(v, 2);
-    static DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'dd/MM/yyyy hh:mm:ss');
+    static FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new TdBytesPipe().transform(v, 0);
+    static DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'yyyy-MM-dd hh:mm:ss');
 
     static COLUMNS: BrowserColumn[] = [
-        {name: "directory", label: "", sortable: false, width: 1, filter: false, icon: true},
+        {name: "selection", label: " ", sortable: false, width: 40, filter: false, icon: false},
+        {name: "type", label: " ", sortable: false, width: 40, filter: false, icon: true},
         {name: "name", label: "Name", sortable: true, filter: true},
         {name: "length", label: "Size", numeric: true, sortable: true, filter: false, width: 200, format: RemoteFileDescriptor.FILE_SIZE_FORMAT},
         {name: "modificationTime", label: "Last modified", sortable: true, filter: false, width: 210, format: RemoteFileDescriptor.DATE_FORMAT}

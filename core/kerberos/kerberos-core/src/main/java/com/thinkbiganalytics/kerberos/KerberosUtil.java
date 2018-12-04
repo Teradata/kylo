@@ -21,6 +21,7 @@ package com.thinkbiganalytics.kerberos;
  */
 
 import com.google.common.base.Throwables;
+import com.thinkbiganalytics.kerberos.exceptions.KerberosRuntimeException;
 
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class KerberosUtil {
                     return dataSource.getConnection();
                 } catch (final Exception e) {
                     log.error("Error in Kerberos authentication", e);
-                    throw new RuntimeException(e);
+                    throw new KerberosRuntimeException(e);
                 }
             }
         }, kerberosTicketConfiguration);

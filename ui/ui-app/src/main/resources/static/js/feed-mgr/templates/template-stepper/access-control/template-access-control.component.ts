@@ -1,12 +1,12 @@
 import * as _ from "underscore";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
-import AccessControlService from '../../../../services/AccessControlService';
+import {AccessControlService} from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
     selector: 'thinkbig-template-access-control',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/access-control/template-access-control.html'
+    templateUrl: './template-access-control.html'
 })
 export class TemplateAccessControlController implements OnInit {
 
@@ -33,8 +33,8 @@ export class TemplateAccessControlController implements OnInit {
         }
     }
 
-    constructor(private registerTemplateService: RegisterTemplateServiceFactory, 
-                private accessControlService: AccessControlService, 
+    constructor(private registerTemplateService: RegisterTemplateServiceFactory,
+                private accessControlService: AccessControlService,
                 private entityAccessControlService: EntityAccessControlService) {}
 }
 

@@ -9,7 +9,7 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 
 @Component({
     selector: "feed-step-readonly-content",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-step-card/define-feed-step-readonly-content.component.css"],
+    styleUrls: ["./define-feed-step-readonly-content.component.css"],
     template:`<ng-content></ng-content>`
 })
 export class DefineFeedStepReadonlyContentComponent  {

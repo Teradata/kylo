@@ -1,12 +1,12 @@
-import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
+import {OpsManagerRestUrlService} from "./OpsManagerRestUrlService";
 import * as _ from 'underscore';
-import IconService from "./IconStatusService";
+import {IconService} from "./IconStatusService";
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs/Subject";
 
 @Injectable()
-export default class ServicesStatusData {
+export class ServicesStatusData {
 
     SERVICES_URL: string = this.opsManagerRestUrlService.SERVICES_URL;
     fetchServiceInterval: any = null;

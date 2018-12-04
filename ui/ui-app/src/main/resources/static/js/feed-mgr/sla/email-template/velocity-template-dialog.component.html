@@ -1,0 +1,25 @@
+<div mat-dialog-content class="mat-dialog-content">
+
+  <div fxLayout="column" *ngIf="resolvedTemplate.sendTest == false">
+    <div class="mat-title">Subject</div>
+    <div class="pad-top pad-bottom" [innerHtml]="resolvedTemplateSubject | safeHtml"></div>
+
+    <mat-divider></mat-divider>
+    <div class="mat-title pad-topp">Body</div>
+    <div class="pad-top pad-bottom" [innerHtml]="resolvedTemplateBody | safeHtml"></div>
+  </div>
+
+  <div fxLayout="column" *ngIf="resolvedTemplate.sendTest == true && resolvedTemplate.success == false">
+    <div class="mat-title">Error sending template</div>
+    <div>{{resolvedTemplate.exceptionMessage}}</div>
+  </div>
+
+  <div fxLayout="column" *ngIf="resolvedTemplate.sendTest == true && resolvedTemplate.success == true">
+    <div class="mat-title">Successfully sent template to {{emailAddress}}</div>
+  </div>
+
+</div>
+<div mat-dialog-actions class="mat-dialog-actions">
+  <span fxFlex></span>
+  <button mat-button (click)="close()">Close</button>
+</div>

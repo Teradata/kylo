@@ -165,10 +165,10 @@ public class JcrFeedEnableAccessControlTest {
         metadata.commit(() -> {
             JcrFeed feedB = (JcrFeed) this.feedProvider.getFeed(idB);
             this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                .ifPresent(actions -> feedB.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                .ifPresent(actions -> feedB.disableAccessControl(JcrMetadataAccess.getActiveUser()));
             JcrFeed feedC = (JcrFeed) this.feedProvider.getFeed(idC);
             this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                .ifPresent(actions -> feedC.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                .ifPresent(actions -> feedC.disableAccessControl(JcrMetadataAccess.getActiveUser()));
         }, TEST_USER2);
         
         

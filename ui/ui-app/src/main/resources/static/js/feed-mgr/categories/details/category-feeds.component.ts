@@ -1,11 +1,11 @@
 import * as _ from "underscore";
 import { Component } from '@angular/core';
-import CategoriesService from '../../services/CategoriesService';
-import StateService from '../../../services/StateService';
+import {CategoriesService} from '../../services/CategoriesService';
+import {StateService} from '../../../services/StateService';
 
 @Component({
     selector: 'thinkbig-category-feeds',
-    templateUrl: 'js/feed-mgr/categories/details/category-feeds.html'
+    templateUrl: './category-feeds.html'
 })
 export class CategoryFeeds {
 
@@ -18,7 +18,7 @@ export class CategoryFeeds {
      * @param CategoriesService the category service
      * @param StateService the URL service
      */
-    constructor(private CategoriesService:CategoriesService, 
+    constructor(private CategoriesService:CategoriesService,
                 private StateService:StateService) {
 
         /**

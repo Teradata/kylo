@@ -1,0 +1,105 @@
+.material-icons, mat-icon.material-icons, mat-icon.material-icons.mat-icon {
+  width: 1em;
+  height: 1em;
+}
+
+.icon-component {
+  font-size: 7rem;
+}
+
+.import-feed-text * {
+  padding-right: 3px;
+}
+
+.import-button {
+  float: right;
+}
+
+.template-card {
+  cursor: pointer;
+}
+
+:host ::ng-deep {
+  .card-content {
+    min-height: 64px;
+    box-sizing: border-box;
+  }
+  .mat-card-colored mat-toolbar {
+    height: 100px;
+  }
+  .mat-card-colored mat-toolbar mat-icon, .mat-card-colored mat-toolbar .mat-icon {
+    font-size: 64px;
+  }
+}
+
+/* styles for '...' */
+.block-with-text {
+  /* hide text if it more than N lines  */
+  overflow: hidden;
+  /* for set '...' in absolute position */
+  position: relative;
+  /* use this value to count block height */
+  line-height: 1.2em;
+  /* max-height = line-height (1.2) * lines max number (3) */
+  max-height: 3.6em;
+  /* fix problem when last visible word doesn't adjoin right side  */
+  text-align: justify;
+  /* place for '...' */
+  margin-right: -1em;
+  padding-right: 1em;
+}
+
+/* create the ... */
+.block-with-text:before {
+  /* points in the end */
+  content: '...';
+  /* absolute position */
+  position: absolute;
+  /* set position to right bottom corner of block */
+  right: 0;
+  bottom: 0;
+}
+
+/* hide ... if we have text, which is less than or equal to max lines */
+.block-with-text:after {
+  /* points in the end */
+  content: '';
+  /* absolute position */
+  position: absolute;
+  /* set position to right bottom corner of text */
+  right: 0;
+  /* set width and height */
+  width: 1em;
+  height: 1em;
+  margin-top: 0.2em;
+  /* bg color = bg color under block */
+  background: white;
+}
+
+.kylo-card-title {
+  font-size:18px;
+  font-weight:300;
+}
+
+.kylo-card-subtitle {
+  font-size:13px;
+}
+
+.kylo-card-icon {
+  color:white;
+  font-size:40px;
+}
+
+.kylo-card-template {
+  width:360px;
+  height:153px;
+}
+
+.kylo-icon-button mat-icon {
+   font-size:22px;
+}
+.kylo-content-template {
+  max-height:98px;
+  min-height:98px;
+  height:98px;
+}

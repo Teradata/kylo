@@ -1,0 +1,32 @@
+<mat-card class="mat-typography">
+
+  <mat-card-header>
+    <mat-card-title *ngIf="mode === editMode && sla == undefined" translate>Sla.Details.EditSla</mat-card-title>
+    <mat-card-title *ngIf="mode === editMode && sla != undefined && slaName != undefined" >{{slaName}}</mat-card-title>
+    <mat-card-title *ngIf="mode === newMode" translate>Sla.Details.CreateNewSla</mat-card-title>
+    <mat-card-subtitle *ngIf="mode === newMode" translate>Sla.Details.CreateNewSlaSubtitle</mat-card-subtitle>
+    <mat-card-subtitle *ngIf="feedModel && (feedModel.state === stateDisabled)" class="warn" translate>Sla.DisabledFeedWarning</mat-card-subtitle>
+    <span flex></span>
+    <ng-md-icon icon="beenhere" class="tc-accent push-right" size="30"></ng-md-icon>
+  </mat-card-header>
+
+  <mat-card-content class="pull-left-sm">
+    <form [formGroup]="slaForm" class="push-left">
+      <sla-form [formGroup]="slaForm" [sla]="sla" [feed]="feedModel" [mode]="mode"></sla-form>
+    </form>
+
+    <div *ngIf="loadingSla" fxLayout="column" fxLayoutAlign="center center" class="pad">
+      <mat-progress-spinner [diameter]="70" mode="indeterminate" color="accent"></mat-progress-spinner>
+    </div>
+
+    <!--<div>Loading Feed: {{loadingFeed}}, Loading SLA: {{loadingSla}}, allowEdit: {{allowEdit}}</div>-->
+  </mat-card-content>
+
+  <mat-card-actions *ngIf="!loadingFeed && !loadingSla && allowEdit">
+    <button mat-button mat-raised-button color="accent" (click)="onSaveSla()" [disabled]="slaForm.invalid || savingSla || deletingSla">{{"Sla.Details.Save" | translate}}</button>
+    <button mat-button mat-raised-button (click)="onCancelSaveSla()" [disabled]="savingSla || deletingSla">{{"Sla.Details.Cancel" | translate}}</button>
+    <button mat-button mat-raised-button (click)="onDeleteSla()" [disabled]="deletingSla || savingSla" *ngIf="mode === editMode">{{"Sla.Details.Delete" | translate}}</button>
+  </mat-card-actions>
+
+</mat-card>
+

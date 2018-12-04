@@ -2,13 +2,13 @@ import * as _ from 'underscore';
 import { TransitionService, StateService } from "@uirouter/core";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
-import ServicesStatusData from "../services/ServicesStatusService";
+import {ServicesStatusData} from "../services/ServicesStatusService";
 import { Component, OnInit } from "@angular/core";
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 @Component({
     selector: "service-Health-Details-Controller",
-    templateUrl: "js/ops-mgr/service-health/service-detail.html",
+    templateUrl: "./service-detail.html",
     styles: [`.ListItemContainer{
         padding: 0px !important;
         line-height: inherit;

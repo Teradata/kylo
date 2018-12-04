@@ -374,6 +374,11 @@ public class TdchExportHiveToTeradata extends AbstractTdchProcessor {
         .displayName("[Teradata] " + STRING_TRUNCATE_FLAG_NAME)
         .build();
 
+    public static final PropertyDescriptor TERADATA_CHARSET = new PropertyDescriptor.Builder()
+        .fromPropertyDescriptor(CHARSET)
+        .displayName("[Teradata] " + CHARSET_NAME)
+        .build();
+
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
         super.init(context);
@@ -406,6 +411,7 @@ public class TdchExportHiveToTeradata extends AbstractTdchProcessor {
         properties.add(HIVE_LINE_SEPARATOR);
 
         //optional teradata
+        properties.add(TERADATA_CHARSET);
         properties.add(TERADATA_TARGET_DATE_FORMAT);
         properties.add(TERADATA_TARGET_TIME_FORMAT);
         properties.add(TERADATA_TARGET_TIMESTAMP_FORMAT);
@@ -494,6 +500,8 @@ public class TdchExportHiveToTeradata extends AbstractTdchProcessor {
                                                  Boolean.valueOf(DEFAULT_STRING_TRUNCATE_FLAG) :
                                                  context.getProperty(STRING_TRUNCATE_FLAG).evaluateAttributeExpressions(flowFile).asBoolean();
 
+        final String commonCharset = context.getProperty(CHARSET).evaluateAttributeExpressions(flowFile).getValue();
+
         final String commonExportToolJobType = StringUtils.isEmpty(context.getProperty(EXPORT_TOOL_JOB_TYPE).evaluateAttributeExpressions(flowFile).getValue()) ?
                                                DEFAULT_EXPORT_TOOL_JOB_TYPE :
                                                context.getProperty(EXPORT_TOOL_JOB_TYPE).evaluateAttributeExpressions(flowFile).getValue();
@@ -553,7 +561,7 @@ public class TdchExportHiveToTeradata extends AbstractTdchProcessor {
             .setTdchLibraryJarsVariable(TDCH_LIB_JARS_ENV_VAR_NAME)
             .setTdchHadoopClassPathVariable(TDCH_HADOOP_CLASSPATH_ENV_VAR_NAME)
             .setTdchOperationType(TdchOperationType.TDCH_EXPORT)
-            .setCommonTeradataUrl(tdchConnectionService.getJdbcConnectionUrl(), teradataDatabaseTable)
+            .setCommonTeradataUrl(tdchConnectionService.getJdbcConnectionUrl(), teradataDatabaseTable, commonCharset)
             .setCommonTeradataClassname(tdchConnectionService.getJdbcDriverClassName())
             .setCommonTeradataUsername(tdchConnectionService.getUserName())
             .setCommonTeradataPassword(tdchConnectionService.getPassword())
@@ -572,6 +580,7 @@ public class TdchExportHiveToTeradata extends AbstractTdchProcessor {
             .setCommonTargetTimestampFormat(commonTargetTimestampFormat)
             .setCommonTargetTimezoneId(commonTargetTimezoneId)
             .setCommonStringTruncate(commonStringTruncateFlag)
+            .setCommonCharset(commonCharset)
             .setSourceHiveConfigurationFileHdfsPath(hiveConfigurationFileHdfsPath)
             .setSourceHiveSourceDatabase(hiveDatabase)
             .setSourceHiveSourceTable(hiveTable)

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.rest.client;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,6 @@ package com.thinkbiganalytics.nifi.rest.client;
  */
 
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
-import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
-import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
@@ -68,15 +66,13 @@ public interface NiFiProcessorsRestClient {
 
     /**
      * Updates the schedule for a processor
-     * @param schedule
-     * @return
      */
     ProcessorDTO schedule(NifiProcessorSchedule schedule);
-    
+
     /**
-     * Attempts to trigger a single execution of the processor and then restore that processor back to 
+     * Attempts to trigger a single execution of the processor and then restore that processor back to
      * the state it was in prior to waking it up.
-     * 
+     *
      * @param processor to be woken
      * @return the end state of the processor
      */
@@ -85,11 +81,22 @@ public interface NiFiProcessorsRestClient {
     /**
      * Updates a processor and retries {@code retryAmount} number of times if the update is unsuccessful
      *
-     * @param processor   the processor
-     * @param retryNumber the current attempt
-     * @param retryAmount the max retry amount
+     * @param processor the processor
+     * @param retries   the current attempt
+     * @param timeout   the max retry amount
      * @return the updated processor
      */
     @Nonnull
     ProcessorDTO updateWithRetry(@Nonnull ProcessorDTO processor, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit);
+
+    /**
+     * Updates a processor and retries {@code retryAmount} number of times if the update is unsuccessful
+     *
+     * @param processor the processor
+     * @param retries   the current attempt
+     * @param timeout   the max retry amount
+     * @return the updated processor
+     */
+    @Nonnull
+    Optional<ProcessorDTO> updateWithRetry(@Nonnull ProcessorEntity processor, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit);
 }

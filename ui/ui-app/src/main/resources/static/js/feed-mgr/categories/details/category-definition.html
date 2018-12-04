@@ -18,7 +18,7 @@
   #L%
   -->
 <vertical-section-layout section-title='{{"views.category-definition.CD" | translate}}' (on-delete)="onDelete()" [allowDelete]="canDelete" [isDeleteVisible]="model.id != null" (on-save-edit)="onSave()"
-  (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm" [isValid]="isValid">
+  (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm">
   <readonly-section>
     <div layout="row" class="layout-padding-top-bottom" flex>
       <span flex="25" class="property-name">{{"views.main.category-name" | translate}}</span>

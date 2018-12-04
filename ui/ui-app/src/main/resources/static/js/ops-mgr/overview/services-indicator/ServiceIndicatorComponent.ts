@@ -3,10 +3,10 @@ import * as _ from 'underscore';
 import * as moment from "moment";
 import { Component, Inject, ElementRef } from "@angular/core";
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import StateService from "../../../services/StateService";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import BroadcastService from "../../../services/broadcast-service";
-import ServicesStatusData from "../../services/ServicesStatusService";
+import {StateService} from "../../../services/StateService";
+import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
+import {BroadcastService} from "../../../services/broadcast-service";
+import {ServicesStatusData} from "../../services/ServicesStatusService";
 import { TranslateService } from "@ngx-translate/core";
 
 class Indicator {
@@ -139,7 +139,7 @@ class Indicator {
 
 @Component({
     selector: 'tba-services-indicator',
-    templateUrl: 'js/ops-mgr/overview/services-indicator/services-indicator-template.html'
+    templateUrl: './services-indicator-template.html'
 })
 export class ServiceIndicatorComponent {
     /**
@@ -240,20 +240,20 @@ export class ServiceIndicatorComponent {
                 labelSunbeamLayout: false,
                 "margin": {"top": 10, "right": 10, "bottom": 10, "left": 10},
                 donut: true,
-                donutRatio: 0.65,
+                donutRatio: 0.62,
                 showLegend: false,
                 valueFormat: (d: any) => {
                     return parseInt(d);
                 },
                 color: (d: any) => {
                     if (d.key == 'HEALTHY') {
-                        return '#009933';
+                        return '#388e3c';
                     }
                     else if (d.key == 'UNHEALTHY') {
-                        return '#FF0000';
+                        return '#b71c1c';
                     }
                     else if (d.key == 'WARNING') {
-                        return '#FF9901';
+                        return '#d84315';
                     }
                 },
                 pie: {
@@ -279,7 +279,7 @@ export class ServiceIndicatorComponent {
 }
 
 @Component({
-    templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html'
+    templateUrl: './services-details-dialog.html'
 })
 export class ServiceDetailsDialogComponent {
 
@@ -287,7 +287,7 @@ export class ServiceDetailsDialogComponent {
     css: string;
     status: string;
     allChartData: any;
-           
+
     constructor (private dialogRef: MatDialogRef<ServiceDetailsDialogComponent>,
                  @Inject(MAT_DIALOG_DATA) private data: any,
                  private stateService: StateService) {}
@@ -320,5 +320,5 @@ export class ServiceDetailsDialogComponent {
         this.dialogRef.close();
         this.stateService.OpsManager().ServiceStatus().navigateToServiceDetails(serviceName);
     }
-            
+
 }

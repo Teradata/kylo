@@ -44,4 +44,12 @@ public interface CatalogDataSetProvider<T> {
     T readDataSet(DataSet dataSet);
 
     T read(String dataSetId);
+
+    /**
+     * remap this dataSetId and return the supplied dataframe instead of executing the read function
+     * @param dataSetId
+     * @param dataFrame
+     * @return
+     */
+    void remap(String dataSetId, T dataFrame);
 }

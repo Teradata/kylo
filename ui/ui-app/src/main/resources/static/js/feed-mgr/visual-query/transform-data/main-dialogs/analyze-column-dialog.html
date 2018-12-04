@@ -1,0 +1,10 @@
+<div mat-dialog-title fxLayout="row">
+  <h2 style="color: rgb(52, 131, 186)">{{fieldName}}</h2>
+  <span fxFlex="1 1 auto"></span>
+  <button mat-icon-button (click)="hide()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</div>
+<div mat-dialog-content class="mat-dialog-content">
+  <column-analysis [profile]="profile" [field]="fieldName"></column-analysis>
+</div>

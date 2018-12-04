@@ -3,6 +3,7 @@ import {TableFieldPartition} from "../TableFieldPartition";
 import {ArrayUtils} from "../utils";
 import {Feed} from "./feed.model";
 import * as _ from "underscore";
+import {FormGroup} from "@angular/forms";
 
 
 export class FeedTableColumnDefinitionValidation {
@@ -13,7 +14,7 @@ export class FeedTableColumnDefinitionValidation {
 
 
 
-    constructor(private model: Feed) {
+    constructor(private definePartitionForm: FormGroup, private model: Feed) {
 
         if (_.isUndefined(this.invalidColumns)) {
             this.invalidColumns = [];
@@ -28,7 +29,7 @@ export class FeedTableColumnDefinitionValidation {
     }
     private validateUniqueFeedName(columnDef:TableColumnDefinition){
         //update all columns at all times, because column removal may fix not unique name error on other columns
-        var columnsByName = _.groupBy(this.model.table.tableSchema.fields, (column: TableColumnDefinition) => {
+        var columnsByName = _.groupBy(this.model.table.feedDefinitionTableSchema.fields, (column: TableColumnDefinition) => {
             //we'll disregard "not unique" name for all empty names and all deleted columns, i.e. put them into single group
             if (column.isDeleted()) {
                 return "";
@@ -79,13 +80,13 @@ export class FeedTableColumnDefinitionValidation {
             if (group.length > 1) {
                 _.each(group, (partition) => {
                     //.invalid another partition matches the same name
-               //     this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
+                    this.definePartitionForm.get("partitionName_"+partition._id).setErrors({'notUnique': true});
                 });
             }
             else {
                 _.each(group, (partition) => {
                     //valid this is a unique partition name
-             //       this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', true);
+                    this.definePartitionForm.get("partitionName_"+partition._id).setErrors(null);
                 });
             }
         });
@@ -93,14 +94,14 @@ export class FeedTableColumnDefinitionValidation {
         //Validate the Partition names are unique respective to the other fields
 
         //an array of column names
-        var columnNames = _.map(this.model.table.tableSchema.fields, (columnDef: TableColumnDefinition) => {
+        var columnNames = _.map(this.model.table.feedDefinitionTableSchema.fields, (columnDef: TableColumnDefinition) => {
             return columnDef.name;
         });
         var countPartitionNames = {};
         //add the angular errors
         _.each(this.model.table.partitions, (partition: any) => {
             if (partition.formula != undefined && partition.formula != 'val' && _.indexOf(columnNames, partition.field) >= 0) {
-       //         this.defineFeedTableForm['partition_name' + partition._id].$setValidity('notUnique', false);
+                this.definePartitionForm.get("partitionName_"+partition._id).setErrors({'notUnique': true});
             }
         });
 
@@ -113,11 +114,11 @@ export class FeedTableColumnDefinitionValidation {
         }
 
         let valid = this.model.templateId != null && this.model.table.method != null && this.model.table.tableSchema.name != null && this.model.table.tableSchema.name != ''
-            && this.model.table.tableSchema.fields.length > 0;
+            && this.model.table.feedDefinitionTableSchema.fields.length > 0;
 
         if (valid) {
             //ensure we have at least 1 field (not deleted) assigned to the model)
-            var validFields = _.filter(this.model.table.tableSchema.fields, (field: any) => {
+            var validFields = _.filter(this.model.table.feedDefinitionTableSchema.fields, (field: any) => {
                 return field.deleted == undefined || field.deleted == false;
             });
             valid = validFields.length > 0;

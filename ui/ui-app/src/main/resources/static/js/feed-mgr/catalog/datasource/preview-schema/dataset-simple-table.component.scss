@@ -1,0 +1,16 @@
+
+:host ::ng-deep td-data-table .td-data-table-cell-content-wrapper > span {
+
+  overflow:hidden; text-overflow: ellipsis;
+}
+
+
+::ng-deep dataset-simple-table .td-data-table-scrollable {
+  overflow-x: auto !important;
+}
+
+
+
+:host ::ng-deep td-data-table{
+  width: 100% !important;
+}

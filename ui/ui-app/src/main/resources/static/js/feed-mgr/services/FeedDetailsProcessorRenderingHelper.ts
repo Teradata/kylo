@@ -1,39 +1,17 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-/**
- * Return a custom Property input template for a given Processor
- */
-import { Templates } from "./TemplateTypes";
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
 import { Injectable } from "@angular/core";
 
 @Injectable()
 export class FeedDetailsProcessorRenderingHelper {
 
     constructor(){
-        
+
     }
 
-    GET_TABLE_DATA_PROCESSOR_TYPE: "com.thinkbiganalytics.nifi.GetTableData";
-    GET_TABLE_DATA_PROCESSOR_TYPE2: "com.thinkbiganalytics.nifi.v2.ingest.GetTableData";
-    WATERMARK_PROCESSOR: 'com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark';
-    SQOOP_PROCESSOR: 'com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop';
+    GET_TABLE_DATA_PROCESSOR_TYPE= "com.thinkbiganalytics.nifi.GetTableData";
+    GET_TABLE_DATA_PROCESSOR_TYPE2= "com.thinkbiganalytics.nifi.v2.ingest.GetTableData";
+    WATERMARK_PROCESSOR= 'com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark';
+    SQOOP_PROCESSOR= 'com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop';
 
     isSqoopProcessor(processor: Templates.Processor) {
         return this.SQOOP_PROCESSOR == processor.type;
@@ -46,7 +24,7 @@ export class FeedDetailsProcessorRenderingHelper {
         return this.WATERMARK_PROCESSOR == processor.type;
     }
     isRenderProcessorGetTableDataProcessor(inputProcessor: any) {
-        var render = false;
+        let render = false;
         //if the processor to check is GetTable Data it should be rendered only if it is the input, or if the input is watermark
         if (inputProcessor != undefined && (this.isGetTableDataProcessor(inputProcessor) || this.isWatermarkProcessor(inputProcessor))) {
             render = true;
@@ -55,7 +33,7 @@ export class FeedDetailsProcessorRenderingHelper {
         return render;
     }
     isRenderSqoopProcessor(inputProcessor: Templates.Processor) {
-        var render = false;
+        let render = false;
         //if the processor to check is GetTable Data it should be rendered only if it is the input, or if the input is watermark
         if (inputProcessor != undefined && (this.isSqoopProcessor(inputProcessor) || this.isWatermarkProcessor(inputProcessor))) {
             render = true;
@@ -63,29 +41,22 @@ export class FeedDetailsProcessorRenderingHelper {
 
         return render;
     }
+
     updateGetTableDataRendering(inputProcessor: Templates.Processor, nonInputProcessors: Templates.Processor[]) {
-        var renderGetData = this.isRenderProcessorGetTableDataProcessor(inputProcessor);
-        var getTableDataProcessors = nonInputProcessors.filter((processor: Templates.Processor) => {
-            return this.isGetTableDataProcessor(processor);
-        });
-        getTableDataProcessors.forEach((processor: any) => {
-            processor.userEditable = renderGetData;
-        });
+        let renderGetData = this.isRenderProcessorGetTableDataProcessor(inputProcessor);
+        let getTableDataProcessors = nonInputProcessors.filter((processor: Templates.Processor) => this.isGetTableDataProcessor(processor));
+        getTableDataProcessors.forEach((processor: any) => processor.userEditable = renderGetData);
         //if the flow starts with the watermark and doesnt have a downstream getTableData then dont render the table
         if (renderGetData && this.isWatermarkProcessor(inputProcessor) && getTableDataProcessors.length == 0) {
             renderGetData = false;
         }
         return renderGetData;
     }
+
     updateSqoopProcessorRendering(inputProcessor: Templates.Processor, nonInputProcessors: Templates.Processor[]) {
-        var render = this.isRenderSqoopProcessor(inputProcessor);
-        var sqoopProcessors = nonInputProcessors.filter((processor: Templates.Processor) => {
-            return this.isRenderSqoopProcessor(processor);
-        });
-        sqoopProcessors.forEach((processor: any) => {
-            processor.userEditable = render;
-        });
+        let render = this.isRenderSqoopProcessor(inputProcessor);
+        let sqoopProcessors = nonInputProcessors.filter((processor: Templates.Processor) => this.isRenderSqoopProcessor(processor));
+        sqoopProcessors.forEach((processor: any) => processor.userEditable = render);
         return render;
     }
 }
-

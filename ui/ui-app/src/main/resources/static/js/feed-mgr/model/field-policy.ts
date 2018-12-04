@@ -1,4 +1,4 @@
-import {Common} from "../../common/CommonTypes";
+import {Common} from '../../../lib/common/CommonTypes';
 
 
 export interface FieldPolicySelectableValue{
@@ -61,6 +61,11 @@ export interface FieldPolicy {
 
     sequence: number;
 }
+
+export enum SchemaParserType {
+    CSV="CSV",JSON="JSON",TEXT="TEXT"
+}
+
 
 export interface SchemaParser extends FieldPolicy{
 

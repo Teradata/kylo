@@ -100,4 +100,55 @@ public class TestNifiPropertyUtil {
         NifiPropertyUtil.NiFiPropertyUpdater.updateSkipInput(latestPropertyFromNifi, registeredPropertyInKylo);
         Assert.assertEquals("one", latestPropertyFromNifi.getValue());
     }
+
+    @Test
+    public void testUpdateCore_WithModeUpdateAllProperties() {
+        final String VALUE = "value";
+
+        NifiProperty propertyToUpdate = new NifiProperty();
+        propertyToUpdate.setValue(null);
+
+        NifiProperty property = new NifiProperty();
+        property.setKey("key");
+        property.setTemplateValue("templateValue");
+        property.setValue(VALUE);
+        property.setUserEditable(true);
+        property.setSelected(true);
+        property.setRenderType("text");
+        property.setRequired(true);
+        property.setPropertyDescriptor(null);
+        property.setRenderOptions(null);
+
+        NifiPropertyUtil.PropertyUpdateMode propertyUpdateMode = NifiPropertyUtil.PropertyUpdateMode.UPDATE_ALL_PROPERTIES;
+
+        NifiPropertyUtil.NiFiPropertyUpdater.updateCore(propertyToUpdate, property, propertyUpdateMode);
+
+        Assert.assertEquals(VALUE, propertyToUpdate.getValue());
+    }
+
+    @Test
+    public void testUpdateCore_WithModeNotUpdateAllProperties() {
+        final String VALUE = "value";
+
+        NifiProperty propertyToUpdate = new NifiProperty();
+        propertyToUpdate.setValue(null);
+
+        NifiProperty property = new NifiProperty();
+        property.setKey("key");
+        property.setTemplateValue("templateValue");
+        property.setValue(VALUE);
+        property.setUserEditable(true);
+        property.setSelected(true);
+        property.setRenderType("text");
+        property.setRequired(true);
+        property.setPropertyDescriptor(null);
+        property.setRenderOptions(null);
+
+        NifiPropertyUtil.PropertyUpdateMode propertyUpdateMode = NifiPropertyUtil.PropertyUpdateMode.FEED_DETAILS_MATCH_TEMPLATE;
+
+        NifiPropertyUtil.NiFiPropertyUpdater.updateCore(propertyToUpdate, property, propertyUpdateMode);
+
+        Assert.assertEquals(null, propertyToUpdate.getValue());
+    }
+
 }

@@ -1,0 +1,11 @@
+<div *ngIf="lastBreadcrumbs.length == 2" layout-align="center" style="white-space: nowrap">
+    <span class="pad-left pad-right">|</span>
+    <button style="padding-top: 7px;" class="md-button icon-btn" (click)="navigate( lastBreadcrumbs[0])">
+      <mat-icon md-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <span *ngIf="lastBreadcrumbs[1].displayName != ''">  {{ lastBreadcrumbs[0].displayName}}</span>
+  </div>
+  <div *ngIf="lastBreadcrumbs.length == 1 && lastBreadcrumbs[0].displayName != ''" style="white-space: nowrap">
+    <span class="pad-left pad-right">|</span>
+  <span>{{ lastBreadcrumbs[0].displayName}}</span>
+  </div>

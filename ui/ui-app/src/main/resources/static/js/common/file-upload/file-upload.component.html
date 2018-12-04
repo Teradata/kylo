@@ -1,0 +1,36 @@
+<div fxLayout="column">
+    <div fxLayout="row" fxFlex="100">
+        <mat-form-field tdFileDrop
+                        (fileDrop)="files = $event"
+                        (click)="fileInput.inputElement.click()"
+                        (keyup.enter)="fileInput.inputElement.click()"
+                        (keyup.delete)="fileInput.clear()"
+                        (keyup.backspace)="fileInput.clear()"
+                        [style.margin-top.px]="'-4'"
+                        fxFlex="75">
+            <input matInput
+                   [placeholder]="placeholder"
+                   [value]="getInputValue()"
+                   readonly>
+        </mat-form-field>
+        <span>
+          <button mat-icon-button *ngIf="files" (click)="fileInput.clear()" (keyup.enter)="fileInput.clear()" color="primary">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </span>
+
+        <td-file-input class="push-left-sm push-right-sm" #fileInput [(ngModel)]="files" multiple
+                       (select)="fileSelected($event)">
+            <mat-icon class="accent-color">folder</mat-icon>
+            <span class="text-upper accent-color">Browse...</span>
+        </td-file-input>
+    </div>
+    <div *ngIf="renderSubmitButton" fxLayout="row" fxLayoutAlign="end center" class="push-top">
+        <span fxFlex></span>
+        <span>
+            <button mat-button class="text-upper" (click)="onCancel.emit()">Cancel</button>
+            <button mat-raised-button color="accent" [disabled]="uploadButtonDisabled()"
+                    class="text-upper" #submitButton (click)="submitFiles()">Submit</button>
+          </span>
+    </div>
+</div>

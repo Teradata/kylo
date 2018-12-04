@@ -35,19 +35,6 @@ import java.util.Arrays;
 public class ConnectorIT extends IntegrationTestBase {
 
     /**
-     * Verify retrieving a single connector.
-     */
-    @Test
-    public void testConnector() {
-        final Connector connector = given(ConnectorController.BASE)
-            .when().get("file-upload")
-            .then().statusCode(200)
-            .extract().as(Connector.class);
-        Assert.assertEquals("file-upload", connector.getId());
-        Assert.assertEquals("File Upload", connector.getTitle());
-    }
-
-    /**
      * Verify retrieving connectors.
      */
     @Test
@@ -60,7 +47,7 @@ public class ConnectorIT extends IntegrationTestBase {
         final Matcher<Connector> isFileUpload = new CustomMatcher<Connector>("is file upload connector") {
             @Override
             public boolean matches(Object item) {
-                return (item instanceof Connector && "file-upload".equals(((Connector) item).getId()) && "File Upload".equals(((Connector) item).getTitle()));
+                return (item instanceof Connector && "File Upload".equals(((Connector) item).getTitle()));
             }
         };
         Assert.assertThat(Arrays.asList(connectors), CoreMatchers.hasItem(isFileUpload));

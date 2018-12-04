@@ -14,6 +14,8 @@ export class TemplateMetadata {
     installed: boolean;
     updateAvailable: boolean;
     repository: TemplateRepository;
+    updates: any[];
+    lastModified: any;
 }
 
 export class ImportStatus{

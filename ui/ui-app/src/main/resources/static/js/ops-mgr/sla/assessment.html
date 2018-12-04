@@ -47,12 +47,12 @@
             </div>
           </div>
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.SLA.ASSESSMENT.DESCRIPTION"| translate}</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+          <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
             {{assessment.agreement.description  | truncate: 500}}
           </div>
 
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.SLA.ASSESSMENT.TITLE"| translate}}</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+          <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
             {{assessment.message  | truncate: 500}}
           </div>
         </div>
@@ -60,14 +60,14 @@
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"OPS_MGR.SLA.ASSESSMENT.ASSESSMENT_DETAILS"| translate}}</div>
           <div *ngFor="let obligation of assessment.obligationAssessments; let index = index;">
             <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}. {{"OPS_MGR.SLA.ASSESSMENT.OBLIGATION_MESSAGE"| translate}}</div>
-            <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+            <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
               {{obligation.message | truncate: 500}}
             </div>
 
             <div *ngIf="obligation.metricAssessments != null && obligation.metricAssessments.length >0">
               <div *ngFor="let metric of obligation.metricAssessments ">
                 <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{index+1}}.{{"OPS_MGR.SLA.ASSESSMENT.METRIC_MESSAGE"| translate}}</div>
-                <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
+                <div class="grey" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;">
                   {{metric.message | truncate: 500}}
                 </div>
 

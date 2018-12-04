@@ -1,18 +1,19 @@
-import * as _ from 'underscore';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {Injectable} from '@angular/core';
 import * as moment from "moment";
-import { ObjectUtils } from '../../common/utils/object-utils';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import IconService from './IconStatusService';
-import 'rxjs/add/operator/timeout';
-import OpsManagerRestUrlService from './OpsManagerRestUrlService';
-import BroadcastService from '../../services/broadcast-service';
-import { Observable, Subscription } from 'rxjs';
+import {Subscription} from 'rxjs';
 import 'rxjs/add/observable/of';
-import { Injectable } from '@angular/core';
-import { OpsManagerFeedService } from './OpsManagerFeedService';
+import 'rxjs/add/operator/timeout';
+import * as _ from 'underscore';
+
+import {ObjectUtils} from '../../../lib/common/utils/object-utils';
+import {BroadcastService} from '../../services/broadcast-service';
+import {OpsManagerFeedUtil} from "./ops-manager-feed-util";
+import {OpsManagerFeedService} from "./ops-manager-feed.service";
+import {OpsManagerRestUrlService} from './OpsManagerRestUrlService';
 
 @Injectable()
-export default class OpsManagerDashboardService {
+export class OpsManagerDashboardService {
 
     DASHBOARD_UPDATED: string = 'DASHBOARD_UPDATED';
     FEED_SUMMARY_UPDATED: string = 'FEED_SUMMARY_UPDATED';
@@ -159,7 +160,7 @@ export default class OpsManagerDashboardService {
                     feedData.sinceTimeString = moment(feedData.lastUnhealthyTime).fromNow();
                 }
 
-                this.OpsManagerFeedService.decorateFeedSummary(feedData);
+                OpsManagerFeedUtil.decorateFeedSummary(feedData);
                 if (feedData.stream == true && feedData.feedHealth) {
                     feedData.runningCount = feedData.feedHealth.runningCount;
                     if (feedData.runningCount == null) {

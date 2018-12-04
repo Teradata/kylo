@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.rest.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,10 @@ package com.thinkbiganalytics.discovery.rest.controller;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -36,11 +38,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
@@ -52,7 +52,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class SchemaDiscoveryRestControllerTest extends JerseyTest {
-    
+
     private static final int PORT = 19998;
 
     @Override
@@ -62,6 +62,12 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
         enable(TestProperties.DUMP_ENTITY);
         ResourceConfig config = new ResourceConfig(SchemaDiscoveryRestController.class);
         config.register(MultiPartFeature.class);
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(Mockito.mock(CatalogFileManager.class)).to(CatalogFileManager.class);
+            }
+        });
 
         return config;
     }
@@ -80,7 +86,7 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
     }
 
     @Test
-    public void testUploadFile() throws Exception {
+    public void testUploadFile() {
         SchemaParserDescriptor descriptor = createMockParserDescriptor();
 
         FormDataMultiPart form = new FormDataMultiPart();
@@ -92,11 +98,11 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
 
         Response response = target("/v1/schema-discovery/hive/sample-file").request(MediaType.APPLICATION_JSON_TYPE).post(Entity.entity(form, form.getMediaType()), Response.class);
         assertEquals(200, response.getStatus());
-        assertTrue("Expecting schema object", response.readEntity(DefaultHiveSchema.class) != null);
+        assertNotNull("Expecting schema object", response.readEntity(DefaultHiveSchema.class));
     }
 
     @Test
-    public void testGetFileParsers() throws Exception {
+    public void testGetFileParsers() {
         final List<SchemaParserDescriptor> list = target("/v1/schema-discovery/file-parsers").request().get(new GenericType<List<SchemaParserDescriptor>>() {
         });
         assertTrue("expecting at least 2 parsers", list.size() >= 2);

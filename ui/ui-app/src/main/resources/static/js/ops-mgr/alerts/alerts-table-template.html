@@ -33,7 +33,7 @@
                         </mat-option>
                     </mat-select>
                 </div>
-                
+
                 <div class="md-block condensed flex-gt-sm">
                     <mat-label class="label-small md-container-ignore">{{"OPS_MGR.ALERTS.ALERTS_TABLE_TEMPLATE.ALERT_STATE" | translate}}</mat-label>
                     <mat-select [(ngModel)]="filterAlertState" (change)="onFilterAlertStateChange(filterAlertState)"  class="md-no-underline" style="display:inline">
@@ -74,8 +74,8 @@
                         <ng-template mat-tab-label>{{tab.title}}</ng-template>
                     <div>
                         <mat-divider></mat-divider>
-                        
-                        <filtered-paginated-table-view 
+
+                        <filtered-paginated-table-view
                             [showToolbar]="false"
                             [columns]="columns"
                             [sortable]="true"
@@ -93,7 +93,7 @@
                             (rowClicked)="alertDetails($event)"
                             [allowedPageSize]="[5,10,20,50]"
                         >
-                      
+
                             <ng-template tdDataTableTemplate="cleared" let-value="value" let-row="row" let-column="column">
                                   <ng-md-icon style="margin: 0;" class="primary-color-1" icon="check_box" *ngIf="row.cleared"></ng-md-icon>
                                   <ng-md-icon style="margin: 0;" class="primary-color-1" icon="check_box_outline_blank" *ngIf="!row.cleared"></ng-md-icon>
@@ -101,7 +101,7 @@
                             <ng-template tdDataTableTemplate="startTime" let-value="value" let-row="row" let-column="column">
                                   {{row.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
                             </ng-template>
-                      
+
                       </filtered-paginated-table-view>
 
                     </div>
@@ -109,5 +109,5 @@
             </mat-tab-group>
         </mat-card-content>
     </mat-card>
-        
+
 

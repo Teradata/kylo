@@ -2,8 +2,10 @@ import {DefaultTableSchema} from "../default-table-schema.model";
 import {TableColumnDefinition} from "../TableColumnDefinition";
 import {FeedTableDefinition} from "./feed-table-definition.model";
 import {TableFieldPolicy} from "../TableFieldPolicy";
-import {KyloObject} from "../../../common/common.model";
-import {ObjectUtils} from "../../../common/utils/object-utils";
+import {KyloObject} from "../../../../lib/common/common.model";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
+import {StringUtils} from "../../../common/utils/StringUtils";
+
 
 export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
 
@@ -18,6 +20,13 @@ export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
         Object.assign(this, init);
         this.ensureObjectTypes();
 
+    }
+
+    getVisibleColumns() {
+       if(this.fields && this.fields.length) {
+        return   this.fields.filter(field => field.deleted == false);
+       }
+       return [];
     }
 
 
@@ -46,7 +55,7 @@ export class FeedTableSchema extends DefaultTableSchema implements KyloObject{
         }
 
         if (this.useUnderscoreInsteadOfSpaces) {
-            columnDef.name = StringUtils.replaceSpaces(columnDef.name);
+            columnDef.name = StringUtils.replaceSpaces(columnDef.name, "_");
         }
 
         columnDef.initFeedColumn();

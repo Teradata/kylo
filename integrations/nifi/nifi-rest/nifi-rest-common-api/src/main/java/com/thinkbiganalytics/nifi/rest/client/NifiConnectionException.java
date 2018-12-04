@@ -36,4 +36,8 @@ public class NifiConnectionException extends NifiClientRuntimeException {
     public NifiConnectionException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public NifiConnectionException(Throwable cause) {
+        super(cause);
+    }
 }

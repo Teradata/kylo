@@ -2,7 +2,7 @@ import {TableSchema} from "./table-schema";
 import {Schema} from "./schema";
 import {SchemaField} from "./schema-field";
 import {TableColumnDefinition} from "./TableColumnDefinition";
-import {ObjectUtils} from "../../common/utils/object-utils";
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
 
 
 
@@ -39,6 +39,10 @@ export class DefaultSchema implements Schema {
     fields: SchemaField[] = [];
     constructor() {
 
+    }
+
+    hasFields(){
+        this.fields != undefined && this.fields.length >0;
     }
 }
 

@@ -72,6 +72,9 @@ export class SchemaField {
      */
     updatedTracker?: boolean;
 
+
+    deleted?:boolean;
+
     /**
      * Tags assigned to this column.
      * //{ name: string }

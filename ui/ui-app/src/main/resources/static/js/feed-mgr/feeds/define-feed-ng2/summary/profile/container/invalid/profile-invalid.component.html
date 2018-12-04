@@ -1,0 +1,26 @@
+<div>
+  <mat-form-field>
+    <mat-select placeholder="{{'Profile.Invalid.Limit' | translate}}" [ngModel]="limit" (change)="onLimitChange($event)">
+      <mat-option *ngFor="let opt of limitOptions" [value]="opt">
+        {{opt}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field [style.min-width.px]="170">
+    <mat-select placeholder="{{'Profile.Invalid.Filter' | translate}}" [ngModel]="filter" (change)="onFilterChange($event)">
+      <mat-option *ngFor="let opt of filterOptions" [value]="opt">
+        {{opt.name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div *ngIf="(rows && rows.length == 0) || (loadingData || loadingFilterOptions)" class="no-data" fxLayout="column" fxLayoutAlign="center center">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2 *ngIf="rows && rows.length == 0 && !(loadingData || loadingFilterOptions)" translate>Profile.Invalid.NoInvalidRows</h2>
+    <h2 *ngIf="loadingData || loadingFilterOptions" translate>Profile.Invalid.Loading</h2>
+  </div>
+
+  <div id="invalidProfile"></div>
+
+</div>

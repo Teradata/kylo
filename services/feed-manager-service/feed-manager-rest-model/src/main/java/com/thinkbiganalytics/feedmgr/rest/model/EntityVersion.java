@@ -39,24 +39,26 @@ public class EntityVersion {
     private String id;
     private String name;
     private Date createdDate;
+    private String createdBy;
+    private String comment;
+    private String entityId;
     private Object entity;
     
     public EntityVersion() {
         super();
     }
     
-    public EntityVersion(String id, String name, Date createdDate) {
-        super();
-        this.id = id;
-        this.name = name;
-        this.createdDate = createdDate;
+    public EntityVersion(String id, String name, Date createdDate, String createdBy, String comment, String entityId) {
+        this(id, name, createdDate, createdBy, comment, entityId, null);
     }
     
-    public EntityVersion(String id, String name, Date createdDate, Object entity) {
+    public EntityVersion(String id, String name, Date createdDate, String createdBy, String comment, String entityId, Object entity) {
         super();
         this.id = id;
         this.name = name;
         this.createdDate = createdDate;
+        this.createdBy = createdBy;
+        this.comment = comment;
         this.entity = entity;
     }
 
@@ -83,6 +85,30 @@ public class EntityVersion {
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
+    
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+    
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
 
     public Object getEntity() {
         return entity;
@@ -90,6 +116,10 @@ public class EntityVersion {
 
     public void setEntity(Object entity) {
         this.entity = entity;
+    }
+
+    public boolean isDraft(){
+        return this.name.equalsIgnoreCase("draft");
     }
     
 }

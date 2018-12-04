@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedDestination;
@@ -43,7 +44,7 @@ import javax.jcr.RepositoryException;
 
 /**
  */
-public class JcrDatasource extends JcrEntity<JcrDatasource.DatasourceId> implements Datasource, AuditableMixin, SystemEntityMixin, PropertiedMixin {
+public class JcrDatasource extends JcrEntity<JcrDatasource.DatasourceId> implements Datasource, AuditableMixin, IconableMixin, SystemEntityMixin, PropertiedMixin {
 
 
     public static final String NODE_TYPE = "tba:datasource";

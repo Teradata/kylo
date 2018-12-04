@@ -42,10 +42,6 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
 import * as angular from "angular";
 import { JobsPageComponent } from "./JobsPage.component";
 import { JobsCardComponent, abandonAllDialogController, JobFilterHelpPanelMenuCtrl } from "./JobsCard.component";
-import TabService from "../services/TabService";
-import OpsManagerJobService from "../services/OpsManagerJobService";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import IconService from "../services/IconStatusService";
 import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
 
 @NgModule({

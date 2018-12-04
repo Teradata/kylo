@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.shell;
  */
 
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 
 import java.util.Collection;
@@ -40,4 +41,5 @@ public interface CatalogDataSetProviderFactory {
      */
     @Nonnull
     CatalogDataSetProvider getDataSetProvider(@Nonnull Collection<DataSet> datasources);
+
 }

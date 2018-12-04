@@ -1,9 +1,10 @@
 ///<reference path="../../../common/utils/ArrayUtils.ts"/>
 import * as _ from "underscore";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { CloneUtil } from "../../../common/utils/clone-util";
 import {  Injectable } from "@angular/core";
-import ProvenanceEventStatsService from "../../services/ProvenanceEventStatsService";
+import {ProvenanceEventStatsService} from "../../services/ProvenanceEventStatsService";
+import {ArrayUtils} from '../../../common/utils/ArrayUtils';
 const d3 = require('d3');
 
 @Injectable()
@@ -464,7 +465,7 @@ export class FeedStatsService {
             }
         });
         totalFormatted = total;
-        if (chartFunctionData && chartFunctionData.valueFormatFn != undefined && ObjectUtils.isFunction(chartFunctionData.valueFormatFn)) {
+        if (chartFunctionData && chartFunctionData.valueFormatFn != undefined && _.isFunction(chartFunctionData.valueFormatFn)) {
             totalFormatted = chartFunctionData.valueFormatFn(total);
         }
         return {

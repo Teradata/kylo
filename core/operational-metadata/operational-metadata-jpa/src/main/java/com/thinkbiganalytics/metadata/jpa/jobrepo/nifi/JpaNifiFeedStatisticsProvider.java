@@ -22,20 +22,27 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionProvider;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
 
 /**
  * Created by sr186054 on 7/25/17.
  */
 @Service
 public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider {
+    private static final Logger log = LoggerFactory.getLogger(JpaNifiFeedStatisticsProvider.class);
 
     private NifiFeedStatisticsRepository feedStatisticsRepository;
 
@@ -56,7 +63,11 @@ public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider
     public void saveLatestFeedStats(List<NifiFeedStats> feedStatsList) {
         if (feedStatsList != null) {
             feedStatsList.stream().forEach(nifiFeedStats -> {
-                feedStatisticsRepository.save(((JpaNifiFeedStats) nifiFeedStats));
+                try {
+                    feedStatisticsRepository.save(((JpaNifiFeedStats) nifiFeedStats));
+                }catch (DataIntegrityViolationException e) {
+                    log.warn("DataIntegrityViolationException violation when attempting to save {} ",nifiFeedStats);
+                }
             });
         }
     }

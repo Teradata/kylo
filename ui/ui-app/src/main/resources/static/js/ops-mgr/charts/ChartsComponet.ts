@@ -1,20 +1,20 @@
+import {OpsManagerJobService} from "../services/ops-manager-jobs.service";
 import PivotTableUtil from "./PivotTableUtil";
 import * as _ from "underscore";
 import * as moment from "moment";
 import * as $ from "jquery";
 import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
-import OpsManagerJobService from '../services/OpsManagerJobService';
-import { OpsManagerFeedService } from '../services/OpsManagerFeedService';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import OpsManagerRestUrlService from '../services/OpsManagerRestUrlService';
+import {OpsManagerRestUrlService} from '../services/OpsManagerRestUrlService';
 import "jquery";
 import "jquery-ui";
 import "pivottable";
 import "pivottable-c3-renderers";
+import '../../../bower_components/c3/c3.css';
 
 @Component({
     selector: 'ops-mgr-charts',
-    templateUrl: 'js/ops-mgr/charts/charts.html',
+    templateUrl: './charts.html',
     encapsulation: ViewEncapsulation.None,
     styles: [`.ListItemContainer{
         padding: 0px !important;
@@ -27,7 +27,7 @@ import "pivottable-c3-renderers";
         height: auto !important;
         flex: 1 1 auto !important;
     }`],
-    styleUrls:['bower_components/c3/c3.css','js/ops-mgr/charts/pivot.css']
+    styleUrls:['../../../bower_components/c3/c3.css']
 })
 export class ChartsComponent implements OnInit, OnDestroy {
     selectedFeedNames: string[] = ['ALL'];
@@ -139,7 +139,7 @@ export class ChartsComponent implements OnInit, OnDestroy {
         formParams.append('filter',filter);
 
 
-        $("#charts_tab_pivot_chart").html('<div class="bg-info"><i class="fa fa-refresh fa-spin"></i> Rendering Pivot Table...</div>')
+        $("#charts_tab_pivot_chart").html('<div class="bg-info">Rendering Pivot Table...</div>')
         this.loading = true;
         this.http.get(this.OpsManagerJobService.JOBS_CHARTS_QUERY_URL, {params : formParams}).subscribe(successFn,errorFn,finallyFn);
     }

@@ -1,0 +1,68 @@
+
+<div>
+<mat-nav-list *ngIf="hasPreviews && !selectedDataSet" class="dataset-list">
+  <h3 mat-subheader>Preview Datasets</h3>
+  <ng-container *ngFor="let dataset of previews; let $index = index; let $first = first; let $last = last" >
+  <mat-list-item (click)="selectDataSet(dataset)">
+    <mat-icon matListIcon *ngIf="dataset.hasPreviewError()" color="warn">warning</mat-icon>
+    <h3 matLine> {{dataset.displayKey}} </h3>
+    <span></span>
+    <mat-icon color="accent">keyboard_arrow_right</mat-icon>
+  </mat-list-item>
+
+  <mat-divider *ngIf="!$last"></mat-divider>
+
+  </ng-container>
+</mat-nav-list>
+
+
+  <ng-container *ngIf="selectedDataSet && !autoSelectSingleDataSet">
+    <div fxLayout="column" style="margin-top:-20px">
+      <ng-container [ngTemplateOutlet]="seletedDataSetTemplate">
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="selectedDataSet && autoSelectSingleDataSet">
+    <div fxLayout="column"  >
+      <ng-container [ngTemplateOutlet]="seletedDataSetTemplate">
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg" *ngIf="!hasPreviews && !selectedDataSet" >
+    <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+    <h2>No datasets available to preview</h2>
+    <h3>Please go back and select data on the previous step</h3>
+  </div>
+
+
+</div>
+
+
+
+
+
+<ng-template #seletedDataSetTemplate>
+
+  <div >
+    <div  fxLayout="row" fxLayoutAlign="start end">
+      <button class="icon-button"  mat-button (click)="selectDataSet()" matTooltip="Back to dataset list" style="margin-left:-27px" *ngIf="renderBackButton">
+        <mat-icon class="pad-right">keyboard_arrow_left</mat-icon>
+        {{selectedDataSet.displayKey}}
+      </button>
+      <h2 class="mat-card-title" [style.font-size.px]="20" *ngIf="autoSelectSingleDataSet"> {{selectedDataSet.displayKey}}</h2>
+      <span fxFlex></span>
+
+      <button class="icon-button" mat-icon-button (click)="preview.openSchemaParseSettingsDialog(selectedDataSet)" *ngIf="selectedDataSet.schemaParser"  matTooltip="Update dataset preview settings ">
+        <mat-icon>settings</mat-icon>
+      </button>
+
+      <button class="icon-button"  mat-icon-button (click)="removeDataSet(selectedDataSet)" matTooltip="Remove dataset "*ngIf="!autoSelectSingleDataSet">
+        <mat-icon class="pad-right">delete</mat-icon>
+      </button>
+    </div>
+    <dataset-preview #preview [displayTitle]="false" [dataset]="selectedDataSet"></dataset-preview>
+  </div>
+
+</ng-template>

@@ -29,31 +29,27 @@ import javax.annotation.Nullable;
  */
 public interface ProcessorTemplate {
 
-
     /**
      * Match against the display name of the processor
-     * @return
      */
     String getProcessorDisplayName();
 
     /**
      * Return an array of the NiFi processor class name (i.e. com.thinkbiganalytics.nifi.GetTableData)
+     *
      * @return Return an array of the NiFi processor class name (i.e. com.thinkbiganalytics.nifi.GetTableData)
      */
-   List getProcessorTypes();
+    List getProcessorTypes();
 
     /**
-     *
      * @return the url for the template used when creating a new feed
      */
     @Nullable
-    default String getStepperTemplateUrl()  {
+    default String getStepperTemplateUrl() {
         return null;
-    };
-
+    }
 
     /**
-     *
      * @return the url for the template used when editing a new feed
      */
     @Nullable
@@ -61,4 +57,10 @@ public interface ProcessorTemplate {
         return null;
     }
 
+    /**
+     * Returns the Angular module containing the providers and components for rendering the processor.
+     *
+     * <p>The value should be in the format: {@code plugin/processor-templates/my-processor/my-processor.module#MyProcessorModule}</p>
+     */
+    String getModule();
 }

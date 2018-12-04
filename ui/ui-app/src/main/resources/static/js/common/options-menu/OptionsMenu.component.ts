@@ -1,12 +1,11 @@
 import {Component, Input} from "@angular/core";
 import * as _ from "underscore";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
-import { ObjectUtils } from "../utils/object-utils";
 
 @Component({
     selector: "tba-options-menu",
-    templateUrl: "js/common/options-menu/options-menu-template.html",
-    styleUrls: ["js/common/options-menu/options-menu-style.css"]
+    templateUrl: "./options-menu-template.html",
+    styleUrls: ["./options-menu-style.css"]
 })
 export class OptionsMenuComponent {
 
@@ -55,12 +54,12 @@ export class OptionsMenuComponent {
         return this.paginationDataService.currentPage(this.menuKey, tab.title);
     };
 
-    openMenu($mdOpenMenu: any, ev: any) {
+    openMenu(ev: any) {
 
         this.originatorEv = ev;
-        if (ObjectUtils.isFunction(this.openedMenu)) {
+        if (_.isFunction(this.openedMenu)) {
             let openedMenuFn = this.openedMenu();
-            if (ObjectUtils.isFunction(openedMenuFn)) {
+            if (_.isFunction(openedMenuFn)) {
                 openedMenuFn({sortOptions: this.sortOptions, additionalOptions: this.additionalOptions});
             }
         }

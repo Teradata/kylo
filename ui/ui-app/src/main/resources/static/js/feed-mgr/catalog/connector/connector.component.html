@@ -6,7 +6,7 @@
         <ng-md-icon
             class="card-title-icon"
             [icon]="connector.icon ? connector.icon : 'fa-database'"
-            [ngClass]="connector.color ? 'tc-'+connector.color : 'icon-component'" size="30"></ng-md-icon>
+            [ngClass]="connector.color ? 'tc-'+connector.color : 'tc-accent'" size="30"></ng-md-icon>
       </div>
       <div class="card-title-text">{{connector.title}}</div>
     </mat-card-title>
@@ -27,19 +27,19 @@
           </mat-form-field>
 
           <ng-template let-element let-last="last" ngFor [ngForOf]="plugin.options">
-            <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}">
+            <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}" class="pad-bottom">
               <input
                   *ngIf="isInputType(element)"
                   matInput type="{{element.type}}"
                   placeholder="{{element.label}}"
-                  required="{{element.required ? element.required : 'required'}}"
+                  [required]="element.required !== false"
                   autocomplete="new-password"
                   [formControl]="getControl(element)"/>
 
               <mat-select
                   *ngIf="isSelectType(element)"
                   placeholder="{{element.label}}"
-                  required="{{element.required ? element.required : 'required'}}"
+                  [required]="element.required !== false"
                   [formControl]="getControl(element)">
                 <ng-template let-option ngFor [ngForOf]="element.selections">
                   <mat-option value="{{option.value}}">{{option.label}}</mat-option>
@@ -63,6 +63,8 @@
             <ng-md-icon *ngIf="testStatus && !testError" icon="check" size="30" class="test-status status-ok"></ng-md-icon>
           </span>
         </div>
+        <entity-access-control-ng2 *ngIf="allowAdmin && datasource" [entity]="datasource" entityType="datasource" [parentForm]="form" [readonly]="false" class="block pad-top">
+        </entity-access-control-ng2>
       </form>
     </mat-card-content>
 

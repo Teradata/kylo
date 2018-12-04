@@ -20,11 +20,21 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.FileParserFactory;
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
+import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
+//import com.thinkbiganalytics.discovery.parsers.hadoop.TextBinarySparkFileSchemaParser;
+import com.thinkbiganalytics.discovery.rest.controller.SchemaParserAnnotationTransformer;
+import com.thinkbiganalytics.discovery.rest.controller.SchemaParserDescriptorUtil;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 import com.thinkbiganalytics.kylo.reactive.AsyncResponseSubscriber;
 import com.thinkbiganalytics.kylo.reactive.SubscriberFactory;
 import com.thinkbiganalytics.kylo.spark.SparkException;
@@ -35,6 +45,8 @@ import com.thinkbiganalytics.kylo.spark.job.SparkJobStatus;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobRequest;
 import com.thinkbiganalytics.kylo.spark.rest.model.job.SparkJobResponse;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
@@ -48,9 +60,11 @@ import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.ModifiedTransformResponse;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.PreviewDataSetRequest;
+import com.thinkbiganalytics.spark.rest.model.PreviewDataSetTransformResponse;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformResultModifier;
@@ -60,6 +74,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import com.thinkbiganalytics.spark.shell.SparkShellSaveException;
 import com.thinkbiganalytics.spark.shell.SparkShellTransformException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,11 +88,14 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -126,6 +144,7 @@ public class SparkShellProxyController {
 
     public static final String BASE = "/v1/spark/shell";
     public static final String TRANSFORM = "/transform";
+    public static final String SERVER_STATUS = "/status";
     public static final String FILE_METADATA = "/file-metadata";
     public static final String TRANSFORM_DOWNLOAD = "/transform/{transform}/save/{save}/zip";
     public static final String TRANSFORM_SAVE = "/transform/{transform}/save";
@@ -150,8 +169,24 @@ public class SparkShellProxyController {
     @Inject
     private DatasourceProvider datasourceProvider;
 
+    /**
+     * Provides access to Kylo Catalog data sources
+     */
     @Inject
-    private com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider kyloCatalogDataSourceProvider;
+    private DataSourceProvider kyloCatalogDataSourceProvider;
+
+    /**
+     * Provides access to Kylo Catalog data sources
+     */
+    @Inject
+    private DataSetProvider kyloCatalogDataSetProvider;
+
+
+    @Inject
+    private CatalogModelTransform catalogModelTransform;
+
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     /**
      * The {@code Datasource} transformer
@@ -192,6 +227,7 @@ public class SparkShellProxyController {
      */
     @Inject
     SparkJobService sparkJobService;
+
 
     @POST
     @Path("/job")
@@ -423,12 +459,15 @@ public class SparkShellProxyController {
     public Response saveQuery(@Nonnull @PathParam("query") final String queryId,
                               @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
         // Validate request
-        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
+        if (request == null || (request.getJdbc() == null && request.getCatalogDatasource() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
         }
 
         // Add data source details
         addDatasourceDetails(request);
+
+        //Add Catalog details
+        addCatalogDataSource(request);
 
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
@@ -452,12 +491,16 @@ public class SparkShellProxyController {
                                   @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable
                                   final SaveRequest request) {
         // Validate request
-        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
+        if (request == null || (request.getJdbc() == null && request.getCatalogDatasource() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
         }
 
         // Add data source details
         addDatasourceDetails(request);
+
+
+
+        addCatalogDataSource(request);
 
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
@@ -561,6 +604,11 @@ public class SparkShellProxyController {
         // Add data source details
         addDatasourceDetails(request);
 
+        //Add Catalog details
+        addCatalogDataSets(request);
+
+        addCatalogDataSources(request);
+
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
         return getTransformResponse(() -> restClient.transform(process, request));
@@ -579,7 +627,8 @@ public class SparkShellProxyController {
                   })
     public Response fileMetadata(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
         TransformRequest request = new TransformRequest();
-        request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(dataSet).orElseGet(Collections::emptyList)));
+        DataSet decrypted = catalogModelTransform.decryptOptions(dataSet);
+        request.setScript(FileMetadataScalaScriptGenerator.getScript(DataSetUtil.getPaths(decrypted).orElseGet(Collections::emptyList), DataSetUtil.mergeTemplates(decrypted).getOptions()));
 
         final SparkShellProcess process = getSparkShellProcess();
         return getModifiedTransformResponse(() -> Optional.of(restClient.transform(process, request)), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));
@@ -612,6 +661,26 @@ public class SparkShellProxyController {
 
     }
 
+    @GET
+    @Path(SERVER_STATUS)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Fetches the status of a transformation.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the spark server and session for current user if applicable.", response = ServerStatusResponse.class),
+                      @ApiResponse(code = 500, message = "There was a problem checking the spark server.", response = RestResponseStatus.class)
+                  })
+    @Nonnull
+    public Response getServerStatus() {
+        try {
+            final SparkShellProcess process = getSparkShellProcess();
+            final ServerStatusResponse serverStatusResponse = restClient.serverStatus(process);
+            return Response.ok(serverStatusResponse).build();
+        } catch (Exception e) {
+            throw new WebApplicationException("Unhandled exception attempting to get server status", e);
+        }
+    }
+
 
     @POST
     @Path("/preview")
@@ -619,25 +688,67 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the dataset preview")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
+                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = PreviewDataSetTransformResponse.class),
                       @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
                   })
     public Response preview(PreviewDataSetRequest previewRequest) {
-        //todo pull from request
-        int previewLimit = 20;
 
+        DataSource catalogDataSource = fetchCatalogDataSource(previewRequest.getDataSource().getId());
+        previewRequest.setDataSource(catalogDataSource);
+        if(previewRequest.isFilePreview() && previewRequest.getSchemaParser() == null){
+            // set it to a text preview
+            previewRequest.setSchemaParser(getTextSchemaParserDescriptor());
+        }
         KyloCatalogReadRequest request = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
 
-        //String script = KyloCatalogScalaScriptUtil.asScalaScript(request)
-        //final SparkShellProcess process = getSparkShellProcess();
-        // return getTransformResponse(() -> restClient.transform(process,r));
 
         final SparkShellProcess process = getSparkShellProcess();
-        return getTransformResponse(() -> restClient.kyloCatalogTransform(process, request));
+        return getTransformResponse(() -> {
+            PreviewDataSetTransformResponse response = null;
+            boolean fallbackToTextParser = previewRequest.isFallbackToTextOnError();
+            try {
+                TransformResponse transformResponse = restClient.kyloCatalogTransform(process, request);
+                response = new PreviewDataSetTransformResponse(transformResponse,previewRequest.getSchemaParser());
+            }
+            catch (Exception e) {
+                //should we attempt to re preview the data as plain text
+                if(fallbackToTextParser && previewRequest.getSchemaParser() != null && !"text".equalsIgnoreCase(previewRequest.getSchemaParser().getSparkFormat())){
+                    previewRequest.setSchemaParser(getTextSchemaParserDescriptor());
+                    KyloCatalogReadRequest  request2 = KyloCatalogReaderUtil.toKyloCatalogRequest(previewRequest);
+                    TransformResponse transformResponse = restClient.kyloCatalogTransform(process, request2);
+                    response = new PreviewDataSetTransformResponse(transformResponse,previewRequest.getSchemaParser());
+                }
+                else {
+                    throw  e;
+                }
+
+           throw e;
+            }
+            return response;
+        });
 
 
     }
+
+
+    /**
+     * Get the text schema parser, first looking for the cached one if it exists
+     * @return
+     */
+
+    private SchemaParserDescriptor getTextSchemaParserDescriptor(){
+            SchemaParserDescriptor textParser = new SchemaParserDescriptor();
+            textParser.setName("Text");
+            textParser.setDisplayName("Text");
+            textParser.setSparkFormat("text");
+            textParser.setUsesSpark(true);
+            textParser.setMimeTypes(new String[] {"text"});
+            textParser.setPrimary(true);
+            textParser.setAllowSkipHeader(true);
+            return textParser;
+    }
+
 
 
     private <T> Response getModifiedTransformResponse(Supplier<Optional<TransformResponse>> supplier, TransformResultModifier<T> modifier) {
@@ -646,7 +757,8 @@ public class SparkShellProxyController {
         try {
             response = supplier.get();
         } catch (final Exception e) {
-            throw transformError(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
+            final String message = (e.getMessage() != null) ? EXCEPTION.matcher(e.getMessage()).replaceAll("") : SparkShellProxyResources.TRANSFORM_ERROR;
+            throw transformError(Response.Status.INTERNAL_SERVER_ERROR, message, e);
         }
         ModifiedTransformResponse modifiedResponse = modifier.modify(response.get());
         return Response.ok(modifiedResponse).build();
@@ -685,26 +797,105 @@ public class SparkShellProxyController {
         request.setDatasources(datasources);
     }
 
-    private void addCatalogDataSets(@Nonnull final TransformRequest request) {
-        if (request.getCatalogDatasets() != null || request.getCatalogDatasets().isEmpty()) {
+
+    private void addCatalogDataSources(@Nonnull final TransformRequest request) {
+        // Skip empty data source
+        if (request.getCatalogDataSources() == null) {
             return;
         }
 
-        request.getCatalogDatasets().forEach((dataSet) -> {
-            DataSource catalogDataSource = metadata.read(() -> {
-                Optional<DataSource> optionalDataSource = kyloCatalogDataSourceProvider.findDataSource(dataSet.getDataSource().getId());
-                if (optionalDataSource.isPresent()) {
-                    return optionalDataSource.get();
+        List<DataSource> dataSources = metadata.read(() -> {
+           return  request.getCatalogDataSources().stream()
+                .map(DataSource::getId)
+                .map(kyloCatalogDataSourceProvider::resolveId)
+                .map(id -> {
+                    Optional<com.thinkbiganalytics.metadata.api.catalog.DataSource> ds = kyloCatalogDataSourceProvider.find(id);
+                    if(ds.isPresent()){
+                         return catalogModelTransform.dataSourceToRestModel(true,false).apply(ds.get());
+                    }else {
+                        throw new BadRequestException("No catgalog datasource exists with the given ID: " + id);
+                    }
+                })
+                .collect(Collectors.toList());
+        });
+        if(dataSources != null){
+            request.setCatalogDataSources(dataSources);
+        }
+        else {
+            throw new BadRequestException("Unable to find catalog datasources");
+        }
+    }
+
+    private void addCatalogDataSource(@Nonnull final SaveRequest request) {
+        // Skip empty data source
+        if (request.getCatalogDatasource() == null) {
+            return;
+        }
+
+       DataSource catalogDataSource = metadata.read(() -> {
+                         DataSource ds = kyloCatalogDataSourceProvider.find(kyloCatalogDataSourceProvider.resolveId(request.getCatalogDatasource().getId())).map(dataSource -> {
+                             //merge in connection info??
+                             return catalogModelTransform.dataSourceToRestModel(true,false).apply(dataSource);
+                         }).orElse(null);
+                         return ds;
+                      });
+        if(catalogDataSource != null){
+            request.setCatalogDatasource(catalogDataSource);
+        }
+        else {
+            throw new BadRequestException("Unable to find catalog datasource for "+request.getCatalogDatasource().getTitle());
+        }
+    }
+
+
+
+
+    private void addCatalogDataSets(@Nonnull final TransformRequest request) {
+        if (request.getCatalogDatasets() == null || request.getCatalogDatasets().isEmpty()) {
+            return;
+        }
+            List<DataSet> updatedDataSets = new ArrayList<>();
+            request.getCatalogDatasets().forEach((dataSet) -> {
+                // DataSets will now be added when a user adds them to the wrangler canvas and then associated with an ID
+                // In the unlikely event the DataSet coming in doesn't have an ID, ensure it's built.
+                if (StringUtils.isBlank(dataSet.getId())) {
+                    com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = kyloCatalogDataSourceProvider.resolveId(dataSet.getDataSource().getId());
+                    com.thinkbiganalytics.metadata.api.catalog.DataSet domainDs = catalogModelTransform.buildDataSet(dataSet, dataSetProvider.build(dataSourceId));
+                    updatedDataSets.add(addDataSourceInformation(catalogModelTransform.dataSetToRestModel().apply(domainDs)));
                 } else {
-                    throw new BadRequestException("No Catalog datasource exists with the given ID: " + dataSet.getId());
+                    updatedDataSets.add(addDataSourceInformation(dataSet));
                 }
             });
-            dataSet.setDataSource(catalogDataSource);
-            DataSetTemplate template = DataSetUtil.mergeTemplates(dataSet);//, DataSourceUtil.mergeTemplates(catalogDataSource));
-            dataSet.getDataSource().setTemplate(template);
+            request.setCatalogDatasets(updatedDataSets);
+    }
+
+    private DataSet addDataSourceInformation(@Nonnull DataSet dataSet){
+
+        DataSet fetchedDataSet = fetchDataSet(dataSet.getId());
+        DataSetTemplate template = DataSetUtil.mergeTemplates(fetchedDataSet);
+        fetchedDataSet.getDataSource().setTemplate(template);
+        return new DataSet(fetchedDataSet);
+    }
+
+    private DataSource fetchCatalogDataSource(@Nonnull String datasourceId){
+        return metadata.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = kyloCatalogDataSourceProvider.resolveId(datasourceId);
+            
+            return kyloCatalogDataSourceProvider.find(dsId)
+                .map(catalogModelTransform.dataSourceToRestModel(true,false))
+                .orElseThrow(() -> new BadRequestException("No Catalog datasource exists with the given ID: " + datasourceId));
         });
 
-        //pass on the updated DataSet with the dataSource.template populated to the request
+    }
+
+    private DataSet fetchDataSet(@Nonnull String dataSetId){
+        return metadata.read(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSet.ID dsId = kyloCatalogDataSetProvider.resolveId(dataSetId);
+
+            return kyloCatalogDataSetProvider.find(dsId)
+                .map(catalogModelTransform.dataSetToRestModel(false))
+                .orElseThrow(() -> new BadRequestException("No Catalog dataset exists with the given ID: " + dataSetId));
+        });
 
     }
 

@@ -1,12 +1,12 @@
 import * as _ from 'underscore';
 import * as moment from "moment";
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { ObjectUtils } from '../../common/utils/object-utils';
-import OpsManagerRestUrlService from './OpsManagerRestUrlService';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
+import {OpsManagerRestUrlService} from './OpsManagerRestUrlService';
 import { Injectable } from '@angular/core';
 
 @Injectable()
-export default class AlertsServiceV2 {
+export class AlertsServiceV2 {
 
     constructor(
         private opsManagerRestUrlService: OpsManagerRestUrlService,
@@ -17,6 +17,10 @@ export default class AlertsServiceV2 {
     transformAlertSummaryResponse(alertSummaries: any) {
         _.each(alertSummaries, (summary: any) => {
             summary.since = moment(summary.lastAlertTimestamp).fromNow();
+            summary.groupDisplayNameTruncated = summary.groupDisplayName;
+            if(summary.groupDisplayName && summary.groupDisplayName.length > 25){
+                summary.groupDisplayNameTruncated = summary.groupDisplayName.substr(0,25);
+            }
 
         });
     }

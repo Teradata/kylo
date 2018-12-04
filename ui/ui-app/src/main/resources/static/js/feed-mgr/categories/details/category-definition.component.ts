@@ -1,21 +1,22 @@
 import { Component } from '@angular/core';
 import * as _ from "underscore";
-import AccessControlService from "../../../services/AccessControlService";
-import StateService from "../../../services/StateService";
+import {AccessControlService} from "../../../services/AccessControlService";
+import {EntityAccessControlService} from '../../shared/entity-access-control/EntityAccessControlService';
+import {StateService} from "../../../services/StateService";
 import { IconPickerDialog } from "../../../common/icon-picker-dialog/icon-picker-dialog.component";
-import CategoriesService from "../../services/CategoriesService";
+import {CategoriesService} from "../../services/CategoriesService";
 import { FeedSecurityGroups } from "../../services/FeedSecurityGroups";
 import { TdDialogService } from "@covalent/core/dialogs";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { FeedService } from "../../services/FeedService";
 import 'rxjs/add/operator/timeout';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'thinkbig-category-definition',
-    templateUrl: 'js/feed-mgr/categories/details/category-definition.html'
+    templateUrl: './category-definition.html'
 })
 export class CategoryDefinition {
     /**
@@ -228,7 +229,7 @@ export class CategoryDefinition {
                     closeButton : this.translate.instant('views.common.dialog.gotIt'),
                     disableClose : false
                 });
-            }); 
+            });
         };
 
         /**

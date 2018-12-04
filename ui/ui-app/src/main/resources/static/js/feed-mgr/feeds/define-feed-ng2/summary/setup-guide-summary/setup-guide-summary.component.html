@@ -1,0 +1,116 @@
+
+<td-layout-nav color="none" *ngIf="showHeader">
+  <div td-toolbar-content  fxLayout="row" fxFlex >
+    <div fxLayout="row" fxLayoutAlign="start center" *ngIf="feed != undefined">
+      <span>{{feed.getFeedNameAndVersion()}}</span>
+      <span class="hint pad-left" *ngIf="feed != undefined">Updated: {{feed.updateDate | date:'MM/dd/yyy HH:mm:ss'}}</span>
+    </div>
+    <span fxFlex="100"></span>
+    <feed-toolbar-actions [(feed)]="feed" [showEditLink]="showEditLink"></feed-toolbar-actions>
+  </div>
+  <ng-container [ngTemplateOutlet]="summaryTemplate"
+                [ngTemplateOutletContext]="{$implicit:feed}">
+  </ng-container>
+
+
+</td-layout-nav>
+
+<ng-container [ngTemplateOutlet]="summaryTemplate" *ngIf="!showHeader"
+              [ngTemplateOutletContext]="{$implicit:feed}">
+</ng-container>
+
+
+<ng-template #summaryTemplate >
+  <div *tdLoading="'processingFeed'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+    <div fxLayout="row" *ngIf="feed != undefined">
+
+
+
+      <div fxFlex="60%">
+        <feed-setup-guide [(feed)]="feed" ></feed-setup-guide>
+      </div>
+
+      <div fxLayout="column"  fxFlex="40%">
+
+        <mat-card *ngIf="feed.isDraft()" >
+          <mat-card-content>
+            <div fxFlex="100" fxLayout="row">
+              <mat-icon class="push-top-sm push-right-sm">{{kyloIcons.Links.setupGuide}}</mat-icon>
+              <span fxFlex="100"  class="push-top-sm" *ngIf="!feed.isComplete()"> Not ready for deployment</span>
+              <span fxFlex="100"  class="push-top-sm" *ngIf="feed.isComplete()"> Ready for deployment</span>
+              <button mat-raised-button color="accent" [disabled]="!feed.isComplete()" *ngIf="feed.canEdit()" (click)="deployFeed()">Deploy</button>
+            </div>
+            <div *ngIf="feed.hasBeenDeployed()">
+              Deployed version: <a href="#" (click)="loadDeployedVersion($event)" > {{feed.deployedVersion.name}}</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card  *ngIf="!feed.isDraft()">
+          <mat-card-content>
+            <div fxFlex="100" fxLayout="row" style="align-items: center">
+              <mat-icon>{{kyloIcons.Links.setupGuide}}</mat-icon>
+              <span class="push-left"> Version: v.{{feed.versionName}}</span>
+            </div>
+            <div *ngIf="feed.isDeployedWithActiveDraft()">
+                 <a href="#" (click)="loadDraftVersion($event)">Draft Version</a>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="feed-info-card feed-card" >
+          <mat-card-header>
+            <mat-card-title>
+            <!--  <mat-icon>{{kyloIcons.Feed.info}}</mat-icon>-->
+              <span>Feed Info</span>
+            </mat-card-title>
+            <mat-card-subtitle>Additional configuration</mat-card-subtitle>
+            <span fxFlex></span>
+            <div class="pad-right">
+              <button mat-icon-button [matMenuTriggerFor]="menu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="cloneFeed()">
+                  <mat-icon>content_copy</mat-icon>
+                  <span>Clone</span>
+                </button>
+                <button *ngIf="feed.accessControl.allowAdmin" mat-menu-item (click)="onDelete()">
+                  <mat-icon>delete</mat-icon>
+                  <span>{{(feed.isDraft() && feed.hasBeenDeployed() ? "FeedDefinition.Actions.RemoveDraft" : "FeedDefinition.Actions.DeleteFeed") | translate}}</span>
+                </button>
+                <mat-divider *ngIf="showSetPermissions()"></mat-divider>
+                <button *ngIf="showSetPermissions()" mat-menu-item (click)="setPermissions()">
+                  <mat-icon>person</mat-icon>
+                  <span>Permissions</span>
+                </button>
+              </mat-menu>
+            </div>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-list dense>
+              <feed-info-name [feed]="feed"></feed-info-name>
+              <mat-divider></mat-divider>
+
+              <feed-info-category [feed]="feed" [editable]="!feed.hasBeenDeployed() && feed.canEdit()"></feed-info-category>
+              <mat-divider></mat-divider>
+
+              <feed-info-description [feed]="feed"  ></feed-info-description>
+              <mat-divider></mat-divider>
+
+              <feed-info-item [feed]="feed" name="{{feed.isDraft() ? 'DRAFT' : feed.state}}" description="Status" icon="stars"  [editable]="false" >
+              </feed-info-item>
+              <mat-divider></mat-divider>
+
+              <feed-info-tags [feed]="feed"></feed-info-tags>
+              <mat-divider></mat-divider>
+
+
+              <feed-info-schedule [feed]="feed"  ></feed-info-schedule>
+            </mat-list>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</ng-template>

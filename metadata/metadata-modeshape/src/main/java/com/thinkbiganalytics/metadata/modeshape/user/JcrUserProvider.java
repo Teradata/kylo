@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
+import com.thinkbiganalytics.metadata.api.security.RoleMembershipProvider;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -34,15 +37,16 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -52,6 +56,12 @@ import javax.jcr.Session;
  * Provides access to {@link User} objects stored in a JCR repository.
  */
 public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> implements UserProvider {
+
+    @Inject
+    private RoleMembershipProvider membershipProvider;
+
+    @Inject
+    private AllowedEntityActionsProvider actionsProvider;
 
     @Nonnull
     @Override
@@ -292,11 +302,17 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
 
     @Override
     public void deleteGroup(@Nonnull final UserGroup group) {
+        this.actionsProvider.getAllowedActions(AccessController.SERVICES).ifPresent(allowed -> allowed.disableAll(group.getPrincipal()));
+        this.membershipProvider.findAll().forEach(membership -> membership.removeMember(group.getPrincipal()));
+        
         delete(group);
     }
 
     @Override
     public void deleteUser(@Nonnull final User user) {
+        this.actionsProvider.getAllowedActions(AccessController.SERVICES).ifPresent(allowed -> allowed.disableAll(user.getPrincipal()));
+        this.membershipProvider.findAll().forEach(membership -> membership.removeMember(user.getPrincipal()));
+        
         delete(user);
     }
 
@@ -320,11 +336,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      */
     @Nonnull
     private String encodeGroupName(@Nonnull final String groupName) {
-        try {
-            return URLEncoder.encode(groupName, JcrUserGroup.ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Unsupported encoding for system name of group: " + groupName, e);
-        }
+        return JcrUtil.toSystemName(groupName, true);
     }
 
     /**
@@ -335,10 +347,6 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      */
     @Nonnull
     private String encodeUserName(@Nonnull final String username) {
-        try {
-            return URLEncoder.encode(username, JcrUser.ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Unsupported encoding for system name of user: " + username, e);
-        }
+        return JcrUtil.toSystemName(username, true);
     }
 }

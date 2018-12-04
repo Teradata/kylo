@@ -1,5 +1,75 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<style>
+
+  /* styles for '...' */
+  .block-with-text {
+    /* hide text if it more than N lines  */
+    overflow: hidden;
+    /* for set '...' in absolute position */
+    position: relative;
+    /* use this value to count block height */
+    line-height: 1.2em;
+    /* max-height = line-height (1.2) * lines max number (3) */
+    max-height: 3.6em;
+    /* fix problem when last visible word doesn't adjoin right side  */
+    text-align: justify;
+    /* place for '...' */
+    margin-right: -1em;
+    padding-right: 1em;
+  }
+
+  .kylo-card-title {
+    font-size:18px;
+    font-weight:300;
+  }
+
+  .kylo-card-subtitle {
+    font-size:13px;
+  }
+
+  .kylo-card-icon {
+    fill:white;
+    margin-left:14px;
+    margin-top:55px;
+  }
+
+  .kylo-card-template {
+    width:360px;
+    height:153px;
+    background-color:white;
+  }
+
+  .kylo-icon-button mat-icon {
+    font-size:22px;
+  }
+  .kylo-content-template {
+    max-height:98px;
+    min-height:98px;
+    height:98px;
+  }
+</style>
 <td-layout>
-        <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+        <mat-progress-bar color="accent" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+<!--
         <div layout="row" layout-align="center start" *ngIf="!loading">
             <div layout="column" class="layout-max-width">
                 <div style="width:100%" class="" layout="row" layout-align="center start">
@@ -9,15 +79,21 @@
                 </div>
             </div>
         </div>
+-->
         <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
-            <mat-card *ngFor="let category of filteredCategories" style="width:400px;max-width:400px;max-height:121px;height:121px" flex="initial" flex-gt-md="initial" flex-gt-sm="50"
-                    (click)="editCategory(category)">
-                <mat-card-title layout-align="space-between center">
-                        <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{category.name}}</span>
-                        <ng-md-icon icon="{{category.icon}}" size="40" [ngStyle]="getIconColorStyle(category.iconColor)" style="margin-right:5px;" class="md-media-xs"></ng-md-icon>
+            <mat-card *ngFor="let category of filteredCategories" class="cursor-pointer push-bottom push-right" flex="initial" flex-md="initial" flex-sm="50"
+                    (click)="editCategory(category)" fxFlex="100%" fxLayout="row">
+                <mat-card-title fxLayout="column" [style]="getColorStyle(category.iconColor)" fxLayoutAlign="center center" fxFlex="20">
+                        <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon"></ng-md-icon>
                 </mat-card-title>
-                <mat-card-content>
-                    <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{category.description | truncate: 100}}</div>
+                <mat-card-content fxLayout="column" fxFlex="100%">
+                  <div flex class="kylo-content-template push-top-md push-left">
+                    <div class="kylo-card-title pad-bottom-sm">{{category.name}}</div>
+                    <div [matTooltip]="category.description"
+                         matTooltipShowDelay="1000" style="padding-right:36px" class="kylo-card-subtitle tc-grey-600 block-with-text">
+                      {{category.description || 'No description provided'}}
+                    </div>
+                  </div>
                 </mat-card-content>
             </mat-card>
         </div>

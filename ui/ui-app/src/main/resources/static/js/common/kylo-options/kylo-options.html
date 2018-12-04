@@ -1,15 +1,26 @@
-<button aria-label="Options" class="md-icon-button md-button md-kylo-theme md-ink-ripple" [matMenuTriggerFor]="menu" (click)="openMenu($mdOpenMenu, $event)">
+<button aria-label="Options" class="md-icon-button md-button md-kylo-theme md-ink-ripple" [matMenuTriggerFor]="menu" (click)="openMenu()">
     <mat-icon class="ng-md-icon">{{menuIcon}}</mat-icon>
   </button>
   <mat-menu class="md-menu-content width-3" style="width:192px" #menu>
     <div class="md-menu-item">
-      <header> 
-        <mat-icon class="ng-md-icon" style="float:left">account_circle</mat-icon>
+      <header>
+        <mat-icon class="ng-md-icon" style="float:left;margin-left:-5px;margin-right:10px;color:grey">account_circle</mat-icon>
         <span style="vertical-align: middle">{{username}}</span>
       </header>
     </div>
     <div class="md-menu-item">
       <button class="md-button md-kylo-theme md-ink-ripple" (click)="logout()">{{"views.kylo-options.Logout" | translate}}</button>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="md-menu-item">
+      <button class="md-button md-kylo-theme md-ink-ripple" (click)="openDocs(true)">
+        {{"views.kylo-options.DocsThisVersion" | translate}}
+      </button>
+    </div>
+    <div class="md-menu-item">
+      <button class="md-button md-kylo-theme md-ink-ripple" (click)="openDocs(false)">
+        {{"views.kylo-options.DocsLatestVersion" | translate}}
+      </button>
     </div>
     <mat-divider></mat-divider>
     <div class="md-menu-item">

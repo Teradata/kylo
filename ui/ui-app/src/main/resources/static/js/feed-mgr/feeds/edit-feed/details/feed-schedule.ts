@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import 'pascalprecht.translate';
 import * as _ from "underscore";
-import AccessControlService from '../../../../services/AccessControlService';
+import {AccessControlService} from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 var directive = function () {

@@ -703,8 +703,7 @@ angular.module('mentio')
                     coordinates = getContentEditableCaretPosition(ctx, mentionInfo.mentionPosition);
                 }
 
-                var top = jQuery(getDocument(ctx).activeElement).offset().top;
-              //  console.log('SET TOP from ',coordinates.top,'to ',top);
+                var top = $(getDocument(ctx).activeElement).offset().top;
                 top +=30;
 
                 var windowHeight = angular.element($window).height();

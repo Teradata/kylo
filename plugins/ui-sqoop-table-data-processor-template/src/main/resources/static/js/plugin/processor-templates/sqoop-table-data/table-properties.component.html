@@ -1,0 +1,84 @@
+<processor-form *ngIf="processor.form.disabled" [form]="form" [processor]="processor" [readonly]="true"></processor-form>
+
+<div *ngIf="processor.form.enabled && initialized == true" class="layout-padding-indent">
+
+  <processor-form [form]="form" [processor]="processor" [properties]="dbConnectionProperty" [readonly]="false" class="layout-padding-top-bottom"></processor-form>
+
+  <mat-form-field *ngIf="databaseConnectionError == false" fxFill>
+    <input matInput placeholder="Type table name" [matAutocomplete]="tableAuto" [formControl]="tableControl" required #tableAutoInput>
+    <mat-autocomplete #tableAuto="matAutocomplete" [displayWith]="getTableName" (optionSelected)="onTableSelected($event)">
+      <mat-option *ngFor="let item of tableItems | async" [value]="item" class="autocomplete-option">
+
+              <span class="title">
+                    <mat-icon color="accent">grid_on</mat-icon>
+                    <span style="padding-left:5px;"> {{item.fullName}} </span>
+                  </span>
+                <br/>
+                <span>
+                    <span>
+                      <span class="sub-title hint">Schema:</span>
+                      <span class="sub-title" >{{item.schema}}</span>
+                    </span>
+                    <span class="item-metastat" style="padding-left:10px;">
+                      <span class="sub-title hint">Table:</span>
+                      <span class="sub-title" >{{item.tableName}}</span>
+                    </span>
+                  </span>
+
+      </mat-option>
+    </mat-autocomplete>
+    <mat-error>This field is required.</mat-error>
+    <mat-hint *ngIf="processor.form.enabled">Start typing the table name. At least 2 characters are required. Depending upon the database you are connecting to it may be case sensitive.</mat-hint>
+  </mat-form-field>
+
+  <div *ngIf="databaseConnectionError == true" fxLayout="column">
+
+    <div fxLayout="column" fxLayoutAlign="center center" class="tc-grey-500 mat-typography">
+      <mat-icon color="warn" class="push-bottom-sm" style="font-size:40px;">warning</mat-icon>
+      <h2>{{databaseConnectionErrorObject.message}}</h2>
+      <h3>{{databaseConnectionErrorObject.developerMessage}}</h3>
+    </div>
+
+    <mat-form-field class="layout-padding-top-bottom" *ngIf="renderLoadStrategyOptions" fxFill>
+      <input matInput placeholder="Table Name" [(ngModel)]="tableProperty.value" (change)="onManualTableNameChange()" required>
+    </mat-form-field>
+
+    <mat-form-field class="layout-padding-top-bottom" *ngIf="renderLoadStrategyOptions" fxFill>
+      <input matInput placeholder="Fields" [(ngModel)]="fieldsProperty.value" (change)="onManualFieldNameChange()" required>
+      <mat-hint>Field names separated by a comma</mat-hint>
+    </mat-form-field>
+  </div>
+
+  <div class="layout-padding-top-bottom" fxLayout="column" *ngIf="renderLoadStrategyOptions">
+    <label>Load Strategy</label>
+    <mat-radio-group [(ngModel)]="loadStrategyProperty.value" [disabled]="processor.form.disabled" fxLayout="row" fxLayoutGap="16px" fxLayoutWrap="true" class="layout-padding-top"
+                     (change)="onLoadStrategyChange()">
+      <mat-radio-button *ngFor="let strategy of loadStrategyOptions" [value]="strategy.strategy" aria-label="{{strategy.name}}">
+        {{strategy.name}}
+        <mat-hint>{{strategy.hint}}</mat-hint>
+      </mat-radio-button>
+    </mat-radio-group>
+  </div>
+
+  <mat-form-field class="layout-padding-top-bottom" *ngIf="isIncrementalLoadStrategy() && !restrictIncrementalToDateOnly" fxFill>
+    <mat-label>Field for high watermark tracking</mat-label>
+    <mat-select [(ngModel)]="model.table.sourceTableIncrementalDateField" (change)="onIncrementalDateFieldChange()" required *ngIf="databaseConnectionError == false">
+      <mat-option *ngFor="let field of tableFields" [value]="field.name">{{field.name}}</mat-option>
+    </mat-select>
+    <input matInput [(ngModel)]="model.table.sourceTableIncrementalDateField" (change)="onIncrementalDateFieldChange()" required *ngIf="databaseConnectionError == true">
+    <mat-error>This field is required.</mat-error>
+  </mat-form-field>
+
+  <mat-form-field class="layout-padding-top-bottom" *ngIf="isIncrementalLoadStrategy() && restrictIncrementalToDateOnly" fxFill>
+    <mat-label>Date field for high watermark tracking</mat-label>
+    <mat-select [(ngModel)]="model.table.sourceTableIncrementalDateField" (change)="onIncrementalDateFieldChange()" required *ngIf="databaseConnectionError == false">
+      <mat-option *ngFor="let field of filteredFieldDates" [value]="field.name">{{field.name}}</mat-option>
+    </mat-select>
+    <input matInput [(ngModel)]="model.table.sourceTableIncrementalDateField" (change)="onIncrementalDateFieldChange()" required *ngIf="databaseConnectionError == true">
+    <mat-error>This field is required.</mat-error>
+  </mat-form-field>
+
+  <processor-form [form]="form" [processor]="processor" [properties]="nonCustomProperties" [readonly]="false" addSectionHeader="false" class="layout-padding-top-bottom">
+  </processor-form>
+
+</div>

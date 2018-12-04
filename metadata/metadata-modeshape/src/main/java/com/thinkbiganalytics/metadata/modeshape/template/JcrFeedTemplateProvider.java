@@ -108,7 +108,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
                     .ifPresent(actions -> template.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             } else {
                 this.actionsProvider.getAvailableActions(AllowedActions.TEMPLATE)
-                .ifPresent(actions -> template.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                .ifPresent(actions -> template.disableAccessControl(JcrMetadataAccess.getActiveUser()));
             }
             
             addPostFeedChangeAction(template, ChangeType.CREATE);

@@ -1,0 +1,32 @@
+<mat-card class="feed-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon class="kylo-title-icon">{{kyloIcons_Links_profile}}</mat-icon>
+      <span>{{"Profile.Stats.Title" | translate}}</span>
+    </mat-card-title>
+    <mat-card-subtitle >{{"Profile.Stats.SubTitle" | translate}} {{timeInMillis | timeAgo:reference}} - ({{timeInMillis | date:'full'}})</mat-card-subtitle>
+  </mat-card-header>
+
+
+  <mat-card-content class="pull-top-md">
+    <div>
+      <mat-tab-group [selectedIndex]="selected" (selectedTabChange)="onSelectedTabChange($event)">
+        <mat-tab label="Profile">
+          <div class="profile-tab">
+            <profile-stats2 [feedId]="feedId" [processingdttm]="processingdttm" [active]="selected == 0"></profile-stats2>
+          </div>
+        </mat-tab>
+        <mat-tab label="Valid">
+          <div class="profile-tab">
+            <profile-valid [feedId]="feedId" [processingdttm]="processingdttm" [active]="selected == 1" [offsetHeight]="400"></profile-valid>
+          </div>
+        </mat-tab>
+        <mat-tab label="Invalid">
+          <div class="profile-tab">
+            <profile-invalid [feedId]="feedId" [processingdttm]="processingdttm" [active]="selected == 2" [offsetHeight]="400"></profile-invalid>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </mat-card-content>
+</mat-card>

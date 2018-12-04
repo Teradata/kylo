@@ -24,7 +24,7 @@
         </mat-card-title>
         <mat-card-content>
             <div *ngIf="loading" style="width:100%">
-                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+                <mat-progress-bar color="accent" mode="indeterminate"></mat-progress-bar>
                 <br/>
             </div>
             <div id="charts_tab_pivot_chart" style="width:100%" class="layout-padding-left-right">
@@ -37,7 +37,7 @@
             {{"OPS_MGR.CHARTS.FILTER_TITLE"| translate}}
         </mat-card-title>
         <mat-card-content>
-            <div *ngIf="message != ''" [ngClass]="{'error':isWarning}" style="padding-left:25px;">
+            <div *ngIf="message != ''" [ngClass]="{'tc-negative':isWarning}" style="padding-left:25px;">
                 {{message}}
             </div>
             <mat-list flex class="layout-padding-top-bottom" fxLayout="column" class="list-item-table">

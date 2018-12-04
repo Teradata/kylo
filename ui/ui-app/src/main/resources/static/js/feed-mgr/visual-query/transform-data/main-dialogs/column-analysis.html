@@ -1,0 +1,108 @@
+<mat-tab-group dynamicHeight="true">
+  <mat-tab label="Categorical">
+    <div fxLayout="row" class="pad-top">
+      <div fxFlex="70" class="histo">
+        <table td-data-table>
+          <thead>
+          <tr td-data-table-column-row>
+            <th td-data-table-column class="truncate">Value</th>
+            <th td-data-table-column numeric="true">Count</th>
+            <th td-data-table-column numeric="true">%</th>
+            <th td-data-table-column numeric="true">Cum. %</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr td-data-table-row *ngFor="let row of profile.topN">
+            <td td-data-table-cell>
+              <div class="truncate" fxLayout="column" fxLayoutAlign="start">
+                <span class="truncate">{{row.domain}}</span>
+                <span class="bar bar-info" [style.width]="row.width.toFixed(0) + '%'"></span>
+              </div>
+            </td>
+            <td td-data-table-cell numeric="true">{{row.count}}</td>
+            <td td-data-table-cell numeric="true">{{row.frequency | number:'1.1-1'}}</td>
+            <td td-data-table-cell numeric="true">{{row.cumm | number:'1.1-1'}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="summary-section" fxFlex="30" fxHide.xs="true">
+        <div style="padding-left:10px">
+          <strong>Summary</strong>
+          <table>
+            <tbody>
+            <tr *ngIf="showValid">
+              <th>Valid</th>
+              <td colspan="2" [textContent]="profile.validCount">0</td>
+            </tr>
+            <tr *ngIf="showValid">
+              <th>Invalid</th>
+              <td colspan="2" [textContent]="profile.invalidCount">0</td>
+            </tr>
+            <tr>
+              <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr>
+              <th>Total</th>
+              <td class="numeric" [textContent]="profile.totalCount">0</td>
+              <td class="numeric">&nbsp;</td>
+            </tr>
+            <tr>
+              <th>Unique</th>
+              <td class="numeric" [textContent]="profile.unique">0</td>
+              <td class="numeric" [textContent]="(profile.percUnique | number: '1.1-1')+ '%'">0%</td>
+            </tr>
+            <tr *ngIf="emptyCount != null">
+              <th>Empty</th>
+              <td class="numeric" [textContent]="profile.emptyCount">0</td>
+              <td class="numeric" [textContent]="(profile.percEmpty | number: '1.1-1') + '%'">0.0%</td>
+            </tr>
+            <tr>
+              <th>Null</th>
+              <td class="numeric" [textContent]="profile.nullCount">0</td>
+              <td class="numeric" [textContent]="(profile.percNull | number: '1.1-1') + '%'">0.0%</td>
+            </tr>
+            <tr>
+              <td colspan="2">&nbsp;</td>
+            </tr>
+            <tr *ngIf="profile.maxLen != null">
+              <th>Max Len.</th>
+              <td class="numeric" [textContent]="profile.maxLen">0</td>
+              <td>&nbsp;</td>
+            </tr>
+            <tr *ngIf="profile.minLen != null">
+              <th>Min Len.</th>
+              <td class="numeric" [textContent]="profile.minLen">0</td>
+              <td>&nbsp;</td>
+            </tr>
+            <tr *ngIf="profile.max != null">
+              <th>Max</th>
+              <td colspan="2" [textContent]="profile.max | number:'1.4-4'">0</td>
+            </tr>
+            <tr *ngIf="profile.min != null">
+              <th>Min</th>
+              <td colspan="2" [textContent]="profile.min | number:'1.4-4'">0</td>
+            </tr>
+            <tr *ngIf="profile.sum != null">
+              <th>Sum</th>
+              <td colspan="2" [textContent]="profile.sum | number:'1.4-4'">0</td>
+            </tr>
+            <tr *ngIf="profile.mean != null">
+              <th>Mean</th>
+              <td colspan="2" [textContent]="profile.mean | number:'1.4-4'">0</td>
+            </tr>
+            <tr *ngIf="profile.variance != null">
+              <th>Variance</th>
+              <td colspan="2" [textContent]="profile.variance | number:'1.4-4'">0</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </mat-tab>
+  <mat-tab label="Numerical" [disabled]="profile.histo == undefined">
+    <column-histogram *ngIf="profile.histo != undefined" [chart-data]="profile.histo"></column-histogram>
+  </mat-tab>
+
+</mat-tab-group>

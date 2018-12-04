@@ -20,14 +20,11 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
  * #L%
  */
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
-import com.thinkbiganalytics.cluster.MessageDeliveryStatus;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionListener;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -36,6 +33,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheBaseProcessorDTO;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
@@ -164,6 +162,35 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     private Map<String, String> connectionIdCacheNameMap = new ConcurrentHashMap<>();
 
     /**
+     * Map of the input processor id to all of its downstream processors
+     */
+    Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelations = new ConcurrentHashMap<>();
+
+    /**
+     * map of the source to destinations entities
+     */
+    Map<String, List<String>> connectionSourceToDestination = new ConcurrentHashMap<>();
+
+    /**
+     * When mapping processor connections templates can connect various things between each processor (i.e. processorA - port - processgroup - port -processorB,  processor - funnel - processor)
+     * When doing this if the dest is of something other than a processor, map the source processor to that thing (i.e. port, funnel) and mark it as an alias for that processor so eventually it
+     * can make the connection between the two processors (i.e. processorA - processorB)
+     */
+    Map<String, List<String>> connectionSourceProcessorAliases = new ConcurrentHashMap<>();
+
+
+    /**
+     * Map of all entities that are connected to other enties, both of which are not processors
+     */
+    Map<String, List<String>> nonProcessorEntityRelations = new ConcurrentHashMap<>();
+
+    /**
+     * Should the system create the graph of input processor to its respective downstream processors in the flow?
+     * this may be necessary in the future
+     */
+    private boolean cacheFeedInputGraph = false;
+
+    /**
      * Set of the category.feed names for those that are just streaming feeds
      */
     // private Set<String> streamingFeeds = new HashSet();
@@ -179,8 +206,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
      */
     private Map<String, NiFiFlowCacheSync> syncMap = new ConcurrentHashMap<>();
 
-  //  Cache<String, MessageDeliveryStatus> syncMap = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).build();
-
+    //  Cache<String, MessageDeliveryStatus> syncMap = CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.SECONDS).build();
 
 
     /**
@@ -191,7 +217,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
     private DateTime lastUpdated = null;
 
-    private  ScheduledExecutorService expireCacheTimerService;
+    private ScheduledExecutorService expireCacheTimerService;
 
     @PostConstruct
     private void init() {
@@ -202,8 +228,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     }
 
     @PreDestroy
-    private void destroy(){
-        if(expireCacheTimerService != null){
+    private void destroy() {
+        if (expireCacheTimerService != null) {
             expireCacheTimerService.shutdown();
         }
     }
@@ -342,6 +368,143 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         return false;
     }
 
+    /**
+     * recursively add and connect processors
+     */
+    private List<NifiFlowCacheBaseProcessorDTO> getProcessorDestinations(String processorId, Map<String, List<String>> connectionSourceToDestination,
+                                                                         Map<String, NifiFlowCacheBaseProcessorDTO> processedDestinations) {
+        if (processedDestinations == null) {
+            processedDestinations = new HashMap<>();
+        }
+        List<NifiFlowCacheBaseProcessorDTO> destinations = new ArrayList<>();
+        List<String> destIds = connectionSourceToDestination.get(processorId);
+        if (destIds != null) {
+            for (String id : destIds) {
+                if (processedDestinations.containsKey(id)) {
+                    destinations.add(processedDestinations.get(id));
+                } else if (id != processorId) {
+                    String processorName = processorIdToProcessorName.get(id);
+                    if (StringUtils.isNotBlank(processorName)) {
+                        NifiFlowCacheBaseProcessorDTO dto = new NifiFlowCacheBaseProcessorDTO();
+                        dto.setId(id);
+                        dto.setName(processorName);
+                        destinations.add(dto);
+                        processedDestinations.put(id, dto);
+                        List<NifiFlowCacheBaseProcessorDTO> destProcessors = getProcessorDestinations(id, connectionSourceToDestination, processedDestinations);
+                        destinations.addAll(destProcessors);
+                    }
+                } else {
+                    log.info("skipping processor relation {}", id);
+                }
+            }
+        }
+        return destinations;
+    }
+
+    private void addInputProcessorRelations(List<String> inputProcessors) {
+        try {
+            inputProcessors.stream().forEach(processorId -> {
+                List destinationList = getProcessorDestinations(processorId, connectionSourceToDestination, null);
+                inputProcessorRelations.put(processorId, destinationList);
+            });
+        } catch (Exception e) {
+            log.error("Error building input processor to downstream processor relationships ", e);
+        }
+    }
+
+
+    /**
+     * populate the maps needed to connect non processor entities back to their respective processors
+     * This is used to determine the graph of connected processors for a feed
+     */
+    private void buildNonProcessorSourceDestinationRelationships(Map<String, NiFiFlowCacheConnectionData> connectionMap) {
+        connectionMap.entrySet().stream().forEach(e -> {
+            String source = e.getValue().getSourceIdentifier();
+            String dest = e.getValue().getDestinationIdentifier();
+            if (StringUtils.isNotBlank(dest)) {
+                boolean isSourceProcessor = processorIdToProcessorName.containsKey(source);
+                boolean isDestProcessor = processorIdToProcessorName.containsKey(dest);
+                if (!isSourceProcessor && !isDestProcessor) {
+                    //relate these two together
+                    log.info("Found 2 non processors connected {} to {} ", source, dest);
+                    nonProcessorEntityRelations.computeIfAbsent(source, src -> new ArrayList<>()).add(dest);
+                    nonProcessorEntityRelations.computeIfAbsent(dest, src -> new ArrayList<>()).add(source);
+                } else if (isSourceProcessor && !isDestProcessor) {
+                    connectionSourceProcessorAliases.computeIfAbsent(dest, src -> new ArrayList<String>()).add(source);
+
+                } else if (!isSourceProcessor && isDestProcessor) {
+                    connectionSourceProcessorAliases.computeIfAbsent(source, src -> new ArrayList<String>()).add(dest);
+                }
+            }
+        });
+    }
+
+
+    private void addConnectionSourceToDestination(Map<String, NiFiFlowCacheConnectionData> connectionMap) {
+        try {
+            //map any connections that are not directly related to a processor to the other hashmaps to help determine the true processor -> processor references
+            buildNonProcessorSourceDestinationRelationships(connectionMap);
+            connectionMap.entrySet().stream().forEach(e -> {
+                String source = e.getValue().getSourceIdentifier();
+                String dest = e.getValue().getDestinationIdentifier();
+                if (StringUtils.isNotBlank(dest)) {
+                    boolean isSourceProcessor = processorIdToProcessorName.containsKey(source);
+                    boolean isDestProcessor = processorIdToProcessorName.containsKey(dest);
+                    if (!isSourceProcessor) {
+                        //find the source
+                        String sourceProcessor = null;
+                        if (nonProcessorEntityRelations.containsKey(source)) {
+                            sourceProcessor = nonProcessorEntityRelations.get(source).stream().filter(id -> connectionSourceProcessorAliases.containsKey(id)).map(id -> {
+                                return connectionSourceProcessorAliases.get(id).get(0);
+
+                            }).findFirst().orElse(null);
+                        }
+
+                        if (sourceProcessor == null) {
+                            sourceProcessor = connectionSourceProcessorAliases.containsKey(source) ? connectionSourceProcessorAliases.get(source).get(0) : null;
+                        }
+
+                        if (sourceProcessor != null) {
+                            log.info("Found source through relationship connected {} to {} with other source as {}  ", sourceProcessor, dest, source);
+                            source = sourceProcessor;
+                        }
+                        isSourceProcessor = true;
+                    }
+
+                    if (!isDestProcessor) {
+
+                        String destProcessor = null;
+                        if (nonProcessorEntityRelations.containsKey(dest)) {
+                            destProcessor = nonProcessorEntityRelations.get(dest).stream().filter(id -> connectionSourceProcessorAliases.containsKey(id)).map(id -> {
+                                return connectionSourceProcessorAliases.get(id).get(0);
+
+                            }).findFirst().orElse(null);
+                        }
+                        if (destProcessor == null) {
+                            destProcessor = connectionSourceProcessorAliases.containsKey(dest) ? connectionSourceProcessorAliases.get(dest).get(0) : null;
+                        }
+
+                        if (destProcessor != null) {
+                            log.info("Found dest through relationship connected {} to {} with other dest as {}  ", source, destProcessor, dest);
+                            dest = destProcessor;
+
+                        }
+                        isDestProcessor = true;
+                    }
+
+                    if (isSourceProcessor && isDestProcessor && !source.equalsIgnoreCase(dest)) {
+                        connectionSourceToDestination.computeIfAbsent(source, src -> new ArrayList<String>()).add(dest);
+                    }
+
+
+                }
+            });
+        } catch (Exception e) {
+            log.error("Error building connection map for input processor to downstream processor relationships ", e);
+        }
+
+    }
+
 
     private void rebuildAllCache() {
         log.info("Rebuilding the NiFi Flow Cache. Starting NiFi Flow Inspection with {} threads ...", nififlowInspectorThreads);
@@ -364,6 +527,14 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         reuseableTemplateProcessorIds.addAll(completionCallback.getReusableTemplateProcessorIds());
         reusableTemplateProcessGroupId = completionCallback.getReusableTemplateProcessGroupId();
         feedToInputProcessorIds.putAll(completionCallback.getFeedToInputProcessorIds());
+
+        if (this.cacheFeedInputGraph) {
+            addConnectionSourceToDestination(connectionIdToConnectionMap);
+            feedToInputProcessorIds.entrySet().stream().forEach(e -> {
+                List<String> inputProcessors = e.getValue();
+                addInputProcessorRelations(inputProcessors);
+            });
+        }
 
         if (!flowInspectorManager.hasErrors()) {
             log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
@@ -551,6 +722,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         latest.setConnectionIdToConnectionName(connectionIdCacheNameMap);
         latest.setReusableTemplateProcessorIds(reuseableTemplateProcessorIds);
         latest.setFeedToInputProcessorIds(feedToInputProcessorIds);
+        latest.setConnectionSourceToDestination(connectionSourceToDestination);
+        latest.setInputProcessorRelations(inputProcessorRelations);
 
     }
 
@@ -568,6 +741,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
             Map<String, String> processorIdToFeedProcessGroupIdCopy = ImmutableMap.copyOf(processorIdToFeedProcessGroupId);
             Map<String, String> processorIdToProcessorNameCopy = ImmutableMap.copyOf(processorIdToProcessorName);
             Map<String, NiFiFlowCacheConnectionData> connectionDataMapCopy = ImmutableMap.copyOf(connectionIdToConnectionMap);
+            Map<String, List<String>> connectionSourceToDestinationCopy = ImmutableMap.copyOf(connectionSourceToDestination);
+            Map<String, List<NifiFlowCacheBaseProcessorDTO>> inputProcessorRelationsCopy = ImmutableMap.copyOf(inputProcessorRelations);
 
             //get feeds updated since last sync
             NifiFlowCacheSnapshot latest = new NifiFlowCacheSnapshot.Builder()
@@ -575,6 +750,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
                 .withProcessorIdToFeedProcessGroupId(processorIdToFeedProcessGroupIdCopy)
                 .withProcessorIdToProcessorName(processorIdToProcessorNameCopy)
                 .withConnections(connectionDataMapCopy)
+                .withInputProcessorRelations(inputProcessorRelationsCopy)
+                .withConnectionSourceToDestination(connectionSourceToDestinationCopy)
                 .withSnapshotDate(lastUpdated).build();
             return syncAndReturnUpdates(sync, latest, preview);
         } else {
@@ -592,6 +769,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
                 .withProcessorIdToProcessorName(sync.getProcessorIdToProcessorNameUpdatedSinceLastSync(latest.getProcessorIdToProcessorName()))
                 .withConnections(sync.getConnectionIdToConnectionUpdatedSinceLastSync(latest.getConnectionIdToConnectionName(), latest.getConnectionIdToConnection()))
                 .withReusableTemplateProcessorIds(latest.getReusableTemplateProcessorIds())
+                .withConnectionSourceToDestination(latest.getConnectionSourceToDestination())
+                .withInputProcessorRelations(latest.getInputProcessorRelations())
                 .build();
             //reset the pointers on this sync to be the latest
             if (!preview) {
@@ -622,6 +801,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         connectionIdToConnectionMap.clear();
         connectionIdCacheNameMap.clear();
         reuseableTemplateProcessorIds.clear();
+        inputProcessorRelations.clear();
+        connectionSourceToDestination.clear();
     }
 
 
@@ -694,7 +875,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         updateConnectionMap(connections, true);
     }
 
-    private void updateConnectionMap(Collection<ConnectionDTO> connections, boolean notifyClusterMembers) {
+    private Map<String, NiFiFlowCacheConnectionData> updateConnectionMap(Collection<ConnectionDTO> connections, boolean notifyClusterMembers) {
         Map<String, NifiFlowConnection> connectionIdToConnectionMap = new HashMap<>();
         if (connections != null) {
             connections.stream().forEach(connectionDTO -> {
@@ -705,7 +886,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
             });
         }
-        this.connectionIdToConnectionMap.putAll(toConnectionIdMap(connectionIdToConnectionMap.values()));
+        Map<String, NiFiFlowCacheConnectionData> connectionDataMap = toConnectionIdMap(connectionIdToConnectionMap.values());
+        this.connectionIdToConnectionMap.putAll(connectionDataMap);
 
         if (connections != null) {
             Map<String, String> connectionIdToNameMap = connections.stream().collect(Collectors.toMap(conn -> conn.getId(), conn -> conn.getName()));
@@ -718,6 +900,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
             }
             lastUpdated = DateTime.now();
         }
+        return connectionDataMap;
     }
 
 
@@ -776,10 +959,16 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
         processorIdToFeedNameMap.putAll(processorIdToFeedName);
 
-        updateConnectionMap(connections, false);
+        Map<String, NiFiFlowCacheConnectionData> connectionDataMap = updateConnectionMap(connections, false);
 
         List<String> inputProcessorIds = NifiConnectionUtil.getInputProcessorIds(connections);
         feedToInputProcessorIds.put(feedName, inputProcessorIds);
+
+        //update the maps
+        if (this.cacheFeedInputGraph) {
+            addInputProcessorRelations(inputProcessorIds);
+            addConnectionSourceToDestination(connectionDataMap);
+        }
 
         //notify others of the cache update only if we are not doing a full refresh
         if (loaded && notifyClusterMembers) {
@@ -803,7 +992,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
         updateProcessorIdMaps(feedProcessGroupId, processors);
 
-        connectionIdToConnectionMap.putAll(toConnectionIdMap(connections));
+        Map<String, NiFiFlowCacheConnectionData> connectionDataMap = toConnectionIdMap(connections);
+        connectionIdToConnectionMap.putAll(connectionDataMap);
         List<String> inputProcessorIds = null;
 
         if (connections != null) {
@@ -813,6 +1003,13 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
             Set<ConnectionDTO> connectionDTOS = connections.stream().map(conn -> NiFiFlowConnectionConverter.toConnection(conn)).collect(Collectors.toSet());
             inputProcessorIds = NifiConnectionUtil.getInputProcessorIds(connectionDTOS);
             feedToInputProcessorIds.put(feedName, inputProcessorIds);
+            //update the maps
+            if (this.cacheFeedInputGraph) {
+                addInputProcessorRelations(inputProcessorIds);
+                addConnectionSourceToDestination(connectionDataMap);
+            }
+
+
         }
 
         processorIdMap.putAll(toProcessorIdMap(processors));
@@ -898,7 +1095,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
     private void initExpireTimerThread() {
         long timer = 30; // run ever 30 sec to check and expire
-       expireCacheTimerService = Executors
+        expireCacheTimerService = Executors
             .newSingleThreadScheduledExecutor();
 
         expireCacheTimerService.scheduleAtFixedRate(() -> {

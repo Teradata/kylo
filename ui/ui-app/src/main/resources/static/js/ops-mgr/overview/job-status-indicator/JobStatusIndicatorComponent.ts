@@ -1,19 +1,19 @@
 import * as _ from "underscore";
-import ChartJobStatusService from "../../services/ChartJobStatusService";
 import { HttpClient } from "@angular/common/http";
-import BroadcastService from "../../../services/broadcast-service";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import OpsManagerJobService from "../../services/OpsManagerJobService";
-import StateService from "../../../services/StateService";
+import {BroadcastService} from "../../../services/broadcast-service";
+import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
+import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
+import {StateService} from "../../../services/StateService";
 import { Component } from "@angular/core";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
+import {OpsManagerChartJobService} from "../../services/ops-manager-chart-job.service";
 declare const d3: any;
 
 @Component({
     selector: 'tba-job-status-indicator',
-    templateUrl: 'js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html'
+    templateUrl: './job-status-indicator-template.html'
 })
-export default class JobStatusIndicatorComponent {
+export class JobStatusIndicatorComponent {
 
     refreshInterval: any = null;
     dataLoaded: boolean = false;
@@ -25,7 +25,7 @@ export default class JobStatusIndicatorComponent {
     runningCounts: any[] = [];
     maxDatapoints: number = 20;
     chartOptions: any;
-    refreshIntervalTime: any;
+    refreshIntervalTime: number=1000;
 
     ngOnInit() {
 
@@ -43,7 +43,7 @@ export default class JobStatusIndicatorComponent {
                 useVoronoi: false,
                 clipEdge: false,
                 duration: 0,
-                height:136,
+                height:146,
                 useInteractiveGuideline: true,
                 xAxis: {
                     axisLabel: 'Time',
@@ -75,7 +75,9 @@ export default class JobStatusIndicatorComponent {
                 }
             }
         };
-
+if(this.refreshIntervalTime == undefined) {
+    this.refreshIntervalTime = 1000;
+}
         this.refresh();
         this.setRefreshInterval();
 
@@ -90,7 +92,7 @@ export default class JobStatusIndicatorComponent {
         private StateService: StateService,
         private OpsManagerJobService: OpsManagerJobService,
         private OpsManagerDashboardService: OpsManagerDashboardService,
-        private chartJobStatusService: ChartJobStatusService,
+        private opsManagerChartJobService: OpsManagerChartJobService,
         private BroadcastService: BroadcastService) {}// end of constructor
      
         updateChart () {
@@ -200,7 +202,7 @@ export default class JobStatusIndicatorComponent {
                 this.chartData[0].values.push([data.date, data.count]);
             }
             else {
-               var initialChartData = this.chartJobStatusService.toChartData([data]);
+               var initialChartData = this.opsManagerChartJobService.toChartData([data]);
                 initialChartData[0].key = 'Running';
                 this.chartData = initialChartData;
             }
@@ -222,7 +224,7 @@ export default class JobStatusIndicatorComponent {
             }
         }
         createChartData (responseData: any) {
-            this.chartData = this.chartJobStatusService.toChartData(responseData);
+            this.chartData = this.opsManagerChartJobService.toChartData(responseData);
             var max = d3.max(this.runningCounts, (d: any)=>{
                 return d.count; } );
             if(max == undefined || max ==0) {
@@ -233,6 +235,9 @@ export default class JobStatusIndicatorComponent {
             }
             this.chartOptions.chart.yDomain = [0, max];
             this.chartOptions.chart.yAxis.ticks =max;
+            this.chartOptions.chart.color = (d: any)=>{
+                return "#00B2B1";
+            };
           //  this.chartApi.update();
         }
 

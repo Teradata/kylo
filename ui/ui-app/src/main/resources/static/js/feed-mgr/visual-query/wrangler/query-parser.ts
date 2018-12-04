@@ -1,5 +1,7 @@
 import {UserDatasource} from "./index";
-import {VisualQueryModel} from "../../services/VisualQueryService";
+import {VisualQueryModel, VisualQueryService} from "../../services/VisualQueryService";
+import {SparkDataSet} from "../../model/spark-data-set.model";
+import {DataSource} from "../../catalog/api/models/datasource";
 
 /**
  * Parses a query and generates a transform script.
@@ -9,7 +11,7 @@ export abstract class QueryParser {
     /**
      * Constructs a {@code QueryParser}.
      */
-    constructor(protected VisualQueryService: any) {
+    constructor(protected visualQueryService: VisualQueryService) {
     }
 
     /**
@@ -20,9 +22,9 @@ export abstract class QueryParser {
      * @returns the Spark script
      * @throws {Error} if the source or datasources are not valid
      */
-    toScript(source: string | VisualQueryModel, datasources: UserDatasource[]) {
+    toScript(source: string | VisualQueryModel, datasources: UserDatasource[], catalogDataSources?:DataSource[]) {
         if (typeof source === "string") {
-            return this.fromSql(source, datasources);
+            return this.fromSql(source, datasources,catalogDataSources);
         } else if (typeof source === "object") {
             return this.fromVisualQueryModel(source);
         }
@@ -36,7 +38,7 @@ export abstract class QueryParser {
      * @returns the transform script
      * @throws {Error} if there are too many data sources
      */
-    protected abstract fromSql(sql: string, datasources: UserDatasource[]): string;
+    protected abstract fromSql(sql: string, datasources: UserDatasource[], catalogDataSources?:DataSource[]): string;
 
     /**
      * Generates a Spark script for the specified visual query model and data sources.

@@ -15,7 +15,7 @@ export function MultipleEmail(control: FormControl) {
 
 @Component({
     selector: 'thinkbig-policy-input-form',
-    templateUrl: 'js/feed-mgr/shared/policy-input-form/policy-input-form.html'
+    templateUrl: './policy-input-form.html'
 })
 export class PolicyInputFormController {
 

@@ -1,0 +1,12 @@
+<h2 mat-dialog-title>{{"views.feeds.feed-details.db.describe-table-dialog.Title" | translate}} {{tableName | truncate:50}}</h2>
+<mat-dialog-content class="mat-typography">
+  {{"views.feeds.feed-details.db.describe-table-dialog.Message" | translate}}
+
+  <div class="layout-padding-top-bottom">
+    <mat-progress-spinner mode="indeterminate" diameter="50" color="accent"></mat-progress-spinner>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="hide()">Cancel</button>
+</mat-dialog-actions>

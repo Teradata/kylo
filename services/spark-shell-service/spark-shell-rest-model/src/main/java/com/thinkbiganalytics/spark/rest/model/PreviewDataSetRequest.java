@@ -47,11 +47,23 @@ public class PreviewDataSetRequest {
      * A schema parser to be used.  this is optional
      */
     private SchemaParserDescriptor schemaParser;
+
+    private boolean addPreviewItemToPath;
     /**
      * A page spec for limiting
      *
      */
     private PageSpec pageSpec;
+
+    /**
+     * Should the system attempt to preview as plain text if it errors out with a different parser
+     */
+    private boolean fallbackToTextOnError;
+
+    /**
+     * boolean if its a file preview
+     */
+    private boolean isFilePreview;
 
     public PreviewDataSetRequest() {
     }
@@ -110,5 +122,29 @@ public class PreviewDataSetRequest {
 
     public void setPageSpec(PageSpec pageSpec) {
         this.pageSpec = pageSpec;
+    }
+
+    public boolean isAddPreviewItemToPath() {
+        return addPreviewItemToPath;
+    }
+
+    public void setAddPreviewItemToPath(boolean addPreviewItemToPath) {
+        this.addPreviewItemToPath = addPreviewItemToPath;
+    }
+
+    public boolean isFallbackToTextOnError() {
+        return fallbackToTextOnError;
+    }
+
+    public void setFallbackToTextOnError(boolean fallbackToTextOnError) {
+        this.fallbackToTextOnError = fallbackToTextOnError;
+    }
+
+    public boolean isFilePreview() {
+        return isFilePreview;
+    }
+
+    public void setFilePreview(boolean filePreview) {
+        isFilePreview = filePreview;
     }
 }

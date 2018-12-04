@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.rest.model;
 
@@ -12,9 +12,9 @@ package com.thinkbiganalytics.security.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,12 +23,12 @@ package com.thinkbiganalytics.security.rest.model;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RoleMembershipChange {
+
     public enum ChangeType {ADD, REMOVE, REPLACE}
 
     private ChangeType change;
@@ -51,13 +52,17 @@ public class RoleMembershipChange {
         this.change = change;
         this.roleName = roleName;
     }
-    
+
     public RoleMembershipChange(ChangeType change, RoleMembership membership) {
         super();
         this.change = change;
         this.roleName = membership.getRole().getSystemName();
-        membership.getUsers().forEach(u -> this.users.add(u.getSystemName()));
-        membership.getGroups().forEach(g -> this.groups.add(g.getSystemName()));
+        for (User user : membership.getUsers()) {
+            this.users.add(user.getSystemName());
+        }
+        for (UserGroup userGroup : membership.getGroups()) {
+            this.groups.add(userGroup.getSystemName());
+        }
     }
 
     public ChangeType getChange() {

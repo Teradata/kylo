@@ -1,12 +1,12 @@
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { Component, ViewContainerRef } from "@angular/core";
 import { TdDialogService } from "@covalent/core/dialogs";
-import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
+import {OpsManagerDashboardService} from "../services/OpsManagerDashboardService";
 
 @Component({
-    templateUrl: 'js/ops-mgr/overview/overview.html'
+    templateUrl: './overview.html'
 })
-export default class OverviewComponent {
+export class OverviewComponent {
 
     allowed: boolean;
     loading: boolean;

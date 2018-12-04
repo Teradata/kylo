@@ -1,0 +1,6 @@
+<md-list class="side-menu " >
+  <md-list-item ng-repeat="section in vm.menu" class="pad-none" flex layout-fill ng-if="!section.hidden">
+    <menu-link section="section" ng-if="section.type === 'link'" style="width:100%"></menu-link>
+    <menu-toggle section="section" ng-if="section.type === 'toggle' " style="width:100%"></menu-toggle>
+    <md-divider></md-divider> </md-list-item>
+</md-list>

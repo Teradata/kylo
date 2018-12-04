@@ -297,6 +297,8 @@ import {Injectable} from "@angular/core";
          */
         DATASOURCE_ROLES_URL = RestUrlConstants.DATASOURCE_ROLES_URL
 
+        CONNECTOR_ROLES_URL = RestUrlConstants.CONNECTOR_ROLES_URL
+
         /**
          * The URL for retrieving the list of template table option plugins.
          * @type {string}

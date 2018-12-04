@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.api.category;
 
 import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.IndexControlled;
 
 /*-
@@ -43,7 +44,7 @@ import javax.annotation.Nonnull;
 /**
  * A category is a collection of zero or more feeds.
  */
-public interface Category extends AccessControlled, SystemEntity, Auditable, IndexControlled, Taggable {
+public interface Category extends AccessControlled, SystemEntity, Auditable, IndexControlled, Iconable, Taggable {
 
     ID getId();
 
@@ -80,14 +81,6 @@ public interface Category extends AccessControlled, SystemEntity, Auditable, Ind
     List<? extends HadoopSecurityGroup> getSecurityGroups();
 
     void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups);
-
-    String getIcon();
-
-    void setIcon(String icon);
-
-    String getIconColor();
-
-    void setIconColor(String iconColor);
 
     Set<RoleMembership> getFeedRoleMemberships();
 

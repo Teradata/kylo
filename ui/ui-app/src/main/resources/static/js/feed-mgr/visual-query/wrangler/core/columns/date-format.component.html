@@ -34,7 +34,7 @@
 
     <mat-form-field *ngIf="previewFn && type.value" class="preview-field" [ngClass]="{'preview-loading': previewLoading}">
       <input matInput placeholder="Preview" readonly [value]="preview">
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <mat-progress-bar mode="indeterminate" class="accent"></mat-progress-bar>
     </mat-form-field>
   </form>
 </div>

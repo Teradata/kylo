@@ -14,7 +14,13 @@
  * @property {string} password password to use when connecting to this data source
  */
 import * as _ from "underscore";
-import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
+import {EntityAccessControlService} from '../shared/entity-access-control/EntityAccessControlService';
+import "../module";
+import {RestUrlConstants} from "./RestUrlConstants";
+import {Observable} from "rxjs/Observable";
+import 'rxjs/add/observable/fromPromise';
+import 'rxjs/add/operator/toPromise';
+import 'rxjs/add/observable/of';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {  RestUrlService } from './RestUrlService';
@@ -39,7 +45,7 @@ import {  RestUrlService } from './RestUrlService';
 
         ICON = "grid_on";
         ICON_COLOR = "orange";
-        HIVE_DATASOURCE = {id: 'HIVE', name: "Hive", isHive: true, icon: this.ICON, iconColor: this.ICON_COLOR};
+        HIVE_DATASOURCE:any = {id: 'HIVE', name: "Hive", isHive: true, icon: this.ICON, iconColor: this.ICON_COLOR};
 
         getHiveDatasource() {
                 return this.HIVE_DATASOURCE;
@@ -101,7 +107,7 @@ import {  RestUrlService } from './RestUrlService';
              * Finds all user data sources.
              * @returns {Promise} with the list of data sources
              */
-            findAll () {
+            findAll() {
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}}).toPromise()
                     .then((response:any) => {
                         _.each(response, this.ensureDefaultIcon);
@@ -114,9 +120,9 @@ import {  RestUrlService } from './RestUrlService';
              * @param {string} id the data source id
              * @returns {Promise} with the data source
              */
-            findById (id:any) {
+            findById(id:any) : any {
                 if (this.HIVE_DATASOURCE.id === id) {
-                    return Promise.resolve(this.HIVE_DATASOURCE);
+                    return Observable.of(this.HIVE_DATASOURCE).toPromise();
                 }
                 return this.http.get(this.restUrlService.GET_DATASOURCES_URL + "/" + id).toPromise()
                     .then((response:any) => {

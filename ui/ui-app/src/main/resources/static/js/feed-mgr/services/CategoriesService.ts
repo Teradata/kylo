@@ -5,11 +5,11 @@ import { EntityAccessControlService } from '../shared/entity-access-control/Enti
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import { Subject } from 'rxjs/Subject';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 
 @Injectable()
-    export default class CategoriesService {
+    export class CategoriesService {
 
         private categoriesSubject = new Subject<any>();
         /**

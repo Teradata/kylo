@@ -1,19 +1,19 @@
 import 'pascalprecht.translate';
 import * as _ from 'underscore';
-import OpsManagerJobService from "../../services/OpsManagerJobService";
-import IconService from "../../services/IconStatusService";
-import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
+import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
+import {IconService} from "../../services/IconStatusService";
+import {OpsManagerRestUrlService} from "../../services/OpsManagerRestUrlService";
 import * as $ from "jquery";
-import {Common} from "../../../common/CommonTypes";
+import {Common} from '../../../../lib/common/CommonTypes';
 import { Component, Input, Inject } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
-import StateService from "../../../services/StateService";
+import {StateService} from "../../../services/StateService";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import AccessControlService from "../../../services/AccessControlService";
-import AngularModuleExtensionService from "../../../services/AngularModuleExtensionService";
+import {AccessControlService} from "../../../services/AccessControlService";
+import {AngularModuleExtensionService} from "../../../services/AngularModuleExtensionService";
 import { TranslateService } from "@ngx-translate/core";
 import { Subscription } from "rxjs/Subscription";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 
 
 class PageState {
@@ -150,7 +150,7 @@ class TabAnimationControl {
 
 @Component({
     selector: 'tba-job-details',
-    templateUrl: 'js/ops-mgr/jobs/details/job-details-template.html',
+    templateUrl: './job-details-template.html',
     styles: [`
         .mat-list-item {
             height: auto !important;

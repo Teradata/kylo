@@ -1,9 +1,9 @@
 import { Ng2StateDeclaration } from "@uirouter/angular";
 import AccessConstants from "../constants/AccessConstants";
-import { JcrQueryComponent } from "./jcr/JcrQueryComponent";
-import { ClusterComponent } from "./cluster/ClusterComponent";
+import {JcrQueryComponent} from './jcr/jcr-query.component';
+import {ClusterComponent} from './cluster/cluster.component';
 
-export const adminStates: Ng2StateDeclaration[] = [
+export const states: Ng2StateDeclaration[] = [
     {
         name: 'jcr-query',
         url: "/admin/jcr-query",
@@ -32,4 +32,4 @@ export const adminStates: Ng2StateDeclaration[] = [
             permissions:[]
         }
     }
-]; 
+];

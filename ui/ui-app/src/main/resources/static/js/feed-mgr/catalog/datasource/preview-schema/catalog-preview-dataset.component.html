@@ -1,0 +1,22 @@
+<ng-container *tdLoading="'CatalogPreviewDatasetComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
+  <mat-toolbar *ngIf="displayInCard">
+    <mat-toolbar-row fxLayout="row" fxLayoutAlign="start center">
+      <div fxLayout="row" fxLayoutAlign="center center" class="cursor-pointer push-right" (click)="backToDatasource()"><mat-icon class="push-right">arrow_back</mat-icon>{{datasetName}}</div>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <mat-card *ngIf="displayInCard">
+    <mat-card-content>
+    <datasets-preview-container #datasetPreviewContainer [renderBackButton]="false" [autoSelectSingleDataSet]="autoSelectSingleDataSet" [formGroup]="formGroup" [previews]="previews" *ngIf="previewsReady"  (previewDatasetInvalid)="onPreviewInvalid($event)" (previewDatasetValid)="onPreviewValid($event)" (previewSelectionChange)="onPreviewSelected($event)" ></datasets-preview-container>
+    </mat-card-content>
+  </mat-card>
+
+  <ng-container *ngIf="!displayInCard">
+    <datasets-preview-container #datasetPreviewContainer [autoSelectSingleDataSet]="autoSelectSingleDataSet" [renderBackButton]="false" [formGroup]="formGroup" [previews]="previews" *ngIf="previewsReady"  (previewDatasetInvalid)="onPreviewInvalid($event)" (previewDatasetValid)="onPreviewValid($event)" (previewSelectionChange)="onPreviewSelected($event)" ></datasets-preview-container>
+  </ng-container>
+
+  <div *ngIf="loading" class="loading-container">
+
+  </div>
+
+</ng-container>

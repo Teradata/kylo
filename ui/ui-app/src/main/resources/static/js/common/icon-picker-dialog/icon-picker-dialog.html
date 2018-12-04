@@ -8,11 +8,10 @@
                 <div layout="column" style="width:250px;" class="layout-column">
                     <span class="md-subhead" style="text-align:center;padding-bottom:10px;">{{"views.icon-picker-dialog.Syi" | translate}}</span>
                     <div  *ngIf="loadingIcons" class="layout-fill" layout="row" layout-align="center center">
-                        <div class="md-progress-circular" md-mode="indeterminate" md-diameter="60">
-                        </div>
+                      <mat-progress-spinner color="accent" mode="indeterminate" diameter="60"></mat-progress-spinner>
                     </div>
 
-                    <div style="overflow-y:auto;overflow-x:hidden">
+                    <div class="pad" style="overflow-y:auto;overflow-x:hidden;padding-top:0px">
                         <mat-grid-list cols="3" rowHeight="1:1" gutterSize="16px" >
                             <mat-grid-tile *ngFor="let tile of iconTiles"
                                             rowspan="1"
@@ -20,20 +19,20 @@
                                             (click)="selectIcon(tile)"
                                             class="ng-scope ng-isolate-scope"
                                             style=" outline: none;cursor:pointer;">
-                                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;padding-right:30px;padding-bottom:30px;"></ng-md-icon>
+                                            <ng-md-icon icon="{{tile.title}}" size="55" style="fill:#90A4AE;margin:0px;padding:0px"></ng-md-icon>
                             </mat-grid-tile>
                         </mat-grid-list>
                     </div>
                 </div>
-                <div flex layout="column" style="width:250px;padding-left:20px;">
-                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Syc" | translate}}</span>
+                <div flex layout="column" class="pad-left" style="width:250px">
+                    <span  class="md-subhead" style="text-align: center">{{"views.icon-picker-dialog.Syc" | translate}}</span>
                     <div *ngIf="loadingColors" class="layout-fill layout-row" layout="row" layout-align="center center">
-                        <div class="md-progress-circular" md-mode="indeterminate" md-diameter="60">
+                        <div class="md-progress-circular" md-mode="indeterminate" md-diameter="60" class="md-accent">
 
                         </div>
                     </div>
 
-                    <div style="overflow-y:hidden">
+                  <div class="pad" style="overflow-y:auto;overflow-x:hidden">
                         <mat-grid-list cols="3" columns="3" rowHeight="1:1" gutterSize="16px">
                             <mat-grid-tile *ngFor="let tile of colorTiles"
                                             rowspan="1"
@@ -47,7 +46,7 @@
                 </div>
                 <div layout="column" flex>
                     <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Yi" | translate}}</span>
-                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" [ngStyle]="fillStyle" style="padding-bottom:120px;padding-right:40px;"></ng-md-icon>
+                    <ng-md-icon icon="{{selectedIconTile.title}}" size="100" [ngStyle]="fillStyle" style="margin-top:100px;margin-left:40px"></ng-md-icon>
                 </div>
             </div>
         </mat-dialog-content>

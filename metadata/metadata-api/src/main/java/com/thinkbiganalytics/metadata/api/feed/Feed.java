@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -63,18 +64,6 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
 
     void setState(State state);
 
-    /**
-     * is it a DRAFT feed or not
-     * @return
-     */
-    Mode getMode();
-
-    /**
-     * Set the mode for the feed, DRAFT or COMPLETE
-     * @param mode
-     */
-    void setMode(Mode mode);
-
     boolean isInitialized();
 
     InitializationStatus getCurrentInitStatus();
@@ -87,7 +76,7 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
 
     List<InitializationStatus> getInitHistory();
 
-    FeedPrecondition getPrecondition();
+    Optional<FeedPrecondition> getPrecondition();
 
     List<Feed> getDependentFeeds();
 
@@ -121,6 +110,13 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
     Map<String, String> getUserProperties();
 
     /**
+     * check to see if this feed has any missing required properties based upon the supplied field descriptors
+     * @param userFields
+     * @return true if missing required properties, false if not
+     */
+    public boolean isMissingRequiredProperties(@Nonnull final Set<UserFieldDescriptor> userFields);
+
+    /**
      * Replaces the user-defined properties for this feed with the specified properties.
      *
      * <p>If the user-defined field descriptors are given then a check is made to ensure that all required properties are specified. These field descriptors should be the union of
@@ -138,10 +134,14 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
     List<? extends FeedSource> getSources();
 
     FeedSource getSource(Datasource.ID id);
+    
+    FeedSource getSource(DataSet.ID id);
 
     List<? extends FeedDestination> getDestinations();
 
     FeedDestination getDestination(Datasource.ID id);
+    
+    FeedDestination getDestination(DataSet.ID id);
 
     List<? extends HadoopSecurityGroup> getSecurityGroups();
 
@@ -190,8 +190,6 @@ public interface Feed extends Propertied, SystemEntity, Auditable, Taggable, Acc
     void clearSourcesAndDestinations();
 
     enum State {NEW, ENABLED, DISABLED, DELETED}
-
-    enum Mode {DRAFT,COMPLETE}
 
     interface ID extends Serializable {
 

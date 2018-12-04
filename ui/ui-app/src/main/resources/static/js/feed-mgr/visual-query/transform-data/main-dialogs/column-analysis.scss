@@ -1,0 +1,71 @@
+.histo {
+  margin-top: -18px;
+  height: 300px;
+  background-attachment: scroll;
+  overflow: hidden;
+
+  &:hover {
+    overflow-y: auto;
+  }
+
+  tbody > tr {
+    height: 40px;
+  }
+}
+
+.truncate {
+  min-width: 200px;
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+span.bar {
+  display: block;
+  margin: 5px 0 0 0;
+  height: 7px;
+  opacity:0.3;
+}
+
+span.bar-info {
+  background: rgb(52, 131, 186);
+}
+
+span.bar-success {
+  background: rgb(102, 187, 106)
+}
+
+span.bar-error {
+  background: red;
+}
+
+.summary-section strong {
+  display: block;
+  text-transform: uppercase;
+  color: rgb(52, 131, 186);
+  padding-left: 14px;
+}
+
+.summary-section th {
+  text-align: left;
+}
+
+.summary-section table {
+  padding: 5px;
+  border-spacing: 9px;
+}
+
+.numeric {
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100px;
+}
+
+
+.axis path, .tick line {
+  fill: none;
+  stroke: #333;
+}

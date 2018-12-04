@@ -17,15 +17,15 @@
   limitations under the License.
   #L%
   -->
-  <div layout="row" class="centered">
+<div layout="row" layout-align="center start">
 
     <mat-card class="not-centered" card-css="layout-fill" style="max-width:980px;width:980px;overflow-x:inherit" flex="initial">
 
-        <mat-card-title>
+    <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
-                <div flex class="card-title">{{cardTitle}}</div>
+        <div flex class="card-title"flex>{{cardTitle}}</div>
                 <div class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER'" [translateParams]="{before : stepNumber, after: 5}"></div>
-            </div>
+      </div>
         </mat-card-title>
 
         <mat-card-content>
@@ -35,22 +35,24 @@
                         <div *ngFor="let property of allProperties " layout="column" layout-fill>
 
                             <div *ngIf="property.firstProperty" layout="row" class="layout-padding-left-16 layout-padding-top-bottom" style="background-color:#F9F9F9;">
-                                <a id="{{property.processor.id}}" name="{{property.processor.name}}"></a>
-                                <span class="primary-color-1 md-subhead left-aligned">{{property.processor.name}}</span>
-                            </div>
-                            <div layout="row" style="padding-left:30px;">
-                                <div style="height:30px;margin-bottom:5px;padding-top: 16px;" class="md-block">
-                                    <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
-                                        <mat-checkbox name="selectedProperty" aria-label="Select" [ngModelOptions]="{standalone: true}" [(ngModel)]="property.selected"></mat-checkbox>
-                                    </div>
+                <a id="{{property.processor.id}}" name="{{property.processor.name}}"></a>
+                <span class="primary-color-1 md-subhead left-aligned">{{property.processor.name}}</span>
+              </div>
+              <div layout="row" style="padding-left:30px;">
+                <div style="height:30px;margin-bottom:5px;padding-top: 16px;" class="">
+                  <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                    <mat-checkbox name="selectedProperty" aria-label="Select" [ngModelOptions]="{standalone: true}" [(ngModel)]="property.selected"></mat-checkbox>
+                  </div>
                                 </div>
-                                <div class="register-template-property md-padding" layout="column" layout-fill>
+                <div class="register-template-property md-padding" layout="column" layout-fill>
                                     <h3 [ngClass]="{'md-warn':property.sensitive}">{{property.key}}</h3>
-                                    
+
+                                    <!--
                                     <mat-hint *ngIf="property.propertyDescriptor.sensitive">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_SENSETIVE' | translate}}</mat-hint>
                                     <mat-hint *ngIf="property.propertyDescriptor.required">
                                         {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_REQUIRED' | translate}}
                                     </mat-hint>
+                                    -->
                                     <mat-hint>
                                         {{property.propertyDescriptor.description}}
                                     </mat-hint>
@@ -58,11 +60,11 @@
                                     <div *ngIf="property.selected == true" style="padding-top:10px;" class="fade">
                                         <form [formGroup]="formGroup">
 
-                                            <div *ngIf="property.propertyDescriptor.allowableValues != null">
-                                                <mat-form-field md-no-float class="md-block">
-                                                    <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DV' | translate}}</mat-label>
-                                                    <mat-select [(ngModel)]="property.value" name="property"
-                                                               placeholder="Default Value"
+                                            <div *ngIf="property.propertyDescriptor.allowableValues != null" >
+                        <mat-form-field md-no-float class="">
+                          <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DV' | translate}}</mat-label>
+                          <mat-select [(ngModel)]="property.value" name="property"
+                                     placeholder="Default Value"
                                                                [ngModelOptions]="{standalone: true}">
                                                         <mat-option *ngFor="let allowableValue of property.propertyDescriptor.allowableValues"
                                                                 value="{{allowableValue.value}}">
@@ -70,22 +72,22 @@
                                                         </mat-option>
                                                     </mat-select>
                                                 </mat-form-field>
-                                            </div>
+                      </div>
 
 
-                                            <div *ngIf="property.propertyDescriptor.allowableValues == null && property.selected == true">
- 
-                                                <mat-form-field style="height:30px;margin-bottom:5px;" class="md-block">
-                                                    <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DVSE' | translate}}</mat-label>
-                                                    <input *ngIf="!property.userEditable && property.propertyDescriptor.required"
-                                                           matInput 
+                      <div *ngIf="property.propertyDescriptor.allowableValues == null && property.selected == true" layout="row">
+
+                                                <mat-form-field style="margin-left:-2px" class="push-top-md push-bottom-none">
+                          <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DVSE' | translate}}</mat-label>
+                          <input *ngIf="!property.userEditable && property.propertyDescriptor.required"
+                                                           matInput
                                                            name="propertyInput"
-                                                           placeholder="Enter a string or ${expression})" mentio
-                                                           type="text"
-                                                           mentio-id="property.mentioId"
-                                                           mentio-typed-text="typedTerm"
+                                                           placeholder="Enter a string or ${expression}" mentio
+                                 type="text"
+                                 mentio-id="property.mentioId"
+                                 mentio-typed-text="typedTerm"
                                                            [(ngModel)]="property.value"
-                                                           size="100"
+                                 size="100"
                                                            formControlName="{{property.key}}"
                                                            (change)="changedPropertyInput(property)"
                                                            (keydown)="keydownPropertyInput(property)"
@@ -93,7 +95,7 @@
                                                             required/>
 
                                                         <input *ngIf="property.userEditable || !property.propertyDescriptor.required"
-                                                           matInput 
+                                                           matInput
                                                            name="propertyInput"
                                                            placeholder="Enter a string or ${expression})" mentio
                                                            type="text"
@@ -107,158 +109,155 @@
                                                             [ngModelOptions]="{standalone: true}"/>
                                                 </mat-form-field>
 
-                                                <mentio-menu style="display:none;"
-                                                             mentio-for="property.mentioId"
-                                                             mentio-trigger-char="'$'"
+                        <mentio-menu style="display:none;"
+                                     mentio-for="property.mentioId"
+                                     mentio-trigger-char="'$'"
                                                              mentio-items="expressionProperties"
-                                                             mentio-template-url="js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html"
+                                     mentio-template-url="js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html"
                                                              mentio-search="searchExpressionProperties(term)"
                                                              mentio-select="getExpressionPropertyTextRaw(item)"></mentio-menu>
 
                                                 <div class="hint" thinkbig-derived-expression [model]="property.value"
-                                                     style="margin-bottom:10px;"></div>
+                             style="margin-bottom:10px;"></div>
 
-                                                <div *ngIf="allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" layout-fill>
-                                                    <md-input-container md-no-float class="md-block layout-margin-top-minus-7">
-                                                        <div layout="row">
+                        <md-input-container class="push-none push-left push-right" style="white-space: nowrap;" ng-if="property.value == null || property.value == ''">
+                          <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                            <md-checkbox aria-label="Set empty"
+                                         ng-checked="property.value == ''"
+                                         ng-click="vm.toggleSetAsEmptyString(property)">
+                              Set empty
+                            </md-checkbox>
+                          </div>
+                        </md-input-container>
+
+                        <div *ngIf="allowUserToAcceptPropertyValueFromNiFi(property)" layout="column" style="white-space: nowrap;">
+                          <md-input-container md-no-float>
+                            <div layout="row">
                                                         <div style="color:#0288d1; background-color:#0288d126" class="layout-padding-left-4 layout-padding-right-4">
-                                                            <mat-icon style="fill:#0288d1" size="20">info</mat-icon>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_TEMPLATE_DV' | translate}}<b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
-                                                        </div>
+                                                            <mat-icon class="tc-accent" size="20">info</mat-icon>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.NIFI_TEMPLATE_DV' | translate}} <b>{{ property.registrationChangeInfo.valueFromNewerNiFiTemplate }}</b>
+                              </div>
                                                         <div class="layout-padding-left-4">
-                                                            <mat-icon matTooltip="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO' | translate:property.registrationChangeInfo.valueFromNewerNiFiTemplate,property.value" style="fill:#0288d1" (click)="acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple">replay</mat-icon>
-                                                        </div>
-                                                        </div>
-                                                    </md-input-container>
-                                                </div>
+                                                            <mat-icon matTooltip="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FROM_TO' | translate:property.registrationChangeInfo.valueFromNewerNiFiTemplate,property.value" color="tc-accent" (click)="acceptPropertyValueFromNiFi(property)" class="cursor-pointer md-ink-ripple">replay</mat-icon>
+                              </div>
+                            </div>
+                          </md-input-container>
+                        </div>
 
-                                            </div>
+                      </div>
 
-                                            <div layout="row" layout-align="start-center">
+                      <div layout="row" layout-align="start-center" class="pull-top-md pull-bottom-sm">
 
-                                                <div style="height:30px;margin-bottom:5px;"
-                                                                    class="md-block" *ngIf="property.value == null || property.value == ''">
-                                                    <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
-                                                        <mat-checkbox aria-label="Set as empty string"
-                                                                     [checked]="property.value == ''"
-                                                                     (click)="toggleSetAsEmptyString(property)">
-                                                                     {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SET_EMPTY' | translate}}
-                                                        </mat-checkbox>
-                                                    </div>
-                                                </div>
-                                                <div style="height:30px;margin-bottom:5px;padding-left:10px;"
-                                                                    class="md-block">
+
+                                                <div class="push-none push-right">
                                                     <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
                                                         <mat-checkbox aria-label="User can supply input"
                                                                      [(ngModel)]="property.userEditable"
-                                                                     name="userEditable"
-                                                                     [ngModelOptions]="{standalone: true}">
-                                                                     {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.ALLOW_INPUT' | translate}}
+                                                                      name="userEditable"
+                                                                      [ngModelOptions]="{standalone: true}">
+                                                                     Allow user input
                                                         </mat-checkbox>
-                                                    </div>
+                          </div>
                                                 </div>
-                                                <mat-form-field style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                        class="md-block" *ngIf="property.userEditable">
+                                                <div class="push-none push-right">
+                                                    <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                                                        <mat-checkbox aria-label="User can supply input"
+                                                                     [(ngModel)]="property.sensitive"
+                                                                     name="sensitive"
+                                                                     [ngModelOptions]="{standalone: true}"
+                                                                      [disabled]="property.propertyDescriptor.sensitive">
+                                                                     Sensitive
+                                                        </mat-checkbox>
+                          </div>
+                                                </div>
+                        <div class="push-none" *ngIf="property.userEditable">
+                          <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
+                            <mat-checkbox aria-label="Required"
+                                          [(ngModel)]="property.required"
+                                          name="required"
+                                          [ngModelOptions]="{standalone: true}"
+                                          [disabled]="property.propertyDescriptor.required">
+                              Required
+                            </mat-checkbox>
+                          </div>
+                        </div>
+                      </div>
+                        <div fxLayout="row" fxLayoutAlign="start center" class="push-top-none pull-buttom-sm">
+                                                <mat-form-field class="push-right" *ngIf="property.userEditable">
                                                     <mat-label>Render as</mat-label>
-                                                    <mat-select [(ngModel)]="property.renderType" 
-                                                                name="renderType" 
+                                                    <mat-select [(ngModel)]="property.renderType"
+                                                                name="renderType"
                                                                 (change)="onRenderTypeChange(property)"
                                                                 placeholder="Render Input As..."
                                                                 [ngModelOptions]="{standalone: true}">
                                                         <mat-option
                                                                 *ngFor="let renderType of property.renderTypes"
-                                                                value="{{renderType.type}}">
-                                                            {{renderType.label}}
+                                value="{{renderType.type}}">
+                              {{renderType.label}}
                                                         </mat-option>
                                                     </mat-select>
                                                 </mat-form-field>
 
+                          <div style="padding-left:10px;">
+
+                            <td-chips [chipAddition]="true"
+                                      [chipRemoval]="true"
+                                      [items]="property.selectOptions"
+                                      [(ngModel)]="property.selectOptions"
+                                      placeholder="Options"
+                                      [disabled]="disabled"
+                                      [inputPosition]="before ? 'before' : 'after'"
+                                      (inputChange)="filterStrings($event)"
+                                      (add)="customSelectOptionChanged(row)"
+                                      (remove)="customSelectOptionChanged(row)"
+                                      *ngIf="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
+                            </td-chips>
+                            <mat-tooltip>Enter each value followed by (enter)</mat-tooltip>
+
+                          </div>
+
                                                 <mat-form-field style="height:30px;margin-bottom:5px; padding-left:10px;"
                                                     class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
                                                     <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.TRUE_VALUE' | translate}}</mat-label>
-                                                    <input matInput 
+                                                    <input matInput
                                                         name="property"
                                                         placeholder="true"
                                                         type="text"
-                                                        [(ngModel)]="property.renderOptions['trueValue']" 
+                                                        [(ngModel)]="property.renderOptions['trueValue']"
                                                         size="20"
                                                         [ngModelOptions]="{standalone: true}"/>
                                                 </mat-form-field>
 
-                                              <mat-form-field
-                                                    style="height:30px;margin-bottom:5px; padding-left:10px;"
-                                                    class="md-block" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
+                        <mat-form-field
+
+                                                    class="push-right" *ngIf="property.userEditable && property.renderType == 'checkbox-custom'">
                                                     <mat-label>{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FALSE_VALUE' | translate}}</mat-label>
-                                                    <input matInput 
+                                                    <input matInput
                                                         name="property"
                                                         placeholder="false"
                                                         type="text"
-                                                        [(ngModel)]="property.renderOptions['falseValue']" 
+                                                        [(ngModel)]="property.renderOptions['falseValue']"
                                                         [ngModelOptions]="{standalone: true}"
                                                         size="20"/>
                                               </mat-form-field>
 
-                                              <div style="padding-left:10px;">
-
-                                                <td-chips [chipAddition]="true"
-                                                        [chipRemoval]="true"
-                                                        [items]="property.selectOptions"
-                                                        [(ngModel)]="property.selectOptions"
-                                                        placeholder="Add Select Options"
-                                                        [disabled]="disabled"
-                                                        [inputPosition]="before ? 'before' : 'after'"
-                                                        (inputChange)="filterStrings($event)"
-                                                        (add)="customSelectOptionChanged(row)"
-                                                        (remove)="customSelectOptionChanged(row)"
-                                                        *ngIf="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
-                                                </td-chips>
-
-                                              </div>
-                                                <div>
-                                                    <div style="height:30px;margin-bottom:5px;"
-                                                                        class="md-block">
-                                                        <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
-                                                            <mat-checkbox aria-label="Sensitive"
-                                                                         name = "sensitiveProperty"
-                                                                         [(ngModel)]="property.sensitive"
-                                                                         [disabled]="property.propertyDescriptor.sensitive"
-                                                                         [ngModelOptions]="{standalone: true}">
-                                                                         {{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SENSITIVE' | translate}}
-                                                            </mat-checkbox>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div *ngIf="property.userEditable">
-                                                    <div style="height:30px;margin-bottom:5px;"
-                                                                        class="md-block">
-                                                        <div class="mat-checkbox-div-top" *ngFor="let v of [0]">
-                                                            <mat-checkbox aria-label="Required"
-                                                                         name="requiredProperty"
-                                                                         [(ngModel)]="property.required"
-                                                                         [ngModelOptions]="{standalone: true}"
-                                                                         [disabled]="property.propertyDescriptor.required">
-                                                                         {{'views.properties-admin.Required' | translate}}
-                                                            </mat-checkbox>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                      </div>
 
                                         </form>
 
-                                    </div>
+                  </div>
 
 
-                                </div>
+                </div>
 
-                            </div>
+              </div>
                             <mat-divider *ngIf="!last"></mat-divider>
-                        </div>
+            </div>
 
             </ng-container>
 
             <div>
-                <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
-                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} {{stepIndex + 2}}</button>
+                <!--<button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>-->
+                <!--<button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} {{stepIndex + 2}}</button>-->
             </div>
 
         </mat-card-content>
@@ -267,7 +266,7 @@
 
     <mat-card offsetleftfromprevious top="8" card-css="layout-fill"
                  id="property-legend-{{processorPropertiesFieldName}}"
-                 style="max-width:250px;width:250px;min-width:250px;" flex="initial">
+               style="max-width:250px;width:250px;min-width:250px;" flex="initial">
         <mat-card-title>
             <div class="card-title">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.FILTER' | translate}}</div>
             <mat-hint [translate]="'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.SHOWING_PROPS'" [translateParams]="{number:allProperties.length}"></mat-hint>
@@ -280,7 +279,7 @@
             <div class="md-primary left-aligned md-subheader md-kylo-theme layout-padding-left">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.JUMP_TO_GROUP' | translate}}</div>
 
             <div md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
-                     layout-align="start start" layout="column" md-item-size="30">
+                                   layout-align="start start" layout="column" md-item-size="30">
 
                 <ng-template *ngFor="let processor of processors; let last=last" >
                     <button (click)="scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left" >

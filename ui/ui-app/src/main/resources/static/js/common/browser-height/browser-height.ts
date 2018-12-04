@@ -1,5 +1,8 @@
-import * as angular from "angular";
-import {moduleName} from "../module-name";
+import {Directive, ElementRef, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges,EventEmitter} from "@angular/core";
+import * as $ from "jquery";
+import "rxjs/add/observable/fromEvent";
+import {Observable} from "rxjs/Observable";
+import {Subscription} from "rxjs/Subscription";
 
 /**
  * Directive to auto size the container to fill the rest of the screen based upon the height of the browser window
@@ -13,121 +16,79 @@ import {moduleName} from "../module-name";
  *  - browser-height-offset=offset to apply to the height of the element after getting the window size
  *
  */
-angular.module(moduleName)
-        .directive('browserHeight', ["$window", ($window: any)=>{
-        return {
+@Directive({
+    selector: "[browser-height]"
+})
+export class BrowserHeight implements OnDestroy, OnInit {
 
-            link: function ($scope: any, element: any, attrs: any) {
-                element.addClass('browser-height');
-                /**
-                 *
-                 */
+    @Input("browser-height-selector")
+    eleSelector: string;
 
-                var eleSelector = attrs.browserHeightSelector;
+    @Input("browser-height-scroll-y")
+    scrollY: boolean = true;
 
-                var scrollY = attrs.browserHeightScrollY;
+    @Input("browser-height-wait-and-calc")
+    browserHeightWaitAndCalc: boolean;
 
-                var browserHeightWaitAndCalc = attrs.browserHeightWaitAndCalc;
+    @Input("browser-height-scroll-left")
+    browserHeightScrollLeft: boolean;
 
-                if(browserHeightWaitAndCalc != undefined && browserHeightWaitAndCalc == "true"){
-                    browserHeightWaitAndCalc = true;
-                }
-                else {
-                    browserHeightWaitAndCalc = false;
-                }
+    @Input("browser-height-scroll-x")
+    browserHeightScrollX: boolean;
 
-                if(scrollY == undefined){
-                    scrollY = true;
-                }
-                else {
-                    if(scrollY == "false"){
-                        scrollY = false;
-                    }
-                    else {
-                        scrollY = true;
-                    }
-                }
+    @Input("browser-height-resize-event")
+    bindResize: boolean = true;
 
-                var scrollX= attrs.browserHeightScrollLeft;
-                if(scrollX == undefined) {
-                    scrollX = attrs.browserHeightScrollX;
-                }
+    @Input("browser-height-offset")
+    offsetHeight: number = 0;
 
-                if(scrollX == "true"){
-                    scrollX = true;
-                }
-                else {
-                    scrollX = false;
-                }
+    @Output()
+    heightChange = new EventEmitter<any>();
 
+    private ele: JQuery;
 
-                var bindResize = attrs.browserHeightResizeEvent;
-                if(bindResize == undefined){
-                    bindResize = true;
-                }
-                else {
-                    if(bindResize == "true"){
-                        bindResize = true;
-                    }
-                    else {
-                        bindResize = false;
-                    }
-                }
+    private resizeSubscription: Subscription;
 
+    constructor(private element: ElementRef) {
+        (element.nativeElement as Element).classList.add("browser-height");
+    }
 
-                var ele = element
-                if(eleSelector!= undefined){
-                    ele = element.find(eleSelector);
-                }
-                var offsetHeight = attrs.browserHeightOffset;
-                if (offsetHeight) {
-                    offsetHeight = parseInt(offsetHeight);
-                }
-                else {
-                    offsetHeight = 0;
-                }
-                function calcHeight() {
-                    var windowHeight = angular.element($window).height();
-                    var newHeight = windowHeight - offsetHeight;
+    ngOnInit(): void {
+        this.ele = this.eleSelector ? $(this.element.nativeElement).find(this.eleSelector) : $(this.element.nativeElement);
 
-                    ele.css('height',newHeight+'px');
-                    if(scrollY) {
-                        ele.css('overflow-y', 'scroll');
-                    }
-                    if(scrollX) {
-                        ele.css('overflow-x','scroll');
-                    }
-                    else {
-                        ele.css('overflow-x','hidden');
-                    }
-                }
+        if (this.browserHeightWaitAndCalc) {
+            setTimeout(() => this.calcHeight(), 1300)
+        }
 
-                if(browserHeightWaitAndCalc){
-                    setTimeout(()=> {
-                        calcHeight();
-                    },1300)
-                }
+        if (this.bindResize) {
+            this.resizeSubscription = Observable.fromEvent(window, "resize").subscribe(() => this.calcHeight());
+        }
 
-                if(bindResize) {
-                    angular.element($window).bind("resize.browserheight",()=> {
-                        // if(element.is(':visible')) {
-                        calcHeight();
-                        //  }
-                    });
-                }
-                $scope.$on('$destroy',  ()=> {
-                    //tabsWrapper.css('top', '0px')
-                    angular.element($window).unbind("resize.browserheight");
-                    //angular.element('#content').unbind("scroll");
-                });
-                setTimeout(()=>{
-                    calcHeight();
-                },10);
-                //set margin-top = top
+        setTimeout(() => this.calcHeight(), 10);
+    }
 
-            }
+    ngOnDestroy(): void {
+        if (this.resizeSubscription) {
+            this.resizeSubscription.unsubscribe();
         }
     }
-]);
+
+    private calcHeight() {
+        if(this.offsetHeight == undefined || isNaN(this.offsetHeight)){
+            this.offsetHeight = 0;
+        }
+        let height = $(window).height() - this.offsetHeight;
+
+        this.ele.css("height", height+'px');
+        this.ele.css("overflow-x", (this.browserHeightScrollLeft || this.browserHeightScrollX) ? "scroll" : "hidden");
+        if (this.scrollY || this.scrollY === null) {
+            this.ele.css("overflow-y", "scroll");
+        }
+        else if(this.scrollY == false){
+            this.ele.css("overflow-y", "hidden");
+        }
+        this.heightChange.emit(height);
+    }
 
 
+}

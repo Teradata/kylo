@@ -6,8 +6,8 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'cron-expression-preview',
-    templateUrl: 'js/feed-mgr/shared/cron-expression-preview/cron-expression-preview.html',
-    styleUrls: ['js/feed-mgr/shared/cron-expression-preview/cron-expression-preview.css']
+    templateUrl: '../../../../lib/cron-expression-preview/cron-expression-preview.html',
+    styleUrls: ['../../../../lib/cron-expression-preview/cron-expression-preview.css']
 })
 export class CronExpressionPreview {
     

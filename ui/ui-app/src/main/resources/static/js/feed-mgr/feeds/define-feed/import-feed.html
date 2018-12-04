@@ -286,7 +286,7 @@
                          ng-disabled="(vm.uploadInProgress || vm.importFeedForm.$invalid)">
                 {{"views.import_feed.Import_Feed_btn" | translate}}
               </md-button>
-              <md-progress-linear flex md-mode="determinate" value="{{vm.uploadProgress}}" ng-if="vm.uploadInProgress"></md-progress-linear>
+              <md-progress-linear class="md-accent" flex md-mode="determinate" value="{{vm.uploadProgress}}" ng-if="vm.uploadInProgress"></md-progress-linear>
             </div>
           </ng-form>
           <div layout="column">

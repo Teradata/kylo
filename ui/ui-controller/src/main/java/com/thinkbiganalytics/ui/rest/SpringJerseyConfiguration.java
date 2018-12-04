@@ -24,12 +24,9 @@ import com.thinkbiganalytics.spring.FileResourceService;
 
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.jersey.servlet.ServletProperties;
-import org.springframework.boot.autoconfigure.jersey.JerseyProperties;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.inject.Inject;
 
 @Configuration
 public class SpringJerseyConfiguration {

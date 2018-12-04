@@ -133,7 +133,7 @@ angular.module(moduleName)
     .component('nifiPropertyTimeUnitInput', {
         controller: controller,
         controllerAs: "vm",
-        templateUrl: 'js/feed-mgr/shared/nifi-property-input/nifi-property-timeunit-input.html',
+        templateUrl: './nifi-property-timeunit-input.html',
         bindings: {
             property: '=',
             timePeriods: '=?'

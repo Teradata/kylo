@@ -33,8 +33,6 @@ import com.thinkbiganalytics.security.GroupPrincipal;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.Iterator;
 import java.util.Set;
@@ -61,11 +59,6 @@ public class JcrUserGroup extends JcrEntity<UserGroup.ID> implements UserGroup, 
      * The groups property from the mixin tba:userGroupable
      */
     public static final String GROUPS = "tba:groups";
-
-    /**
-     * Encoding for properties
-     */
-    static final String ENCODING = "UTF-8";
 
     /**
      * Name of the {@code enabled} property
@@ -95,11 +88,7 @@ public class JcrUserGroup extends JcrEntity<UserGroup.ID> implements UserGroup, 
     @Nonnull
     @Override
     public String getSystemName() {
-        try {
-            return URLDecoder.decode(JcrPropertyUtil.getName(getNode()), ENCODING);
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("Unsupported encoding for system name of user: " + getNode(), e);
-        }
+        return JcrPropertyUtil.getName(getNode());
     }
 
     /* (non-Javadoc)
@@ -213,9 +202,9 @@ public class JcrUserGroup extends JcrEntity<UserGroup.ID> implements UserGroup, 
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#getPrincial()
      */
     @Override
-    public GroupPrincipal getPrincial() {
+    public GroupPrincipal getPrincipal() {
         Set<Principal> members = StreamSupport.stream(getGroups().spliterator(), false)
-            .map(g -> g.getPrincial())
+            .map(g -> g.getPrincipal())
             .collect(Collectors.toSet());
 
         return new GroupPrincipal(getSystemName(), members);

@@ -1,8 +1,0 @@
-{
-  "templateName" : "Data Ingest - Teradata",
-  "description" : "Teradata Data Ingest",
-  "fileName" : "data_ingest_teradata.template.zip",
-  "checksum" : "1e10e1a9dc7e0f2f76922611d28ff03e",
-  "stream" : false,
-  "installed" : false
-}

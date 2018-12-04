@@ -12,8 +12,8 @@ import {DateFormatConfig, DateFormatResponse, DateFormatType} from "../../api/se
  * A prompt dialog for providing a date format pattern that can be used for formatting or parsing dates or timestamps.
  */
 @Component({
-    styleUrls: ["js/feed-mgr/visual-query/wrangler/core/columns/date-format.component.css"],
-    templateUrl: "js/feed-mgr/visual-query/wrangler/core/columns/date-format.component.html"
+    styleUrls: ["./date-format.component.scss"],
+    templateUrl: "./date-format.component.html"
 })
 export class DateFormatDialog {
 

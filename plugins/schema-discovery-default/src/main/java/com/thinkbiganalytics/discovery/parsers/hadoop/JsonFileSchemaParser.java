@@ -20,10 +20,13 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
+import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 
 import java.io.IOException;
@@ -36,10 +39,9 @@ public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implemen
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
         HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, getSparkFileType(), target, getSparkCommandBuilder());
-        schema.setStructured(true);
-        schema.setHiveFormat(
-            "ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
-
+        HiveTableSettings tableSettings = getHiveTableSettings();
+        schema.setStructured(tableSettings.isStructured());
+        schema.setHiveFormat(tableSettings.getHiveFormat());
         return schema;
     }
 
@@ -49,4 +51,22 @@ public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implemen
     }
 
 
+    @Override
+    public TableSettings deriveTableSettings(TableSchemaType target) throws IOException {
+        return getHiveTableSettings();
+    }
+
+    @Override
+    public TableSettings parseTableSettings(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+        return getHiveTableSettings();
+    }
+
+    private HiveTableSettings getHiveTableSettings(){
+        HiveTableSettings tableSettings = new DefaultHiveTableSettings();
+        tableSettings.setStructured(true);
+        tableSettings.setHiveFormat(
+            "ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
+        return tableSettings;
+
+    }
 }

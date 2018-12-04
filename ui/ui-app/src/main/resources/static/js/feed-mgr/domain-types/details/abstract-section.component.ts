@@ -1,9 +1,9 @@
 import {Input, OnDestroy, OnInit} from "@angular/core";
 import {Subscription} from "rxjs/Subscription";
 
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from '../../services/DomainTypesService';
 import {DomainTypeDetailsService} from "../services/details.service";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { CloneUtil } from "../../../common/utils/clone-util";
 import * as _ from "underscore";
 /**

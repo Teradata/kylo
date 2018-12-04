@@ -1,0 +1,15 @@
+.cron-expression-preview-container {
+  min-height: 20px;
+  padding-left: 0;
+  list-style-type: none;
+}
+
+.cron-expression-preview-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+    display: block;
+    padding: 4px 10px;
+    margin-bottom: -1px;
+}

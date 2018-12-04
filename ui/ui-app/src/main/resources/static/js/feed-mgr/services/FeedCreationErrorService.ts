@@ -22,6 +22,8 @@ import * as _ from "underscore";
 import { Injectable, Inject, Component } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import { TranslateService } from "@ngx-translate/core";
+import {moduleName} from "../module-name";
+import {FeedNifiErrorUtil} from "./feed-nifi-error-util";
 
 class FeedErrorModel {
         isValid: boolean = false;
@@ -38,49 +40,13 @@ class FeedErrorModel {
 export class FeedCreationErrorService {
     constructor (private dialog: MatDialog,
                 private translate: TranslateService) {}
-  
-
-        parseNifiFeedForErrors (nifiFeed:any, errorMap:any) {
-            var count = 0;
-
-            if (nifiFeed != null) {
-
-                if (nifiFeed.errorMessages != null && nifiFeed.errorMessages.length > 0) {
-                    nifiFeed.errorMessages.array.forEach((msg : any) => {
-                        errorMap['FATAL'].push({category: 'General', message: msg});
-                        count++;
-                    });
-                }
-
-                if (nifiFeed.feedProcessGroup != null) {
-                    nifiFeed.feedProcessGroup.errors.forEach((processor:any) => {
-                        if (processor.validationErrors) {
-                            processor.validationErrors.forEach((error:any) => {
-                                let copy:any = {...error,...processor};
-                                copy.validationErrors = null;
-                                errorMap[error.severity].push(copy);
-                                count++;
-                            });
-                        }
-                    });
-                }
-                if (errorMap['FATAL'].length == 0) {
-                    delete errorMap['FATAL'];
-                }
-                if (errorMap['WARN'].length == 0) {
-                    delete errorMap['WARN'];
-                }
-            }
-            return count;
-
-        }
 
         buildErrorMapAndSummaryMessage () {
             var count = 0;
             var errorMap:any = {"FATAL": [], "WARN": []};
             if (this.feedError.nifiFeed != null && this.feedError.response.status < 500) {
 
-                count = this.parseNifiFeedForErrors(this.feedError.nifiFeed, errorMap);
+                count = FeedNifiErrorUtil.parseNifiFeedForErrors(this.feedError.nifiFeed, errorMap);
                 this.feedError.feedErrorsData = errorMap;
                 this.feedError.feedErrorsCount = count;
 
@@ -126,7 +92,7 @@ export class FeedCreationErrorService {
             this.feedError.hasErrors = this.feedError.feedErrorsCount > 0;
         }
         parseNifiFeedErrors (nifiFeed:any, errorMap:any) {
-            return this.parseNifiFeedForErrors(nifiFeed, errorMap);
+            return FeedNifiErrorUtil.parseNifiFeedForErrors(nifiFeed, errorMap);
         }
         reset () {
             this.feedError = new FeedErrorModel();
@@ -149,7 +115,7 @@ export class FeedCreationErrorService {
  */
 @Component({
     selector: 'feed-error-dialog-controller',
-    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html'
+    templateUrl: '../feeds/define-feed/feed-error-dialog.html'
 })
 export class FeedErrorDialogController {
 

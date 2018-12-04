@@ -1,5 +1,5 @@
 import * as _ from 'underscore';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 
 export class CheckAll {
     isIndeterminate: boolean = false;
@@ -13,7 +13,7 @@ export class CheckAll {
     setup(editModel:any) {
         this.model = editModel;
         this.totalChecked = 0;
-        _.each(this.model.fieldPolicies, (field) => {
+        _.each(this.model.feedDefinitionFieldPolicies, (field) => {
             if (field[this.fieldName]) {
                 this.totalChecked++;
             }
@@ -32,7 +32,7 @@ export class CheckAll {
     }
 
     markChecked() {
-        if (ObjectUtils.isDefined(this.model) && this.totalChecked == this.model.fieldPolicies.length) {
+        if (ObjectUtils.isDefined(this.model) && this.totalChecked == this.model.feedDefinitionFieldPolicies.length) {
             this.isChecked = true;
             this.isIndeterminate = false;
         }
@@ -49,11 +49,11 @@ export class CheckAll {
     toggleAll() {
         var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
         if(ObjectUtils.isDefined(this.model) ) {
-            _.each(this.model.fieldPolicies, (field) => {
+            _.each(this.model.feedDefinitionFieldPolicies, (field) => {
                 field[this.fieldName] = checked;
             });
             if (checked) {
-                this.totalChecked = this.model.fieldPolicies.length;
+                this.totalChecked = this.model.feedDefinitionFieldPolicies.length;
             }
             else {
                 this.totalChecked = 0;

@@ -1,0 +1,16 @@
+<define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (cancelEdit)="onCancelEdit()" (saved)="onSave()">
+
+  <feed-step-readonly-content>
+    <div fxLayout="column">
+
+    </div>
+
+  </feed-step-readonly-content>
+
+  <feed-step-edit-content>
+   <form [formGroup]="formGroup">
+    </form>
+
+  </feed-step-edit-content>
+
+</define-feed-step-card>

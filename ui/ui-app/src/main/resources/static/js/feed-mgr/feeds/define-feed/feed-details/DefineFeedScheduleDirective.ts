@@ -20,7 +20,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 
 export class DefineFeedScheduleController {
     stepperController: any;
@@ -202,7 +202,7 @@ export class DefineFeedScheduleController {
             }
             this.$mdDialog.show({
                 controller: 'FeedPreconditionsDialogController',
-                templateUrl: 'js/feed-mgr/feeds/shared/define-feed-preconditions-dialog.html',
+                templateUrl: '../../shared/define-feed-preconditions-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
@@ -412,5 +412,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedScheduleController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-schedule.html',
+        templateUrl: './define-feed-schedule.html',
     });

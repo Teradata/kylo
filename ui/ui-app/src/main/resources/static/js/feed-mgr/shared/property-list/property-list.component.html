@@ -17,51 +17,86 @@
   limitations under the License.
   #L%
   -->
-<!-- <section class="mat-typography">
-  <h1>{{title}}</h1>
+
+<!-- <section class="pad-top-lg pad-bottom-sm md-subhead" >
+  Custom Properties
 </section> -->
-<div *ngIf="editable" fxLayout="column" fxFlex>
-<ng-template ngFor let-property let-$index="index" [ngForOf]="properties" class="feed-user-property" >
-<ng-container fxLayout="row" [formGroup]="userPropertyForm">
-
-  <mat-form-field fxFlex *ngIf="property.locked">
-    <input matInput [formControlName]="property.id+'_value'"  [placeholder]="property.displayName">
-  </mat-form-field>
-
-  <mat-form-field fxFlex="50" *ngIf="!property.locked">
-    <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" >
-    <mat-error *ngIf="hasError(property,'systemName')">
-      {{getErrorMessage(property,'systemName')}}
-    </mat-error>
-    <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
-  </mat-form-field>
-
-  <mat-form-field fxFlex="50" *ngIf="!property.locked">
-    <input matInput [formControlName]="property.id+'_value'" placeholder="Value">
-    <mat-error *ngIf="hasError(property,'value')">
-      {{getErrorMessage(property,'value')}}
-    </mat-error>
-    <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
-  </mat-form-field>
-
-  <button mat-button class="primary" (click)="removeProperty($index)"><mat-icon>delete</mat-icon></button>
-</ng-container>
-</ng-template>
+<ng-container *ngIf="editable">
+  <div class="section-header" *ngIf="title">{{title}}</div>
 
 
-<button mat-button (click)="addProperty()">New Property</button>
-</div>
+  <div *ngIf="properties.length > 0">
+    <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
+      <ng-container fxLayout="row" [formGroup]="userPropertyForm">
 
-<div *ngIf="!editable" fxLayout="column" fxFlex>
-  <div *ngFor="let property of properties" fxLayout="row" class="feed-user-property">
-    <div *ngIf="property.locked" layout="column" flex="25" class="property-name">
-      <span>{{property.displayName}}</span>
-      <span class="hint">{{property.description}}</span>
-    </div>
-    <span *ngIf="!property.locked" flex="25" class="property-name">{{property.systemName}}</span>
+        <mat-form-field fxFlex *ngIf="property.locked">
+          <input matInput [formControlName]="property.id+'_value'" [placeholder]="property.displayName">
+          <mat-error *ngIf="hasError(property,'value')">
+            {{getErrorMessage(property,'value')}}
+          </mat-error>
+          <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+        </mat-form-field>
 
-    <div fxFlex>
-      {{property.value}}
-    </div>
+        <mat-form-field fxFlex="50" *ngIf="!property.locked">
+          <input matInput [formControlName]="property.id+'_systemName'" placeholder="Name" required>
+          <mat-error *ngIf="hasError(property,'systemName')">
+            {{getErrorMessage(property,'systemName')}}
+          </mat-error>
+          <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field fxFlex="50" *ngIf="!property.locked" class="pad-left">
+          <input matInput [formControlName]="property.id+'_value'" placeholder="Value">
+          <mat-error *ngIf="hasError(property,'value')">
+            {{getErrorMessage(property,'value')}}
+          </mat-error>
+          <mat-hint *ngIf="property.description">{{property.description}}</mat-hint>
+        </mat-form-field>
+
+        <button mat-button class="primary" (click)="removeProperty($index)" *ngIf="!property.locked">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </ng-container>
+    </ng-template>
   </div>
-</div>
+
+  <div *ngIf="properties.length ==0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>No properties are defined</h2>
+    <button mat-raised-button (click)="addProperty()">New Property</button>
+  </div>
+
+  <div class="pad-top">
+  <button mat-raised-button (click)="addProperty()" *ngIf="properties.length > 0">New Property</button>
+  </div>
+
+
+</ng-container>
+
+<ng-container *ngIf="!editable">
+  <div *ngIf="properties.length >0;" fxLayout="column" fxFlex>
+    <div class="section-header" *ngIf="title">{{title}}</div>
+      <mat-list>
+
+        <ng-template ngFor let-property let-$index="index" [ngForOf]="properties">
+          <mat-list-item>
+            <h2 mat-line fxLayout="row">
+              <span  *ngIf="property.locked" fxFlex="25">{{property.displayName}}</span>
+              <span *ngIf="!property.locked" fxFlex="25">{{property.systemName}}</span>
+              <span fxFlex>{{property.value}}</span>
+            </h2>
+            <p mat-line *ngIf="property.description">{{property.description}}</p>
+
+          </mat-list-item>
+          <mat-divider></mat-divider>
+
+        </ng-template>
+      </mat-list>
+  </div>
+
+  <div *ngIf="properties.length ==0"  fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>No properties are defined</h2>
+  </div>
+
+</ng-container>

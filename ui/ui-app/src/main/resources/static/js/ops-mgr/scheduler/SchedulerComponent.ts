@@ -1,16 +1,16 @@
 import * as _ from 'underscore';
 import * as moment from "moment";
+import {AccessControlService} from '../../services/AccessControlService';
+import {Utils} from "../../services/Utils";
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import Utils from '../../services/Utils';
-import AccessControlService from '../../services/AccessControlService';
 import AccessConstants from '../../constants/AccessConstants';
 import { HttpClient } from '@angular/common/http';
 import { timeout } from 'rxjs/operator/timeout';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 
 @Component({
     selector : 'scheduler-component',
-    templateUrl: "js/ops-mgr/scheduler/scheduler.html",
+    templateUrl: "./scheduler.html",
     styles : [`.ListItemContainer{
         padding: 0px !important;
         line-height: inherit;
@@ -233,7 +233,7 @@ export class SchedulerComponent implements OnInit, OnDestroy{
         this.http.get(this.API_URL_BASE + "/metadata").toPromise().then((response: any) => {
             var data = response;
             this.clearSchedulerDetails();
-            if (ObjectUtils.isObject(data)) {
+            if (_.isObject(data)) {
                 this.populateSchedulerDetails(data);
             }
             this.fetchingMetadata = false;

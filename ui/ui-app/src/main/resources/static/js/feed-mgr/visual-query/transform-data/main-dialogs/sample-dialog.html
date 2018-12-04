@@ -1,0 +1,46 @@
+<form #theForm="ngForm">
+  <mat-toolbar [color]="['primary']">
+    <span>Sample Rows</span>
+    <span fxFlex="1 1 auto"></span>
+    <button mat-icon-button (click)="hide()">
+      <mat-icon arial-label="Close dialog">close</mat-icon>
+    </button>
+  </mat-toolbar>
+  <div mat-dialog-actions class="mat-dialog-actions">
+    <span fxFlex="1 1 auto"></span>
+    <button mat-button (click)="hide()">Cancel</button>
+    <button mat-raised-button style="margin-right:10px" [color]="['primary']" [disabled]="theForm.invalid" (click)="apply()">Apply</button>
+  </div>
+  <mat-divider [inset]="false"></mat-divider>
+
+  <div mat-dialog-content class="mat-dialog-content" style="height:100%;max-height:80vh;padding:0px;padding-top:10px;overflow-x:hidden;overflow-y:auto">
+    <div class="layout-padding">
+
+      <div class="sd-subheader-first">Sample method:</div>
+
+      <mat-selection-list #methodList name="sampleMethod">
+        <mat-list-option *ngFor="let item of options" [value]="item.method" [selected]="(item.method == method)" style="margin-bottom:-20px">
+
+          <h3 matLine>{{item.label}}</h3>
+          <p matLine>
+            <span> {{item.description}} </span>
+          </p>
+
+        </mat-list-option>
+      </mat-selection-list>
+
+      <div *ngIf="method != 'none'" class="sd-subheader">
+        <div>Sample size:</div>
+        <mat-form-field mat-line *ngIf="method == 'ratio'" class="sd-input">
+          <input matInput placeholder="Ratio %" [(ngModel)]="ratio" type="number" min=".1" max="100" step=".1" required name="ratio" pattern="(?:100(?:\.00?)?|\d?\d(?:\.\d\d?)?)$">
+        </mat-form-field>
+
+        <mat-form-field mat-line *ngIf="method != 'ratio'" class="sd-input">
+          <input matInput placeholder="# Records" type="number" min="1" step="1000" pattern="(^[1-9]\d{0,8}$)" [(ngModel)]="numSamples" required name="records">
+        </mat-form-field>
+      </div>
+    </div>
+
+  </div>
+
+</form>

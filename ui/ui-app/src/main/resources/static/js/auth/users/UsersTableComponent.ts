@@ -1,21 +1,21 @@
 import * as _ from 'underscore';
-import UserService from "../services/UserService";
-import AddButtonService from "../../services/AddButtonService";
+import {UserService} from "../services/UserService";
+import {AddButtonService} from "../../services/AddButtonService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { Component } from '@angular/core';
 import { ITdDataTableColumn,  TdDataTableService } from '@covalent/core/data-table';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 const PAGE_NAME: string = "users";
 
 
 @Component({
     selector: 'users-Table',
-    templateUrl: "js/auth/users/users-table.html"
+    templateUrl: "./users-table.html"
 })
-export default class UsersTableComponent extends BaseFilteredPaginatedTableView{
+export class UsersTableComponent extends BaseFilteredPaginatedTableView{
     /**
      * Page title.
      * @type {string}

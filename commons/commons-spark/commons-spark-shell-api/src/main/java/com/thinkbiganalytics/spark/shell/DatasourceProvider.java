@@ -66,4 +66,19 @@ public interface DatasourceProvider<T> {
     @SuppressWarnings("unused")  // method is used by generated Scala code
     // @formatter:on
     T getTableFromDatasource(@Nonnull String table, @Nonnull String datasourceId, @Nonnull SQLContext sqlContext);
+
+    /**
+     * Gets the specified table from the specified data source.
+     *
+     * @param table        the table name
+     * @param datasourceId the data source id
+     * @param sqlContext   the Spark SQL context
+     * @return the table dataset
+     * @throws IllegalArgumentException if the data source does not exist or does not provide tables
+     */
+    @Nonnull
+    // @formatter:off
+    @SuppressWarnings("unused")  // method is used by generated Scala code
+    // @formatter:on
+    T getTableFromCatalogDataSource(@Nonnull String table, @Nonnull String datasourceId, @Nonnull SQLContext sqlContext);
 }

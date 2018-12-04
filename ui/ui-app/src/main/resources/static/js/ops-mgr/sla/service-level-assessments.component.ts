@@ -3,7 +3,7 @@ import { Component } from "@angular/core";
 
 @Component({
     selector: 'service-level-assessments',
-    templateUrl: 'js/ops-mgr/sla/assessments.html'
+    templateUrl: './assessments.html'
 })
 export class serviceLevelAssessmentsComponent {
 

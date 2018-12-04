@@ -1,6 +1,6 @@
 import AccessConstants from "../../constants/AccessConstants";
 import { Ng2StateDeclaration } from "@uirouter/angular";
-import OverviewComponent from "./OverviewComponent";
+import {OverviewComponent} from "./OverviewComponent";
 
 export const overviewStates: Ng2StateDeclaration[] = [ 
     { 

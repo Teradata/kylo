@@ -1,14 +1,15 @@
 import * as _ from "underscore";
 import {FeedFieldPolicyDialogData} from "./feed-field-policy-dialog-data";
 import {FieldPolicyOptionsService} from "../field-policies-angular2/field-policy-options.service";
-import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy, Output, EventEmitter} from "@angular/core";
-import {PolicyInputFormService} from "../field-policies-angular2/policy-input-form.service";
+import {Component, Inject, OnDestroy, OnInit, ChangeDetectionStrategy, Output, EventEmitter, ViewChild} from "@angular/core";
+import {PolicyInputFormService} from "../../../../lib/feed-mgr/shared/field-policies-angular2/policy-input-form.service";
 import {FormGroup} from "@angular/forms";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {MatRadioChange} from "@angular/material/radio";
 import {MatSelectChange} from "@angular/material/select";
 import {CloneUtil} from "../../../common/utils/clone-util";
+import {PolicyInputFormComponent} from "../field-policies-angular2/policy-input-form.component";
 
 
 interface ViewText {
@@ -25,11 +26,14 @@ enum EditMode {
 
 @Component({
     selector:"feed-field-policy-rules-dialog",
-    templateUrl: "js/feed-mgr/shared/feed-field-policy-rules/feed-field-policy-rules-dialog.component.html"
+    templateUrl: "./feed-field-policy-rules-dialog.component.html"
 })
 export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
-    private loading = false;
+    loading = false;
+
+    @ViewChild(PolicyInputFormComponent)
+    policyInputForm:PolicyInputFormComponent
 
     /**
      * Rule Type options for the std or vaidators
@@ -114,7 +118,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
 
 
 
-    viewText :ViewText = {modeText:"Add",title:"Add Field Policies",titleText:"Add a new Policy", addText:"ADD RULE", cancelText:"CANCEL ADD"}
+    viewText :ViewText = {modeText:"Add",title:"Field Policies",titleText:"Add a new policy", addText:"Add Rule", cancelText:"Cancel Add"}
 
     constructor(
         public fieldPolicyOptionsService: FieldPolicyOptionsService,
@@ -193,13 +197,13 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
      * When a policy is reordered
      * @param $index
      */
-    onMovedPolicyRule($index: any) {
-        this.policyRules.splice($index, 1);
+    onMovedPolicyRule(r: any, list: any[]) {
+        list.splice(list.indexOf(r), 1);
         this.moved = true;
         this.pendingEdits = true;
         //resequence
-        this.policyRules.forEach((rule:any,index:number) =>rule.sequence = index);
-
+        list.forEach((rule:any,index:number) =>rule.sequence = index);
+        this.policyRules = list;
     }
 
 
@@ -330,6 +334,7 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
     private _changedOptionType(type: string) {
         this.options = type == FieldPolicyOptionsService.STANDARDIZATION ? this.standardizers : this.validators;
         this.selectedOptionType = type;
+        this.policyInputForm.resetForm();
     }
 
 
@@ -338,10 +343,10 @@ export class FeedFieldPolicyRulesDialogComponent implements OnInit,OnDestroy{
     /**
      * when canceling a pending edit
      */
-    private cancelEdit() {
+    cancelEdit() {
         this.editMode = EditMode.NEW;
-        this.viewText.addText = 'ADD RULE';
-        this.viewText.cancelText = 'CANCEL ADD';
+        this.viewText.addText = 'Add Rule';
+        this.viewText.cancelText = 'Cancel Add';
         this.viewText.titleText = 'Add a new policy';
 
         this.ruleType = null;

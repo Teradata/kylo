@@ -23,16 +23,12 @@ package com.thinkbiganalytics.metadata.api.feed;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
 /**
  *
  */
 public interface FeedSource extends FeedConnection {
 
-//    interface ID extends Serializable { }
-//
-//    ID getId();
+    boolean isSample();
 
-    ServiceLevelAgreement getAgreement();
+    
 }

@@ -1,0 +1,54 @@
+<define-feed-step-card [feed]="feed" [step]="step" [singleCardView]="false" [displayEditActions]="false">
+  <feed-step-custom-content>
+
+    <mat-card class="feed-card" fxFlex >
+      <mat-card-header>
+        <mat-card-title>Source</mat-card-title>
+        <mat-card-subtitle>Specify source options</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content class="pull-top-sm">
+        <form [formGroup]="sourcePropertiesForm">
+          <feed-nifi-properties #feedNifiPropertiesComponent [feed]="feed" [step]="step" [formGroup]="sourcePropertiesForm" mode="INPUT" (inputProcessorChanged)="onInputProcessorChanged($event)"  ></feed-nifi-properties>
+        </form>
+      </mat-card-content>
+      <mat-card-actions *ngIf="!feed.readonly">
+        <button mat-button (click)="onCancelEdit()">Cancel</button>
+        <button mat-raised-button color="accent" (click)="onSave()" [disabled]="!isFormValid()">Save</button>
+      </mat-card-actions>
+    </mat-card>
+    <!--
+        <skip-header *ngIf="allowSkipHeaderOption()" [formGroup]="sourceForm" [feed]="feed" [readonly]="feed.readonly"
+                     [title]="'views.define-feed-general-info.FeedOptions' | translate" [subtitle]="'views.define-feed-general-info.AdditionalFeedOptions' | translate">
+
+        </skip-header>
+
+        <mat-card class="feed-card">
+          <mat-card-header>
+            <mat-card-title>Advanced Options</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="layout-padding-indent-20">
+              <div fxLayout="row">
+                <mat-form-field class="mat-form-field-width" fxFlex>
+                  <textarea matInput placeholder="Raw Storage Format" [(ngModel)]="feed.table.feedFormat" [disabled]="feed.readonly"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="hint">Specify the storage format clause for feed Hive table</div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+    -->
+
+
+  </feed-step-custom-content>
+</define-feed-step-card>
+
+<!--
+<ng-template #toolbarActionTemplate>
+  <div *ngIf="!feed.readonly">
+    <button mat-button (click)="onCancelEdit()">Cancel</button>
+    <button mat-raised-button color="accent" (click)="onSave()">Save</button>
+  </div>
+</ng-template>
+-->

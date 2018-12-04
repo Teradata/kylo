@@ -1,15 +1,14 @@
-import * as angular from "angular";
+import {Injectable} from "@angular/core";
 import * as _ from "underscore";
 
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {PageSpec} from "../../wrangler/query-engine";
 import {ScriptState} from "../../wrangler";
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
-
 const PAGE_ROWS = 64;
 const PAGE_COLS = 1000;
 
+@Injectable()
 export class WranglerDataService {
 
     /**
@@ -28,15 +27,10 @@ export class WranglerDataService {
 
     isLoading: boolean;
 
-
     /**
      * Table state (function index) for
      */
     state: number;
-
-    constructor(private $rootscope: any, private $q: angular.IQService) {
-
-    }
 
     cellPageName(i: number, j: number): string {
         var I = (i / PAGE_ROWS) | 0;
@@ -117,7 +111,7 @@ export class WranglerDataService {
     getHeader(j: number): object {
 
         if (j >= 0 && this.columns_ && j < this.columns_.length) {
-            return angular.extend(this.columns_[j], {
+            return _.extend(this.columns_[j], {
                 field: (this.columns_[j] as any).name,
                 index: j,
                 sort: {
@@ -130,7 +124,3 @@ export class WranglerDataService {
 
 
 }
-
-angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q",  WranglerDataService]);
-
-

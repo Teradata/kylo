@@ -1,6 +1,6 @@
 import * as _ from "underscore";
 import { Component, Input, SimpleChanges, Output, EventEmitter } from '@angular/core';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 /**
  * A user-defined property (or business metadata) on a category or feed.
@@ -18,7 +18,7 @@ import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: 'thinkbig-property-list-editor',
-    templateUrl: 'js/feed-mgr/shared/property-list/property-list-editor.html'
+    templateUrl: './property-list-editor.html'
 })
 export class PropertyListEditorComponent {
     

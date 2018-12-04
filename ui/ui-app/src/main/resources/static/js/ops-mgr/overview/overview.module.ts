@@ -36,10 +36,10 @@ import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import * as angular from "angular";
 import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
-import AlertsComponent from "./alerts/AlertsComponent";
-import JobStatusIndicator from "./job-status-indicator/JobStatusIndicatorComponent";
-import FeedStatusIndicator from "./feed-status-indicator/FeedStatusIndicatorComponent";
-import OverviewComponent from "./OverviewComponent";
+import {AlertsComponent} from "./alerts/AlertsComponent";
+import {JobStatusIndicatorComponent} from "./job-status-indicator/JobStatusIndicatorComponent";
+import {FeedStatusIndicatorComponent} from "./feed-status-indicator/FeedStatusIndicatorComponent";
+import {OverviewComponent} from "./OverviewComponent";
 import { DataDetailsDialogComponent, DataConfidenceIndicatorComponent } from "./data-confidence-indicator/DataConfidenceIndicatorComponent";
 
 import { NvD3Module } from 'ng2-nvd3';
@@ -50,8 +50,8 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 @NgModule({
     declarations: [
         AlertsComponent,
-        JobStatusIndicator,
-        FeedStatusIndicator,
+        JobStatusIndicatorComponent,
+        FeedStatusIndicatorComponent,
         OverviewComponent,
         DataDetailsDialogComponent,
         ServiceIndicatorComponent,
@@ -61,8 +61,8 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     ],
     entryComponents: [
         AlertsComponent,
-        JobStatusIndicator,
-        FeedStatusIndicator,
+        JobStatusIndicatorComponent,
+        FeedStatusIndicatorComponent,
         OverviewComponent,
         DataDetailsDialogComponent,
         ServiceIndicatorComponent,

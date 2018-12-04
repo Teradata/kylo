@@ -34,8 +34,10 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateExportException;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 import com.thinkbiganalytics.security.AccessController;
@@ -129,8 +131,7 @@ public class DefaultTemplateExporter implements TemplateExporter {
     }
 
     private ExportTemplate export(String templateId) {
-        RegisteredTemplate
-            template =
+        RegisteredTemplate template =
             registeredTemplateService.findRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
         if (template != null) {
             List<String> connectingReusableTemplates = new ArrayList<>();
@@ -180,7 +181,6 @@ public class DefaultTemplateExporter implements TemplateExporter {
                         templateRemoteInputPorts.addAll(remoteProcessGroupInputPorts);
                     });
                 }
-
             }
 
             String templateXml = null;
@@ -195,18 +195,19 @@ public class DefaultTemplateExporter implements TemplateExporter {
                         }
                     }
                 }
+            } catch (NifiConnectionException e) {
+                throw e;
             } catch (Exception e) {
-                throw new UnsupportedOperationException("Unable to find Nifi Template for " + templateId);
+                throw new TemplateExportException("Unable to find Nifi Template for " + templateId);
             }
 
             //create a zip file with the template and xml
             byte[] zipFile = zip(template, templateXml, connectingReusableTemplates, outputPortConnectionMetadata, templateRemoteInputPorts);
 
-            return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", template.getTemplateName(), template.getDescription(), template.isStream(),
-                                      zipFile);
-
+            return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", template.getTemplateName(),
+                                      template.getDescription(), template.isStream(), zipFile);
         } else {
-            throw new UnsupportedOperationException("Unable to find Template for " + templateId);
+            throw new TemplateExportException("Unable to find Template for " + templateId);
         }
     }
 

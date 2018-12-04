@@ -1,0 +1,125 @@
+<div [formGroup]="form" fxLayout="column">
+
+  <div *ngIf="readonly && field.ngIf(form) == true" fxLayout="column" class="{{field.styleClass}}">
+
+    <section  *ngIf="field.controlType == 'section-header'" class="pad-top-sm">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <h3  class="subheading-2">{{field.placeholder}}</h3>
+    </section>
+
+    <div *ngIf="field.controlType == 'static-text'" fxLayout="column" class="pad-top-sm">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
+      <mat-hint *ngIf="field.hint">{{field.hint}}</mat-hint>
+    </div>
+
+    <div fxLayout="column" *ngIf="field.controlType != 'section-header' && field.controlType != 'static-text'" class="pad-top-sm">
+      <div fxLayout="row">
+        <span fxFlex="30%">{{field.placeholder}}</span>
+        <span fxFlex="5%"></span>
+        <span fxFlex *ngIf="field.controlType != 'section-header'">{{field.readonlyValue}}</span>
+      </div>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
+    </div>
+
+  </div>
+
+  <div [ngSwitch]="field.controlType" *ngIf="!readonly && field.ngIf(form) == true  && (hasControl())" fxLayout="column"  class="{{field.styleClass}}">
+
+    <section class="pad-top-sm" *ngSwitchCase="'section-header'">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <h3 class="subheading-2">{{field.placeholder}}</h3>
+    </section>
+
+    <div *ngSwitchCase="'icon'" class="pad-top-sm" fxLayout="column">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <mat-icon [style.font-size.px]="field.size">{{field.name}}</mat-icon>
+    </div>
+
+    <div *ngSwitchCase="'static-text'" class="pad-top-sm" fxLayout="column">
+      <mat-divider *ngIf="field.showDivider"></mat-divider>
+      <div [innerHTML]="field.staticText" class="{{field.textStyleClass}}"></div>
+      <mat-hint *ngIf="field.hint">{{field.hint}}</mat-hint>
+    </div>
+
+    <mat-form-field *ngSwitchCase="'textbox'" class="pad-top-sm" >
+      <input matInput [formControlName]="field.key" [placeholder]="field.placeholder" [id]="field.key" [type]="field.type" [pattern]="field.pattern" [readonly]="field.readonly" [autocomplete]="field.type == 'password' ? 'new-password' : 'off'" [required]="field.required">
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+    <cron-expression-preview2 *ngIf="field.type == 'cron'" [control]="form.controls[field.key]"></cron-expression-preview2>
+
+
+    <mat-form-field *ngSwitchCase="'select'" class="pad-top-sm">
+      <mat-select [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder" [required]="field.required">
+        <mat-option *ngFor="let opt of field.options" [value]="opt.value">
+          {{opt.label}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+
+    <div *ngSwitchCase="'checkbox'" class="pad-top-sm" fxLayout="column">
+      <mat-checkbox
+          [id]="field.key" [checked]="field.checked"   [formControlName]="field.key" labelPosition="before" (change)="field.onChange($event)">{{field.placeholder}}
+      </mat-checkbox>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
+    </div>
+
+    <div *ngSwitchCase="'radio'" class="pad-top-sm">
+      <mat-radio-group [id]="field.key" [formControlName]="field.key">
+        <ng-template ngFor let-opt let-index="index" let-last="last" [ngForOf]="field.options">
+          <mat-radio-button [value]="opt.value">{{opt.label}}</mat-radio-button>
+        </ng-template>
+      </mat-radio-group>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <br>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
+    </div>
+
+    <mat-form-field *ngSwitchCase="'textarea'" class="pad-top-sm">
+    <textarea matInput [id]="field.key" [formControlName]="field.key" [placeholder]="field.placeholder" [readonly]="field.readonly">
+        {{field.model[field['modelValueProperty']]}}
+    </textarea>
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint>{{field.hint}}</mat-hint>
+    </mat-form-field>
+
+    <div *ngSwitchCase="'chips'" class="pad-top-sm">
+      <td-chips [id]="field.key"
+          [chipAddition]="field.chipAddition"
+                [chipRemoval]="field.chipRemoval"
+                [items]="field.filteredItems"
+                placeholder="{{field.placeholder}}"
+                (inputChange)="field.filterItems($event)"
+                [(ngModel)]="field.selectedItems"
+                (add)="field.updateModel($event); validateRequiredChips()"
+                (remove)="field.updateModel($event); validateRequiredChips()"
+                [ngModelOptions]="{standalone: true}"
+                [stacked]="field.stacked"
+                [required]="field.required"
+                requireMatch>
+      </td-chips>
+      <!-- hidden input for chips form validation -->
+     <!-- <input [formControlName]="field.key" type="hidden"> -->
+      <mat-error *ngIf="!isValid">
+        {{getErrorMessage()}}
+      </mat-error>
+      <mat-hint class="hint">{{field.hint}}</mat-hint>
+    </div>
+
+  </div>
+
+</div>

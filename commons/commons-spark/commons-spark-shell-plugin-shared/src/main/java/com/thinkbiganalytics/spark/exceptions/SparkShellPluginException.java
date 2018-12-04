@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.exceptions;
  * #L%
  */
 
+
 public class SparkShellPluginException  extends RuntimeException {
     public SparkShellPluginException() {
         super();

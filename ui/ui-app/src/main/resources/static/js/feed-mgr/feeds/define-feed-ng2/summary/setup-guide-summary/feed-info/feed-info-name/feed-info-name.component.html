@@ -1,0 +1,8 @@
+<feed-info-item [feed]="feed" name="{{feed.feedName}}" description="Name" icon="class" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()" [(editing)]="editing">
+<form [formGroup]="formGroup">
+  <system-feed-name #systemFeedName [formGroup]="formGroup" [feed]="feed" layout="column"></system-feed-name>
+</form>
+</feed-info-item>
+
+
+

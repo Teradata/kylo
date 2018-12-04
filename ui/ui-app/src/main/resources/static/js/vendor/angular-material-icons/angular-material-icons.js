@@ -15,7 +15,7 @@ angular.module('ngMdIcons', [])
             restrict: 'AE',
             link: function(scope, element, attr) {
 
-                var icon, size, viewBox;
+                var icon, size, width, height, viewBox;
 
                 var render = function() {
                     // icon
@@ -35,13 +35,23 @@ angular.module('ngMdIcons', [])
                         icon = 'help';
                     }
 
+                    if (attr.width !== undefined) {
+                        width = attr.width;
+                    }
                     // size
+                    if (attr.height !== undefined) {
+                        height = attr.height;
+                    }
+
                     if (attr.size !== undefined) {
                         size = attr.size;
                     }
                     else if (size !== null) {
                         size = 24;
                     }
+
+                    height = height != undefined ? height : size;
+                    width = width != undefined ? width : size;
 
                     // viewBox
                     if (attr.viewBox !== undefined) {
@@ -52,7 +62,7 @@ angular.module('ngMdIcons', [])
                     }
 
                     // render
-                    element.html('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + viewBox + '" width="' + size + '" height="' + size + '">' + shapes[icon] + '</svg>');
+                    element.html('<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + viewBox + '" width="' + width + '" height="' + height + '">' + shapes[icon] + '</svg>');
                 };
 
                 var replace = function(newicon) {
@@ -62,7 +72,7 @@ angular.module('ngMdIcons', [])
                     }
                     if (newicon === icon) { return; }
                     // render new and old icons (old icon will be shown by default)
-                    element.html('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + size + '" height="' + size + '"><g id="' + newicon + '" style="display:none">' + shapes[newicon] + '</g><g id="' + icon + '" style="display:none">' + shapes[icon] + '</g></svg>');
+                    element.html('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + width + '" height="' + height + '"><g id="' + newicon + '" style="display:none">' + shapes[newicon] + '</g><g id="' + icon + '" style="display:none">' + shapes[icon] + '</g></svg>');
                     // morph
                     var options = JSON.parse(attr.options || null);
                     try {

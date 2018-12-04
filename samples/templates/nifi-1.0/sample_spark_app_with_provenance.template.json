@@ -1,8 +1,0 @@
-{
-  "templateName" : "Sample Spark App with Provenance",
-  "description" : "Sample Spark application that uses the provenance api to add additional provenance events",
-  "fileName" : "sample_spark_app_with_provenance.template.zip",
-  "checksum" : "de8bc44dd11e68bb96d043d1a1688d44",
-  "stream" : false,
-  "lastModified" : 1530345002000
-}

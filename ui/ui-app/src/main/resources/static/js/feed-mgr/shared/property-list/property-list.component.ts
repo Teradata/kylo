@@ -1,10 +1,8 @@
-import * as _ from "underscore";
-import {UserProperty} from "../../model/user-property.model";
-import {CloneUtil} from "../../../common/utils/clone-util";
-import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from "@angular/core";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
-import {FormControlValidation} from "../../../common/utils/form-control-validation";
-import {FieldPolicyProperty} from "../../model/field-policy";
+import * as _ from "underscore";
+import {FormControlValidation} from "../../../../lib/common/utils/form-control-validation";
+import {UserProperty} from "../../model/user-property.model";
 
 
 /**
@@ -28,13 +26,13 @@ import {FieldPolicyProperty} from "../../model/field-policy";
  */
 @Component({
     selector: "thinkbig-property-list",
-    styleUrls: ["js/feed-mgr/shared/property-list/property-list.component.css"],
-    templateUrl: "js/feed-mgr/shared/property-list/property-list.component.html"
+    styleUrls: ["./property-list.component.css"],
+    templateUrl: "./property-list.component.html"
 })
 export class PropertyListComponent  implements OnInit, OnDestroy{
 
     @Input()
-    title:string = "Properties"
+    title?:string;
 
     @Input()
     editable:boolean;
@@ -46,10 +44,16 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
     @Input()
     properties: UserProperty[] = [];
 
+    @Output()
+    propertiesChange = new EventEmitter<UserProperty[]>();
+
     @Input()
     parentFormGroup:FormGroup;
 
     userPropertyForm: FormGroup;
+
+    component:PropertyListComponent = this;
+
 
     constructor() {
          this.userPropertyForm = new FormGroup({});
@@ -72,7 +76,7 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
      * Update the Model 'properties' array with the form values
      */
     updateModel(){
-        console.log("Update Model", this.userPropertyForm.value, 'this.properties',this.properties);
+
         this.properties.map(property => {
             property.systemName = this.userPropertyForm.value[this.formControlKey(property,"systemName")];
             property.value = this.userPropertyForm.value[this.formControlKey(property,"value")];
@@ -117,6 +121,8 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         let property = new UserProperty({order:this.properties.length});
         this.properties.push(property);
         this.registerFormControls(property);
+        this.propertiesChange.emit(this.properties)
+
     };
 
     /**
@@ -130,6 +136,7 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         //remove the form controls
         this.userPropertyForm.removeControl(this.formControlKey(property,"value"))
         this.userPropertyForm.removeControl(this.formControlKey(property,"systemName"))
+        this.propertiesChange.emit(this.properties)
     }
 
     /**
@@ -145,8 +152,10 @@ export class PropertyListComponent  implements OnInit, OnDestroy{
         if (property.required) {
             valueValidators.push(Validators.required)
         }
-        this.userPropertyForm.registerControl(this.formControlKey(property, "value"), new FormControl(property.value, valueValidators));
-        this.userPropertyForm.registerControl(this.formControlKey(property, "systemName"), new FormControl(property.systemName, [Validators.required, this.duplicatePropertyValidator(property)]))
+        let valueControl = new FormControl(property.value, valueValidators);
+        let systemNameControl = new FormControl(property.systemName, [Validators.required, this.duplicatePropertyValidator(property)])
+        this.userPropertyForm.addControl(this.formControlKey(property, "value"), valueControl);
+        this.userPropertyForm.addControl(this.formControlKey(property, "systemName"), systemNameControl)
 
     }
 

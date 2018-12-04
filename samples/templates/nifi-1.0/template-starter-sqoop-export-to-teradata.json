@@ -1,8 +1,0 @@
-{
-  "templateName" : "sqoop-export-to-teradata",
-  "description" : "Export data to Teradata",
-  "fileName" : "template-starter-sqoop-export-to-teradata.zip",
-  "checksum" : "48cef60987a26207ae2f82e7323be09e",
-  "stream" : false,
-  "installed" : false
-}

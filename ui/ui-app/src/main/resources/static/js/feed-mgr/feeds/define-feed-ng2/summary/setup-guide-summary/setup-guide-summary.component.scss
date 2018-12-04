@@ -1,0 +1,33 @@
+mat-card-header .mat-card-title, ::ng-deep mat-card-header .mat-card-title  {
+  font-size: 20px;
+}
+
+mat-card-header .mat-card-subtitle, ::ng-deep mat-card-header .mat-card-title{
+  font-size: 14px;
+}
+
+mat-card-header .mat-card-header-text, ::ng-deep mat-card-header .mat-card-header-text {
+  margin: 0px;
+}
+
+
+.mat-card-header {
+  align-items: center;
+}
+
+.mat-card-title {
+  font-size: 24px;
+}
+
+.mat-card-subtitle{
+  font-size: 14px;
+}
+
+.feed-info-card .mat-card-content{
+  padding:0px;
+}
+
+.feed-info-list mat-divider {
+  position: relative;
+  padding-left:16px;
+}

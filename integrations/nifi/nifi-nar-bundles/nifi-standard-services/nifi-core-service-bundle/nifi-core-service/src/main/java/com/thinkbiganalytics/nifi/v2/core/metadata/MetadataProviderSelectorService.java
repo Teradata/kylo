@@ -21,6 +21,9 @@ package com.thinkbiganalytics.nifi.v2.core.metadata;
  */
 
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent;
+import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventService;
+import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener;
 import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
@@ -40,7 +43,6 @@ import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.ssl.SSLContextService;
 
 import java.io.File;
@@ -58,13 +60,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
 
 /**
  *
  */
-public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService {
+public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService, CleanupListener {
 
     /**
      * Property provides the service for loading spring a spring context and providing bean lookup
@@ -74,6 +78,12 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         .description("Service for loading spring a spring context and providing bean lookup")
         .required(false)
         .identifiesControllerService(SpringContextService.class)
+        .build();
+    public static final PropertyDescriptor CLEANUP_SERVICE = new PropertyDescriptor.Builder()
+        .name("Cleanup Event Service")
+        .description("Service that notifies when feed cleanup is required due to feed deletion")
+        .required(false)
+        .identifiesControllerService(CleanupEventService.class)
         .build();
 
     public static final PropertyDescriptor CLIENT_URL = new PropertyDescriptor.Builder()
@@ -128,13 +138,13 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         props.add(CLIENT_USERNAME);
         props.add(CLIENT_PASSWORD);
         props.add(SPRING_SERVICE);
+        props.add(CLEANUP_SERVICE);
         props.add(SSL_CONTEXT_SERVICE);
         properties = Collections.unmodifiableList(props);
     }
 
-
-    private volatile MetadataProvider provider;
-    private volatile MetadataRecorder recorder;
+    private volatile MetadataClientProvider provider;
+    private volatile MetadataClientRecorder recorder;
     private volatile KyloProvenanceClientProvider kyloProvenanceClientProvider;
 
     
@@ -146,6 +156,15 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return properties;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener#triggered(com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent)
+     */
+    @Override
+    public void triggered(FeedCleanupTriggerEvent event) {
+        this.provider.feedRemoved(event.getFeedId(), event.getCategoryName(), event.getFeedName());
+        this.recorder.feedRemoved(event.getFeedId(), event.getCategoryName(), event.getFeedName());
     }
     
     @OnEnabled
@@ -169,10 +188,20 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             } else {
                 client = new MetadataClient(uri, user, password, sslContext);
             }
-
-            this.provider = new MetadataClientProvider(client);
+            
             this.recorder = new MetadataClientRecorder(client);
             this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
+            
+            if (getCleanupEventService(context).isPresent()) {
+                // If we have a cleanup service set then relax the feed ID cache expiration 
+                // and add this service as a listener.
+                this.provider = new MetadataClientProvider(client, 2, TimeUnit.DAYS);
+                getCleanupEventService(context).get().addListener(this);
+            } else {
+                // If the cleanup service property has not been set by the user yet then 
+                // be more aggressive about feed ID cache expiration (the default).
+                this.provider = new MetadataClientProvider(client, MetadataClientProvider.DEFAULT_FEED_ID_CACHE_DURATION_SEC, TimeUnit.SECONDS);
+            }
             
             getSpringContextService(context).ifPresent(springService -> {
                 CancelActiveWaterMarkEventConsumer waterMarkConsumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
@@ -193,9 +222,13 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             FeedInitializationChangeEventConsumer initChangeConsumer = springService.getBean(FeedInitializationChangeEventConsumer.class);
             initChangeConsumer.addMetadataRecorder(this.recorder);
         });
+        
+        getCleanupEventService(context).ifPresent(cleanupService -> {
+            cleanupService.removeListener(this);
+        });
     }
     
-
+    
     @Override
     public MetadataProvider getProvider() {
         return this.provider;
@@ -214,6 +247,14 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     private Optional<SpringContextService> getSpringContextService(final ConfigurationContext context) {
         if (context.getProperty(SPRING_SERVICE) != null && context.getProperty(SPRING_SERVICE).isSet()) {
             return Optional.of(context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class));
+        } else {
+            return Optional.empty();
+        }
+    }
+    
+    private Optional<CleanupEventService> getCleanupEventService(final ConfigurationContext context) {
+        if (context.getProperty(CLEANUP_SERVICE) != null && context.getProperty(CLEANUP_SERVICE).isSet()) {
+            return Optional.of(context.getProperty(CLEANUP_SERVICE).asControllerService(CleanupEventService.class));
         } else {
             return Optional.empty();
         }

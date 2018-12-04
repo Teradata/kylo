@@ -1,13 +1,13 @@
 import * as _ from "underscore";
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import { Component } from '@angular/core';
 import { CloneUtil } from "../../common/utils/clone-util";
-import { ObjectUtils } from "../../common/utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { RestUrlService } from "../services/RestUrlService";
 @Component({
     selector : 'business-metadata',
-    templateUrl: 'js/feed-mgr/business-metadata/business-metadata.html',
+    templateUrl: './business-metadata.html',
 })
 export class BusinessMetadataComponent {
     /**

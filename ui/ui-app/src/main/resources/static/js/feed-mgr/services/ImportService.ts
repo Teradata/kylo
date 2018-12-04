@@ -1,23 +1,11 @@
+///<reference path="ImportComponentOptionTypes.ts"/>
+import * as angular from 'angular';
 import * as _ from "underscore";
-import {Import} from "./ImportComponentOptionTypes";
-import {Common} from "../../common/CommonTypes";
-import ImportComponentOption = Import.ImportComponentOption;
-import ImportProperty = Import.ImportProperty;
-import ImportService = Import.ImportService;
+import {Common} from '../../../lib/common/CommonTypes';
 import Map = Common.Map;
+import {moduleName} from "../module-name";
+import {ImportComponentOption, ImportComponentType, ImportProperty, ImportService} from './ImportComponentOptionTypes';
 import { Injectable } from '@angular/core';
-
-export enum ImportComponentType {
-    NIFI_TEMPLATE = Import.ImportComponentType.NIFI_TEMPLATE,
-    TEMPLATE_DATA = Import.ImportComponentType.TEMPLATE_DATA,
-    FEED_DATA =  Import.ImportComponentType.FEED_DATA,
-    REUSABLE_TEMPLATE =  Import.ImportComponentType.REUSABLE_TEMPLATE,
-    REMOTE_INPUT_PORT =  Import.ImportComponentType.REMOTE_INPUT_PORT,
-    USER_DATASOURCES =  Import.ImportComponentType.USER_DATASOURCES,
-    TEMPLATE_CONNECTION_INFORMATION =  Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION,
-    FEED_CATEGORY_USER_FIELDS = Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS,
-    FEED_USER_FIELDS = Import.ImportComponentType.FEED_USER_FIELDS
-}
 
 @Injectable()
 export class DefaultImportService implements ImportService{
@@ -36,59 +24,59 @@ export class DefaultImportService implements ImportService{
 
     constructor() {}
 
-    importComponentTypes(): string[] {
-        return Object.keys(ImportComponentType)
-    }
-
     /**
      * return a new component option.
      * Defaults to not overwrite.
      * @param component
      * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
      */
-    newImportComponentOption(component:  Import.ImportComponentType): ImportComponentOption {
+    newImportComponentOption(component:  ImportComponentType): ImportComponentOption {
         let nameOfType = component;
         let option = {importComponent: nameOfType, overwrite: false, userAcknowledged: true, shouldImport: true, analyzed: false, continueIfExists: false, properties: [] as ImportProperty[]}
         return option;
     }
 
     newReusableTemplateImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.REUSABLE_TEMPLATE);
+        return this.newImportComponentOption( ImportComponentType.REUSABLE_TEMPLATE);
     }
 
     newTemplateConnectionInfoImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION);
+        return this.newImportComponentOption( ImportComponentType.TEMPLATE_CONNECTION_INFORMATION);
     }
 
     newTemplateDataImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.TEMPLATE_DATA);
+        return this.newImportComponentOption( ImportComponentType.TEMPLATE_DATA);
     }
 
     newFeedDataImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.FEED_DATA);
+        return this.newImportComponentOption(ImportComponentType.FEED_DATA);
+    }
+
+    newUserDataSetsImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( ImportComponentType.USER_DATA_SETS);
     }
 
     newRemoteProcessGroupImportOption(): ImportComponentOption {
-        let option = this.newImportComponentOption( Import.ImportComponentType.REMOTE_INPUT_PORT);
+        let option = this.newImportComponentOption( ImportComponentType.REMOTE_INPUT_PORT);
         option.shouldImport = false;
         option.userAcknowledged = false;
         return option;
     }
 
     newNiFiTemplateImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.NIFI_TEMPLATE);
+        return this.newImportComponentOption( ImportComponentType.NIFI_TEMPLATE);
     }
 
     newUserDatasourcesImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.USER_DATASOURCES)
+        return this.newImportComponentOption( ImportComponentType.USER_DATASOURCES)
     }
     
     newFeedCategoryUserFieldsImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS);
+        return this.newImportComponentOption( ImportComponentType.FEED_CATEGORY_USER_FIELDS);
     }
 
     newFeedUserFieldsImportOption(): ImportComponentOption {
-        return this.newImportComponentOption( Import.ImportComponentType.FEED_USER_FIELDS);
+        return this.newImportComponentOption( ImportComponentType.FEED_USER_FIELDS);
     }
 
     newUploadKey(): string {
@@ -144,7 +132,7 @@ export class DefaultImportService implements ImportService{
      * @param importComponentType the type of the option
      * @returns {boolean} true if match, false if not
      */
-    isImportOption(importOption: ImportComponentOption, importComponentType:  Import.ImportComponentType): boolean {
+    isImportOption(importOption: ImportComponentOption, importComponentType:  ImportComponentType): boolean {
         let nameOfType = importComponentType
         return importOption.importComponent == nameOfType;
     }

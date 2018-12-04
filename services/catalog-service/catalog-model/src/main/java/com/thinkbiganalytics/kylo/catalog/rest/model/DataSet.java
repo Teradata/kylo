@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,21 +37,27 @@ import javax.annotation.Nonnull;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @SuppressWarnings("unused")
-public class DataSet implements DataSetTemplate {
+public class DataSet extends EntityAccessControl implements DataSetTemplate {
 
+    private String id;
+    private String title;
     private DataSource dataSource;
     private String format;
-    private String id;
     private Map<String, String> options;
     private List<String> paths;
-
+    
     public DataSet() {
+    }
+
+    public DataSet(DataSource ds, String title) {
+        this.dataSource = ds;
     }
 
     public DataSet(@Nonnull final DataSet other) {
         dataSource = (other.dataSource != null) ? new DataSource(other.dataSource) : null;
         format = other.format;
         id = other.id;
+        title = other.title;
         options = (other.options != null) ? new HashMap<>(other.options) : null;
         paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
     }
@@ -64,6 +71,20 @@ public class DataSet implements DataSetTemplate {
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+    
+    /**
+     * @return the title
+     */
+    public String getTitle() {
+        return title;
+    }
+    
+    /**
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     @Override

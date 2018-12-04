@@ -11,8 +11,7 @@
           <ng-md-icon icon="menu"></ng-md-icon>
         </button>
 
-        <ui-router-breadcrumbs style="padding-left:25px;" [displaynameProperty]="data ? data.displayName: ''" 
-                               flex>
+        <ui-router-breadcrumbs style="padding-left:25px;" flex>
         </ui-router-breadcrumbs>
 
         <div *ngIf="showSearchBar() && allowSearch" layout="row" layout-fill layout-align="center" flex hide-xs class="global-search-container">

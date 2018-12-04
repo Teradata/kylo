@@ -4,12 +4,12 @@ import { Component, Inject, Input } from '@angular/core';
 import { RestUrlService } from '../../services/RestUrlService';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-template-order',
-    templateUrl: 'js/feed-mgr/templates/template-order/template-order.html'
+    templateUrl: './template-order.html'
 })
 export class TemplateOrderController {
 

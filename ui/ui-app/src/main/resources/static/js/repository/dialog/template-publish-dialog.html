@@ -17,9 +17,19 @@
   limitations under the License.
   #L%
   -->
-<div fxLayout="column" fxLayoutGap="30px">
+<div *ngIf="!repositories || repositories.length == 0" fxLayout="column" fxLayoutGap="30px">
+  <div fxLayout="row">
+    <div class="md-text">No user repository found to publish template. Please create a new repository.</div>
+  </div>
+  <div fxLayout="row" fxLayoutAlign="end none" fxLayoutGap="10px">
+    <button mat-raised-button class="right" aria-label="Close" (click)="close()">
+      <span class="md-body-2">Close</span>
+    </button>
+  </div>
+</div>
+<div *ngIf="repositories.length > 0" fxLayout="column" fxLayoutGap="30px">
   <div *ngIf="loading" fxLayout="row" fxLayoutAlign="center">
-    <mat-spinner [diameter]="25"></mat-spinner>
+    <mat-spinner [diameter]="25" color="accent"></mat-spinner>
   </div>
   <div *ngIf="success && !error" fxLayout="row">
     <ng-md-icon icon="check_circle" size="20" style="fill:green; margin-left: 0px; margin-right: 0px;"></ng-md-icon>
@@ -27,9 +37,10 @@
   </div>
   <div *ngIf="error" fxLayout="row">
     <ng-md-icon icon="error" size="20" style="fill:red; margin-left: 0px; margin-right: 0px;"></ng-md-icon>
-    <div>{{REPOSITORY.DIALOG.TEMPLATE_PUBLISH.CANNOT_PUBLISH" | translate: {'value': data.templateName, 'error': errorMsg} }}</div>
+    <div>{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.CANNOT_PUBLISH" | translate: {'value': data.templateName, 'error': errorMsg} }}</div>
   </div>
   <div fxLayout="row" fxLayoutAlign="space-evenly center">
+    {{repositories.length}}
     <mat-form-field>
       <mat-select [(ngModel)]="selectedRepository" placeholder='{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.SELECT_REPOSITORY" | translate}}'>
         <ng-container *ngFor="let repo of repositories">
@@ -42,11 +53,11 @@
     <mat-checkbox labelPosition="before" [(ngModel)]="overwrite">{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.OVERWRITE" | translate}}</mat-checkbox>
   </div>
   <div fxLayout="row" fxLayoutAlign="end none" fxLayoutGap="10px">
-    <button mat-raised-button class="right" aria-label='{{"view.main.cancel" | translate}}' (click)="close()">
-      <span class="md-body-2">{{(success || error )? '{{"view.main.close" | translate}}': '{{view.main.cancel" | translate}}'}}</span>
+    <button mat-raised-button class="right" (click)="close()">
+      <span class="md-body-2">{{((success || error) ? "view.main.close" : "view.main.cancel") | translate}}</span>
     </button>
     <button *ngIf="!(success || error )" mat-raised-button [disabled]="!selectedRepository" color="primary" class="right" aria-label="Publish" (click)="publishTemplate()">
-      <span class="md-body-2">{{REPOSITORY.DIALOG.TEMPLATE_PUBLISH.PUBLISH" | translate}}</span>
+      <span class="md-body-2">{{"REPOSITORY.DIALOG.TEMPLATE_PUBLISH.PUBLISH" | translate}}</span>
     </button>
   </div>
 </div>

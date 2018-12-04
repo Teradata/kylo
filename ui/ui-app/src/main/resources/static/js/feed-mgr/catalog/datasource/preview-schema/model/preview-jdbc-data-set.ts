@@ -19,14 +19,21 @@ export class PreviewJdbcDataSet extends PreviewDataSet {
 
     // TODO: use qualifiedIdentifier from REST API instead of reconstructing a different one
     public getPreviewItemPath(): string {
-        const itemMap = this.getItemMap();
-        if (itemMap["name"]) {
-            const schema = itemMap["catalog"] != undefined ? itemMap["catalog"] : itemMap["schema"];
-            return schema + "." + itemMap["name"];
-        } else {
-            //error
-            return "";
+        let path = "";
+        if (this.items && this.items.length > 0) {
+            path = this.items[0]
         }
+        if(path == "") {
+            const itemMap = this.getItemMap();
+            if (itemMap["name"]) {
+                const schema = itemMap["catalog"] != undefined ? itemMap["catalog"] : itemMap["schema"];
+                path = schema + "." + itemMap["name"];
+            } else {
+                //error
+                path = "";
+            }
+        }
+        return path;
     }
 
     public applyPreviewRequestProperties(previewRequest: PreviewDataSetRequest) {
@@ -69,12 +76,20 @@ export class PreviewJdbcDataSet extends PreviewDataSet {
     private static getOption(name: string, dataSet: SparkDataSet): string {
         if (dataSet.options && dataSet.options[name]) {
             return dataSet.options[name];
-        } else if (dataSet.dataSource.template && dataSet.dataSource.template.options && dataSet.dataSource.template.options[name]) {
-            return dataSet.dataSource.template.options[name];
-        } else if (dataSet.dataSource.connector.template && dataSet.dataSource.connector.template.options && dataSet.dataSource.connector.template.options[name]) {
-            return dataSet.dataSource.connector.template.options[name];
-        } else {
-            return null;
         }
+
+        const dataSource = dataSet.dataSource;
+        if (dataSource) {
+            if (dataSource.template && dataSource.template.options && dataSource.template.options[name]) {
+                return dataSource.template.options[name];
+            }
+
+            const connector = dataSource.connector;
+            if (connector && connector.template && connector.template.options && connector.template.options[name]) {
+                return connector.template.options[name];
+            }
+        }
+
+        return null;
     }
 }

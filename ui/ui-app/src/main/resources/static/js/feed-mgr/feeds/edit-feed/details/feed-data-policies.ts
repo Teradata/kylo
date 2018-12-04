@@ -1,11 +1,11 @@
 import * as angular from 'angular';
 import 'pascalprecht.translate';
 import * as _ from 'underscore';
-import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
 import {CheckAll} from "../../shared/checkAll";
-import AccessControlService from '../../../../services/AccessControlService';
+import {AccessControlService} from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
+import {Common} from '../../../../../lib/common/CommonTypes';
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 

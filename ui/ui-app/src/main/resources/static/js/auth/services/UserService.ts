@@ -1,14 +1,15 @@
 import { RequestOptions, Response} from '@angular/http';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import CommonRestUrlService from '../../services/CommonRestUrlService';
-import UserGroupService from '../../services/UserGroupService';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import {CommonRestUrlService} from '../../services/CommonRestUrlService';
+import {UserGroupService} from '../../services/UserGroupService';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
+import * as angular from 'angular';
 
 @Injectable()
-export default class UserService {
+export class UserService {
     headers = new HttpHeaders({'Content-Type':'application/json; charset=utf-8'});
-    options: RequestOptions;
+    options: any;
 
     constructor(private http: HttpClient, private commonRestUrlService: CommonRestUrlService, private userGroupService: UserGroupService) {
     }
@@ -119,4 +120,4 @@ export default class UserService {
             ;
 
     }
-} 
+}

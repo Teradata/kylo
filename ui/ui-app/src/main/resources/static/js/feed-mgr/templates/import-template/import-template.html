@@ -25,7 +25,7 @@
         <div layout="row" layout-align="center start">
           <div class="card-title">{{'FEEDMGR.TEMPLATES.IMPORT.CARD_TITLE' | translate}}<span *ngIf="templateParam != null">: {{templateParam.templateName}}</span></div>
           <span flex></span>
-          <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
+        <ng-md-icon icon="file_upload" class="push-right tc-accent" size="30"></ng-md-icon>
         </div>
       </mat-card-title>
 
@@ -117,7 +117,7 @@
               </div>
 
               <div class="condensed-no-float md-block layout-padding-bottom" flex="50" >
-                <mat-checkbox name="templateDataImportOption" [(ngModel)]="reusableTemplateImportOption.shouldImport" aria-label="Import reusable template" >
+                <mat-checkbox name="templateDataImportOption" [(ngModel)]="reusableTemplateImportOption.overwrite" aria-label="Import reusable template" >
                   {{'FEEDMGR.TEMPLATES.IMPORT.IMPORT_REUSABLE_TEMPLATE' | translate}}
                 </mat-checkbox>
 
@@ -230,7 +230,7 @@
                        {{'FEEDMGR.TEMPLATES.IMPORT.CARD_TITLE' | translate}}
             </button>
             <span flex="5"></span>
-            <mat-progress-bar flex mode="determinate" value="{{uploadProgress}}" *ngIf="uploadInProgress"></mat-progress-bar>
+            <mat-progress-bar color="accent" flex mode="determinate" value="{{uploadProgress}}" *ngIf="uploadInProgress"></mat-progress-bar>
           </div>
 
           <div layout="column">
@@ -308,7 +308,7 @@
               </div>
 
                 <div *ngIf="noReusableConnectionsFound" [innerHTML]="'FEEDMGR.TEMPLATES.IMPORT.NO_REUSABLE_TEMPLATE_FOUND_ERROR' | translate">
-                  
+
                 </div>
               </ng-container>
             </div>

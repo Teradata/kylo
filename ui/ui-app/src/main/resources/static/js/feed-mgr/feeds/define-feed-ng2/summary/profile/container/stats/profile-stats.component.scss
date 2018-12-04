@@ -1,0 +1,36 @@
+.profile-stats-panel {
+  overflow-y: hidden;
+}
+
+.profile-columns {
+  height: 900px;
+  margin-right: 16px;
+}
+
+.subhead {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.stats-panel {
+  padding-bottom: 16px;
+
+  mat-list mat-list-item {
+    font-size: 14px;
+  }
+}
+
+.string-stats-item {
+  height: 60px;
+}
+
+.profiled-icon {
+  color: #00b2b1;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+.selected-column {
+  color: #00b2b1;
+  //background-color: #CCC;
+}

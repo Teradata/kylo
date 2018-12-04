@@ -12,6 +12,21 @@ export class FeedConstants {
     CRON_DRIVEN:{label: 'Cron', value: "CRON_DRIVEN"}
     };
 
+    static scheduleStrategyLabel(strategyKey:string){
+        if(strategyKey) {
+            let strategy = Object.keys(this.SCHEDULE_STRATEGIES).find((key: string) => key == strategyKey);
+            if (strategy) {
+                return this.SCHEDULE_STRATEGIES[strategy].label;
+            }
+            else {
+                return strategyKey;
+            }
+        }
+        else {
+            return '';
+        }
+    }
+
     /**
      * In the Data Processing section these are the available Strategies a user can choose when defining the feed
      */

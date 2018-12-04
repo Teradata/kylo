@@ -1,5 +1,5 @@
 define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','vis',
-        'kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/visual-query/module','feed-mgr/feeds/define-feed/module','angular-nvd3', 'fattable'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
+        'kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/feeds/define-feed/module','angular-nvd3', 'fattable'], function (angular,moduleName,lazyLoadUtil,AccessConstants, vis) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, ['nvd3']);
       // load vis in the global state
@@ -25,7 +25,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/FeedDetailsController'])
+                loadMyCtrl: ['$q','$ocLazyLoad', ($q, $ocLazyLoad) => {
+                    return lazyLoadController($q, $ocLazyLoad);
+                }]
             },
             data:{
                 breadcrumbRoot:false,
@@ -46,7 +48,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                     }
                 },
                resolve: {
-                   loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/EditFeedController', "feed-mgr/feeds/define-feed/module-require"])
+                   // loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/EditFeedController', "feed-mgr/feeds/define-feed/module-require"])
+                   loadMyCtrl: ['$q','$ocLazyLoad', ($q, $ocLazyLoad) => {
+                       return lazyLoadController($q, $ocLazyLoad);
+                   }]
                },
                 data:{
                     breadcrumbRoot: false,
@@ -56,8 +61,55 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 }
             })
 
-        function lazyLoadController(path){
-            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);
+        function lazyLoadController($q, $ocLazyLoad){
+            $q((resolve) => {
+                require.ensure([], () => {
+                    let module = require('../module-require');
+                    console.log('loading 1 ' , module);
+                    $ocLazyLoad.load(module);
+                    resolve(module);
+                })
+            });
+
+            $q((resolve) => {
+                require.ensure([], () => {
+                    let module = require('./module-require');
+                    console.log('loading 2 ' , module);
+                    $ocLazyLoad.load(module);
+                    resolve(module);
+                })
+            });
+
+            $q((resolve) => {
+                require.ensure([], () => {
+                    let module = require('../../sla/module-require');
+                    console.log('loading 3 ' , module);
+                    $ocLazyLoad.load(module);
+                    resolve(module);
+                })
+            });
+
+            $q((resolve) => {
+                require.ensure([], () => {
+                    let module = require('angular-visjs');
+                    console.log('loading 4 ' , module);
+                    $ocLazyLoad.load(module);
+                    resolve(module);
+                })
+            });
+
+            return $q((resolve) => {
+                require.ensure([], () => {
+                    let module = require('./FeedDetailsController');
+                    console.log('loading 5 ' , module);
+                    console.log('loading 5.name' + module.name);
+                    $ocLazyLoad.load(module.default);
+                    resolve(module.controller);
+                })
+            });
+
+            // return lazyLoadUtil.default.lazyLoadController(path,['../module-require','./module-require','../../sla/module-require','angular-visjs']);
+            // return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','angular-visjs']);
         }
     }]);
 
@@ -65,10 +117,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
         $ocLazyLoad.load({
             name: 'kylo',
             files: [
-                'js/vendor/font-awesome/css/font-awesome.min.css',
-                'js/feed-mgr/feeds/edit-feed/feed-details.css',
-                "bower_components/fattable/fattable.css",
-                'js/feed-mgr/services/fattable/fattable-service.css'
+                // 'js/feed-mgr/feeds/edit-feed/feed-details.css'
             ],
             serie: true
         });

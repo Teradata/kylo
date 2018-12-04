@@ -1,0 +1,19 @@
+<define-feed-step-card [(feed)]="feed" [(step)]="step" [singleCardView]="true" (cancelEdit)="onCancelEdit()" (saved)="onSave()" [displayEditActions]="displayEditActions">
+
+  <feed-step-readonly-content>
+    <form [formGroup]="formGroup">
+      <div fxLayout="column">
+        <entity-access-control-ng2 [parentForm]="formGroup" [entity]="feed" [readonly]="feed.readonly || !feed.accessControl.allowChangePermissions" entityType="feed"></entity-access-control-ng2>
+      </div>
+    </form>
+  </feed-step-readonly-content>
+
+  <feed-step-edit-content>
+    <form [formGroup]="formGroup">
+      <div fxLayout="column">
+        <entity-access-control-ng2  [parentForm]="formGroup" #entityAccessControl [entity]="feed" [readonly]="feed.readonly || !feed.accessControl.allowAdmin" entityType="feed"></entity-access-control-ng2>
+      </div>
+    </form>
+  </feed-step-edit-content>
+
+</define-feed-step-card>

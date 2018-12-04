@@ -20,29 +20,29 @@
 
   <mat-card class="filter-header">
     <mat-card-title style="font-size:smaller;">
-  
+
       <mat-toolbar style="display:flex">
-          <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>  
+          <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
           <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
           </td-search-box>
       </mat-toolbar>
 
     </mat-card-title>
-  
+
       <mat-card-content>
-  
+
           <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
                               (selectedIndexChange)="onTabSelected($event)"
                               layout-fill  dynamicHeight>
-  
+
             <mat-tab *ngFor="let tab of tabs"
                     [disabled]="tab.disabled" flex>
                     <ng-template mat-tab-label>{{tab.title}}</ng-template>
                 <div>
-                    <mat-progress-bar mode="indeterminate" *ngIf="showProgress"></mat-progress-bar>
+                    <mat-progress-bar color="accent" mode="indeterminate" *ngIf="showProgress"></mat-progress-bar>
                     <mat-divider></mat-divider>
 
-                    <filtered-paginated-table-view 
+                    <filtered-paginated-table-view
                         [showToolbar]="false"
                         [columns]="columns"
                         [sortable]="true"
@@ -62,7 +62,7 @@
                     >
                   <!-- [ngStyle]="job.iconstyle" -->
                         <ng-template tdDataTableTemplate="healthText" let-value="value" let-row="row" let-column="column">
-                          <span ng-class="{'healthy':row.healthText == 'HEALTHY','unhealthy':row.healthText == 'UNHEALTHY'}">
+                          <span ng-class="{'tc-positive':row.healthText == 'HEALTHY','tc-negative':row.healthText == 'UNHEALTHY'}">
                               <ng-md-icon icon="{{row.icon}}" size="20">
                               </ng-md-icon>
                               <span>{{row.healthText | translate}}</span>
@@ -86,7 +86,7 @@
                               <span *ngIf="row.lastStatus == 'UNKNOWN'">--</span>
                             </div>
                         </ng-template>
-                  
+
                   </filtered-paginated-table-view>
 
                 </div>

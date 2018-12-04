@@ -21,11 +21,9 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
-import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
@@ -44,10 +42,12 @@ import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -55,11 +55,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @Component
+@Api(tags = "Feed Manager - Catalog", produces = "application/json")
 @Path(DataSetController.BASE)
 @Produces(MediaType.APPLICATION_JSON)
 public class DataSetController extends AbstractCatalogController {
@@ -69,13 +71,10 @@ public class DataSetController extends AbstractCatalogController {
     public static final String BASE = "/v1/catalog/dataset";
 
     @Inject
-    DataSetProvider dataSetProvider;
+    com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider dataSetService;
 
     @Inject
     CatalogFileManager fileManager;
-
-    @Inject
-    MetadataAccess metadataService;
 
     @POST
     @ApiOperation("Creates a new data set")
@@ -88,11 +87,35 @@ public class DataSetController extends AbstractCatalogController {
     public Response createDataSet(@Nonnull final DataSet source) {
         log.entry(source);
 
-        final DataSet dataSet;
+        final boolean encryptCredentials = true;
+        DataSet dataSet;
         try {
-            dataSet = metadataService.commit(() -> dataSetProvider.createDataSet(source));
+            dataSet = dataSetService.findOrCreateDataSet(source, encryptCredentials);
         } catch (final CatalogException e) {
             log.debug("Cannot create data set from request: {}", source, e);
+            throw new BadRequestException(getMessage(e));
+        }
+
+        return Response.ok(log.exit(dataSet)).build();
+    }
+
+    @PUT
+    @ApiOperation("Updates an existing data set")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Data set updated", response = DataSet.class),
+                      @ApiResponse(code = 400, message = "Invalid data source", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateDataSet(@Nonnull final DataSet source) {
+        log.entry(source);
+
+        final boolean encryptCredentials = true;
+        final DataSet dataSet;
+        try {
+            dataSet = dataSetService.updateDataSet(source, encryptCredentials);
+        } catch (final CatalogException e) {
             throw new BadRequestException(getMessage(e));
         }
 
@@ -109,7 +132,9 @@ public class DataSetController extends AbstractCatalogController {
                   })
     public Response getDataSet(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
-        final DataSet dataSet = findDataSet(dataSetId);
+
+        final boolean encryptCredentials = true;
+        final DataSet dataSet = findDataSet(dataSetId, encryptCredentials);
         return Response.ok(log.exit(dataSet)).build();
     }
 
@@ -125,7 +150,7 @@ public class DataSetController extends AbstractCatalogController {
     public Response getUploads(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
 
-        final DataSet dataSet = findDataSet(dataSetId);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         final List<DataSetFile> files;
         try {
             log.debug("Listing uploaded files for dataset {}", dataSetId);
@@ -159,7 +184,7 @@ public class DataSetController extends AbstractCatalogController {
             throw new BadRequestException(getMessage("catalog.dataset.postUpload.missingBodyPart"));
         }
 
-        final DataSet dataSet = findDataSet(dataSetId);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         final DataSetFile file;
         try {
             final BodyPart part = bodyParts.get(0);
@@ -191,7 +216,7 @@ public class DataSetController extends AbstractCatalogController {
     public Response deleteUpload(@PathParam("id") @UUID final String dataSetId, @PathParam("name") final String fileName) {
         log.entry(dataSetId, fileName);
 
-        final DataSet dataSet = findDataSet(dataSetId);
+        final DataSet dataSet = findDataSet(dataSetId, true);
         try {
             log.debug("Deleting uploaded file [{}] from dataset {}", fileName, dataSetId);
             fileManager.deleteUpload(dataSet, fileName);
@@ -212,8 +237,8 @@ public class DataSetController extends AbstractCatalogController {
      * @throws NotFoundException if the dataset does not exist
      */
     @Nonnull
-    private DataSet findDataSet(@Nonnull final String id) {
-        return metadataService.read(() -> dataSetProvider.findDataSet(id))
+    private DataSet findDataSet(@Nonnull final String id, final boolean encryptedCredentials) {
+        return dataSetService.findDataSet(id, encryptedCredentials)
             .orElseThrow(() -> {
                 log.debug("Data set not found: {}", id);
                 return new NotFoundException(getMessage("catalog.dataset.notFound"));

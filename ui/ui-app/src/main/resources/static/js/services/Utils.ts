@@ -24,7 +24,7 @@ import { Injectable } from "@angular/core";
 import { TranslateService } from "@ngx-translate/core";
 
 @Injectable()
-export default class Utils {
+export class Utils {
     waitForDomRetryCounts: any = {};
     constructor(private translate: TranslateService) {
     }

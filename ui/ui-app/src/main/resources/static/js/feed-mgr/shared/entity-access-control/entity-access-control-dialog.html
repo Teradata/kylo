@@ -5,7 +5,7 @@
       <div class="md-toolbar-tools">
         <h2>{{'SHARED.ENTITY_ACCESS_CONTROL.DIALOG.ACFOR' | translate}}{{entityTitle}}</h2>
         <span flex></span>
-        <button class="md-icon-button" (click)="onCancel()">
+        <button class="md-icon-button" (click)="onCancel($event)">
           <ng-md-icon icon="close" size="20"></ng-md-icon>
         </button>
       </div>
@@ -13,7 +13,7 @@
 
     <mat-dialog-content>
       <div class="md-dialog-content" >
-        <entity-access-control entity="entity" [entityType]="{{entityType}}" model="model" [theForm]="theForm" [queryForEntityAccess]="true"></entity-access-control>
+        <entity-access-control-ng2 [entity]="entity" [entityType]="entityType" [parentForm]="theForm"></entity-access-control-ng2>
         <div layout="row" layout-padding>
           <div flex="40" style="align-self:center;">
             <span>{{'SHARED.ENTITY_ACCESS_CONTROL.DIALOG.IFMS' | translate}}</span>
@@ -39,7 +39,7 @@
       <button (click)="onCancel($event)">
         {{'view.main.cancel' | translate}}
       </button>
-      <button class="md-raised md-primary" (click)="onSave($event)" [disabled]="preconditionForm.$invalid">
+      <button class="md-raised md-primary" (click)="onSave($event)" [disabled]="theForm.invalid">
         {{'view.main.done' | translate}}
       </button>
     </mat-dialog-actions>

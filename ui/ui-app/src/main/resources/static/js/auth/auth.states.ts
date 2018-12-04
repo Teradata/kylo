@@ -1,9 +1,9 @@
 import AccessConstants from "../constants/AccessConstants";
-import UsersTableComponent from "./users/UsersTableComponent";
+import {UsersTableComponent} from "./users/UsersTableComponent";
 import { Ng2StateDeclaration } from "@uirouter/angular";
-import UserDetailsComponent from "./users/user-details/UserDetailsComponent";
-import GroupsTableComponent from "./groups/GroupsTableComponent";
-import GroupDetailsComponent from "./groups/group-details/GroupDetailsComponent";
+import {UserDetailsComponent} from "./users/user-details/UserDetailsComponent";
+import {GroupsTableComponent} from "./groups/GroupsTableComponent";
+import {GroupDetailsComponent} from "./groups/group-details/GroupDetailsComponent";
 
 export const authStates: Ng2StateDeclaration[] = [
     {

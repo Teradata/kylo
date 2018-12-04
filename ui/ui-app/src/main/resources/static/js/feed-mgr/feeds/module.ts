@@ -1,10 +1,7 @@
 import * as angular from 'angular';
 
 import AccessConstants from "../../constants/AccessConstants";
-import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
-//const lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
 const moduleName = require('./module-name');
-import "../module"
 
 class ModuleFactory  {
 
@@ -23,13 +20,18 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    // templateUrl: 'js/feed-mgr/feeds/feeds-table.html',
-                    component:'feedsTableController',
+                    // templateUrl: './feeds-table.html',
+                    component:'feedTableComponent',
                     // controllerAs:'vm'
                 }
             },
-            resolve: {
-                loadMyCtrl: this.lazyLoadController('feed-mgr/feeds/FeedsTableController')
+            lazyLoad: ($transition$: any) => {
+                const $ocLazyLoad = $transition$.injector().get("$ocLazyLoad");
+                return import(/* webpackChunkName: "feeds.table.module" */ './FeedsTableController')
+                    .then(mod => $ocLazyLoad.load(mod.default))
+                    .catch(err => {
+                        throw new Error("Failed to load FeedsTableController, " + err);
+                    });
             },
             data: {
                 breadcrumbRoot: true,
@@ -40,10 +42,7 @@ class ModuleFactory  {
         });
 
     }
-    lazyLoadController(path:string){
-        return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/module-require']);
-    }
-
 }
 
-export default new ModuleFactory();
+let moduleFactory = new ModuleFactory();
+export default moduleFactory;

@@ -1,0 +1,17 @@
+<section class="md-subhead pad-bottom">
+  {{ "FeedDefinition.Steps.Properties.MetadataIndexing" | translate }}
+</section>
+
+<ng-container *ngIf="!editable">
+  <div fxFlex fxLayout="column">
+    <mat-checkbox [(ngModel)]="allowIndexing" [disabled]="true">{{ "FeedDefinition.Steps.Properties.IndexSchemaAndMetadata" | translate }}</mat-checkbox>
+    <span fxFlex class="hint">{{ "FeedDefinition.Steps.Properties.IndexSchemaAndMetadataHint" | translate }}</span>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="editable">
+  <div fxFlex fxLayout="column">
+    <mat-checkbox fxFlex [(ngModel)]="allowIndexing" (change)="allowIndexingChanged($event)">{{ "FeedDefinition.Steps.Properties.IndexSchemaAndMetadata" | translate }}</mat-checkbox>
+    <span fxFlex class="hint">{{ "FeedDefinition.Steps.Properties.IndexSchemaAndMetadataHint" | translate }}</span>
+  </div>
+</ng-container>

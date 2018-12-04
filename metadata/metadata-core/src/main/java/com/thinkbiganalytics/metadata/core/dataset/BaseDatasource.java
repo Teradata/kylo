@@ -227,4 +227,40 @@ public class BaseDatasource implements Datasource {
         // TODO Auto-generated method stub
         return null;
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Iconable#getIcon()
+     */
+    @Override
+    public String getIcon() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Iconable#setIcon(java.lang.String)
+     */
+    @Override
+    public void setIcon(String icon) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Iconable#getIconColor()
+     */
+    @Override
+    public String getIconColor() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.Iconable#setIconColor(java.lang.String)
+     */
+    @Override
+    public void setIconColor(String iconColor) {
+        // TODO Auto-generated method stub
+        
+    }
 }

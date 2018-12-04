@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+const moduleName = require('../module-name');
 import {CheckAll} from "../../shared/checkAll";
 
 
@@ -188,7 +188,7 @@ export class DefineFeedDataProcessingController {
     showFieldRuleDialog(field: any) {
         this.$mdDialog.show({
             controller: 'FeedFieldPolicyRuleDialogController',
-            templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
+            templateUrl: '../../../shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
             fullscreen: true,
@@ -239,7 +239,7 @@ export class DefineFeedDataProcessingController {
                 escapeToClose: false,
                 fullscreen: true,
                 parent: angular.element(document.body),
-                templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-domain-type-dialog.html",
+                templateUrl: "../../../shared/apply-domain-type/apply-domain-type-dialog.html",
                 locals: {
                     domainType: domainType,
                     field: policy.field
@@ -286,5 +286,5 @@ angular.module(moduleName)
         },
         controllerAs: 'vm',
         controller: DefineFeedDataProcessingController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing.html',
+        templateUrl: './define-feed-data-processing.html',
     });

@@ -31,13 +31,12 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
-import com.thinkbiganalytics.server.upgrade.UpgradeState;
+import com.thinkbiganalytics.server.upgrade.UpgradeAction;
 
 import org.modeshape.jcr.api.Workspace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -47,12 +46,15 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.jcr.RepositoryException;
 
-@Component("UsersGroupsUpgradeActionFreshInstall")
-@Order(Ordered.LOWEST_PRECEDENCE)
+@Component("createDefaultUsersGroupsActionFreshInstall")
+@Order(CreateDefaultUsersGroupsAction.ORDER)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
-public class CreateDefaultUsersGroupsAction implements UpgradeState {
+public class CreateDefaultUsersGroupsAction implements UpgradeAction {
 
     private static final Logger log = LoggerFactory.getLogger(CreateDefaultUsersGroupsAction.class);
+    
+    public static final int ORDER = UpgradeAction.LATE_ORDER;
+
 
     @Inject
     private UserProvider userProvider;
@@ -62,7 +64,7 @@ public class CreateDefaultUsersGroupsAction implements UpgradeState {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public boolean isTargetFreshInstall() {
+    public boolean isTargetFreshInstall(KyloVersion version) {
         return true;
     }
 
@@ -70,8 +72,8 @@ public class CreateDefaultUsersGroupsAction implements UpgradeState {
      * @see com.thinkbiganalytics.metadata.upgrade.UpgradeState#upgradeFrom(com.thinkbiganalytics.metadata.api.app.KyloVersion)
      */
     @Override
-    public void upgradeTo(KyloVersion startingVersion) {
-        log.info("Creating default users/groups for version: " + startingVersion);
+    public void upgradeTo(KyloVersion version) {
+        log.info("Creating default users/groups for version: " + version);
         
         User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", null);
         User analyst = createDefaultUser("analyst", "Analyst", null);
@@ -114,6 +116,8 @@ public class CreateDefaultUsersGroupsAction implements UpgradeState {
                                FeedServicesAccessControl.EDIT_CATEGORIES,
                                FeedServicesAccessControl.EDIT_DATASOURCES,
                                FeedServicesAccessControl.EDIT_TEMPLATES,
+                               FeedServicesAccessControl.ACCESS_CATALOG,
+                               FeedServicesAccessControl.ADMIN_CONNECTORS,
                                FeedServicesAccessControl.IMPORT_TEMPLATES,
                                FeedServicesAccessControl.EXPORT_TEMPLATES,
                                FeedServicesAccessControl.ADMIN_TEMPLATES,
@@ -128,6 +132,8 @@ public class CreateDefaultUsersGroupsAction implements UpgradeState {
                                FeedServicesAccessControl.EXPORT_FEEDS,
                                FeedServicesAccessControl.EDIT_CATEGORIES,
                                FeedServicesAccessControl.ACCESS_TEMPLATES,
+                               FeedServicesAccessControl.ACCESS_CATALOG,
+                               FeedServicesAccessControl.ACCESS_CONNECTORS,
                                FeedServicesAccessControl.ACCESS_DATASOURCES,
                                FeedServicesAccessControl.ACCESS_SERVICE_LEVEL_AGREEMENTS,
                                FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS,

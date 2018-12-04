@@ -24,10 +24,10 @@
             <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
             <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
             </td-search-box>
-            <button class="md-icon-button filter-help-button md-button md-kylo-theme md-ink-ripple" 
+            <button class="md-icon-button filter-help-button md-button md-kylo-theme md-ink-ripple"
                     style="background-color: white; border: 0;"
-                    aria-label="Filter Help" 
-                    (click)="showFilterHelpPanel($event)" 
+                    aria-label="Filter Help"
+                    (click)="showFilterHelpPanel($event)"
                     *ngIf="showFilterHelpPanel">
                 <mat-icon size="15" style="color:grey;">help</mat-icon>
             </button>
@@ -45,8 +45,8 @@
                         <ng-template mat-tab-label>{{tab.title}}</ng-template>
                     <div>
                         <mat-divider></mat-divider>
-                        
-                        <filtered-paginated-table-view 
+
+                        <filtered-paginated-table-view
                             [showToolbar]="false"
                             [columns]="columns"
                             [sortable]="true"
@@ -64,7 +64,7 @@
                             >
 
                                 <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
-                                    <span  [ngClass]="{'success':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'error':row.displayStatus == 'FAILED', 'warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
+                                    <span  [ngClass]="{'tc-positive':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'tc-negative':row.displayStatus == 'FAILED', 'tc-warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
                                         <ng-md-icon icon="{{row.icon}}" size="20" >
                                         </ng-md-icon>
                                         <span hide show-gt-md>{{row.displayStatus}}</span>

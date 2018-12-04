@@ -75,18 +75,29 @@ public class RepositoryController {
     }
 
     @GET
+    @Path("{repositoryType}/{repositoryName}/templates")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists all templates available in the given repository.")
+    @ApiResponse(code = 200, message = "Returns templates of all types.")
+    public List<TemplateMetadataWrapper> listTemplatesByRepository(@NotBlank @PathParam("repositoryName") String repositoryName,
+                                                                   @NotBlank @PathParam("repositoryType") String repositoryType) throws Exception {
+        return repositoryService.listTemplatesByRepository(repositoryType, repositoryName);
+    }
+
+/*
+    @GET
     @Path("templates")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists all templates available in all repositories.")
+    @ApiOperation("Lists all templates from all repositories.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
     public List<TemplateMetadataWrapper> listTemplates() throws Exception {
         return repositoryService.listTemplates();
     }
-
+*/
     @GET
     @Path("template-page")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Paginated response of available templates in all repositories.")
+    @ApiOperation(hidden = true, value="Paginated response of available templates in all repositories.")
     @ApiResponse(code = 200, message = "Returns templates of all types.")
     public SearchResult getTemplatesPage(@QueryParam("sort") @DefaultValue("") String sort,
                                          @QueryParam("limit") @DefaultValue("10") Integer limit,
@@ -96,7 +107,7 @@ public class RepositoryController {
 
     @POST
     @Path("templates/import")
-    @ApiOperation("Imports selected templates.")
+    @ApiOperation(hidden = true, value="Imports selected template.")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importTemplate(ImportTemplateRequest req) throws Exception {
@@ -116,7 +127,7 @@ public class RepositoryController {
     @Path("templates/publish")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Publishes template to the repository selected.")
+    @ApiOperation(hidden = true, value="Publishes template to the repository selected.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
     public Response publishTemplate(@Valid PublishTemplateRequest req) throws Exception {
 
@@ -129,9 +140,9 @@ public class RepositoryController {
     }
 
     @GET
-    @Path("templates/download/{repositoryType}/{repositoryName}/{fileName}")
+    @Path("{repositoryType}/{repositoryName}/{fileName}/templates/download/")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @ApiOperation("Downloads Template zip file from repository.")
+    @ApiOperation("Downloads template zip file from repository.")
     @ApiResponse(code = 200, message = "Successfully published template to repository.")
     public Response downloadTemplate(@NotBlank @PathParam("repositoryName") String repositoryName,
                                      @NotBlank @PathParam("repositoryType") String repositoryType,

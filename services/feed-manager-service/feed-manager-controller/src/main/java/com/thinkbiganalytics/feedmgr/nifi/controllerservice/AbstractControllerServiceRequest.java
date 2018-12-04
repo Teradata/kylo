@@ -30,8 +30,8 @@ import javax.annotation.Nonnull;
  * Manages the properties for connecting to a data source managed by a controller service.
  */
 public abstract class AbstractControllerServiceRequest {
-
     private String connectionStringPropertyKey;
+    private String driverLocationsKey;
     private String userNamePropertyKey;
     private String passwordPropertyKey;
     private String driverClassNamePropertyKey;
@@ -122,6 +122,14 @@ public abstract class AbstractControllerServiceRequest {
         this.useEnvironmentProperties = useEnvironmentProperties;
     }
 
+    public String getDriverLocationsKey() {
+        return driverLocationsKey;
+    }
+
+    public void setDriverLocationsKey(String driverLocationsKey) {
+        this.driverLocationsKey = driverLocationsKey;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -144,6 +152,7 @@ public abstract class AbstractControllerServiceRequest {
     public abstract static class AbstractControllerServiceRequestBuilder<T extends AbstractControllerServiceRequestBuilder<T>> {
 
         private String connectionStringPropertyKey;
+        private String driverLocationsKey;
         private String userNamePropertyKey;
         private String passwordPropertyKey;
         private String driverClassNamePropertyKey;
@@ -183,6 +192,11 @@ public abstract class AbstractControllerServiceRequest {
             return (T) this;
         }
 
+        public T driverLocationsKey(String driverLocationsKey) {
+            this.driverLocationsKey = driverLocationsKey;
+            return (T) this;
+        }
+
         public T controllerServiceType(String controllerServiceType) {
             this.controllerServiceType = controllerServiceType;
             return (T) this;
@@ -194,6 +208,7 @@ public abstract class AbstractControllerServiceRequest {
                 this.userNamePropertyKey = "Database User";
                 this.passwordPropertyKey = "Password";
                 this.driverClassNamePropertyKey = "Database Driver Class Name";
+                this.driverLocationsKey = "database-driver-locations";
             } else if ("com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService".equalsIgnoreCase(controllerServiceType)) {
                 this.connectionStringPropertyKey = "Source Connection String";
                 this.userNamePropertyKey = "Source User Name";
@@ -240,6 +255,7 @@ public abstract class AbstractControllerServiceRequest {
             this.driverClassNamePropertyKey(request.getDriverClassNamePropertyKey());
             this.password(request.getPassword());
             this.useEnvironmentProperties(request.useEnvironmentProperties());
+            this.driverLocationsKey(request.getDriverLocationsKey());
             return (T) this;
         }
 
@@ -255,6 +271,7 @@ public abstract class AbstractControllerServiceRequest {
             request.setDriverClassNamePropertyKey(this.driverClassNamePropertyKey);
             request.setPassword(password);
             request.setUseEnvironmentProperties(useEnvironmentProperties);
+            request.setDriverLocationsKey(driverLocationsKey);
             return request;
         }
     }

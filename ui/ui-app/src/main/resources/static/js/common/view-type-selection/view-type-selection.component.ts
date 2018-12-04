@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter } from "@angular/core";
 
 @Component({
     selector: "tba-view-type-selection",
-    templateUrl: "js/common/view-type-selection/view-type-selection-template.html"
+    templateUrl: "./view-type-selection-template.html"
 })
 export class ViewTypeSelectionComponent {
 

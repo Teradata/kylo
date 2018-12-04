@@ -26,6 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
@@ -39,6 +40,7 @@ import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
 
 import org.assertj.core.groups.Tuple;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -87,6 +89,12 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
         public Resource repositoryConfigurationResource() {
             return new ClassPathResource("/JcrDataSetProviderTest-metadata-repository.json");
         }
+        
+        @Bean
+        @Primary
+        public ConnectorPluginManager mockConnectorPluginManager() {
+            return Mockito.mock(ConnectorPluginManager.class);
+        }
     }
 
     @BeforeClass
@@ -116,13 +124,13 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
             Optional<DataSet> dset0 = this.dataSetProvider.find(this.dSetIds.get(0));
             
             assertThat(dset0).isNotNull().isPresent();
-            assertThat(dset0.get()).extracting("systemName", "title", "description").contains(dataSetTuple(COUNT + 1).toArray());
+            assertThat(dset0.get()).extracting("title", "description").contains(dataSetTuple(COUNT + 1).toArray());
             assertThat(dset0.get().getDataSource()).isNotNull().extracting("id").contains(this.dSrcIds.get(0));
             
             Optional<DataSet> dset1 = this.dataSetProvider.find(this.dSetIds.get(1));
             
             assertThat(dset1).isNotNull().isPresent();
-            assertThat(dset1.get()).extracting("systemName", "title", "description").contains(dataSetTuple(10 + COUNT + 1).toArray());
+            assertThat(dset1.get()).extracting("title", "description").contains(dataSetTuple(10 + COUNT + 1).toArray());
             assertThat(dset1.get().getDataSource()).isNotNull().extracting("id").contains(this.dSrcIds.get(1));
         }, MetadataAccess.SERVICE);
     }
@@ -160,7 +168,7 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
             
             assertThat(conns).isNotNull();
             assertThat(conns).hasSize(5);
-            assertThat(conns).extracting("systemName", "title", "description").contains(dataSetTuple(1), dataSetTuple(2), dataSetTuple(3), dataSetTuple(4), dataSetTuple(5));
+            assertThat(conns).extracting("title", "description").contains(dataSetTuple(1), dataSetTuple(2), dataSetTuple(3), dataSetTuple(4), dataSetTuple(5));
         }, MetadataAccess.SERVICE);
     }
     
@@ -189,13 +197,14 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
 
     
     protected DataSet createDataSet(DataSource.ID srcId, int tag) {
-        DataSet set = this.dataSetProvider.create(srcId, "dset" + tag);
-        set.setTitle("Test " + tag + " Data Set");
-        set.setDescription("Test description " + tag);
-        return set;
+        return this.dataSetProvider.build(srcId)
+            .title("Test " + tag + " Data Set")
+            .description("Test description " + tag)
+            .build();
     }
     
     protected Tuple dataSetTuple(int tag) {
-        return tuple("dset" + tag, "Test " + tag + " Data Set", "Test description " + tag);
+        String title = "Test " + tag + " Data Set";
+        return tuple(title, "Test description " + tag);
     }
 }

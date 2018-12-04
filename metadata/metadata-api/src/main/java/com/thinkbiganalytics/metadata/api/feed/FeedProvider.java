@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
-import com.thinkbiganalytics.metadata.api.BaseProvider;
-
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -22,28 +20,36 @@ import com.thinkbiganalytics.metadata.api.BaseProvider;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.BaseProvider;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.versioning.EntityVersionProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityDraftVersionProvider;
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersionProvider<Feed, Feed.ID> {
+public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityDraftVersionProvider<Feed, Feed.ID> {
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
+    
+    FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId);
 
-    FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID id, ServiceLevelAgreement.ID slaId);
+    FeedSource ensureFeedSource(Feed.ID feedId, DataSet.ID dsId, boolean isSample);
 
     FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId);
+    
+    FeedDestination ensureFeedDestination(Feed.ID feedId, DataSet.ID dsId);
 
     Feed ensureFeed(Category.ID categoryId, String feedSystemName);
 
@@ -75,6 +81,21 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersion
 
     List<Feed> getFeeds(FeedCriteria criteria);
 
+    /**
+     * Moves the specified feed from its current category to a new category.
+     */
+    Feed moveFeed(Feed feed, Category.ID toCatId);
+    
+    /**
+     * Moves the specified feed from its current category to a new category.
+     */
+    Feed moveFeed(Feed feed, Category toCat);
+
+    /**
+     * Changes the system name of a feed
+     */
+    Feed changeSystemName(Feed feed, String newName);
+
     Feed addDependent(Feed.ID targetId, Feed.ID dependentId);
 
     Feed removeDependent(Feed.ID feedId, Feed.ID depId);
@@ -85,6 +106,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersion
     void removeFeedSources(Feed.ID feedId);
 
     void removeFeedSource(Feed.ID feedId, Datasource.ID dsId);
+    
+    void removeFeedSource(Feed.ID feedId, DataSet.ID dsId);
 
     void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId);
 
@@ -109,6 +132,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersion
      * @throws RuntimeException if the feed cannot be deleted
      */
     void deleteFeed(Feed.ID feedId);
+    
+    void setDeployed(Feed.ID feedId, EntityVersion.ID versionId);
 
     Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla);
 
@@ -139,6 +164,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersion
     List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId);
 
     List<? extends Feed> findByCategoryId(Category.ID categoryId);
+    
+    Optional<EntityVersion<Feed.ID, Feed>> findDeployedVersion(Feed.ID feedId, boolean includeContent);
 
     // TODO Methods to add policy info to source
 }

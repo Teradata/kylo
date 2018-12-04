@@ -1,0 +1,20 @@
+<mat-toolbar [color]="['primary']">
+  <span>{{formConfig.title}}</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<div mat-dialog-content class="mat-dialog-content">
+  <form class="layout-column" [formGroup]="formConfig.form">
+    <p *ngIf="formConfig.message != undefined">{{formConfig.message}}</p>
+
+    <dynamic-form [form]="formConfig.form" [fieldGroups]="formConfig.fieldGroups" ></dynamic-form>
+
+  </form>
+</div>
+<div mat-dialog-actions class="mat-dialog-actions">
+  <span class="flex"></span>
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button [color]="['primary']" [disabled]="!formConfig.form.valid" (click)="apply()">Apply</button>
+</div>

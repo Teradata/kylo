@@ -26,6 +26,7 @@ import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
+import com.thinkbiganalytics.spark.rest.model.ServerStatusResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
@@ -187,4 +188,12 @@ public interface SparkShellRestClient {
      */
     @Nonnull
     TransformResponse kyloCatalogTransform(@Nonnull final SparkShellProcess process, @Nonnull final KyloCatalogReadRequest request);
+
+    /**
+     * Returns information about the spark server, if it is being monitored.  Returns null if no active monitoring.
+     *
+     * @return the server status
+     */
+    @Nonnull
+    ServerStatusResponse serverStatus(SparkShellProcess sparkShellProcess);
 }

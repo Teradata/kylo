@@ -1,12 +1,10 @@
 import * as _ from "underscore";
 import {ListTableView} from "./ListTableViewTypes";
-import {Common} from "../common/CommonTypes";
 import PaginationData = ListTableView.PaginationData;
 import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
-
-import { Injectable } from "@angular/core";
-
+import {Injectable} from "@angular/core";
+import {Common} from '../../lib/common/CommonTypes';
 
 export enum ViewType {
     TABLE,
@@ -93,7 +91,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
         var pageData = this.paginationData(pageName, tabName);
 
         //deactivate the tab
-        _.forEach(pageData.tabs, (tabData, name) => {
+        _.each(pageData.tabs, (tabData: any, name: any) => {
             tabData.active = false;
             if (name == tabName) {
                 tabData.active = true;
@@ -110,7 +108,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
     getActiveTabData(pageName:string) :Tab{
         var activeTabData:Tab = {paginationId:'',currentPage:0,active:false,title:''};
         var pageData = this.paginationData(pageName);
-        _.forEach(pageData.tabs,  (tabData:Tab, name:string) =>{
+        _.each(pageData.tabs,  (tabData:Tab, name:string) =>{
             if (tabData.active) {
                 activeTabData = tabData;
                 return false;
@@ -203,3 +201,4 @@ export class DefaultPaginationDataService implements PaginationDataService{
         return this.paginationData(pageName, tabName).tabs[tabName].currentPage;
     }
 }
+

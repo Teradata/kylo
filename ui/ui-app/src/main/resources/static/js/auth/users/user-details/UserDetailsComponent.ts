@@ -1,23 +1,25 @@
 import * as _ from 'underscore';
-import UserService from "../../services/UserService";
-import AccessControlService from "../../../services/AccessControlService";
+import {StateService} from "../../../services/StateService";
+import {UserService} from "../../services/UserService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
-import { StateService } from "@uirouter/core";
+import { StateService as UiStateService } from "@uirouter/core";
 import { Component, OnInit } from '@angular/core';
 import { ViewContainerRef } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {FormControl, Validators, FormGroupDirective, NgForm} from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 import { TranslateService } from '@ngx-translate/core';
+import {LoadingDialogService} from "../../../common/loading-dialog/loading-dialog";
 
 @Component({
-    templateUrl: "js/auth/users/user-details/user-details.html",
+    templateUrl: "./user-details.html",
     selector: 'user-Details',
     styles : [' .block { display : block; margin: 18px;}']
 })
-export default class UserDetailsComponent implements OnInit{
+export class UserDetailsComponent implements OnInit{
 
     $error: any = { duplicateUser: false, missingGroup: false, missingUser: false };
 
@@ -69,6 +71,11 @@ export default class UserDetailsComponent implements OnInit{
      */
     loading: any = true;
 
+        /**
+         * Indicates record is being deleted.
+         */
+        deleting:boolean = false;
+
     /**
      * User model for the read-only view.
      * @type {UserPrincipal}
@@ -90,11 +97,13 @@ export default class UserDetailsComponent implements OnInit{
     constructor(
         private accessControlService: AccessControlService,
         private UserService: UserService,
-        private stateService: StateService,
+        private stateService: UiStateService,
         private _dialogService: TdDialogService,
         private _viewContainerRef: ViewContainerRef,
         private snackBar: MatSnackBar,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private loadingDialog:LoadingDialogService,
+        private statesService: StateService
     ) {}
     /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
@@ -102,7 +111,7 @@ export default class UserDetailsComponent implements OnInit{
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
      */
     canDelete () {
-        return (this.model.systemName !== null);
+        return (this.model.systemName !== null && !this.deleting);
     };
     /**
         * Finds the substring of the title for the specified group that matches the query term.
@@ -157,7 +166,7 @@ export default class UserDetailsComponent implements OnInit{
     onCancel ()  {
         this.enableEdit = false;
         if (this.model.systemName === null) {
-            this.stateService.go("users");
+            this.statesService.Auth.navigateToUsers();
         }
     };
 
@@ -165,20 +174,26 @@ export default class UserDetailsComponent implements OnInit{
      * Deletes the current user.
      */
     onDelete () {
+            this.loadingDialog.showDialog();
+            this.deleting = true;
         var name = (ObjectUtils.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
         this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
             .then(() => {
+                        this.loadingDialog.hideDialog();
+                        this.deleting = false;
+                        this.statesService.Auth.navigateToUsers();
                 this.snackBar.open(this.translate.instant('views.common.delete.success',{entity:'the user '}) + name,this.translate.instant('views.common.ok'),{
                     duration : 3000
                 });
-                    this.stateService.go("users");
             }, () => {
+                        this.loadingDialog.hideDialog();
+                        this.deleting = false;
                 this._dialogService.openAlert({
                     message: this.translate.instant('views.common.delete.failure',{entity : 'user'}) + name,
                     viewContainerRef: this._viewContainerRef,
                     width: '300 px',
                     title: this.translate.instant('views.common.delete.failure.title'),
-                    closeButton: this.translate.instant('views.common.dialog.gotIt'),
+                    closeButton: "Ok",
                     ariaLabel: this.translate.instant('views.common.delete.failure',{entity : 'user'}),
                     closeOnNavigation: true,
                     disableClose: false
@@ -248,8 +263,8 @@ export default class UserDetailsComponent implements OnInit{
     onSave () {
         var model = CloneUtil.deepCopy(this.editModel);
         this.UserService.saveUser(model)
-            .then(() => {
-                this.model = model;
+                    .then((updated: any) => {
+                        this.model = updated;
             }).catch((error) => {
                 this.model = this.editModel;
             });

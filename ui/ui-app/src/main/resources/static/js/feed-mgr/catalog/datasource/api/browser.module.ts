@@ -19,20 +19,32 @@ import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {CovalentLoadingModule} from '@covalent/core/loading';
+import {BrowserService} from "./browser.service";
+import {CovalentLayoutModule} from "@covalent/core/layout";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {CovalentCommonModule} from "@covalent/core/common";
+import {MatIconModule} from "@angular/material/icon";
+import {BrowserComponent} from './browser.component';
 import { TranslateModule } from "@ngx-translate/core";
 
 @NgModule({
     declarations: [
         SelectionDialogComponent,
+        BrowserComponent,
     ],
     entryComponents: [
         SelectionDialogComponent,
+    ],
+    providers:[
+        BrowserService
     ],
     imports: [
         FormsModule,
         ReactiveFormsModule,
         CovalentDataTableModule,
+        CovalentLayoutModule,
         CommonModule,
+        CovalentCommonModule,
         CovalentFileModule,
         CovalentSearchModule,
         CovalentPagingModule,
@@ -49,6 +61,9 @@ import { TranslateModule } from "@ngx-translate/core";
         MatCheckboxModule,
         TranslateModule,
         MatDialogModule,
+        MatToolbarModule,
+        MatIconModule
+
     ]
 })
 export class BrowserModule {

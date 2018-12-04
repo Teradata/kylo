@@ -22,10 +22,10 @@
  */
 import BroadcastConstants from "./BroadcastConstants";
 import { Injectable } from '@angular/core';
-import BroadcastService from "./broadcast-service";
+import {BroadcastService} from "./broadcast-service";
 
 @Injectable()
-export default class SideNavService {
+export class SideNavService {
     isLockOpen: any;
     constructor(private broadcastService: BroadcastService) {
         this.isLockOpen = true;

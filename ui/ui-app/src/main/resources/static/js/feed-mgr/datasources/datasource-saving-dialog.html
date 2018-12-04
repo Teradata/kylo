@@ -22,7 +22,7 @@
       <div class="md-toolbar-tools">
         <h4>
           <ng-md-icon size="24" md-icon icon="save" aria-label="Registering Template" style="fill:#3483BA"></ng-md-icon>
-          <span>{{"FEED_MGR.DATASOURCE.SAVING_DIALOG.SAVING_DATASOURCE_NAME" | translate : datasourceName}}</span>
+          <span>{{"FEED_MGR.DATASOURCE.SAVING_DIALOG.SAVING_DATASOURCE_NAME" | translate : dataSourceName}}</span>
         </h4>
         <span flex></span>
       </div>
@@ -30,7 +30,7 @@
     <mat-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
       <div class="md-subhead">{{"FEED_MGR.DATASOURCE.SAVING_DIALOG.SAVING_DATASOURCE" | translate}}</div>
       <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
-        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        <mat-progress-spinner mode="indeterminate" class="md-accent"></mat-progress-spinner>
       </div>
     </mat-dialog-content>
   </div>

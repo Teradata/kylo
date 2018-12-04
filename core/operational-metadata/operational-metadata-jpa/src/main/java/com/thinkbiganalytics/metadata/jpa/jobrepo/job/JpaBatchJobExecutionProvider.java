@@ -520,6 +520,24 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
 
+    /**
+     * returns the earliest date of the two, checking for null's
+     * This can return a null value if both date1 and date2 are null to begin with
+     * @param date1 a date
+     * @param date2 a date
+     * @return  the latest date, or null if both values are null to start with
+     */
+    private DateTime earliestTime(DateTime date1, DateTime date2){
+        if(date1 != null && date2 != null){
+            return date1.isBefore(date2) ? date1 : date2;
+        }
+        else if(date1 == null){
+            return date2;
+        }
+        else {
+            return date1;
+        }
+    }
 
     private JpaBatchJobExecution getOrCreateBatchJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
@@ -547,10 +565,15 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
         if (event.isStartOfJob() && !isNew) {
             jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
+            DateTime startTime = jobExecution.getStartTime();
             if(event.getStartTime() != null) {
-                jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getStartTime()));
+                 DateTime eventStartTime = DateTimeUtil.convertToUTC(event.getStartTime());
+                 startTime = earliestTime(startTime,eventStartTime);
+                jobExecution.setStartTime(startTime);
             } else {
-                jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+                DateTime eventTime = DateTimeUtil.convertToUTC(event.getEventTime());
+                startTime = earliestTime(startTime,eventTime);
+                jobExecution.setStartTime(startTime);
             }
             //create the job params
             Map<String, Object> jobParameters = new HashMap<>();

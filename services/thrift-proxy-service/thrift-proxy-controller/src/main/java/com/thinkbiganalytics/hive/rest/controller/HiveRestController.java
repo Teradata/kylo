@@ -191,7 +191,13 @@ public class HiveRestController {
                   })
     public Response getTableSchema(@PathParam("schema") String schema, @PathParam("table") String table) {
 
-        TableSchema tableSchema = hiveService.getTableSchema(schema, table);
+        TableSchema tableSchema;
+        try {
+            tableSchema = hiveMetadataService.getTable(schema, table);
+        } catch (DataAccessException e) {
+            log.error("Error listing Hive Table schemas from the metastore ", e);
+            throw e;
+        }
         return Response.ok(asJson(tableSchema)).build();
     }
 

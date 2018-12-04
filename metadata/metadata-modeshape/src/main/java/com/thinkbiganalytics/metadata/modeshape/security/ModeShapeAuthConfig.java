@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.security.RoleMembershipProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
@@ -66,23 +67,27 @@ public class ModeShapeAuthConfig {
     public SecurityRoleProvider roleProvider() {
         return new JcrSecurityRoleProvider();
     }
+    
+    @Bean
+    public RoleMembershipProvider roleMembershipProvider() {
+        return new JcrRoleMembershipProvider();
+    }
 
     @Bean
     @Scope("prototype")
     public ActionsModuleBuilder prototypesActionGroupsBuilder() {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
-
+    
     @Bean
-    @Order(PostMetadataConfigAction.EARLY_ORDER)
-    @Profile("!kyloUpgrade")
-    public PostMetadataConfigAction checkEntityAccessControl() {
-        return new CheckEntityAccessControlAction();
+    public AccessControlConfigurator entityAccessControlConfigurator() {
+        return new AccessControlConfigurator();
     }
 
     @Bean
-    @Order(PostMetadataConfigAction.LATE_ORDER)
-    public PostMetadataConfigAction ensureServicesAccessControlAction() {
-        return new EnsureServicesAccessControlAction();
+    @Profile("!kyloUpgrade")
+    @Order(PostMetadataConfigAction.EARLY_ORDER)
+    public PostMetadataConfigAction checkEntityAccessControl() {
+        return new CheckEntityAccessControlAction();
     }
 }

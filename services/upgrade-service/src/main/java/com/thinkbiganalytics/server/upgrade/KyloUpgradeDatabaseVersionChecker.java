@@ -38,6 +38,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -85,18 +87,20 @@ public class KyloUpgradeDatabaseVersionChecker {
             DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
 
             connection = dataSource.getConnection();
-            String query = "SELECT * FROM KYLO_VERSION ORDER BY MAJOR_VERSION DESC, MINOR_VERSION DESC, POINT_VERSION DESC, TAG DESC";
+            String query = "SELECT * FROM KYLO_VERSION";
             statement = connection.createStatement();
             rs = statement.executeQuery(query);
-            if (rs.next()) {
+            List<KyloVersion> versions = new ArrayList<KyloVersion>();
+            while (rs.next()) {
                 String majorVersion = rs.getString("MAJOR_VERSION");
                 String minorVersion = rs.getString("MINOR_VERSION");
                 String pointVersion = rs.getString("POINT_VERSION");
                 String tag = rs.getString("TAG");
                 
-                version = new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, tag);
+                versions.add(new KyloVersionUtil.Version(majorVersion, minorVersion, pointVersion, tag));
             }
-
+            versions.sort((v1, v2) -> v2.compareTo(v1));  // DESC
+            version = (versions.size() > 0)?versions.get(0):null;
         } catch (SQLException e) {
             // this is ok.. If an error happens assume the upgrade is needed.  The method will return a null value if errors occur and the upgrade app will start.
             log.error("An error has occurred while looking up current Kylo version, assuming an upgrade is needed");

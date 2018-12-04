@@ -1,4 +1,5 @@
 import {NgModule, CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import {TranslateModule} from "@ngx-translate/core";
 import { UIRouterModule } from "@uirouter/angular";
 import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
 import * as angular from "angular";
@@ -38,7 +39,8 @@ import { MatDividerModule } from "@angular/material/divider";
         MatListModule,
         MatDividerModule,
         FlexLayoutModule,
-        UIRouterModule.forChild({states: schedulerStates})
+        UIRouterModule.forChild({states: schedulerStates}),
+        TranslateModule
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers : [{provide: "$injector", useFactory: () => angular.element(document.body).injector()}]

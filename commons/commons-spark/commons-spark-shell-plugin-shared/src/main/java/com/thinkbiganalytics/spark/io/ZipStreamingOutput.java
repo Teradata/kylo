@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.io;
  */
 
 
+
 import com.google.common.io.ByteStreams;
 import com.thinkbiganalytics.spark.exceptions.SparkShellPluginIoException;
 import org.apache.hadoop.fs.*;
@@ -37,7 +38,6 @@ import java.util.zip.ZipOutputStream;
  *
  * <p>The folder will be automatically deleted after it is outputted.</p>
  */
-// TODO: This class is a copy from spark-shell-client-app
 public class ZipStreamingOutput implements StreamingOutput {
 
     /**

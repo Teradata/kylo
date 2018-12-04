@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.rest.api;
 
 import com.google.common.base.Strings;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccessException;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
@@ -52,6 +54,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.modeshape.jcr.api.Workspace;
 import org.modeshape.jcr.api.index.IndexDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
@@ -67,6 +71,7 @@ import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.jcr.Item;
@@ -77,10 +82,14 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
+import javax.jcr.version.VersionException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -110,6 +119,8 @@ import io.swagger.annotations.Tag;
 @Path("/v1/metadata/debug")
 @SwaggerDefinition(tags = @Tag(name = "Internal", description = "debugging tools"))
 public class DebugController {
+    
+    private static final Logger log = LoggerFactory.getLogger(DebugController.class);
 
     @Context
     private UriInfo uriInfo;
@@ -227,8 +238,12 @@ public class DebugController {
                 } catch (PathNotFoundException e) {
                     return "Path not found: " + path.toString();
                 }
+            } catch (MetadataAccessException | MetadataExecutionException e) {
+                pw.println("Failed to get JCR node tree: " + e.getCause().getMessage());
+                log.error("Failed to get JCR node tree", e);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(pw);
+                log.error("Failed to get JCR node tree", e);
             }
 
             pw.flush();
@@ -264,15 +279,20 @@ public class DebugController {
                     if (item instanceof Property) {
                         Property property = (Property) item;
                         
-                        // No-op if value not supplied
-                        if (value != null) {
-                            property.setValue(value);
+                        if (value != null && "null".equals(value)) {
+                            setPropertyValue(property, null);
+                            pw.println(" - " + property.getName() + " deleted");
+                        } else {
+                            // No-op if value not supplied
+                            if (value != null) {
+                                setPropertyValue(property, value);
+                            }
+                            
+                            printItem(item, pw);
                         }
                     } else {
                         pw.println("Item at path is not a property: " + path.toString());
                     }
-                    
-                    printItem(item, pw);
                 } catch (PathNotFoundException e) {
                     try {
                         Item item = getItem(path.getParent().toString(), session);
@@ -291,15 +311,18 @@ public class DebugController {
                     }
                 }
             });
+        } catch (MetadataAccessException | MetadataExecutionException e) {
+            pw.println("Failed to set node property " + abspath + " = '" + value + "': " + e.getCause().getMessage());
+            log.error("Failed to set node property: {} = '{}'", abspath, value, e);
         } catch (Exception e) {
             e.printStackTrace(pw);
-            throw new RuntimeException(e);
+            log.error("Failed to set node property: {} = '{}'", abspath, value, e);
         }
     
         pw.flush();
         return sw.toString();
     }
-    
+
     /**
      * Prints the subgraph of the node in JCR with the specified ID.
      *
@@ -326,8 +349,12 @@ public class DebugController {
                 pw.println(node.getPath());
                 JcrTools tools = new JcrTool(true, pw);
                 tools.printSubgraph(node);
+            } catch (MetadataAccessException | MetadataExecutionException e) {
+                pw.println("Failed to show JCR node with ID " + jcrId + ": " + e.getCause().getMessage());
+                log.error("Failed to show JCR node with ID: {}", jcrId, e);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(pw);
+                log.error("Failed to show JCR node with ID: {}", jcrId, e);
             }
     
             pw.flush();
@@ -359,14 +386,17 @@ public class DebugController {
                     Item item = getItem(abspath, session);
                     
                     item.remove();
-                    pw.print("DELETED " + abspath);
+                    pw.print("DELETE " + abspath + "  ");
                 } catch (PathNotFoundException e) {
                     pw.print("Path not found: " + path.toString());
                 }
             });
+        } catch (MetadataAccessException | MetadataExecutionException e) {
+            pw.println("Failed to delete JCR node tree: " + e.getCause().getMessage());
+            log.error("Failed to delete JCR node tree: {}", abspath, e);
         } catch (Exception e) {
             e.printStackTrace(pw);
-            throw new RuntimeException(e);
+            log.error("Failed to delete JCR node tree: {}", abspath, e);
         }
     
         pw.flush();
@@ -394,9 +424,10 @@ public class DebugController {
                 Node node = session.getNodeByIdentifier(jcrId);
                 String absPath = node.getPath();
                 node.remove();
-                pw.print("DELETED " + absPath);
+                pw.print("DELETE " + absPath + "  ");
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace(pw);
+                log.error("Failed to delete JCR node with ID: {}", jcrId, e);
             }
     
             pw.flush();
@@ -457,7 +488,7 @@ public class DebugController {
             });
         } catch (Exception e) {
             e.printStackTrace(pw);
-            throw new RuntimeException(e);
+            log.error("Failed to delete JCR node reference: {}", abspath, e);
         }
     
         pw.flush();
@@ -648,6 +679,28 @@ public class DebugController {
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus getReindex() {
         return reindex();
+    }
+
+    protected void setPropertyValue(Property property, final String value) throws ValueFormatException, VersionException, LockException, ConstraintViolationException, RepositoryException {
+        if (value == null) {
+            if (property.isMultiple()) {
+                property.setValue(new Value[0]);
+            } else {
+                property.remove();
+            }
+        } else {
+            if (property.isMultiple()) {
+                ValueFactory factory = property.getSession().getValueFactory();
+                Value[] values = Stream.concat(Arrays.stream(property.getValues()), 
+                                               Arrays.stream(value.split(","))
+                                                   .map(String::trim)
+                                                   .map(str -> factory.createValue(str)))
+                                .toArray(Value[]::new);  
+                property.setValue(values);
+            } else {
+                property.setValue(value);
+            }
+        }
     }
 
     private Item getItem(final String abspath, Session session) throws PathNotFoundException, RepositoryException {

@@ -18,17 +18,19 @@
  * #L%
  */
 
-import { PipeTransform } from '@angular/core';
+import {PipeTransform} from '@angular/core';
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {DomainType} from "../../../services/DomainTypesService";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
 import {TableFieldPartition} from "../../../model/TableFieldPartition";
 import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
-import {TableForm, TableCreateMethod} from "../../../model/feed/feed-table";
-import {ObjectUtils} from "../../../../common/utils/object-utils";
+import {TableCreateMethod, TableForm} from "../../../model/feed/feed-table";
+import {ObjectUtils} from "../../../../../lib/common/utils/object-utils";
+import {StringUtils} from "../../../../common/utils/StringUtils";
 
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+
+const moduleName = require('../module-name');
 
 
 export class ExpansionPanelHelper {
@@ -319,7 +321,7 @@ export class DefineFeedTableController {
         }
 
         if (this.useUnderscoreInsteadOfSpaces) {
-            columnDef.name = StringUtils.replaceSpaces(columnDef.name);
+            columnDef.name = StringUtils.replaceSpaces(columnDef.name, '_');
         }
         columnDef.initFeedColumn();
         //add the column to both the source and destination tables as well as the fieldPolicies array
@@ -466,7 +468,7 @@ export class DefineFeedTableController {
                     escapeToClose: false,
                     fullscreen: true,
                     parent: angular.element(document.body),
-                    templateUrl: "js/feed-mgr/shared/apply-domain-type/domain-type-conflict.component.html",
+                    templateUrl: "../../../shared/apply-domain-type/domain-type-conflict.component.html",
                     locals: {
                         data: {
                             columnDef: columnDef,
@@ -695,7 +697,7 @@ export class DefineFeedTableController {
                 escapeToClose: false,
                 fullscreen: true,
                 parent: angular.element(document.body),
-                templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.html",
+                templateUrl: "../../../shared/apply-domain-type/apply-table-domain-types.component.html",
                 locals: {
                     data: data
                 }
@@ -815,5 +817,5 @@ angular.module(moduleName).
         },
         controllerAs: 'vm',
         controller: DefineFeedTableController,
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table.html',
+        templateUrl: './define-feed-table.html',
     });

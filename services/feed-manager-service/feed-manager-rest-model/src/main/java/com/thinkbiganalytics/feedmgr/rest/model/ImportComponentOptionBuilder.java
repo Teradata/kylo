@@ -113,8 +113,14 @@ public class ImportComponentOptionBuilder {
     }
 
     public ImportComponentOptionBuilder importProperty(String processorName, String processorId,String processorType, String propertyKey, String propertyValue){
-        ImportProperty importProperty = new ImportProperty(processorName,processorId,propertyKey,propertyValue,processorType);
-       if(properties == null){
+        ImportProperty importProperty = ImportPropertyBuilder.anImportProperty()
+            .withComponentName(processorName)
+            .withComponentId(processorId)
+            .withPropertyKey(propertyKey)
+            .withPropertyValue(propertyValue)
+            .withType(processorType).build();
+
+        if(properties == null){
            properties = new ArrayList<>();
        }
        properties.add(importProperty);

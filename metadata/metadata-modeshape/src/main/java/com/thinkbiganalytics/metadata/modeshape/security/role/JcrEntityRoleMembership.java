@@ -67,6 +67,9 @@ public class JcrEntityRoleMembership extends JcrAbstractRoleMembership {
 
     @Override
     protected void disable(Principal principal) {
+        // Since this method is called after a principal has been removed as a member, the enableOnly() call
+        // below will only leave permissions enabled for the principal if it is a member of some other role,
+        // otherwise all permissions will be left disabled for that principal.
         enableOnly(principal, streamAllRoleMemberships(), getAllowedActions());
     }
 

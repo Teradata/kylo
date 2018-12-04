@@ -5,12 +5,13 @@
 
   <groupId>com.thinkbiganalytics.kylo</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.9.2-SNAPSHOT</version>
+  <version>0.10.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo is an enterprise-ready, open source, data lake management software platform for Hadoop and Spark integrating
     best practices around metadata management, governance, and security learned from over Think Big's 150+ successful
-    big data projects.</description>
+    big data projects.
+  </description>
   <inceptionYear>2017</inceptionYear>
   <url>https://kylo.io</url>
   <organization>
@@ -107,11 +108,13 @@
 
     <!-- dependencies -->
     <automatic-release-repo-promotion>false</automatic-release-repo-promotion>
-    <activemq.version>5.15.0</activemq.version>
+    <activemq.version>5.15.6</activemq.version>
     <avro.version>1.7.7</avro.version>
     <jersey.version>2.22.2</jersey.version>
     <jackson.version>2.9.6</jackson.version>
+    <jackson.databind.version>2.8.11</jackson.databind.version>
     <jackson.scala.version>2.9.5</jackson.scala.version>
+    <rxjava.version>2.2.0</rxjava.version>
     <hibernate.version>5.2.17.Final</hibernate.version>
     <hibernate.jpa.version>1.0.0.Final</hibernate.jpa.version>
     <testng.version>6.9.10</testng.version>
@@ -135,7 +138,7 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>2.6.2</hadoop.version>
     <hamcrest.version>1.3</hamcrest.version>
-    <hive.version>0.14.0</hive.version>
+    <hive.version>1.1.0</hive.version>
     <hiverunner.version>3.0.0</hiverunner.version>
     <httpclient.version>4.5.1</httpclient.version>
     <javax.mail>1.5.5</javax.mail>
@@ -156,11 +159,11 @@
     <powermock.version>1.6.3</powermock.version>
     <quartz.version>2.2.1</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
-    <scala.version>2.10.6</scala.version>
+    <scala.version>2.10.7</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <spark.version>1.6.1</spark.version>
     <spark.binary.version>1.6</spark.binary.version>
-    <spring.version>4.3.17.RELEASE</spring.version>
+    <spring.version>4.3.20.RELEASE</spring.version>
     <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
     <spring.boot.version>1.5.13.RELEASE</spring.boot.version>
     <spring.jpa.version>1.11.12.RELEASE</spring.jpa.version>
@@ -169,6 +172,9 @@
     <spring.ldap.version>2.1.0.RELEASE</spring.ldap.version>
     <spring.vault.version>1.1.1.RELEASE</spring.vault.version>
     <projectreactor.version>2.0.8.RELEASE</projectreactor.version>
+    <reactive-streams.version>1.0.0</reactive-streams.version>
+    <jose4j.version>0.5.4</jose4j.version>
+    <jetbrains-annotations.version>15.0</jetbrains-annotations.version>
     <assertj.version>3.4.1</assertj.version>
     <org.reflections.version>0.9.9</org.reflections.version>
     <querydsl.version>4.1.4</querydsl.version>
@@ -176,11 +182,12 @@
     <pig.version>0.15.0</pig.version>
     <gson.version>2.2.4</gson.version>
     <h2.version>1.4.187</h2.version>
-    <aws.java.sdk.version>1.9.6</aws.java.sdk.version>
+    <aws.java.sdk.version>1.7.4</aws.java.sdk.version>
     <amazon.sqs.java.messaging.lib.version>1.0.0</amazon.sqs.java.messaging.lib.version>
 
     <!-- Plugin Versions -->
-    <plugin.license.version>1.12</plugin.license.version>
+    <plugin.license.version>1.16</plugin.license.version>
+
     <liquibase.version>3.5.3</liquibase.version>
     <!--<liquibase.version>3.3.5</liquibase.version>-->
     <liquibase-slf4j.version>2.0.0</liquibase-slf4j.version>
@@ -193,6 +200,10 @@
     <modeshape.version>5.4.1.Final</modeshape.version>
     <codehaus.jettison.version>1.3.8</codehaus.jettison.version>
     <clirr.maven.plugin.version>2.8</clirr.maven.plugin.version>
+    <frontend.maven.plugin.version>1.6</frontend.maven.plugin.version>
+    <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
+    <node.version>v10.10.0</node.version>
+    <npm.version>6.4.1</npm.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -305,6 +316,13 @@
         <groupId>org.mariadb.jdbc</groupId>
         <artifactId>mariadb-java-client</artifactId>
         <version>${mariadb.version}</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava -->
+      <dependency>
+        <groupId>io.reactivex.rxjava2</groupId>
+        <artifactId>rxjava</artifactId>
+        <version>${rxjava.version}</version>
       </dependency>
 
       <!-- Jersey -->
@@ -1034,7 +1052,7 @@
       <dependency>
         <groupId>org.bitbucket.b_c</groupId>
         <artifactId>jose4j</artifactId>
-        <version>0.5.4</version>
+        <version>${jose4j.version}</version>
       </dependency>
 
       <dependency>
@@ -1046,16 +1064,26 @@
       <dependency>
         <groupId>org.jetbrains</groupId>
         <artifactId>annotations</artifactId>
-        <version>15.0</version>
+        <version>${jetbrains-annotations.version}</version>
         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.reactivestreams</groupId>
+        <artifactId>reactive-streams</artifactId>
+        <version>${reactive-streams.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-core</artifactId>
+        <version>${projectreactor.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
 
   <dependencies>
-
-
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
@@ -1084,6 +1112,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <runOrder>random</runOrder>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -1115,6 +1146,7 @@
             <includedLicense>Public Domain</includedLicense>
             <includedLicense>WTFPL</includedLicense>
           </includedLicenses>
+          <!-- @formatter:off -->
           <licenseMerges>
             <licenseMerge>Apache License, Version 2.0|Apache 2|Apache 2.0|Apache 2.0 License|Apache v2|Apache License|Apache License 2.0|Apache License, version 2.0|Apache Software License 2.0|Apache Software License - Version 2.0|Apache Software License - Version 2.0, Eclipse Public License - Version 1.0|Apache Software Licenses|The Apache License, Version 2.0|The Apache Software License, Version 2.0</licenseMerge>
             <licenseMerge>BSD License|BSD|BSD licence|Eclipse Distribution License (New BSD License)|New BSD license|The BSD 3-Clause License|The BSD License|The New BSD License</licenseMerge>
@@ -1125,6 +1157,7 @@
             <licenseMerge>MIT License|Bouncy Castle Licence|MIT license</licenseMerge>
             <licenseMerge>Mozilla Public License Version 1.1|MPL 1.1</licenseMerge>
           </licenseMerges>
+          <!-- @formatter:on -->
         </configuration>
         <executions>
           <execution>
@@ -1143,7 +1176,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.0</version>
         </plugin>
         <plugin>
           <groupId>org.scala-tools</groupId>
@@ -1189,6 +1222,15 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>clirr-maven-plugin</artifactId>
           <version>${clirr.maven.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>${frontend.maven.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>${maven.clean.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>

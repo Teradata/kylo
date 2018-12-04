@@ -15,7 +15,7 @@ import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: 'thinkbig-properties-admin',
-    templateUrl: 'js/feed-mgr/shared/properties-admin/properties-admin.html'
+    templateUrl: './properties-admin.html'
 })
 export class PropertiesAdminController implements OnInit{
 

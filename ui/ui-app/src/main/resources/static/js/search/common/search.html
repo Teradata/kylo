@@ -4,7 +4,7 @@
       <mat-card class="centered" style="width:70%;margin:auto;">
         <mat-card-title layout="row" layout-align="space-between-center" flex>
           <span *ngIf="searchResult != null" class="md-subhead">
-            {{"view.search.Srf" | translate}} {{searchResult.from}} {{"view.search.to" | translate}} {{searchResult.to}} {{"view.search.of" | translate}} {{searchResult.totalHits}}  
+            {{"view.search.Srf" | translate}} {{searchResult.from}} {{"view.search.to" | translate}} {{searchResult.to}} {{"view.search.of" | translate}} {{searchResult.totalHits}}
             <span class="hint">({{(searchResult.tookInMillis/1000).toFixed(3)}} {{"view.search.seconds" | translate}})</span>
           </span>
         </mat-card-title>
@@ -13,27 +13,27 @@
           <div *ngIf="searchResult != null">
             <div *ngIf="searchResult.searchResults.length >0 ">
               <mat-list flex layout-fill>
-                <mat-list-item class="searchList" style="height:auto; font-size: 14px;" (click)="onSearchResultItemClick($event,searchHit)" 
+                <mat-list-item class="searchList" style="height:auto; font-size: 14px;" (click)="onSearchResultItemClick($event,searchHit)"
                     *ngFor="let searchHit of searchResult.searchResults">
                   <div flex="10" style="z-index: 1" layout="column" layout-xs="row">
                     <span style="z-index: 1">
-                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_DATA'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_DATA'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);"
                                   size="48" matTooltip="{{'view.search.Dft' | translate}} {{searchHit.schemaName}}.{{searchHit.tableName}} "
                                   placement="left">
                       </ng-md-icon>
-                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_SCHEMA'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
-                                  size="48" matTooltip="{{'view.search.Sft' | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}" 
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_SCHEMA'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);"
+                                  size="48" matTooltip="{{'view.search.Sft' | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}"
                                   placement="left">
                       </ng-md-icon>
-                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_FEEDS'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
-                                  size="48" matTooltip="{{'view.search.Fmf' | translate}} {{searchHit.feedTitle}}" 
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_FEEDS'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);"
+                                  size="48" matTooltip="{{'view.search.Fmf' | translate}} {{searchHit.feedTitle}}"
                                   placement="left">
                       </ng-md-icon>
-                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_CATEGORIES'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
-                                  size="48" matTooltip="{{'view.search.Cmf' | translate}} {{searchHit.categoryTitle}}" 
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_CATEGORIES'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);"
+                                  size="48" matTooltip="{{'view.search.Cmf' | translate}} {{searchHit.categoryTitle}}"
                                   placement="left">
                       </ng-md-icon>
-                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_UNKNOWN'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" 
+                      <ng-md-icon *ngIf="searchHit.type == 'KYLO_UNKNOWN'" icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);"
                                   size="48" matTooltip="{{'view.search.Urt' | translate}}"
                                   placement="left">
                       </ng-md-icon>
@@ -186,7 +186,7 @@
                   <mat-divider *ngIf="!last"></mat-divider>
                 </mat-list-item>
                 <mat-divider></mat-divider>
-                  
+
                 <td-paging-bar #pagingBar [firstLast]="false" [pageSize]="pageSize" [total]="searchResult.totalHits" (change)="onPaginationChange($event)" style="float: right;">
                     <span hide-xs>{{"views.main.rows-per-page" | translate}}</span>
                     <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
@@ -205,7 +205,7 @@
             {{"views.common.Nrf" | translate}}
           </div>
           <div *ngIf="searching">
-            <mat-spinner mode="indeterminate"></mat-spinner>
+            <mat-spinner mode="indeterminate" class="md-accent"></mat-spinner>
           </div>
         </mat-card-content>
       </mat-card>

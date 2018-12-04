@@ -22,6 +22,8 @@ package com.thinkbiganalytics.spark.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
+import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import java.util.List;

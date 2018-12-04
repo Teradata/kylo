@@ -1,91 +1,68 @@
 import { Injectable } from "@angular/core";
+import {OperationsRestUrlConstants} from "../../services/operations-rest-url-constants";
 
 @Injectable()
-export default class OpsManagerRestUrlService {
+export class OpsManagerRestUrlService {
     constructor() { }
 
     ROOT: string = "";
-    FEED_MGR_BASE = "/proxy/v1/feedmgr";
-    FEED_MGR_FEED_BASE_URL = this.FEED_MGR_BASE + "/feeds";
+    FEED_MGR_BASE = OperationsRestUrlConstants.FEED_MGR_BASE;
+    FEED_MGR_FEED_BASE_URL = OperationsRestUrlConstants.FEED_MGR_FEED_BASE_URL
     SLA_BASE_URL = this.FEED_MGR_BASE + "/sla";
-    FEEDS_BASE = "/proxy/v1/feeds";
-    JOBS_BASE = "/proxy/v1/jobs";
+    FEEDS_BASE = OperationsRestUrlConstants.FEEDS_BASE
+    JOBS_BASE = OperationsRestUrlConstants.JOBS_BASE
     SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
     DASHBOARD_URL = this.ROOT + '/proxy/v1/dashboard';
     DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/proxy/v1/dashboard/pageable-feeds';
 
     FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
     FEED_NAMES_URL = this.FEEDS_BASE + "/names";
-    FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = this.FEED_MGR_FEED_BASE_URL + "/feed-system-name-to-display-name";
+    FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = OperationsRestUrlConstants.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL;
     FEED_HEALTH_COUNT_URL = this.FEEDS_BASE + "/health-count";
 
-    SPECIFIC_FEED_HEALTH_URL = (feedName: any) => {
-        return '/proxy/v1/dashboard/feeds/feed-name/' + feedName;
-    }
-    FEED_DAILY_STATUS_COUNT_URL = (feedName: any) => {
-        return this.FEEDS_BASE + "/" + feedName + "/daily-status-count";
-    }
+    SPECIFIC_FEED_HEALTH_URL = OperationsRestUrlConstants.SPECIFIC_FEED_HEALTH_URL;
 
-    FEED_NAME_FOR_ID = (feedId: any) => {
-        return this.FEEDS_BASE + "/query/" + feedId
-    }
+    FEED_DAILY_STATUS_COUNT_URL = OperationsRestUrlConstants.FEED_DAILY_STATUS_COUNT_URL;
+
+    FEED_NAME_FOR_ID = OperationsRestUrlConstants.FEED_NAME_FOR_ID;
     //JOB urls
 
-    JOBS_QUERY_URL = this.JOBS_BASE;
-    JOBS_CHARTS_QUERY_URL = this.JOBS_BASE + '/list';
-    JOB_NAMES_URL = this.JOBS_BASE + '/names';
+    JOBS_QUERY_URL = OperationsRestUrlConstants.JOBS_BASE;
+    JOBS_CHARTS_QUERY_URL = OperationsRestUrlConstants.JOBS_CHARTS_QUERY_URL
+    JOB_NAMES_URL = OperationsRestUrlConstants.JOB_NAMES_URL
 
-    DAILY_STATUS_COUNT_URL = this.JOBS_BASE + "/daily-status-count/";
+    DAILY_STATUS_COUNT_URL = OperationsRestUrlConstants.DAILY_STATUS_COUNT_URL;
 
-    RUNNING_JOB_COUNTS_URL = '/proxy/v1/dashboard/running-jobs';
+    RUNNING_JOB_COUNTS_URL = OperationsRestUrlConstants.RUNNING_JOB_COUNTS_URL;
 
-    RESTART_JOB_URL = (executionId: any) => {
-        return this.JOBS_BASE + "/" + executionId + "/restart";
-    }
-    STOP_JOB_URL = (executionId: any) => {
-        return this.JOBS_BASE + "/" + executionId + "/stop";
-    }
+    RESTART_JOB_URL = OperationsRestUrlConstants.RESTART_JOB_URL;
 
-    ABANDON_JOB_URL = (executionId: any) => {
-        return this.JOBS_BASE + "/" + executionId + "/abandon";
-    }
+    STOP_JOB_URL = OperationsRestUrlConstants.STOP_JOB_URL;
+
+     ABANDON_JOB_URL =  OperationsRestUrlConstants.ABANDON_JOB_URL;
 
 
-    ABANDON_ALL_JOBS_URL = (feedId: any) => {
-        return this.JOBS_BASE + "/abandon-all/" + feedId;
-    }
+    ABANDON_ALL_JOBS_URL = OperationsRestUrlConstants.ABANDON_ALL_JOBS_URL;
 
-    FAIL_JOB_URL = (executionId: any) => {
-        return this.JOBS_BASE + "/" + executionId + "/fail";
-    }
+    FAIL_JOB_URL = OperationsRestUrlConstants.FAIL_JOB_URL;
 
-    LOAD_JOB_URL = (executionId: any) => {
-        return this.JOBS_BASE + "/" + executionId;
-    }
+    LOAD_JOB_URL =  OperationsRestUrlConstants.LOAD_JOB_URL
 
-    RELATED_JOBS_URL = (executionId: any) => {
-        return this.JOBS_BASE + "/" + executionId + "/related";
-    }
+    RELATED_JOBS_URL = OperationsRestUrlConstants.RELATED_JOBS_URL
 
     SERVICES_URL = "/proxy/v1/service-monitor/";
 
-    STATS_BASE = "/proxy/v1/provenance-stats";
+    STATS_BASE = OperationsRestUrlConstants.STATS_BASE
 
-    STATS_BASE_V2 = "/proxy/v2/provenance-stats";
+    STATS_BASE_V2 = OperationsRestUrlConstants.STATS_BASE_V2;
 
-    PROCESSOR_DURATION_FOR_FEED = (feedName: any, from: any, to: any) => {
-        return this.STATS_BASE_V2 + "/" + feedName + "/processor-duration?from=" + from + "&to=" + to;
-    };
+    PROCESSOR_DURATION_FOR_FEED = OperationsRestUrlConstants.PROCESSOR_DURATION_FOR_FEED;
 
-    FEED_STATISTICS_OVER_TIME = (feedName: any, from: any, to: any, maxDataPoints: any) => {
-        return this.STATS_BASE_V2 + "/" + feedName + "?from=" + from + "&to=" + to + "&dp=" + maxDataPoints;
-    };
+    FEED_STATISTICS_OVER_TIME = OperationsRestUrlConstants.FEED_STATISTICS_OVER_TIME
 
-    FEED_PROCESSOR_ERRORS = (feedName: any, from: any, to: any) => {
-        return this.STATS_BASE_V2 + "/" + feedName + "/processor-errors?from=" + from + "&to=" + to;
-    };
+    FEED_PROCESSOR_ERRORS = OperationsRestUrlConstants.FEED_PROCESSOR_ERRORS
 
-    PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE_V2 + "/time-frame-options";
+    PROVENANCE_EVENT_TIME_FRAME_OPTIONS = OperationsRestUrlConstants.PROVENANCE_EVENT_TIME_FRAME_OPTIONS
 
     /**
      * Gets the alert details endpoint for the specified alert.

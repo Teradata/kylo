@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>{{title}}</h2>
+<div mat-dialog-content class="mat-dialog-content">
+  <form class="layout-column" [formGroup]="formGroup">
+    <system-feed-name [formGroup]="formGroup"></system-feed-name>
+    <category-autocomplete [formGroup]="formGroup" >
+    </category-autocomplete>
+  </form>
+  <div class="pad" class="hint">
+    <mat-error *ngIf="checkDuplicateFeedName(formGroup)" translate [translateParams]="{feedSystemName:formGroup.controls.systemFeedName.value, categorySystemName: formGroup.controls.category.value.systemName}">
+      views.define-feed-general-info.DuplicateFeedForCategory
+    </mat-error>
+  </div>
+</div>
+<div mat-dialog-actions class="mat-dialog-actions" fxLayout="row" fxLayoutAlign="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button [color]="['primary']" [disabled]="!formGroup.valid" (click)="create()">Create</button>
+</div>

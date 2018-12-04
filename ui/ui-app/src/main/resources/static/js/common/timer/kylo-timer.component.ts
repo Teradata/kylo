@@ -1,6 +1,7 @@
-import { Directive, Input, ElementRef, SimpleChanges, Inject } from '@angular/core';
+import {Directive, ElementRef, Input, SimpleChanges} from '@angular/core';
 import "pascalprecht.translate";
-import { ObjectUtils } from "../utils/object-utils";
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
+import {DateTimeService} from "../utils/date-time.service";
 
 @Directive({
     selector: '[kylo-timer]'
@@ -8,13 +9,16 @@ import { ObjectUtils } from "../utils/object-utils";
 export class KyloTimerDirective {
 
     @Input() startTime: any;
-    @Input() truncatedFormat: any;
+    @Input() truncatedFormat: boolean;
     @Input() addAgoSuffix: any;
 
-    refreshTime: any;
-    time: any;
-    previousDisplayStr: any;
+    refreshTime: number;
+    time: number;
+    previousDisplayStr: string;
     interval: any;
+
+    constructor(private elRef: ElementRef,
+                private _dateTimeService:DateTimeService) {}
 
     clearInterval(): void {
         clearInterval(this.interval);
@@ -25,7 +29,7 @@ export class KyloTimerDirective {
         this.clearInterval();
     }
 
-    update () {
+    update() {
         this.time += this.refreshTime;
         //format it
         this.format();
@@ -33,8 +37,8 @@ export class KyloTimerDirective {
 
     format(): void {
         var ms = this.time;
-        var displayStr = DateTimeUtils(this.$injector.get("$filter")('translate')).formatMillisAsText(ms, this.truncatedFormat, false);
-        if (this.addAgoSuffix) {
+        var displayStr = this._dateTimeService.formatMillisAsText(ms,this.truncatedFormat,false);
+        if(this.addAgoSuffix) {
             displayStr += " ago";
         }
 
@@ -48,7 +52,6 @@ export class KyloTimerDirective {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (!changes.startTime.firstChange) {
-            console.log(changes.startTime);
             this.time = changes.startTime.currentValue;
             this.format();
         }
@@ -67,10 +70,9 @@ export class KyloTimerDirective {
             this.refreshTime = 1000;
         }
 
-        this.interval = setInterval(() => {this.update()}, this.refreshTime);
+        this.interval = setInterval(this.update.bind(this), this.refreshTime);
 
     }
-    constructor(private elRef: ElementRef,
-        @Inject("$injector") private $injector: any) { }
+
 }
 

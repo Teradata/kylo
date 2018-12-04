@@ -1,0 +1,114 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<mat-card class="feed-card jobs-card">
+
+  <mat-card-content>
+    <div fxLayout="row" fxFlex="100" fxLayoutAlign="start center"  >
+      <div *ngIf="!searchBox.searchVisible" fxLayout="column" class="pull-bottom-sm">
+        <mat-card-title fxLayout="row">
+          <!-- <mat-icon >{{kyloIcons.Feed.jobsList}}</mat-icon> -->
+          <span>
+               <span>Jobs</span>
+             </span>
+        </mat-card-title>
+        <mat-card-subtitle>Execution history</mat-card-subtitle>
+      </div>
+      <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Filter" (searchDebounce)="search($event)"
+                     [showUnderline]="true" fxFlex>
+      </td-search-box>
+      <div class="pad-right" >
+        <button mat-icon-button [matMenuTriggerFor]="menu" id="jobs_more_vert">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item [disabled]="abandonAllDisabled"  (click)="abandonAllJobs()" *ngIf="feedFilter">
+            <mat-icon>{{kyloIcons.Feed.Actions.abandon}}</mat-icon>
+            <span >Abandon All</span>
+          </button>
+          <button mat-menu-item  (click)="showFilterHelpPanel()">
+            <mat-icon>{{kyloIcons.Feed.Actions.filterHelp}}</mat-icon>
+            <span >Filter Help</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+
+    <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
+                   (selectedIndexChange)="onTabSelected($event)"
+                     dynamicHeight>
+
+      <mat-tab *ngFor="let tab of tabs"
+               [disabled]="tab.disabled" flex>
+        <ng-template mat-tab-label>{{tab.title}}</ng-template>
+        <div>
+          <mat-divider></mat-divider>
+
+          <filtered-paginated-table-view
+              [cardView]="false"
+              [showToolbar]="false"
+              [columns]="columns"
+              [sortable]="false"
+              [sortBy]="sortBy"
+              [sortOrder]="sortOrder"
+              [clickable]="true"
+              [filteredData]="filteredData"
+              [firstLast]="false"
+              [pageSize]="pageSize"
+              [filteredTotal]="total"
+              [allowedPageSize]="[5,10,20,50]"
+              (rowClicked)="jobDetails($event)"
+              (sortChanged)="sort($event)"
+              (pageSizeChanged)="onPaginationChange($event)"
+          >
+
+            <ng-template tdDataTableTemplate="state" let-value="value" let-row="row" let-column="column">
+                                    <span
+                                        [ngClass]="{'tc-positive':(row.displayStatus == 'COMPLETED' || row.displayStatus =='STARTING' || row.displayStatus =='STARTED' ),'tc-negative':row.displayStatus == 'FAILED', 'tc-warn':(row.displayStatus == 'STOPPING' || row.displayStatus =='STOPPED'), 'abandoned':row.displayStatus == 'ABANDONED','unknown':row.displayStatus == 'UNKNOWN'}">
+                                        <mat-icon size="20">{{row.icon}}</mat-icon>
+                                        <!--<span hide show-gt-md>{{row.displayStatus}}</span>-->
+                                    </span>
+            </ng-template>
+
+            <ng-template tdDataTableTemplate="startTime" let-value="value" let-row="row" let-column="column">
+              <span>{{row.startTime | date:'MMM d, yyyy HH:mm:ss'}}</span>
+            </ng-template>
+
+            <ng-template tdDataTableTemplate="runTime" let-value="value" let-row="row" let-column="column">
+              <span>{{row.runTime}}</span>
+            </ng-template>
+
+            <ng-template tdDataTableTemplate="action" let-value="value" let-job="row" let-column="column">
+              <button mat-button *ngIf="job.status !='COMPLETED' && job.status !='FAILED' && allowAdmin && job.status != 'ABANDONED'" (click)="failJob($event,job)">{{"views.jobs-template.FAIL" |
+                translate}}</button>
+              <button mat-button  *ngIf="job.status =='FAILED' && allowAdmin" (click)="abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</button>
+              <span *ngIf="job.errorMessage != ''">
+                                        <br/>
+                                        <span class="md-warn md-caption">{{job.errorMessage}}</span>
+                                    </span>
+            </ng-template>
+
+          </filtered-paginated-table-view>
+
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card-content>
+</mat-card>

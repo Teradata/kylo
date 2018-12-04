@@ -1,0 +1,52 @@
+<div fxFlex="100">
+  <mat-card class="selected-node-card">
+    <mat-card-header>
+      <mat-card-title fxLayout="row" fxLayoutAlign="start center">
+        <mat-icon>drag_handle</mat-icon>
+        <span class="push-left-sm" style="font-size:14px">{{selectedNode.name}}</span>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <mat-accordion>
+        <mat-expansion-panel (opened)="panelOpenState = true"
+                             (closed)="panelOpenState = false">
+          <mat-expansion-panel-header>
+            <mat-panel-title style="font-size:14px">
+              <div *ngIf="selectedNode.type == 'FEED'">{{"views.feed-lineage.Fs" | translate}}</div>
+              <div *ngIf="selectedNode.type == 'DATASOURCE'">{{"views.feed-lineage.Ds" | translate}}</div>
+              <div *ngIf="selectedNode.type != 'FEED' && selectedNode.type != 'DATASOURCE' ">{{"views.feed-lineage.San" | translate}}</div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div *ngIf="selectedNode.type == 'FEED' && selectedNode.content != null">
+            <div>
+              <div fxLayout="column" class="layout-padding-bottom">
+                <span><a href="" (click)="navigateToFeed()">{{selectedNode.name}}</a></span>
+                <span class="hint">{{"views.feed-lineage.Feed" | translate}}</span>
+                <mat-divider></mat-divider>
+              </div>
+              <div fxLayout="column" class="layout-padding-bottom">
+                <span class="card-sub-header">{{selectedNode.content.state}}</span>
+                <span class="hint">{{"views.feed-lineage.State" | translate}}</span>
+                <mat-divider></mat-divider>
+              </div>
+              <div *ngFor="let key of objectKeys(selectedNode.content.displayProperties)" fxLayout="column" class="layout-padding-bottom">
+                <span style="word-wrap: break-word;">{{selectedNode.content.displayProperties[key]}}</span>
+                <span class="hint">{{key}}</span>
+                <mat-divider inset></mat-divider>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="selectedNode.type == 'DATASOURCE' && selectedNode.content != null">
+            <div>
+              <div *ngFor="let key of objectKeys(selectedNode.content.displayProperties)" fxLayout="column" class="layout-padding-bottom">
+                <span>{{selectedNode.content.displayProperties[key]}}</span>
+                <span class="hint">{{key}}</span>
+                <mat-divider></mat-divider>
+              </div>
+            </div>
+          </div>
+        </mat-expansion-panel>
+      </mat-accordion>
+    </mat-card-content>
+  </mat-card>
+</div>

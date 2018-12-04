@@ -18,13 +18,13 @@
   #L%
   -->
 <div class="flex-container" fxLayoutAlign="center center">
-    <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading" color="accent"></mat-progress-bar>
     <mat-card flex="70">
         <mat-card-title>
             <mat-toolbar style="background: none;">
-                <div class="card-title">{{"AUTH.GROUP.DETAILS_TITLE" | translate}}</div>
+                <div class="card-title push-top-sm">Group Details</div>
                 <span flex></span>
-                <mat-icon style="padding-right: 16px" size="30">group</mat-icon>
+                <mat-icon style="padding-right: 16px" size="30" class="tc-accent">group</mat-icon>
             </mat-toolbar>
         </mat-card-title>
         <mat-card-body>
@@ -32,8 +32,8 @@
                 <vertical-section-layout section-title="'Details'" (on-delete)="onDelete()" [allowDelete]="canDelete" (on-save-edit)="onSave()" (on-edit)="onEdit()"
                     (on-cancel-edit)="onCancel()" [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
-                        <div layout="row" class="layout-padding-top-bottom">
-                            <span flex="25" class="property-name">{{"AUTH.GROUP.DETAILS_GROUPNAME" | translate}}</span>
+                        <div layout="row" class="layout-padding-bottom">
+                            <span flex="25" class="property-name">Group Name</span>
 
                             <div flex>
                                 {{model.systemName}}
@@ -56,24 +56,24 @@
                     </readonly-section>
                     <editable-section>
                         <mat-form-field class="block" *ngIf="model.systemName === null">
-                            <mat-label>{{"AUTH.GROUP.DETAILS_GROUPNAME" | translate}}</mat-label>
+                            <mat-label>Group Name</mat-label>
                             <input matInput name="systemName" type="text" [(ngModel)]="editModel.systemName" />
-                            <mat-error *ngIf="isgroupNameEmpty()">{{"AUTH.GROUP.DETAILS_GROUPNAME_REQUIRED" | translate}}</mat-error>
-                            <mat-error *ngIf="isgroupNameDuplicate()">{{"AUTH.GROUP.DETAILS_GROUPNAME_INUSE" | translate}}</mat-error>
+                            <mat-error *ngIf="isgroupNameEmpty()">Group name is required.</mat-error>
+                            <mat-error *ngIf="isgroupNameDuplicate()">Group name is in use.</mat-error>
                         </mat-form-field>
                         <div layout="row" class="layout-padding-top-bottom" *ngIf="model.systemName !== null">
-                            <span flex="25" class="property-name">{{"AUTH.GROUP.DETAILS_GROUPNAME" | translate}}</span>
+                            <span flex="25" class="property-name">Group Name</span>
                             <div flex>
                                 {{editModel.systemName}}
                             </div>
                         </div>
                         <mat-form-field class="block">
-                            <mat-label>{{"views.common.title" | translate}}</mat-label>
+                            <mat-label>Title</mat-label>
                             <input name="title" matInput [(ngModel)]="editModel.title" />
                         </mat-form-field>
 
                         <mat-form-field class="block">
-                            <mat-label>{{"views.common.description" | translate}}</mat-label>
+                            <mat-label>Description</mat-label>
                             <input name="description" matInput [(ngModel)]="editModel.description" />
                         </mat-form-field>
                     </editable-section>
@@ -81,10 +81,10 @@
             </form>
             <vertical-section-layout section-title="Permissions" (on-save-edit)="onSavePermissions()" (on-edit)="onEditPermissions()"
              (on-cancel-edit)="onCancelEditPermissions()" [editable]="isPermissionsEditable" [allowEdit]="!loading && model.systemName !== null && allowAdmin" *ngIf="groupId">
-                <readonly-section>
+                <readonly-section class="pull-top">
                     <thinkbig-permissions-table [model]="actions" [readOnly]="true"></thinkbig-permissions-table>
                 </readonly-section>
-                <editable-section>
+                <editable-section class="pull-top">
                     <thinkbig-permissions-table [(model)]="editActions" [readOnly]="false"></thinkbig-permissions-table>
                 </editable-section>
             </vertical-section-layout>
@@ -95,22 +95,22 @@
                         <mat-list-item>
                             <div layout="row" layout-fill>
                                 <div flex="30" class="md-list-item-text hint">
-                                    {{"views.common.DN" | translate}}
+                                    Display Name
                                 </div>
                                 <div flex="50" class="md-list-item-text hint">
-                                    {{"views.common.Email.Address" | translate}}
+                                    Email Address
                                 </div>
                                 <div flex="20" class="md-list-item-text hint">
-                                    {{"views.common.Active" | translate}}
+                                    Active
                                 </div>
                             </div>
                         </mat-list-item>
-                        <mat-list-item *ngFor="let user of users" (click)="onUserClick(user)">
-                            <div layout="row" layout-fill>
-                                <div flex="30" class="md-list-item-text">
+                        <mat-list-item *ngFor="let user of users" class="hover">
+                            <div layout="row" layout-fill (click)="onUserClick(user)">
+                                <div flex="30" class="md-list-item-text overflow-hidden pad-right-md" style="text-overflow: ellipsis; white-space: nowrap">
                                         <div>{{getUserName(user)}}</div>
                                 </div>
-                                <div flex="50" class="md-list-item-text">
+                                <div flex="50" class="md-list-item-text overflow-hidden pad-right-md" style="text-overflow: ellipsis; white-space: nowrap">
                                     {{user.email}}
                                 </div>
                                 <div flex="20" class="md-list-item-text">
@@ -120,7 +120,7 @@
                         </mat-list-item>
                     </mat-list>
                     <div *ngIf="loading || model.systemName === null || model.memberCount === 0">
-                        {{"AUTH.GROUP.DETAILS_NOUSER_WARN" | translate}}
+                        No users in group.
                     </div>
                 </readonly-section>
             </vertical-section-layout>

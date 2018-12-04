@@ -79,8 +79,13 @@ public class DataSetProviderUtilV2 {
      */
     @Nonnull
     static Dataset<Row> load(@Nonnull final DataFrameReader reader, @Nullable final Seq<String> paths) {
-        //noinspection unchecked
-        return reader.load((paths != null) ? paths : (Seq<String>) Seq$.MODULE$.empty());
+        if (paths == null || paths.isEmpty()) {
+            return reader.load();
+        } else if (paths.size() == 1) {
+            return reader.load(paths.apply(0));
+        } else {
+            return reader.load(paths);
+        }
     }
 
     /**

@@ -10,6 +10,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentSearchModule} from "@covalent/core/search";
 import {CovalentPagingModule} from '@covalent/core/paging';
+import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../../../../common/common.module";
@@ -22,6 +23,8 @@ import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {BrowserModule} from '../api/browser.module';
 import {CovalentLoadingModule} from '@covalent/core/loading';
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatIconModule} from "@angular/material/icon";
 
 @NgModule({
     declarations: [
@@ -54,8 +57,20 @@ import {CovalentLoadingModule} from '@covalent/core/loading';
         MatSelectModule,
         MatCheckboxModule,
         MatDialogModule,
-        UIRouterModule.forChild({states: remoteFileStates})
+        UIRouterModule,
+        MatToolbarModule,
+        MatIconModule,
+        TranslateModule
     ]
 })
 export class RemoteFilesModule {
+}
+
+@NgModule({
+    imports: [
+        RemoteFilesModule,
+        UIRouterModule.forChild({states: remoteFileStates})
+    ]
+})
+export class RemoteFilesRouterModule {
 }

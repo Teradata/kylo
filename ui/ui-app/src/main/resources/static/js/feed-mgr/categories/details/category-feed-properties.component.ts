@@ -1,17 +1,17 @@
 import * as _ from "underscore";
-import AccessControlService from '../../../services/AccessControlService';
+import {AccessControlService} from '../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 import { Component } from '@angular/core';
-import CategoriesService from '../../services/CategoriesService';
+import {CategoriesService} from '../../services/CategoriesService';
 import { CloneUtil } from "../../../common/utils/clone-util";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { TdDialogService } from "@covalent/core/dialogs";
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-category-feed-properties',
-    templateUrl: 'js/feed-mgr/categories/details/category-feed-properties.html'
+    templateUrl: './category-feed-properties.html'
 })
 export class CategoryFeedProperties {
 

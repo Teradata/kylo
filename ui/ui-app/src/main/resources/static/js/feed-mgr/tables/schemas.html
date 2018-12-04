@@ -28,7 +28,7 @@
 
     <body-section>
       <div ng-if="vm.loading">
-        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        <md-progress-linear class="md-accent" md-mode="indeterminate"></md-progress-linear>
         <span class="md-body-2 layout-padding-left">{{'FEEDMGR.LOADING_SCHEMAS' | translate}}</span>
       </div>
 
@@ -45,7 +45,7 @@
                                     </span>
 
                 <div layout="row" class="column-title column-title-bottom">
-                  <ng-md-icon icon="grid_on" size="20" hide-xs style="fill:orange">
+                  <ng-md-icon icon="grid_on" size="20" hide-xs class="accent-color">
                   </ng-md-icon>
                   <span>{{'FEEDMGR.SCHEMA' | translate}}</span>
                 </div>

@@ -1,25 +1,23 @@
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 import {TdDialogService} from "@covalent/core/dialogs";
+import {TranslateService} from "@ngx-translate/core";
 import 'pascalprecht.translate';
 import {Subject} from 'rxjs/Subject';
 import * as _ from "underscore";
 import {Dictionary} from "underscore";
-
-import AccessControlService from '../../services/AccessControlService';
+import {Templates} from "../../../lib/feed-mgr/services/TemplateTypes";
+import {AccessControlService} from '../../services/AccessControlService';
 import {EmptyTemplate, ExtendedTemplate, SaveAbleTemplate} from '../model/template-models';
 import {EntityAccessControlService} from '../shared/entity-access-control/EntityAccessControlService';
 import {DefaultFeedPropertyService} from './DefaultFeedPropertyService';
 import {RegisterTemplatePropertyService} from "./RegisterTemplatePropertyService";
 import {RegisteredTemplateService} from "./RegisterTemplateService";
 import {RestUrlService} from './RestUrlService';
-import {Templates} from "./TemplateTypes";
-
 import Processor = Templates.Processor;
 import Property = Templates.Property;
 import PropertyAndProcessors = Templates.PropertyAndProcessors;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
-import { TranslateService } from "@ngx-translate/core";
 
 @Injectable()
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
@@ -103,6 +101,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         saveAbleTemplate.roleMembershipsUpdated = this.model.roleMembershipsUpdated;
         saveAbleTemplate.templateTableOption = this.model.templateTableOption;
         saveAbleTemplate.timeBetweenStartingBatchJobs = this.model.timeBetweenStartingBatchJobs;
+        saveAbleTemplate.changeComment = this.model.changeComment;
         return saveAbleTemplate;
     }
 
@@ -534,7 +533,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
                 assignPropertyRenderType(property)
 
-                this.feedPropertyService.initSensitivePropertyForEditing(property);
+                this.feedPropertyService.initSensitivePropertyForEditing([property]);
 
                 property.templateValue = property.value;
                 property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;
@@ -643,6 +642,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         }
 
         if (registeredTemplateId != null) {
+
             this.resetModel();
             //get the templateId for the registeredTemplateId
             this.model.id = registeredTemplateId;
@@ -655,6 +655,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             this.model.loading = true;
             this.modelLoadingObserver.next(true);
             let successFn = (response: any) => {
+
                 var templateData = response;
                 transformPropertiesToArray(templateData.properties);
                 this.model.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + templateData.id;
@@ -688,7 +689,8 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 this.model.templateTableOption = templateData.templateTableOption;
                 this.modelTemplateTableOptionObserver.next(this.model.templateTableOption);
 
-                this.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs
+                this.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs;
+                this.model.changeComments = templateData.changeComments;
                 if (templateData.state == 'ENABLED') {
                     this.model.stateIcon = 'check_circle'
                 }

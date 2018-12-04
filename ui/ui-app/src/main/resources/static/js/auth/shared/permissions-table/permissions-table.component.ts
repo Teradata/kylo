@@ -1,11 +1,11 @@
 import * as _ from 'underscore';
-import AccessControlService from "../../../services/AccessControlService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
-    templateUrl: "js/auth/shared/permissions-table/permissions-table.html",
+    templateUrl: "./permissions-table.html",
     selector: 'thinkbig-permissions-table',
     styles : ['.permissionCheckbox { width: 24px; margin-left: 3px; margin-right: 29px; margin-top: 16px;}']
 })
@@ -58,7 +58,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
         _.each(actions, (action) => {
             if (action.$$allowed) {
                 var copy = _.pick(action, "description", "systemName", "title");
-                if (ObjectUtils.isArray(action.actions)) {
+                if (Array.isArray(action.actions)) {
                     copy.actions = [];
                     this.addAllowed(action.actions, copy.actions);
                 }
@@ -80,7 +80,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
         state.$$parent = parent;
         this.available.push(state);
 
-        if (ObjectUtils.isArray(action.actions)) {
+        if (Array.isArray(action.actions)) {
             ++level;
             state.actions = _.map(action.actions,
                 (action) => {
@@ -108,7 +108,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
         var mapModel = (actions: any, map: any) => {
             _.forEach(actions, (action: any) => {
                 map[action.systemName] = true;
-                if (ObjectUtils.isArray(action.actions)) {
+                if (Array.isArray(action.actions)) {
                     mapModel(action.actions, map);
                 }
             });
@@ -142,7 +142,7 @@ export class PermissionsTableComponent implements OnInit, OnChanges {
             }
         }
         else { // Update child actions
-            if (ObjectUtils.isArray(action.actions)) {
+            if (Array.isArray(action.actions)) {
                 _.forEach(action.actions, (child: any) => {
                     this.setAllowed(child, allowed);
                 });

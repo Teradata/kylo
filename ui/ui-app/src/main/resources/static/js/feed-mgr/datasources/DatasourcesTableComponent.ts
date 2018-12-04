@@ -1,19 +1,19 @@
 import * as _ from "underscore";
-import AccessControlService from '../../services/AccessControlService';
-import StateService from '../../services/StateService';
+import {AccessControlService} from '../../services/AccessControlService';
+import {StateService} from '../../services/StateService';
 import { DatasourcesService } from '../services/DatasourcesService';
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 import { Component } from '@angular/core';
 import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 
 /**
  * Identifier for this page.
  * @type {string}
  */
 @Component({
-    templateUrl : 'js/feed-mgr/datasources/list.html',
+    templateUrl : './list.html',
     selector : 'datasources-table'
 })
 export class DatasourcesTableComponent extends BaseFilteredPaginatedTableView{
@@ -91,6 +91,6 @@ export class DatasourcesTableComponent extends BaseFilteredPaginatedTableView{
      * @returns {number} the number of related feeds
      */
     getRelatedFeedsCount (datasource: any) {
-        return ObjectUtils.isArray(datasource.sourceForFeeds) ? datasource.sourceForFeeds.length : 0;
+        return Array.isArray(datasource.sourceForFeeds) ? datasource.sourceForFeeds.length : 0;
     };
 }

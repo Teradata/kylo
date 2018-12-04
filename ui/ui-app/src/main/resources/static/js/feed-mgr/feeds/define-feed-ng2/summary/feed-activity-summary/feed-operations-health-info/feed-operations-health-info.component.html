@@ -1,0 +1,145 @@
+<mat-card class="feed-info-card feed-card">
+  <mat-card-header>
+  <mat-card-title>
+    <!--<mat-icon>{{kyloIcons.Feed.info}}</mat-icon>-->
+    <span>Summary</span>
+
+    </mat-card-title>
+
+  <span fxFlex></span>
+  <div class="pad-right-sm pad-top-sm">
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item *ngIf="feed.state && feed.state == 'ENABLED'" [disabled]="!feed.accessControl.allowEdit" (click)="disableFeed()">
+        <mat-icon>{{kyloIcons.Feed.Actions.disable}}</mat-icon>
+        <span>Disable</span>
+      </button>
+      <button mat-menu-item *ngIf="feed.state && feed.state == 'DISABLED'" [disabled]="!feed.accessControl.allowEdit" (click)="enableFeed()">
+        <mat-icon>{{kyloIcons.Feed.Actions.enable}}</mat-icon>
+        <span>Enable</span>
+      </button>
+      <button mat-menu-item [disabled]="startingFeed || !feed.accessControl.allowStart" (click)="startFeed()">
+        <mat-icon>{{kyloIcons.Feed.Actions.startNow}}</mat-icon>
+        <span>Start Now</span>
+      </button>
+      <button mat-menu-item *ngIf="feed.accessControl.allowAdmin && feed.state == 'DISABLED'" (click)="onDelete()">
+        <mat-icon>{{kyloIcons.Feed.Actions.delete}}</mat-icon>
+        <span>{{"FeedDefinition.Actions.DeleteFeed" | translate}}</span>
+      </button>
+      <button mat-menu-item [disabled]="!feed.accessControl.allowStart || feed.state == 'DISABLED' " *ngIf="uploadFileAllowed" (click)="uploadFile()">
+        <mat-icon>{{kyloIcons.Feed.Actions.uploadFile}}</mat-icon>
+        <span>Upload File</span>
+      </button>
+      <button mat-menu-item download [disabled]="!feed.accessControl.allowExport || exportInProgress" (click)="exportFeed()">
+        <mat-icon>{{kyloIcons.Feed.Actions.export}}</mat-icon>
+        <span *ngIf="!exportInProgress">Export</span>
+        <span *ngIf="exportInProgress">Exporting</span>
+      </button>
+    </mat-menu>
+  </div>
+  </mat-card-header>
+
+  <mat-divider></mat-divider>
+  <mat-list role="list" dense>
+
+    <mat-list-item>
+      <mat-icon matListAvatar>{{kyloIcons.getFeedStateIcon(feed.state)}}</mat-icon>
+      <h4 mat-line *ngIf="!feedStateChanging" [ngClass]="kyloIcons.getFeedStateColor(feed.state)"> {{feed.state}}</h4>
+      <h4 mat-line *ngIf="feedStateChanging">
+        <mat-spinner mode="indeterminate" diameter="20" color="accent"></mat-spinner>
+      </h4>
+      <p mat-line>State</p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+
+    <mat-list-item *ngIf="feedHealthAvailable && !feed.isStream">
+      <mat-icon matListAvatar>{{kyloIcons.getBatchFeedRunStatusIcon(feedHealth)}}</mat-icon>
+      <h4 mat-line [ngClass]="kyloIcons.getBatchFeedRunStatusColor(feedHealth)"> {{feedHealth.state}}</h4>
+      <p mat-line>Run Status</p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+
+    <mat-list-item *ngIf="!feedHealthAvailable">
+      <h4 mat-line>Unavailable</h4>
+      <p mat-line>Feed Health</p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+
+    <mat-list-item *ngIf="feedHealthAvailable && feedHealth && feedHealth.healthText">
+      <mat-icon matListAvatar *ngIf="feedHealth.icon">{{feedHealth.icon}}</mat-icon>
+      <h4 mat-line [ngClass]="kyloIcons.getFeedHealthColor(feedHealth.healthText)">{{feedHealth.healthText}}</h4>
+      <p mat-line>Feed Health</p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+
+    <mat-list-item *ngIf="feedHealthAvailable && !feed.isStream">
+      <mat-icon matListAvatar>{{kyloIcons.Feed.timeSince}}</mat-icon>
+      <h4 mat-line><span kylo-timer [startTime]="feedHealth.timeSinceEndTime"></span></h4>
+      <p mat-line><span translate>views.feeds.feed-details.Since</span></p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+
+    <mat-list-item *ngIf="feedHealthAvailable && !feed.isStream && feedHealth.state != 'RUNNING'">
+      <mat-icon matListAvatar>{{kyloIcons.Feed.runTime}}</mat-icon>
+      <h4 mat-line> {{feedHealth.runTimeString}}</h4>
+      <p mat-line><span translate>views.feeds.feed-details.LRT</span></p>
+    </mat-list-item>
+    <mat-divider></mat-divider>
+
+    <mat-list-item>
+      <mat-icon matListAvatar>{{kyloIcons.Feed.category}}</mat-icon>
+      <h4 mat-line> {{feed.category.name}}</h4>
+      <p mat-line>Category</p>
+    </mat-list-item>
+
+    <mat-divider></mat-divider>
+
+    <mat-list-item *ngIf="feed.description">
+      <mat-icon matListAvatar>{{kyloIcons.Feed.description}}</mat-icon>
+      <h4 mat-line> {{feed.description}}</h4>
+      <p mat-line>Description</p>
+    </mat-list-item>
+
+    <ng-container *ngIf="feed.isStream">
+      <mat-divider></mat-divider>
+      <mat-list-item>
+        <mat-icon matListAvatar>date_range</mat-icon>
+        <h4 mat-line> {{feedStats.time.startTime | date: 'MM/dd/yy HH:mm'}} - {{feedStats.time.endTime | date: 'MM/dd/yy HH:mm'}}</h4>
+        <p mat-line>Date Range</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item>
+        <mat-icon matListAvatar>{{kyloIcons.Feed.numberOfFlowsStarted}}</mat-icon>
+        <h4 mat-line>{{feedStats.flowsStarted | number}}</h4>
+        <p mat-line translate>views.feed-stats-charts.FS</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item>
+        <mat-icon matListAvatar>{{kyloIcons.Feed.numberOfFlowsFinished}}</mat-icon>
+        <h4 mat-line>{{feedStats.flowsFinished | number}}</h4>
+        <p mat-line translate>views.feed-stats-charts.FF</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item>
+        <mat-icon matListAvatar>{{kyloIcons.Feed.running}}</mat-icon>
+        <h4 mat-line>{{feedStats.flowsRunning | number}}</h4>
+        <p mat-line translate>views.feed-stats-charts.FlowsR</p>
+      </mat-list-item>
+      <mat-divider></mat-divider>
+
+      <mat-list-item>
+        <mat-icon matListAvatar>{{kyloIcons.Feed.flowRate}}</mat-icon>
+        <h4 mat-line>{{feedStats.flowsStartedPerSecond | number}} / {{"views.feed-stats-charts.sec" | translate}}</h4>
+        <p mat-line translate>views.feed-stats-charts.FlowsRate</p>
+      </mat-list-item>
+    </ng-container>
+
+  </mat-list>
+
+
+</mat-card>

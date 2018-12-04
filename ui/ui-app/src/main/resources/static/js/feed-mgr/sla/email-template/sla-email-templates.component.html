@@ -1,0 +1,43 @@
+<td-layout-nav color="none">
+  <div td-toolbar-content fxLayout="row" fxFlex >
+    <div translate>Sla.EmailTemplates.Title</div>
+    <span fxFlex="100%"></span>
+    <button *ngIf="allowEdit" mat-raised-button class="text-upper" color="accent" uiSref="^.edit">{{'Sla.EmailTemplates.Create' | translate}}</button>
+  </div>
+<ng-container *tdLoading="'SlaEmailTemplatesComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
+
+  <ng-container *ngIf="templates && templates.length > 0">
+      <mat-card>
+        <mat-list>
+          <mat-list-item>
+            <ng-md-icon class="push-left-sm push-right-sm" icon="search"></ng-md-icon>
+            <td-search-input placeholder="Search sources" [showUnderline]="false" [debounce]="150" (searchDebounce)="search($event)" fxFlex="100%"></td-search-input>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          <ng-container *ngFor="let template of filteredTemplates; let last=last">
+            <mat-list-item matRipple class="cursor-pointer" (click)="selectTemplate(template)">
+              <h4 matLine ngClass="{'disabled':!template.enabled}">{{template.name}}</h4>
+               <p matLine *ngIf="template.default">Default template</p>
+                <p matLine *ngIf="!template.enabled">Disabled</p>
+            </mat-list-item>
+            <mat-divider *ngIf="!last"></mat-divider>
+          </ng-container>
+
+        </mat-list>
+      </mat-card>
+  </ng-container>
+
+  <div *ngIf="loading" class="templates-empty" fxLayout="column" fxLayoutAlign="center center" style="margin-top:20vh">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2 class="tc-grey-500" style="margin-left: 15px">Loading...</h2>
+  </div>
+
+
+</ng-container>
+
+  <div *ngIf="!loading && (!templates || templates.length == 0)" class="templates-empty" fxLayout="column" fxLayoutAlign="center center">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>{{'Sla.EmailTemplates.EmptyTitle' | translate}}</h2>
+  </div>
+
+</td-layout-nav>

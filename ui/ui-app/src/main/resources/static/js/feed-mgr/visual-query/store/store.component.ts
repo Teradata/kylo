@@ -1,22 +1,55 @@
-import {Input, OnDestroy, OnInit} from "@angular/core";
-import * as angular from "angular";
+import {HttpClient} from "@angular/common/http";
+import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {TdDialogService} from "@covalent/core/dialogs";
+import {Observable, ObservableInput} from "rxjs/Observable";
+import {debounceTime} from "rxjs/operators/debounceTime";
+import {switchMap} from "rxjs/operators/switchMap";
 import {Subscription} from "rxjs/Subscription";
 
+import {CloneUtil} from "../../../common/utils/clone-util";
+import {StateService} from "../../../services/StateService";
 import {UserDatasource} from "../../model/user-datasource";
-import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
 import {VisualQuerySaveService} from "../services/save.service";
 import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
-import DatasourcesService = DatasourcesServiceStatic.DatasourcesService;
-import JdbcDatasource = DatasourcesServiceStatic.JdbcDatasource;
-import TableReference = DatasourcesServiceStatic.TableReference;
-
+import {SaveOptionsComponent} from "./save-options.component";
+import {DatasourcesService, JdbcDatasource, TableReference} from '../../services/DatasourcesServiceIntrefaces';
+import {DataSource} from "../../catalog/api/models/datasource";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
+import * as _ from "underscore";
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
+@Component({
+    selector: "thinkbig-visual-query-store",
+    styleUrls: ["./store.component.scss"],
+    templateUrl: "./store.component.html"
+})
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 
-    stepperController : any;
+    /**
+     * Query engine
+     */
+    @Input()
+    engine: QueryEngine<any>;
+
+    /**
+     * Transformation model
+     */
+    @Input()
+    model: any;
+
+    /**
+     * Connected to 'Back' button
+     */
+    @Output()
+    back = new EventEmitter<void>();
+
+    /**
+     * Indicates if there is an error connecting to the data source
+     */
+    connectionError: boolean;
 
     /**
      * Target destination type. Either DOWNLOAD or TABLE.
@@ -34,12 +67,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     downloadUrl: string;
 
     /**
-     * Query engine
-     */
-    @Input()
-    engine: QueryEngine<any>;
-
-    /**
      * Error message
      */
     error: string;
@@ -53,11 +80,6 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Spark table source names
      */
     tableFormats: string[];
-
-    /**
-     * HTML form
-     */
-    form: any;
 
     /**
      * Indicates if the properties are valid.
@@ -75,15 +97,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     loading = true;
 
     /**
-     * Transformation model
-     */
-    @Input()
-    model: any;
-
-    /**
      * Additional options for the output format.
      */
-    properties: any[];
+    properties: any[] = [];
+
+    propertiesForm = new FormGroup({});
 
     /**
      * Subscription to notification removal
@@ -95,21 +113,22 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     saveSubscription: Subscription;
 
-    /**
-     * Index of this step
-     */
-    stepIndex: string;
-
     saveMode: SaveMode = SaveMode.INITIAL;
+
+    tableNameControl = new FormControl(null, [Validators.required, Validators.minLength(1)]);
+
+    tableNameList: Observable<TableReference[]>;
+
+    catalogSQLDataSources: DataSource[] = [];
 
     /**
      * Output configuration
      */
     target: SaveRequest = {};
 
-    static readonly $inject: string[] = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService", "$mdDialog"];
-
-    constructor(private $http: angular.IHttpService, private DatasourcesService: DatasourcesService, private RestUrlService: any, private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: angular.material.IDialogService) {
+    constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService, @Inject("RestUrlService") private RestUrlService: any,
+                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, @Inject("StateService") private stateService: StateService,
+                private catalogService:CatalogService) {
         // Listen for notification removals
         this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {
             if (event.id === this.downloadId) {
@@ -117,15 +136,14 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                 this.downloadUrl = null;
             }
         });
+
+        // Listen for table name changes
+        this.tableNameControl.valueChanges.subscribe(text => this.target.tableName = text);
+        this.tableNameList = this.tableNameControl.valueChanges.pipe(
+            debounceTime(100),
+            switchMap(text => this.findTables(text))
+        );
     };
-
-    $onDestroy(): void {
-        this.ngOnDestroy();
-    }
-
-    $onInit(): void {
-        this.ngOnInit();
-    }
 
     /**
      * Release resources when component is destroyed.
@@ -144,24 +162,49 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     ngOnInit(): void {
         // Get list of Kylo data sources
+        this.target.jdbc;
+        this.target.catalogDatasource = new DataSource();
         const kyloSourcesPromise = Promise.all([this.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
             .then(resultList => {
                 this.kyloDataSources = resultList[0].concat(resultList[1]);
                 if (this.model.$selectedDatasourceId) {
-                    this.target.jdbc = this.kyloDataSources.find(datasource => datasource.id === this.model.$selectedDatasourceId) as JdbcDatasource;
+                   let jdbcSource = this.kyloDataSources.find(datasource => datasource.id === this.model.$selectedDatasourceId)
+                    if(jdbcSource != undefined) {
+                        this.target.jdbc = (jdbcSource as JdbcDatasource);
+                    }
                 }
             });
 
+
+       const catalogDataSourceObservable = this.catalogService.getDataSourcesForPluginIds(["hive","jdbc"]);
+       const catalogDataSourcePromise = catalogDataSourceObservable.toPromise();
+        catalogDataSourceObservable.subscribe(datasources => {
+            if(datasources && datasources.length >0){
+                this.catalogSQLDataSources =   _(datasources).chain().sortBy( (ds:DataSource) =>{
+                    return ds.title;
+                }).sortBy((ds:DataSource) =>{
+                    return ds.connector.pluginId;
+                }).value()
+            }
+            else {
+                this.catalogSQLDataSources = [];
+            }
+        });
+
+
         // Get list of Spark data sources
-        const sparkSourcesPromise = this.$http.get<string[]>(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources")
+        const sparkSourcesPromise = this.$http.get<string[]>(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources").toPromise()
             .then(response => {
-                this.downloadFormats = response.data["downloads"].sort();
-                this.tableFormats = response.data["tables"].sort();
+                this.downloadFormats = response["downloads"].sort();
+                this.tableFormats = response["tables"].sort();
             });
 
         // Wait for completion
-        Promise.all([kyloSourcesPromise, sparkSourcesPromise])
+        Promise.all([kyloSourcesPromise, sparkSourcesPromise,catalogDataSourcePromise])
             .then(() => this.loading = false, () => this.error = "Invalid response from server.");
+
+        this.destination = "DOWNLOAD";
+
     }
 
     /**
@@ -179,32 +222,37 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     /**
      * Find tables matching the specified name.
      */
-    findTables(name: any): TableReference[] | Promise<TableReference[]> {
-        let tables: TableReference[] | Promise<TableReference[]> = [];
-
+    findTables(name: any): ObservableInput<TableReference[]> {
         if (this.target.jdbc) {
-            tables = this.engine.searchTableNames(name, this.target.jdbc.id);
+            const tables = this.engine.searchTableNames(name, this.target.jdbc.id);
             if (tables instanceof Promise) {
-                tables = tables.then(response => {
-                    this.form.datasource.$setValidity("connectionError", true);
+                return tables.then(response => {
+                    this.connectionError = false;
                     return response;
                 }, () => {
-                    this.form.datasource.$setValidity("connectionError", false);
+                    this.connectionError = true;
                     return [];
                 });
             } else {
-                this.form.datasource.$setValidity("connectionError", true);
+                this.connectionError = false;
+                return Observable.of(tables);
             }
         }
+        else if(this.target.catalogDatasource){
 
-        return tables;
+         return   this.catalogService.listTables(this.target.catalogDatasource.id,name)
+
+        }
+        else {
+            return Observable.of([])
+        }
     }
 
     /**
      * Should the Results card be shown, or the one showing the Download options
      * @return {boolean}
      */
-    showSaveResultsCard() : boolean {
+    showSaveResultsCard(): boolean {
         return this.saveMode == SaveMode.SAVING || this.saveMode == SaveMode.SAVED;
     }
 
@@ -212,7 +260,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Is a save for a file download in progress
      * @return {boolean}
      */
-    isSavingFile():boolean {
+    isSavingFile(): boolean {
         return this.saveMode == SaveMode.SAVING && this.destination === "DOWNLOAD";
     }
 
@@ -220,7 +268,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * is a save for a table export in progress
      * @return {boolean}
      */
-    isSavingTable():boolean {
+    isSavingTable(): boolean {
         return this.saveMode == SaveMode.SAVING && this.destination === "TABLE";
     }
 
@@ -228,7 +276,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * is a save for a table export complete
      * @return {boolean}
      */
-    isSavedTable():boolean {
+    isSavedTable(): boolean {
         return this.saveMode == SaveMode.SAVED && this.destination === "TABLE";
     }
 
@@ -236,7 +284,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * have we successfully saved either to a file or table
      * @return {boolean}
      */
-    isSaved():boolean {
+    isSaved(): boolean {
         return this.saveMode == SaveMode.SAVED;
     }
 
@@ -252,28 +300,26 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     modifyTransformation(): void {
         this._reset();
-        let prevStep : any = this.stepperController.previousActiveStep(parseInt(this.stepIndex));
-        if(angular.isDefined(prevStep)){
-            this.stepperController.selectedStepIndex = prevStep.index;
-        }
+        this.back.emit(null);
     }
 
     /**
      * Reset download options
      * @private
      */
-    _reset():void {
+    _reset(): void {
         this.saveMode = SaveMode.INITIAL;
         this.downloadUrl = null;
         this.error = null;
         this.loading = false;
+        this.propertiesForm = new FormGroup({});
     }
 
     /**
      * Exit the Visual Query and go to the Feeds list
      */
     exit(): void {
-        this.stepperController.cancelStepper();
+        this.stateService.navigateToHome();
     }
 
     /**
@@ -286,29 +332,9 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     /**
      * Show options info dialog for different data formats for download.
      */
-    showOptionsInfo () : void {
-        this.$mdDialog.show({
-            clickOutsideToClose: true,
-            controller: class {
-                static readonly $inject = ["$mdDialog"];
-
-                constructor(private $mdDialog: angular.material.IDialogService) {
-                }
-
-                /**
-                 * Hides this dialog.
-                 */
-                hide() {
-                    this.$mdDialog.hide();
-                }
-            },
-            controllerAs: "dialog",
-            parent: angular.element(document.body),
-            templateUrl: "js/feed-mgr/visual-query/store/save.options.dialog.html"
-        });
+    showOptionsInfo(): void {
+        this.$mdDialog.open(SaveOptionsComponent, {panelClass: "full-screen-dialog"});
     };
-
-
 
     /**
      * Saves the results.
@@ -330,7 +356,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                 options: this.getOptions()
             };
         } else {
-            request = angular.copy(this.target);
+            request = CloneUtil.deepCopy(this.target);
             request.options = this.getOptions();
         }
 
@@ -345,7 +371,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                         this.downloadId = response.id;
                         this.downloadUrl = response.location;
                         //reset the save mode if its Saving
-                        if(this.saveMode == SaveMode.SAVING) {
+                        if (this.saveMode == SaveMode.SAVING) {
                             this.saveMode = SaveMode.SAVED;
                         }
                     }
@@ -358,27 +384,22 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                 () => this.loading = false);
     }
 
+    trackDataSource(index: number, dataSource: UserDatasource) {
+        return dataSource.id;
+    }
+
     /**
      * Gets the target output options by parsing the properties object.
      */
     private getOptions(): { [k: string]: string } {
-        let options = angular.copy(this.target.options);
-        this.properties.forEach(property => options[property.systemName] = property.value);
-        return options;
+        if(this.target.options) {
+            let options = CloneUtil.deepCopy(this.target.options);
+            this.properties.forEach(property => options[property.systemName] = property.value);
+            return options;
+        }
+        else {
+            return {};
+        }
+
     }
 }
-
-angular.module(require("feed-mgr/visual-query/module-name"))
-    .component("thinkbigVisualQueryStore", {
-        bindings: {
-            engine: "=",
-            model: "=",
-            stepIndex: "@"
-        },
-        controller: VisualQueryStoreComponent,
-        controllerAs: "$st",
-        require: {
-            stepperController: "^thinkbigStepper"
-        },
-        templateUrl: "js/feed-mgr/visual-query/store/store.component.html"
-    });

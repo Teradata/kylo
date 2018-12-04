@@ -83,8 +83,8 @@ public class GroupsController {
                   })
     @Nonnull
     public Response addGroup(@Nonnull final UserGroup group) {
-        userService.updateGroup(group);
-        return Response.noContent().build();
+        final UserGroup updated = userService.updateGroup(group);
+        return Response.ok(updated).build();
     }
 
     /**

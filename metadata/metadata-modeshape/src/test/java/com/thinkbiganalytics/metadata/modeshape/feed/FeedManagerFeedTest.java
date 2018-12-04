@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -31,7 +33,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -50,6 +51,7 @@ import org.testng.Assert;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 
@@ -200,7 +202,7 @@ public class FeedManagerFeedTest {
             List<? extends FeedDestination> feedDestinations = feed.getDestinations();
             if (feedDestinations != null) {
                 FeedDestination feedDestination = feedDestinations.get(0);
-                Datasource ds = feedDestination.getDatasource();
+                Datasource ds = feedDestination.getDatasource().get();
                 Assert.assertTrue(ds instanceof DerivedDatasource, "Datasource was not expected DerivedDatasource");
             }
 
@@ -249,5 +251,88 @@ public class FeedManagerFeedTest {
 
     }
 
+    @Test
+    public void testMultiThreadFeedDelete() throws InterruptedException {
+        CountDownLatch goLatch = new CountDownLatch(2);
+        CountDownLatch doneLatch = new CountDownLatch(2);
+        String categorySystemName = "Category1";
+        String templateName = "Template1";
+        String feedName1 = "Feed1";
+        String feedName2 = "Feed2";
+        setupFeedAndTemplate(categorySystemName, feedName1, templateName);
+        setupFeedAndTemplate(categorySystemName, feedName2, templateName);
+        
+        metadata.read(() -> {
+            FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
+            
+            assertThat(template).isNotNull();
+            assertThat(template.getFeeds()).hasSize(2).extracting("name").contains(feedName1, feedName2);
+        }, MetadataAccess.SERVICE);
+        
+        for (int i = 1; i <= 2; i++) {
+            int tag = i;
+            new Thread(() -> {
+                metadata.commit(() -> {
+                    Feed feed = feedTestUtil.findFeed(categorySystemName, "Feed" + tag);
+                    FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
+                    
+                    goLatch.await();
+                    
+                    template.removeFeed(feed);
+                }, MetadataAccess.SERVICE);
+                
+                doneLatch.countDown();
+            }).start();
+        }
+        
+        goLatch.countDown();
+        goLatch.countDown();
+        doneLatch.await();
+        
+        metadata.read(() -> {
+            FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
+            
+            assertThat(template.getFeeds()).isEmpty();
+        }, MetadataAccess.SERVICE);
+    }
 
+//    @Test
+//    public void testLocking() {
+//        CountDownLatch goLatch = new CountDownLatch(1);
+//        CountDownLatch doneLatch = new CountDownLatch(1);
+//        String categorySystemName = "Category1";
+//        String templateName = "Template1";
+//        String feedName1 = "Feed1";
+//        setupFeedAndTemplate(categorySystemName, feedName1, templateName);
+//        
+//        new Thread(() -> {
+//            metadata.commit(() -> {
+//                JcrFeedTemplate template = (JcrFeedTemplate) feedTestUtil.findOrCreateTemplate(templateName);
+//                Node templateNode = template.getNode();
+//                Session session = templateNode.getSession();
+//                
+//                session.getWorkspace().getLockManager().lock(templateNode.getPath(), true, true, Long.MAX_VALUE, "");
+//                
+//                goLatch.countDown();
+//                doneLatch.await();
+//            }, MetadataAccess.SERVICE);
+//        }).start();
+//
+//        boolean success = metadata.commit(() -> {
+//            JcrFeedTemplate template = (JcrFeedTemplate) feedTestUtil.findOrCreateTemplate(templateName);
+//            Node templateNode = template.getNode();
+//            Session session = templateNode.getSession();
+//            
+//            goLatch.await();
+//            
+//            try { 
+//                Lock lock = session.getWorkspace().getLockManager().lock(templateNode.getPath(), true, true, Long.MAX_VALUE, "");
+//                return lock.isLive();
+//            } finally {
+//                doneLatch.countDown();
+//            }
+//        }, MetadataAccess.SERVICE);
+//
+//        assertThat(success).isTrue();
+//    }
 }

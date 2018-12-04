@@ -20,6 +20,9 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  */
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.jms.JmsService;
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.security.AccessController;
@@ -42,6 +45,12 @@ import javax.validation.ValidatorFactory;
  */
 @Configuration
 public class SpringOperationalMetadataTestConfiguration {
+    
+    @Bean
+    @Primary
+    public ConnectorPluginManager mockConnectorPluginManager() {
+        return Mockito.mock(ConnectorPluginManager.class);
+    }
 
     @Bean
     public JmsService jmsService(){

@@ -11,7 +11,7 @@ import { FeedTagService } from "../../../services/FeedTagService";
  */
 @Component({
     selector:'domain-type-metadata-details',
-    templateUrl: 'js/feed-mgr/domain-types/details/metadata/metadata.component.html'
+    templateUrl: './metadata.component.html'
 })
 export class DomainTypeMetadataDetailsComponent extends AbstractSectionComponent {
 

@@ -172,10 +172,10 @@
             <mat-card-content flex="100" style="width: 100%; padding: 0">
               <div flex fxLayout="row" fxLayoutAlign="start end">
                 <span flex *ngIf="feedTimeChartLoading">
-                  <mat-progress-bar [disabled]="false" [mode]="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar color="accent" [disabled]="false" [mode]="indeterminate"></mat-progress-bar>
                 </span>
                 <span flex *ngIf="!feedTimeChartLoading">
-                  <mat-progress-bar [disabled]="true" [mode]="indeterminate"></mat-progress-bar>
+                  <mat-progress-bar color="accent" [disabled]="true" [mode]="indeterminate"></mat-progress-bar>
                 </span>
               </div>
               <div fxLayout="row" fxLayoutAlign="space-between center">
@@ -234,7 +234,7 @@
 
                 <mat-list-item style="padding: 16px;">
                   <div fxLayout="column" class="item-column mat-list-item-text ">
-                        <span class="item-title" [ngClass]="{'healthy':feed.displayStatus == 'COMPLETED' || feed.displayStatus =='RUNNING'}">
+                        <span class="item-title" [ngClass]="{'tc-positive':feed.displayStatus == 'COMPLETED' || feed.displayStatus =='RUNNING'}">
                          {{feed.displayStatus}}</span>
                     <span class="column-title column-title-bottom">{{"views.common.status" | translate}}</span>
                   </div>
@@ -242,7 +242,7 @@
                 </mat-list-item>
 
                 <mat-list-item style="padding: 16px;">
-                  <div>  
+                  <div>
                     <span fxLayout="column" class="item-column mat-list-item-text ">
                         {{minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
                     <span class="column-title column-title-bottom">Date Range</span>
@@ -322,6 +322,6 @@
 
   </div>
   <div *ngIf="!dataLoaded" class="kpi-loading" fxLayoutAlign="center center" fxLayout="column">
-    <mat-spinner mode="indeterminate" diameter="60"></mat-spinner>
+    <mat-spinner mode="indeterminate" diameter="60" class="md-accent"></mat-spinner>
   </div>
 </div>

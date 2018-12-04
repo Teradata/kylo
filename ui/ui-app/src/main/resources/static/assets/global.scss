@@ -1,0 +1,44 @@
+$mdi-font-path: "../node_modules/@mdi/font/fonts";
+@import "../node_modules/@mdi/font/scss/materialdesignicons.scss";
+
+@import 'app';
+@import 'feed-mgr';
+@import 'ops-mgr';
+@import 'login';
+@import 'styles';
+@import 'theme';
+
+@import 'drag-and-drop-lists.css';
+@import 'ui-grid-material.css';
+
+@import '../bower_components/angular-material/angular-material.min.css';
+@import '../js/vendor/material-icons/material-icons.css';
+@import '../js/vendor/material-design-icons/css/material-design-iconic-font.min.css';
+@import '../js/common/accordion-menu/accordion.css';
+@import '../js/vendor/ment.io/styles.css';
+
+@import '../js/vendor/ment.io/styles.css';
+
+@import '../bower_components/angular-material-icons/angular-material-icons.css';
+@import '../bower_components/angular-material-expansion-panel/dist/md-expansion-panel.css';
+@import '../bower_components/angular-material-data-table/dist/md-data-table.css';
+@import '../bower_components/nvd3/build/nv.d3.css';
+@import '../bower_components/vis/dist/vis.min.css';
+
+//@import '../bower_components/angular-ui-grid/ui-grid.css'; //Can't resolve './ui-grid.eot'
+@import '../assets/ui-grid-material.css';
+@import '../lib/cron-expression-preview/cron-expression-preview.css';
+
+//$fa-font-path: "~font-awesome/fonts";
+//@import '~font-awesome/scss/font-awesome.scss';
+
+@import '../js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.scss';
+@import '../bower_components/fattable/fattable.css';
+@import '../js/feed-mgr/services/fattable/fattable-service.css';
+
+@import '../bower_components/codemirror/lib/codemirror.css';
+@import '../bower_components/codemirror/addon/hint/show-hint.css';
+@import '../bower_components/codemirror/addon/dialog/dialog.css';
+@import '../bower_components/codemirror/addon/tern/tern.css';
+
+@import "../js/feed-mgr/visual-query/visual-query.component.scss";

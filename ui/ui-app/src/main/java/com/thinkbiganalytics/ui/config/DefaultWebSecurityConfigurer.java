@@ -92,7 +92,7 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
     
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/proxy/**", "/ui-common/**", "/assets/**","/bower_components/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**", "/locales/**");
+        web.ignoring().antMatchers("/proxy/**", "/error", "/ui-common/**", "/assets/**","/bower_components/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**", "/locales/**");
     }
 
     @Override

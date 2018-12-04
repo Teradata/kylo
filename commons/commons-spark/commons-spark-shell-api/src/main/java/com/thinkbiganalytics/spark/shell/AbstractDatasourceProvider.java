@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.shell;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 
@@ -46,15 +48,30 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
     @Nonnull
     private final Map<String, Datasource> datasources;
 
+    @Nonnull
+    private final Map<String, DataSource> catalogDataSources;
+
+    private final Map<String, String> legacyDatasourceCatalogDataSetId;
+
+
+    public abstract CatalogDataSetProvider getCatalogDataSetProvider();
+
+
     /**
      * Constructs an {@code AbstractDatasourceProvider} with the specified data sources.
      *
      * @param datasources the data sources
      */
-    public AbstractDatasourceProvider(@Nonnull final Collection<Datasource> datasources) {
+    public AbstractDatasourceProvider(@Nonnull final Collection<Datasource> datasources, final Collection<DataSource> catalogDataSources) {
         this.datasources = new HashMap<>(datasources.size());
+        this.catalogDataSources = new HashMap<>(catalogDataSources.size());
+        legacyDatasourceCatalogDataSetId = new HashMap<>();
         for (final Datasource datasource : datasources) {
             this.datasources.put(datasource.getId(), datasource);
+        }
+
+        for(final DataSource catalogDataSource:catalogDataSources){
+            this.catalogDataSources.put(catalogDataSource.getId(),catalogDataSource);
         }
     }
 
@@ -66,6 +83,16 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
             return datasource;
         } else {
             throw new IllegalArgumentException("Datasource does not exist: " + id);
+        }
+    }
+
+    @Nonnull
+    public DataSource findCatalogDataSourceById(@Nonnull final String id) {
+        final DataSource datasource = catalogDataSources.get(id);
+        if (datasource != null) {
+            return datasource;
+        } else {
+            throw new IllegalArgumentException("DataSource does not exist: " + id);
         }
     }
 
@@ -89,10 +116,69 @@ public abstract class AbstractDatasourceProvider<T> implements DatasourceProvide
         }
     }
 
+
+    @Nonnull
+    public final T getTableFromCatalogDataSource(@Nonnull final String table, @Nonnull final DataSource datasource, @Nonnull final SQLContext sqlContext) {
+        if ("jdbc".equalsIgnoreCase(datasource.getConnector().getPluginId())) {
+            final Properties properties = new Properties();
+            String driver = datasource.getTemplate().getOptions().get("driver");
+            String url = datasource.getTemplate().getOptions().get("url");
+            String user = datasource.getTemplate().getOptions().get("user");
+            String password = datasource.getTemplate().getOptions().get("password");
+            properties.put("driver", driver);
+            if (StringUtils.isNotBlank(user)) {
+                properties.put("user", user);
+            }
+            if (StringUtils.isNotBlank(password)) {
+                properties.put("password", password);
+            }
+            return readJdbcTable(url, table, properties, sqlContext);
+        } else {
+            throw new IllegalArgumentException("Datasource does not provide tables: " + datasource);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public final T getTableFromCatalogDataSource(@Nonnull final String table, @Nonnull final String catalogDataSourceId, @Nonnull final SQLContext sqlContext) {
+        return getTableFromCatalogDataSource(table, findCatalogDataSourceById(catalogDataSourceId), sqlContext);
+    }
+
+    /**
+     * the key for the legacyDatasourceCatalogDataSetId map
+     */
+    private String datasourceDataSetMapKey(String table, String datasourceId) {
+        return table + "-" + datasourceId;
+    }
+
+    /**
+     * Remap a UserDatasource using a given table and datasource id to a Catalog DataSet
+     */
+    public final void remapDatasourceToDataSet(final String table, final String datasourceId, String catalogDataSetId) {
+        this.legacyDatasourceCatalogDataSetId.put(datasourceDataSetMapKey(table, datasourceId), catalogDataSetId);
+    }
+
     @Nonnull
     @Override
     public final T getTableFromDatasource(@Nonnull final String table, @Nonnull final String datasourceId, @Nonnull final SQLContext sqlContext) {
-        return getTableFromDatasource(table, findById(datasourceId), sqlContext);
+        final String dataSetKey = datasourceDataSetMapKey(table, datasourceId);
+        if (legacyDatasourceCatalogDataSetId.containsKey(dataSetKey)) {
+            final DataSet dataSet;
+            try {
+                dataSet = this.getCatalogDataSetProvider().findById(dataSetKey);
+            } catch (final IllegalArgumentException e) {
+                throw new IllegalArgumentException("Unable to get Data Set Datasource from LegacyDatasource for  table:" + table + " and datasouce: " + datasourceId);
+            }
+            //now get the DataSource from the dataSet
+            //noinspection unchecked
+            return (T) getCatalogDataSetProvider().readDataSet(dataSet);
+        } else if (datasources.containsKey(datasourceId)) {
+            return getTableFromDatasource(table, findById(datasourceId), sqlContext);
+        } else if (catalogDataSources.containsKey(datasourceId)) {
+            return getTableFromCatalogDataSource(table, findCatalogDataSourceById(datasourceId), sqlContext);
+        } else {
+            throw new IllegalArgumentException("DataSource does not exist: " + datasourceId);
+        }
     }
 
     /**

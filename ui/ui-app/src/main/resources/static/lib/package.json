@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../../../node_modules/ng-packagr/package.schema.json",
+  "name": "@kylo/feed",
+  "version": "0.10.1-SNAPSHOT",
+  "private": true,
+  "repository": "https://github.com/teradata/kylo.git",
+  "license": "Apache-2.0",
+  "author": "Think Big Analytics",
+  "peerDependencies": {
+    "@angular/core": ">=5",
+    "@angular/forms": ">=5"
+  },
+  "ngPackage": {
+    "lib": {
+      "entryFile": "./index.ts"
+    },
+    "dest": "../../../../../target/classes/static/lib"
+  }
+}

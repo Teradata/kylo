@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { Component, Input, Output, EventEmitter, SimpleChanges, ElementRef } from "@angular/core";
 
 // TODO 

@@ -1,0 +1,15 @@
+.selected-node-card{
+  max-width: 400px;
+}
+
+.mat-card-header, mat-card-title{
+  background: #e5e5e5;
+}
+
+mat-card-header .mat-card-title {
+  font-size: 14px;
+}
+
+.mat-card .mat-divider {
+  position: inherit;
+}

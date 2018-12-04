@@ -513,7 +513,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     public DateTime getLastActiveTimeStamp(String feedName) {
         DateTime lastFeedTime = null;
         OpsManagerFeed feed = this.findByName(feedName);
-        if (feed.isStream()) {
+        if (feed != null && feed.isStream()) {
             NifiFeedStats feedStats = metadataAccess.read(() -> nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName));
             if (feedStats != null && feedStats.getLastActivityTimestamp() != null) {
                 lastFeedTime = new DateTime(feedStats.getLastActivityTimestamp());

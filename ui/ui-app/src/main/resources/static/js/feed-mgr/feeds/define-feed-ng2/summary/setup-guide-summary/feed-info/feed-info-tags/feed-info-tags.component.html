@@ -1,0 +1,23 @@
+<feed-info-item [feed]="feed" name="{{tagNamesString || 'No tags defined'}}" description="Tags" icon="local_offer" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()"
+                [(editing)]="editing">
+
+  <td-chips class="pull-top" [chipAddition]="true"
+            [chipRemoval]="true"
+            [items]="originalTagNames"
+            [(ngModel)]="tagNames"
+            placeholder="Tags"
+            [inputPosition]="'after'" class="pad-sm"
+            (remove)="onRemoveTag($event)"
+            (add)="onAddTag($event)">
+    <ng-template td-chip let-chip="chip">
+      {{chip}}
+    </ng-template>
+    <ng-template td-autocomplete-option let-option="option">
+      {{option}}
+    </ng-template>
+  </td-chips>
+
+</feed-info-item>
+
+
+

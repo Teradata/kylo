@@ -92,6 +92,10 @@ public final class JcrAccessControlUtil {
             throw new MetadataRepositoryException("Failed to set permission(s) on node " + node + ": " + privilegeNames, e);
         }
     }
+
+    public static boolean setPermissions(Node node, Principal principal, String... privilegeNames) {
+        return setPermissions(node,principal,Arrays.asList(privilegeNames));
+    }
     
     public static boolean setPermissions(Session session, String path, Principal principal, String... privilegeNames) {
         return setPermissions(session, path, principal, Arrays.asList(privilegeNames));

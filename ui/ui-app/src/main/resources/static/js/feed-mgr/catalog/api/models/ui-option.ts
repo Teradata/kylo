@@ -48,4 +48,6 @@ export class UiOption {
     hint?: string;
 
     validators?: UiOptionValidator[];
+
+    sensitive?: boolean;
 }

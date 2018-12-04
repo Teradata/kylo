@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class EntityAccessControl {
@@ -53,14 +54,14 @@ public class EntityAccessControl {
     public void setRoleMemberships(List<RoleMembership> roleMemberships) {
         this.roleMemberships = roleMemberships;
     }
-    
+
     public List<RoleMembership> getFeedRoleMemberships() {
         if (feedRoleMemberships == null) {
             feedRoleMemberships = new ArrayList<>();
         }
         return feedRoleMemberships;
     }
-    
+
     public void setFeedRoleMemberships(List<RoleMembership> roleMemberships) {
         this.feedRoleMemberships = roleMemberships;
     }
@@ -70,26 +71,25 @@ public class EntityAccessControl {
     }
 
     public List<RoleMembershipChange> toRoleMembershipChangeList() {
-        List<RoleMembershipChange> membershipChanges = new ArrayList<>();
-        for (RoleMembership membership : getRoleMemberships()) {
-            RoleMembershipChange roleMembershipChange = new RoleMembershipChange();
-            roleMembershipChange.setRoleName(membership.getRole().getSystemName());
-            roleMembershipChange.setChange(RoleMembershipChange.ChangeType.REPLACE);
-            membership.getGroups().stream().forEach(group -> roleMembershipChange.getGroups().add(group.getSystemName()));
-            membership.getUsers().stream().forEach(user -> roleMembershipChange.getUsers().add(user.getSystemName()));
-            membershipChanges.add(roleMembershipChange);
-        }
-        return membershipChanges;
+        return toRoleMembershipChangeList(getRoleMemberships());
     }
-    
+
     public List<RoleMembershipChange> toFeedRoleMembershipChangeList() {
+        return toRoleMembershipChangeList(getFeedRoleMemberships());
+    }
+
+    private List<RoleMembershipChange> toRoleMembershipChangeList(Collection<RoleMembership> roleMemberships) {
         List<RoleMembershipChange> membershipChanges = new ArrayList<>();
-        for (RoleMembership membership : getFeedRoleMemberships()) {
+        for (RoleMembership membership : roleMemberships) {
             RoleMembershipChange roleMembershipChange = new RoleMembershipChange();
             roleMembershipChange.setRoleName(membership.getRole().getSystemName());
             roleMembershipChange.setChange(RoleMembershipChange.ChangeType.REPLACE);
-            membership.getGroups().stream().forEach(group -> roleMembershipChange.getGroups().add(group.getSystemName()));
-            membership.getUsers().stream().forEach(user -> roleMembershipChange.getUsers().add(user.getSystemName()));
+            for (UserGroup userGroup : membership.getGroups()) {
+                roleMembershipChange.getGroups().add(userGroup.getSystemName());
+            }
+            for (User user : membership.getUsers()) {
+                roleMembershipChange.getUsers().add(user.getSystemName());
+            }
             membershipChanges.add(roleMembershipChange);
         }
         return membershipChanges;

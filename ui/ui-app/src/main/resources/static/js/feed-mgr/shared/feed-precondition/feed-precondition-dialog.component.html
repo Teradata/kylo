@@ -1,6 +1,6 @@
-<h2 mat-dialog-title>{{viewText.title}}  for {{data.feedName}}</h2>
+<h2 mat-dialog-title>{{title}}  for {{feed.feedName}}</h2>
 <mat-dialog-content>
-  <div fxLayout="column" fxLayoutAlign="start stretch" class="layout-padding-left-right">
+  <div fxLayout="column" fxLayoutAlign="start stretch" >
     <mat-form-field>
       <mat-select [(ngModel)]="ruleType" placeholder="Select Type" (selectionChange)="onRuleTypeChange($event.value)">
         <mat-option *ngFor="let opt of options" [value]="opt">
@@ -11,16 +11,14 @@
     <span *ngIf="editPrecondition !== null" class="hint">{{editPrecondition.shortDescription}}</span>
   </div>
 
-  <policy-input-form *ngIf="editPrecondition !== null" [parentFormGroup]="preconditionForm"
-                     [(rule)]="editPrecondition" [mode]="editMode" [feed]="data"
-                     (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
+  <policy-input-form  *ngIf="editPrecondition !== null" [parentFormGroup]="preconditionForm" [groupId]="'rules'" [(rule)]="editPrecondition" [index]="editIndex"
+                     (onFormControlsAdded)="onFormControlsAdded($event)"></policy-input-form>
 </mat-dialog-content>
 <mat-dialog-actions>
+  <button *ngIf="editIndex != null" mat-raised-button color="warn" (click)="deletePrecondition(editIndex)">Delete</button>
   <span fxFlex=""></span>
-  <button mat-raised-button (click)="cancel()">
-    {{'view.main.cancel' | translate}}
-  </button>
-  <button mat-raised-button color="primary" (click)="done()">
+  <button mat-raised-button (click)="cancel()">{{'view.main.cancel' | translate}}</button>
+  <button mat-raised-button color="primary" (click)="done()" [disabled]="preconditionForm.invalid">
     {{'view.main.done' | translate}}
   </button>
 </mat-dialog-actions>

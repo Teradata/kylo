@@ -4,22 +4,23 @@
 const d3 = require('d3');
 import * as _ from "underscore";
 import * as moment from "moment";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { Component, Input, OnInit, OnDestroy } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import {Nvd3ChartService} from "../../../services/chart-services/nvd3-chart.service";
 import { FeedStatsService } from "./FeedStatsService";
-import ProvenanceEventStatsService from "../../services/ProvenanceEventStatsService";
-import Nvd3ChartService from "../../services/Nvd3ChartService";
-import StateService from "../../../services/StateService";
-import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
+import {ProvenanceEventStatsService} from "../../services/ProvenanceEventStatsService";
+import {StateService} from "../../../services/StateService";
+import {OpsManagerRestUrlService} from "../../services/OpsManagerRestUrlService";
 import { TranslateService } from "@ngx-translate/core";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { DateTimeUtils2 } from "../../../common/utils/DateTimeUtils2";
+import {DateTimeUtils} from '../../../common/utils/DateTimeUtils';
 
 @Component({
     selector: 'kylo-feed-stats-charts',
-    templateUrl: 'js/ops-mgr/feeds/feed-stats/feed-stats-charts.html',
-    styleUrls : ['js/ops-mgr/feeds/feed-stats/feed-stats-charts.css']
+    templateUrl: './feed-stats-charts.html',
+    styleUrls : ['./feed-stats-charts.css']
 
 })
 export class FeedStasChartsComponent implements OnInit, OnDestroy {
@@ -733,12 +734,12 @@ export class FeedStasChartsComponent implements OnInit, OnDestroy {
 
             var chartArr = [];
             chartArr.push({
-                label: this.translate.instant('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item: any) {
+                label: this.translate.instant('view.feed-stats-charts.Completed'), color: '#9c27b0', valueFn: function (item: any) {
                     return item.jobsFinishedPerSecond;
                 }
             });
             chartArr.push({
-                label: this.translate.instant('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item: any) {
+                label: this.translate.instant('view.feed-stats-charts.Started'), area: true, color: "#2196f3", valueFn: function (item: any) {
                     return item.jobsStartedPerSecond;
                 }
             });

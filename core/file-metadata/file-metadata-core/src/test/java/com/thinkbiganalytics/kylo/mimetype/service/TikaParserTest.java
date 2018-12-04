@@ -55,8 +55,42 @@ public class TikaParserTest {
         return new FileContext(fileName, inputStream);
     }
 
+    @Test
+    public void testCsv() throws Exception {
+
+    String  file = "MOCK_DATA.commasep.txt";
+        FileMetadata type = FileMetadataService.detectFromStream(getFile(file).getInputStream(), file);
+        Assert.assertEquals("text/csv", type.getMimeType());
+        Assert.assertEquals(",", type.getProperties().get("delimiter"));
+
+
+        file = "MOCK_DATA.tab_unix.txt";
+        type = FileMetadataService.detectFromStream(getFile(file).getInputStream(), file);
+        Assert.assertEquals("text/csv", type.getMimeType());
+        Assert.assertEquals("\t", type.getProperties().get("delimiter"));
+
+        file = "MOCK_DATA.pipe.txt";
+        type = FileMetadataService.detectFromStream(getFile(file).getInputStream(), file);
+        Assert.assertEquals("text/csv", type.getMimeType());
+        Assert.assertEquals("|", type.getProperties().get("delimiter"));
+
+        file = "MOCK_DATA.plus_unix.txt";
+        type = FileMetadataService.detectFromStream(getFile(file).getInputStream(), file);
+        Assert.assertEquals("text/csv", type.getMimeType());
+        Assert.assertEquals("+", type.getProperties().get("delimiter"));
+
+    }
 
     @Test
+    public void testXml() throws  Exception {
+        String file = "test.xml";
+        FileMetadata type = FileMetadataService.detectFromStream(getFile(file).getInputStream(), file);
+        Assert.assertEquals("application/xml", type.getMimeType());
+        Assert.assertEquals("catalog", type.getProperties().get("rowTag"));
+    }
+
+
+        @Test
     public void test() throws Exception {
 
         String file = "test.xml";

@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import 'kylo-common-module';
 import 'kylo-services';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 
 
 var getBlockNodes = function (nodes: any) {
@@ -73,6 +73,8 @@ angular.module(moduleName).directive("ngIfPermission",
                             .then(function (actionSet: any) {
                                 var valid = accessControlService.hasAnyAction(permissions, actionSet.actions);
                                 validate(valid);
+                            },(err:any) =>{
+                                return false;
                             });
                     }
 

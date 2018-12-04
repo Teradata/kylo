@@ -1,15 +1,15 @@
-import StateService from "../../../services/StateService";
-import AlertsServiceV2 from "../../services/AlertsServiceV2";
+import {StateService} from "../../../services/StateService";
+import {AlertsServiceV2} from "../../services/AlertsServiceV2";
 import { Component, Input } from "@angular/core";
-import BroadcastService from "../../../services/broadcast-service";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import {BroadcastService} from "../../../services/broadcast-service";
+import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 
 @Component({
     selector: 'tba-alerts',
-    templateUrl: 'js/ops-mgr/overview/alerts/alerts-template.html'
+    templateUrl: './alerts-template.html'
 })
-export default class AlertsComponent {
+export class AlertsComponent {
 
     @Input() panelTitle: string;
     @Input() refreshIntervalTime: number;

@@ -1,9 +1,7 @@
 import {CommonModule} from "@angular/common";
 import {NgModule} from "@angular/core";
-import {UIRouterModule} from "@uirouter/angular";
+import {StateService, UIRouterModule} from "@uirouter/angular";
 
-import {PreviewSchemaComponent, SchemaDefinitionComponent} from "./preview-schema.component";
-import {SimpleTableComponent} from "./preview-schema.component";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatTabsModule} from '@angular/material/tabs';
@@ -14,8 +12,6 @@ import {MatInputModule} from "@angular/material/input";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
-import {PolicyInputFormComponent} from "../../../shared/field-policies-angular2/policy-input-form.component";
-import {InlinePolicyInputFormComponent} from "../../../shared/field-policies-angular2/inline-field-policy-form.component";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {FieldPolicyOptionsService} from "../../../shared/field-policies-angular2/field-policy-options.service";
 import {MatDialogModule} from "@angular/material/dialog";
@@ -34,72 +30,152 @@ import {PreviewSchemaService} from "./service/preview-schema.service";
 import {PreviewRawService} from "./service/preview-raw.service";
 import {TransformResponseTableBuilder} from "./service/transform-response-table-builder";
 import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
-import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
 import {KyloServicesModule} from "../../../../services/services.module";
 import {UpgradeModule} from "@angular/upgrade/static";
 import { TranslateModule } from "@ngx-translate/core";
 //import {VisualQuery2Module} from "../../../visual-query/visual-query.ng2.module";
 //import {WranglerModule} from "../../../visual-query/wrangler/core/wrangler.module";
+import {MatStepperModule} from "@angular/material/stepper";
+import {MatCheckboxModule} from "@angular/material/checkbox";
+import {DatasetSimpleTableComponent} from "./dataset-simple-table.component";
+import {DatasetSchemaDefinitionComponent} from "./dataset-schema-definition.component";
+import {DatasetPreviewComponent} from "./preview/dataset-preview.component";
+import {DatasetPreviewContainerComponent} from "./preview/dataset-preview-container.component";
+import {DatasetPreviewDialogComponent} from "./preview-dialog/dataset-preview-dialog.component";
+import {DatasetPreviewService} from "./service/dataset-preview.service";
+import {CovalentLoadingModule} from "@covalent/core/loading";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {CatalogPreviewDatasetComponent} from "./catalog-preview-dataset.component";
+import {CatalogComponent} from "../../catalog.component";
+import {CovalentLayoutModule} from "@covalent/core/layout";
+import {DataSource} from "../../api/models/datasource";
+import {MatCardModule} from "@angular/material/card";
+import {LoadMode} from "../../../model/feed/feed.model";
+import {DatasetPreviewContainerAccordionComponent} from './preview/dataset-preview-container-accordion.component';
+import {PreviewSchemaComponent, SchemaDefinitionComponent, SimpleTableComponent} from './preview-schema.component';
+import {MatExpansionModule} from '@angular/material/expansion';
 
 @NgModule({
     declarations: [
-        PreviewSchemaComponent,
         SatusDialogComponent,
         SchemaParseSettingsDialog,
+        DatasetSimpleTableComponent,
+        DatasetSchemaDefinitionComponent,
+        DatasetPreviewComponent,
+        DatasetPreviewContainerComponent,
+        DatasetPreviewDialogComponent,
+        CatalogPreviewDatasetComponent,
+        PreviewSchemaComponent,
+        DatasetPreviewContainerAccordionComponent,
         SimpleTableComponent,
-        SchemaDefinitionComponent
+        SchemaDefinitionComponent,
     ],
     entryComponents: [
         SatusDialogComponent,
-        SchemaParseSettingsDialog
+        SchemaParseSettingsDialog,
+        DatasetPreviewDialogComponent
     ],
     exports:[
-        PreviewSchemaComponent
+        DatasetSimpleTableComponent,
+        SchemaParseSettingsDialog,
+        DatasetSchemaDefinitionComponent,
+        DatasetPreviewComponent,
+        DatasetPreviewContainerComponent,
+        DatasetPreviewDialogComponent,
+        CatalogPreviewDatasetComponent
     ],
     imports: [
         CommonModule,
         CovalentDataTableModule,
         CovalentNotificationsModule,
+        CovalentLoadingModule,
         FlexLayoutModule,
         FormsModule,
         KyloCommonModule,
         MatButtonModule,
+        MatCheckboxModule,
         MatDatepickerModule,
         MatDialogModule,
         MatDividerModule,
+        MatExpansionModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
         MatListModule,
+        MatCardModule,
         MatProgressBarModule,
         MatProgressSpinnerModule,
         MatTabsModule,
+        MatToolbarModule,
         MatSelectModule,
         MatSlideToggleModule,
+        MatStepperModule,
         ReactiveFormsModule,
         CovalentChipsModule,
         FieldPoliciesModule,
         KyloServicesModule,
         TranslateModule,
+        CovalentLayoutModule,
+        UIRouterModule
         //VisualQuery2Module,
        // WranglerModule,
-        UIRouterModule.forChild({
-            states: [
-                {
-                    name: "catalog.datasource.preview",
-                    url: "/preview",
-                    component: PreviewSchemaComponent
-                }
-            ]
-        })
+
     ],
     providers:[
         FileMetadataTransformService,
         PreviewSchemaService,
         PreviewRawService,
-        TransformResponseTableBuilder
+        TransformResponseTableBuilder,
+        DatasetPreviewService
     ]
 
 })
 export class PreviewSchemaModule {
+}
+
+@NgModule({
+    imports: [
+        PreviewSchemaModule,
+        CovalentLayoutModule,
+        CovalentLoadingModule,
+        UIRouterModule.forChild({
+            states: [
+                {
+                    name: "catalog.datasource.preview",
+                    url: "/preview",
+                    component:CatalogPreviewDatasetComponent,
+                    params:{autoSelectSingleDataSet:true,
+                            displayInCard:true,
+                        objectsToPreview:null},
+                    resolve: [
+                        {
+                            token: 'displayInCard',
+                            resolveFn: resolveTrue
+                        },
+                        {
+                            token: 'autoSelectSingleDataSet',
+                            resolveFn: resolveTrue
+                        },
+                        {
+                            token:'objectsToPreview',
+                            deps:[StateService],
+                            resolveFn: resolveParams
+                        }
+                    ]
+
+                }
+            ]
+        })
+    ]
+})
+export class PreviewSchemaRouterModule {
+}
+
+export function resolveTrue() {
+    return true;
+}
+
+export function resolveParams(state:StateService) {
+    let params = state.transition.params();
+    return params.objectsToPreview;
 }

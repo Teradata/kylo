@@ -3,11 +3,11 @@ import {LoadingMode, LoadingType, TdLoadingService} from "@covalent/core/loading
 import {RejectType, Transition, TransitionService} from "@uirouter/core";
 
 import "app";
-import StateService from  "../services/StateService";
-import AccessControlService from "../services/AccessControlService";
+import {StateService} from  "../services/StateService";
+import {AccessControlService} from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
-import SearchService from "../services/SearchService";
-import SideNavService from "../services/SideNavService";
+import {SearchService} from "../services/SearchService";
+import {SideNavService} from "../services/SideNavService";
 
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 import { downgradeComponent } from "@angular/upgrade/static";
@@ -16,7 +16,7 @@ const STATE_LOADER = "stateLoader";
 
 @Component({
     selector:'index-controller-ng2',
-    templateUrl: 'js/main/index-ng2.component.html'
+    templateUrl: './index-ng2.component.html'
 })
 export class IndexComponent {
 
@@ -201,7 +201,7 @@ export class IndexComponent {
 }
 
 @Component({
-    templateUrl: 'js/main/loading-dialog-ng2.html'
+    templateUrl: './loading-dialog-ng2.html'
 })
 export class LoadingDialogComponent {
     constructor(private dialogRef: MatDialogRef<LoadingDialogComponent>){}

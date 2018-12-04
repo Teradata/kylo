@@ -1,13 +1,13 @@
-import AccessControlService from '../../services/AccessControlService';
+import {AccessControlService} from '../../services/AccessControlService';
 import { Component, Inject } from "@angular/core";
-import CategoriesService from "../services/CategoriesService";
+import {CategoriesService} from "../services/CategoriesService";
 import { Transition, StateService } from '@uirouter/core';
 import { Subscription } from 'rxjs/Subscription';
-import { ObjectUtils } from '../../common/utils/object-utils';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 
 @Component({
     selector: 'category-details-controller',
-    templateUrl: 'js/feed-mgr/categories/category-details.html'
+    templateUrl: './category-details.html'
 })
 export class CategoryDetails {
 
@@ -58,6 +58,7 @@ export class CategoryDetails {
     * Loads the category data once the list of categories has loaded.
     */
     onLoad () {
+        console.log('CategoryDetailsController onLoad');
         if (ObjectUtils.isString(this.state.params.categoryId)) {
             this.model = this.categoriesService.model = this.categoriesService.findCategory(this.state.params.categoryId);
             this.categoriesService.setModel(this.categoriesService.model);

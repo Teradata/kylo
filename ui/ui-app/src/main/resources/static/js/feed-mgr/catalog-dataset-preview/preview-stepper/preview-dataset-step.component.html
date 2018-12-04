@@ -1,0 +1,9 @@
+<div *tdLoading="'CatalogPreviewDatasetComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'" class="datasets-preview-container-wrapper pad">
+     <datasets-preview-container #datasetPreviewContainer [formGroup]="formGroup" [previews]="previews" *ngIf="previewsReady"  (previewDatasetInvalid)="onPreviewInvalid($event)" (previewDatasetValid)="onPreviewValid($event)" ></datasets-preview-container>
+      <form [formGroup]="formGroup" >
+        <input type="hidden" formControlName="hiddenValidFormCheck" required >
+      </form>
+  <div *ngIf="loading" class="loading-container">
+  </div>
+</div>
+

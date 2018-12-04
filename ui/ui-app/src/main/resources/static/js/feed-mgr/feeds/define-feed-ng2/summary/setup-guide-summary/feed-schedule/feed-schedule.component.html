@@ -1,0 +1,129 @@
+<ng-container *ngIf="!editable">
+    <div class="section-header">Schedule</div>
+
+  <!-- TODO: Add feed versioning for schedulingStrategy -->
+  <div fxLayout="row" class="pad-top-sm">
+    <span fxFlex="25"> Schedule Strategy </span>
+    <div fxFlex>
+      {{feed.schedule.schedulingStrategy }}
+    </div>
+  </div>
+
+  <!-- TODO: Add feed versioning for schedulingPeriod -->
+  <div fxLayout="row" class="pad-top-sm" *ngIf="!isTriggerDriven()">
+    <span fxFlex="25" > Schedule Period </span>
+    <div fxFlex>
+      {{feed.schedule.schedulingPeriod}}
+    </div>
+  </div>
+
+  <!-- TODO: Add feed versioning for executionNode -->
+  <div fxLayout="row" class="pad-top-sm" *ngIf="isClustered && supportsExecutionNode">
+    <span fxFlex="25">Execution Node</span>
+    <div fxFlex>
+      {{feed.schedule.executionNode}}
+    </div>
+  </div>
+
+  <div *ngIf="isTriggerDriven()">
+    <div fxLayout="column">
+      <div class="md-subhead">Run Preconditions</div>
+    </div>
+    <div *ngIf="feed.schedule.preconditions != null && feed.schedule.preconditions.length > 0 " fxFlexFill>
+      <mat-list>
+        <mat-list-item *ngFor="let rule of feed.schedule.preconditions; let index = index; let first = first; let last = last" fxFlexFill class="pad-top-sm">
+          <div fxLayout="row" fxFlex>
+            <div fxLayout="column" fxFlex class="md-list-item-text">
+              <span>{{rule.propertyValuesDisplayString}}</span>
+              <span class="hint">{{rule.name}}</span>
+            </div>
+          </div>
+          <mat-divider *ngIf="!last"></mat-divider>
+        </mat-list-item>
+      </mat-list>
+    </div>
+  </div>
+
+
+</ng-container>
+
+<ng-container [formGroup]="scheduleForm" *ngIf="editable">
+  <mat-form-field>
+    <mat-select placeholder="Schedule Strategy" formControlName="scheduleStrategy" >
+      <mat-option *ngFor="let opt of scheduleStrategies" [value]="opt.value">
+        {{ opt.label }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div *ngIf="isCronDriven()" fxLayout="column">
+    <mat-form-field>
+      <input matInput placeholder="Cron Expression"
+             name="cronExpression"
+             formControlName="cronExpression">
+      <mat-error>Cron Expression is required</mat-error>
+    </mat-form-field>
+    <cron-expression-preview2 [control]="scheduleForm.controls['cronExpression']" [style.margin-bottom.px]="10"></cron-expression-preview2>
+  </div>
+
+
+  <div *ngIf="isTimerDriven() ||isPrimaryNodeOnly()" layout="row" class="push-bottom-md">
+    <mat-form-field>
+      <input matInput placeholder="Run Schedule"
+             type="number"
+             name="timer"
+             (change)="timerChanged()"
+             formControlName="timerAmount">
+      <mat-error *ngIf="hasError('timerAmount','required')">Run Schedule is required</mat-error>
+      <mat-error *ngIf="hasError('timerAmount','batchFeedRequiresNonZeroTimerAmount')">Batch feed needs value greater than 0</mat-error>
+      <mat-error *ngIf="hasError('timerAmount','min')">Non-negative value is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select placeholder="Units"
+                  formControlName="timerUnits"
+                  (change)="timerChanged()">
+        <mat-option *ngFor="let timerUnit of nifiTimerUnits" [value]="timerUnit.value">
+          {{ timerUnit.description }}
+        </mat-option>
+      </mat-select>
+      <mat-error>Timer units is required</mat-error>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="isClustered && supportsExecutionNode" class="push-top-md push-bottom-md">
+    <mat-form-field>
+      <mat-select placeholder="Execution Node"
+                  [(ngModel)]="feed.schedule.executionNode"
+                  required
+                  [ngModelOptions]="{standalone: true}">
+        <mat-option *ngFor="let executionNode of nifiExecutionNodeConfigurations" [value]="executionNode.value">
+          {{ executionNode.description }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div *ngIf="isTriggerDriven()">
+    <div fxLayout="column">
+      <div>Run Preconditions</div>
+      <div class="hint">Specify execution dependencies</div>
+    </div>
+    <div class="pad-bottom">
+      <ng-container *ngIf="preconditions.length > 0">
+        <mat-list dense class="no-padding pad-right">
+          <mat-list-item  *ngFor="let rule of preconditions; let index = index; let first = first; let last = last" >
+            <h3 matLine class="text-truncate" [matTooltip]="rule.propertyValuesDisplayString">{{rule.propertyValuesDisplayString}}</h3>
+            <p matLine>{{rule.name}}</p>
+             <button mat-icon-button (click)="showPreconditionDialog(index)">
+                  <mat-icon matListIcon color="accent">edit</mat-icon>
+                </button>
+          </mat-list-item>
+        </mat-list>
+      </ng-container>
+      <input type="hidden" formControlName="preconditions"></div>
+      <button mat-button color="accent" (click)="showPreconditionDialog()">
+        Add Precondition
+      </button>
+  </div>
+</ng-container>

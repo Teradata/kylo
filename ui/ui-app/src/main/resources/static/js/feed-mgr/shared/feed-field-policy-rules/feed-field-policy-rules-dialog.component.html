@@ -22,46 +22,47 @@
 <mat-dialog-content>
 
     <div *ngIf="policyRules != null && policyRules.length >0 ">
-        <ul dnd-list="policyRules" class="simple-dnd-list">
-        <ng-template ngFor let-rule let-$index="index" let-last="last" [ngForOf]="policyRules">
+        <ul dnd-list
+            [dndList]
+            [dndModel]="policyRules" class="simple-dnd-list">
                 <li
-                    dnd-draggable="rule"
-                    dnd-moved="onMovedPolicyRule($index)"
-                    dnd-effect-allowed="move">
+                    *ngFor="let rule of policyRules; let i = index"
+                    [dndDraggable]
+                    [dndObject]="rule"
+                    (dndMoved)="onMovedPolicyRule(rule, policyRules)">
                     <div fxLayout="row" fxLayoutAlign="start">
                         <div fxLayout="column" fxFlex>
-                            <span class="md-list-item-text">{{$index+1}}. {{rule.name}}</span>
+                            <span class="md-list-item-text">{{i+1}}. {{rule.name}}</span>
                             <span class="md-list-item-text hint">{{rule.type}}</span>
                         </div>
                         <div fxLayout="row">
-                            <button mat-icon-button  (click)="editPolicy($index,rule)">
+                            <button mat-icon-button  (click)="editPolicy(i,rule)">
                                 <ng-md-icon icon="edit" style="fill:grey"></ng-md-icon>
                             </button>
-                            <button mat-icon-button  (click)="deletePolicy($index)">
+                            <button mat-icon-button  (click)="deletePolicy(i)">
                                 <ng-md-icon icon="delete" style="fill:grey" ></ng-md-icon>
                             </button>
                         </div>
+                      <mat-icon dndHandle class="mat-24 kylo-mat-list-color kylo-mat-list-handle">drag_handle</mat-icon>
                     </div>
                 </li>
-        </ng-template>
         </ul>
     </div>
         <!-- if loading -->
 
         <div class="edit-form" fxLayout="column">
-            <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+            <mat-progress-bar mode="indeterminate" *ngIf="loading" class="accent"></mat-progress-bar>
 
-            <div class="mat-title">{{titleText}}</div>
+            <div class="mat-title">{{viewText.titleText}}</div>
 
             <mat-radio-group [(ngModel)]="selectedOptionType" (change)="onChangedOptionType($event)" *ngIf="optionTypes != null" [ngModelOptions]="{standalone: true}">
                 <ng-template ngFor let-optionType let-index="index" let-last="last" [ngForOf]="optionTypes">
-                    <mat-radio-button [value]="optionType.type">{{optionType.name}}</mat-radio-button>
+                    <mat-radio-button ngClass="push-right-md" [value]="optionType.type">{{optionType.name}}</mat-radio-button>
                 </ng-template>
             </mat-radio-group>
 
-
             <mat-form-field  class="pad-top-sm">
-                <mat-select  [(ngModel)]="selectedRuleTypeName" placeholder="Select a policy" (change)="onRuleTypeChange($event)" [ngModelOptions]="{standalone: true}">
+                <mat-select [(ngModel)]="selectedRuleTypeName" placeholder="Select a policy" (change)="onRuleTypeChange($event)" [ngModelOptions]="{standalone: true}">
                     <mat-option *ngFor="let opt of options" [value]="opt.name">
                         {{opt.name}}
                     </mat-option>
@@ -69,19 +70,18 @@
                 <mat-hint *ngIf="selectedRuleTypeName">{{editRule.description}}</mat-hint>
             </mat-form-field>
 
-             <policy-input-form  [parentFormGroup]="policyForm" [(rule)]="editRule" [mode]="editMode" [feed]="data.feed" (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
+             <policy-input-form #policyInputForm [parentFormGroup]="policyForm" [(rule)]="editRule" (onFormControlsAdded)="onFormControlsAdded($event)" ></policy-input-form>
 
-            <div fxLayoutAlign="start stretch" fxFlex >
-                <button mat-raised-button  (click)="cancelEdit()">{{viewText.cancelText}}</button>
-                <span fxFlex></span>
-                <button mat-raised-button color="primary" (click)="addPolicy()" [disabled]="!policyFormIsValid" >{{viewText.addText}}</button>
+            <div fxLayoutAlign="end" fxFlex class="push-top-md push-bottom-md">
+              <span fxFlex></span>
+                <button mat-raised-button ngClass="push-right-md" (click)="cancelEdit()">{{viewText.cancelText}}</button>
+                <button mat-raised-button color="primary" (click)="addPolicy()" [disabled]="!policyFormIsValid || !selectedRuleTypeName" >{{viewText.addText}}</button>
             </div>
         </div>
-
-
+ <mat-divider class="mat-divider" role="separator" aria-orientation="horizontal"></mat-divider>
 </mat-dialog-content>
 <mat-dialog-actions>
-
+    <mat-divider></mat-divider>
     <span fxFlex=""></span>
     <button mat-raised-button (click)="onCancelClick()">
         {{'view.main.cancel' | translate}}

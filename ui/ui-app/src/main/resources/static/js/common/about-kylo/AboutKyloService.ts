@@ -4,10 +4,11 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 import "../module";
 import { HttpClient } from "@angular/common/http";
 import { TranslateService } from '@ngx-translate/core';
+import '../../../assets/images/kylo-logo-orange.png';
 
 @Component({
     selector: "about-kylo-dialog-controller",
-    templateUrl: "js/common/about-kylo/about.html",
+    templateUrl: "./about.html",
     styles:[`
         .md-transition-in, .md-transition-out {
             -webkit-transition: all .4s cubic-bezier(.25,.8,.25,1);
@@ -47,7 +48,7 @@ import { TranslateService } from '@ngx-translate/core';
     `]
 
 })
-export default class AboutKyloDialogController {
+export class AboutKyloDialogController {
 
     @Input() version: any;
     @Input() hide: any;

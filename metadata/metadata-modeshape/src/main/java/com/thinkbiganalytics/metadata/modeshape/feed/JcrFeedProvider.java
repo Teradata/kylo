@@ -22,6 +22,9 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetNotFoundException;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -46,11 +49,17 @@ import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleMembership;
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.versioning.EntityVersion;
+import com.thinkbiganalytics.metadata.api.versioning.VersionAlreadyExistsException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.category.CategoryDetails;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
@@ -58,6 +67,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.common.UserFieldDescriptors;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.DraftVersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -66,6 +76,9 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.JcrChangeComment;
+import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -86,6 +99,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,11 +120,12 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
+import javax.jcr.version.Version;
 
 /**
  * A JCR provider for {@link Feed} objects.
  */
-public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider, VersionProviderMixin<Feed, Feed.ID> {
+public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider, DraftVersionProviderMixin<Feed, Feed.ID> {
 
     private static final String SORT_FEED_NAME = "feedName";
     private static final String SORT_STATE = "state";
@@ -138,6 +154,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private DatasourceProvider datasourceProvider;
+    
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     @Inject
     private SecurityRoleProvider roleProvider;
@@ -188,6 +207,91 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         } catch (RepositoryException e) {
             throw new FeedNotFoundException(id);
         }
+    }
+
+    @Override
+    public Node createDraftEntity(ID entityId) {
+        Node versionable = findVersionableNode(entityId).orElseThrow(() -> new FeedNotFoundException(entityId));
+        
+        if (JcrVersionUtil.isCheckedOut(versionable)) {
+            throw new VersionAlreadyExistsException("A draft verion of this feed already exists: " + entityId);
+        } else {
+            JcrVersionUtil.ensureCheckoutNode(versionable, false);
+            return versionable;
+        }
+    }
+
+    @Override
+    public Node createDraftEntity(ID entityId, EntityVersion.ID versionId) {
+        Version version = findVersion(entityId, versionId, false)
+            .map(JcrEntityVersion.class::cast)
+            .map(ev -> ev.getVersion())
+            .orElseThrow(() -> new VersionNotFoundException(versionId));
+        
+        JcrVersionUtil.restore(version);
+        Node draft = createDraftEntity(entityId);
+        return draft;
+    }
+    
+    @Override
+    public Optional<Version> revertDraftEntity(ID entityId) {
+        Node versionable = findVersionableNode(entityId).orElseThrow(() -> new FeedNotFoundException(entityId));
+        Version baseVersion = JcrVersionUtil.getBaseVersion(versionable);
+        
+        if (JcrVersionUtil.isCheckedOut(versionable)) {
+            List<Version> versions = JcrVersionUtil.getVersions(versionable);
+            
+            if (versions.size() == 0 || (versions.size() == 1 && versions.get(0).equals(baseVersion))) {
+                // Only a draft version exists so return an empty revert version.
+                return Optional.empty();
+            } else {
+                JcrVersionUtil.restore(baseVersion);
+                return Optional.of(baseVersion);
+            }
+        } else {
+            // There is no draft version so so nothing.
+            return Optional.of(baseVersion);
+        }
+    }
+
+    @Override
+    public Version createVersionedEntity(ID entityId, String comment) {
+        Node versionable = findVersionableNode(entityId).orElseThrow(() -> new FeedNotFoundException(entityId));
+        
+        FeedSummary summary = new FeedSummary(versionable, null);
+        summary.setVersionComment(comment != null ? comment : "");
+        
+        return JcrMetadataAccess.versionNode(versionable);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findDeployedVersion(com.thinkbiganalytics.metadata.api.feed.Feed.ID, boolean)
+     */
+    @Override
+    public Optional<EntityVersion<Feed.ID, Feed>> findDeployedVersion(ID feedId, boolean includeContent) {
+        final JcrFeed feed = (JcrFeed) super.findById(feedId);
+        
+        if (feed != null) {
+            return feed.getDeployedVersion()
+                    .map(version -> {
+                            Node versionable = JcrVersionUtil.getFrozenNode(version);
+                            Feed versionedFeed = includeContent ? asEntity(feedId, versionable) : null;
+                            
+                            return new JcrEntityVersion<>(version, getChangeComment(feedId, versionable), feedId, versionedFeed);
+                        });
+        } else {
+            throw new FeedNotFoundException(feedId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin#getChangeComment(java.io.Serializable, javax.jcr.Node)
+     */
+    @Override
+    public Optional<ChangeComment> getChangeComment(ID id, Node versionable) {
+        FeedSummary summary = new FeedSummary(versionable, null);
+        
+        return summary.getVersionComment();
     }
 
     /* (non-Javadoc)
@@ -241,6 +345,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             feed.removeFeedSource(source);
         }
     }
+    
+    public void removeFeedSource(Feed.ID feedId, DataSet.ID dsId) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        JcrFeedSource source = (JcrFeedSource) feed.getSource(dsId);
+        
+        if (source != null) {
+            feed.removeFeedSource(source);
+        }
+    }
 
     public void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         JcrFeed feed = (JcrFeed) findById(feedId);
@@ -267,7 +380,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (datasource != null) {
                 JcrFeedSource jcrSrc = feed.ensureFeedSource(datasource);
 
-                save();
+//                save();
                 return jcrSrc;
             } else {
                 throw new DatasourceNotFoundException(dsId);
@@ -276,11 +389,48 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             return source;
         }
     }
+    
+    @Override
+    public FeedSource ensureFeedSource(ID feedId, DataSet.ID dsId) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        FeedSource source = feed.getSource(dsId);
+
+        if (source == null) {
+            return dataSetProvider.find(dsId)
+                .map(ds -> feed.ensureFeedSource((JcrDataSet) ds, false))
+                .orElseThrow(() -> new DataSetNotFoundException(dsId));
+        } else {
+            return source;
+        }
+    }
 
     @Override
-    public FeedSource ensureFeedSource(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id, com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId) {
-        // TODO Auto-generated method stub
-        return null;
+    public FeedSource ensureFeedSource(ID feedId, DataSet.ID dsId, boolean isSample) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        FeedSource source = feed.getSource(dsId);
+
+        if (source == null) {
+            return dataSetProvider.find(dsId)
+                .map(ds -> feed.ensureFeedSource((JcrDataSet) ds, isSample))
+                .orElseThrow(() -> new DataSetNotFoundException(dsId));
+        } else {
+            return source;
+        }
+    }
+
+
+    @Override
+    public FeedDestination ensureFeedDestination(ID feedId, DataSet.ID dsId) {
+        JcrFeed feed = (JcrFeed) findById(feedId);
+        FeedDestination source = feed.getDestination(dsId);
+        
+        if (source == null) {
+            return dataSetProvider.find(dsId)
+                .map(ds -> feed.ensureFeedDestination((JcrDataSet) ds))
+                .orElseThrow(() -> new DataSetNotFoundException(dsId));
+        } else {
+            return source;
+        }
     }
 
     @Override
@@ -294,7 +444,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (datasource != null) {
                 JcrFeedDestination jcrDest = feed.ensureFeedDestination(datasource);
 
-                save();
+//                save();
                 return jcrDest;
             } else {
                 throw new DatasourceNotFoundException(dsId);
@@ -342,7 +492,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                     .ifPresent(actions -> feed.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
             } else {
                 this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                    .ifPresent(actions -> feed.disableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
+                    .ifPresent(actions -> feed.disableAccessControl(JcrMetadataAccess.getActiveUser()));
             }
 
             addPostFeedChangeAction(feed, ChangeType.CREATE);
@@ -516,6 +666,59 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
         return null;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.category.Category.ID, com.thinkbiganalytics.metadata.api.feed.Feed)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category.ID toCatId) {
+        Category cat = this.categoryProvider.findById(toCatId);
+        
+        if (cat != null) {
+            return moveFeed(feed, cat);
+        } else {
+            throw new CategoryNotFoundException(toCatId);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed, com.thinkbiganalytics.metadata.api.category.Category)
+     */
+    @Override
+    public Feed moveFeed(Feed feed, Category toCat) {
+        // Only allow a move if none of this feed's versions has ever been deployed.
+        if (findDeployedVersion(feed.getId(), false).isPresent()) {
+            throw new MetadataRepositoryException("Only a draft feed with no versions may change its category - current category is: " + toCat.getDisplayName());
+        } else {
+            Set<RoleMembership> prevCatMemberships = feed.getCategory().getFeedRoleMemberships();
+            Node feedNode = ((JcrFeed) feed).getNode();
+            Path newPath = JcrUtil.path(EntityUtil.pathForFeed(toCat.getSystemName(), feed.getSystemName()));
+            feedNode = JcrUtil.moveNode(feedNode, newPath);
+            JcrFeed moved = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            
+            moved.updateAllRoleMembershipPermissions(prevCatMemberships.stream());
+            return moved;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#changeSystemName(com.thinkbiganalytics.metadata.api.feed.Feed, java.lang.String)
+     */
+    @Override
+    public Feed changeSystemName(Feed feed, String newName) {
+        // Only allow a system name change if none of this feed's versions has ever been deployed.
+        if (findDeployedVersion(feed.getId(), false).isPresent()) {
+            throw new MetadataRepositoryException("Only a draft feed with no versions may change its system name");
+        } else {
+            Node feedNode = ((JcrFeed) feed).getNode();
+            Path newPath = JcrUtil.path(EntityUtil.pathForFeed(feed.getCategory().getSystemName(), newName));
+            feedNode = JcrUtil.moveNode(feedNode, newPath);
+            JcrFeed renamed = JcrUtil.getJcrObject(feedNode, JcrFeed.class, this.opsAccessProvider);
+            
+            renamed.setSystemName(newName);
+            return renamed;
+        }
+    }
 
     @Override
     public Feed findBySystemName(String systemName) {
@@ -589,50 +792,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
     }
 
-//
-//    @Override
-//    public FeedSource getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID id) {
-//        try {
-//            Node node = getSession().getNodeByIdentifier(id.toString());
-//
-//            if (node != null) {
-//                return JcrUtil.createJcrObject(node, JcrFeedSource.class);
-//            }
-//        } catch (RepositoryException e) {
-//            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public FeedDestination getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID id) {
-//        try {
-//            Node node = getSession().getNodeByIdentifier(id.toString());
-//
-//            if (node != null) {
-//                return JcrUtil.createJcrObject(node, JcrFeedDestination.class);
-//            }
-//        } catch (RepositoryException e) {
-//            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
-//        }
-//        return null;
-//
-//    }
-
     @Override
     public Feed.ID resolveFeed(Serializable fid) {
         return resolveId(fid);
     }
-//
-//    @Override
-//    public com.thinkbiganalytics.metadata.api.feed.FeedSource.ID resolveSource(Serializable sid) {
-//        return new JcrFeedSource.FeedSourceId((sid));
-//    }
-//
-//    @Override
-//    public com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID resolveDestination(Serializable sid) {
-//        return new JcrFeedDestination.FeedDestinationId(sid);
-//    }
 
     @Override
     public boolean enableFeed(Feed.ID id) {
@@ -697,7 +860,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         // Remove dependent feeds
         final Node node = ((JcrFeed) feed).getNode();
         feed.getDependentFeeds().forEach(dep -> feed.removeDependentFeed((JcrFeed) dep));
-        JcrMetadataAccess.getCheckedoutNodes().removeIf(node::equals);
+        JcrMetadataAccess.getAutoCheckinNodes().removeIf(node::equals);
 
         // Remove destinations and sources
         ((JcrFeed) feed).removeFeedDestinations();
@@ -713,6 +876,27 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         this.opsAccessProvider.revokeAllAccess(feed.getId());
 
         super.delete(feed);
+    }
+    
+    @Override
+    public void setDeployed(ID feedId, EntityVersion.ID versionId) {
+        final JcrFeed feed = (JcrFeed) super.findById(feedId);
+        
+        if (feed != null) {
+            if (accessController.isEntityAccessControlled()) {
+                // TODO: Add deploy feed action?
+                feed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+            }
+            
+            findVersion(feedId, versionId, false)
+                .map(JcrEntityVersion.class::cast)
+                .map(JcrEntityVersion::getVersion)
+                .ifPresent(version -> {
+                    feed.setDeployedVersion(version);
+                });
+        } else {
+            throw new FeedNotFoundException(feedId);
+        }
     }
 
     public Feed.ID resolveId(Serializable fid) {
@@ -972,7 +1156,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (!this.destIds.isEmpty()) {
                 List<? extends FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
-                    if (this.destIds.contains(dest.getDatasource().getId())) {
+                    if (dest.getDatasource().isPresent() && this.destIds.contains(dest.getDatasource().get().getId())) {
                         return true;
                     }
                 }
@@ -982,7 +1166,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (!this.sourceIds.isEmpty()) {
                 List<? extends FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
-                    if (this.sourceIds.contains(src.getDatasource().getId())) {
+                    if (src.getDatasource().isPresent() && this.sourceIds.contains(src.getDatasource().get().getId())) {
                         return true;
                     }
                 }

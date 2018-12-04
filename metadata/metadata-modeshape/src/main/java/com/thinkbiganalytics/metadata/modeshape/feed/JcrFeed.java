@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -34,6 +36,7 @@ import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
@@ -47,6 +50,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -57,14 +61,18 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
@@ -75,6 +83,7 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
 
     public static final String NODE_TYPE = "tba:feed";
 
+    public static final String DEPLOYED_VERSION = "tba:deployedVersion";
     public static final String SUMMARY = "tba:summary";
     public static final String DATA = "tba:data";
 
@@ -108,8 +117,15 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
         this(node, opsAccessProvider);
     }
-
-
+    
+    public Optional<Version> getDeployedVersion() {
+        return Optional.ofNullable(JcrPropertyUtil.getProperty(getNode(), DEPLOYED_VERSION, null));
+    }
+    
+    public void setDeployedVersion(Version version) {
+        JcrPropertyUtil.setProperty(getNode(), DEPLOYED_VERSION, version);
+    }
+    
     /**
      * This should be set after an instance of this type is created to allow the change
      * of a feed's operations access control.
@@ -131,7 +147,21 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> roles) {
         AccessControlledMixin.super.enableAccessControl(prototype, owner, roles);
         
-        JcrAbstractRoleMembership.enableOnlyForAll(getCategory().getFeedRoleMemberships().stream(), this.getAllowedActions());
+        updateAllRoleMembershipPermissions(Stream.empty());
+    }
+    
+    /**
+     * Update this feed's permissions to enable only the ones allowed by all role memberships both
+     * at the feed-level and the category-level.
+     */
+    public void updateAllRoleMembershipPermissions(Stream<RoleMembership> previousMemberships) {
+        // Disable permissions from the previous memberships excluding the feed owner.
+        JcrAbstractRoleMembership.disableForAll(previousMemberships, Collections.singleton(getOwner()), this.getAllowedActions());
+        
+        // Enable only the permissions allowed by the category and feed role memberships.
+        Stream<RoleMembership> memberships = Stream.concat(getRoleMemberships().stream(), 
+                                                           getCategory().getFeedRoleMemberships().stream());
+        JcrAbstractRoleMembership.enableOnlyForAll(memberships, this.getAllowedActions());
     }
 
     // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-
@@ -228,18 +258,8 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     // -=-=--=-=- Delegate AuditableMixin methods to summary -=-=-=-=-=-
 
     @Override
-    public DateTime getCreatedTime() {
-        return getFeedSummary().map(s -> s.getCreatedTime()).orElse(null);
-    }
-
-    @Override
     public DateTime getModifiedTime() {
         return getFeedSummary().map(s -> s.getModifiedTime()).orElse(null);
-    }
-
-    @Override
-    public String getCreatedBy() {
-        return getFeedSummary().map(s -> s.getCreatedBy()).orElse(null);
     }
 
     @Override
@@ -341,16 +361,6 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     }
 
     @Override
-    public Feed.Mode getMode() {
-        return getFeedData().map(d -> d.getMode()).orElse(null);
-    }
-
-    @Override
-    public void setMode(Mode mode) {
-        getFeedData().ifPresent(d -> d.setMode(mode));
-    }
-
-    @Override
     public boolean isInitialized() {
         return getFeedData().map(d -> d.isInitialized()).orElse(null);
     }
@@ -382,7 +392,7 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     }
 
     @Override
-    public FeedPrecondition getPrecondition() {
+    public Optional<FeedPrecondition> getPrecondition() {
         return getFeedDetails().map(d -> d.getPrecondition()).orElse(null);
     }
 
@@ -439,9 +449,19 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public FeedSource getSource(final Datasource.ID id) {
         return getFeedDetails().map(d -> d.getSource(id)).orElse(null);
     }
+    
+    @Override
+    public FeedSource getSource(final DataSet.ID id) {
+        return getFeedDetails().map(d -> d.getSource(id)).orElse(null);
+    }
 
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
+        return getFeedDetails().map(d -> d.getDestination(id)).orElse(null);
+    }
+    
+    @Override
+    public FeedDestination getDestination(final DataSet.ID id) {
         return getFeedDetails().map(d -> d.getDestination(id)).orElse(null);
     }
 
@@ -494,6 +514,10 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     @Override
     public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
         getFeedDetails().ifPresent(d -> d.setUserProperties(userProperties, userFields));
+    }
+
+    public boolean isMissingRequiredProperties(@Nonnull final Set<UserFieldDescriptor> userFields) {
+        return getFeedDetails().isPresent() ? getFeedDetails().get().isMissingRequiredProperties(userFields) : false;
     }
 
     @Override
@@ -583,27 +607,35 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
         }
     }
 
-    protected JcrFeedSource ensureFeedSource(JcrDatasource datasource) {
+    public JcrFeedSource ensureFeedSource(JcrDatasource datasource) {
         return getFeedDetails().map(d -> d.ensureFeedSource(datasource)).orElse(null);
     }
-
-    protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
-        return getFeedDetails().map(d -> d.ensureFeedDestination(datasource)).orElse(null);
+    
+    public JcrFeedSource ensureFeedSource(JcrDataSet dataSet, boolean isSample) {
+        return getFeedDetails().map(d -> d.ensureFeedSource(dataSet, isSample)).orElse(null);
     }
 
-    protected void removeFeedSource(JcrFeedSource source) {
+    public JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
+        return getFeedDetails().map(d -> d.ensureFeedDestination(datasource)).orElse(null);
+    }
+    
+    public JcrFeedDestination ensureFeedDestination(JcrDataSet dataSet) {
+        return getFeedDetails().map(d -> d.ensureFeedDestination(dataSet)).orElse(null);
+    }
+
+    public void removeFeedSource(JcrFeedSource source) {
         getFeedDetails().ifPresent(d -> d.removeFeedSource(source));
     }
 
-    protected void removeFeedDestination(JcrFeedDestination dest) {
+    public void removeFeedDestination(JcrFeedDestination dest) {
         getFeedDetails().ifPresent(d -> d.removeFeedDestination(dest));
     }
 
-    protected void removeFeedSources() {
+    public void removeFeedSources() {
         getFeedDetails().ifPresent(d -> d.removeFeedSources());
     }
 
-    protected void removeFeedDestinations() {
+    public void removeFeedDestinations() {
         getFeedDetails().ifPresent(d -> d.removeFeedDestinations());
     }
 

@@ -1,7 +1,7 @@
 import * as _ from 'underscore';
 import { Input, Component, OnChanges, SimpleChanges, EventEmitter, Output } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 
 /**
@@ -18,7 +18,7 @@ import { CloneUtil } from '../../../common/utils/clone-util';
 
 @Component({
     selector: 'thinkbig-properties-admin-editor',
-    templateUrl: 'js/feed-mgr/shared/properties-admin/properties-admin-editor.html'
+    templateUrl: './properties-admin-editor.html'
 })
 export class PropertiesAdminEditorController {
 

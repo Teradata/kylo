@@ -1,0 +1,10 @@
+<td-layout>
+  <td-layout-nav color="none">
+    <div td-toolbar-content >
+      <div *ngIf="feed != undefined">{{feed.feedName}}</div>
+      <div *ngIf="feed == undefined">Service Level Agreements</div>
+      <span fxFlex="100"></span>
+    </div>
+      <ui-view></ui-view>
+  </td-layout-nav>
+</td-layout>

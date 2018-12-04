@@ -2,9 +2,9 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "./module-name";
 import { Transition } from '@uirouter/core';
-import StateService from '../../services/StateService';
+import {StateService} from '../../services/StateService';
 import { FeedService } from '../services/FeedService';
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 import { DefaultTableOptionsService } from '../../services/TableOptionsService';
 import { DatasourcesService } from '../services/DatasourcesService';
 import { DefaultPaginationDataService } from '../../services/PaginationDataService';
@@ -148,7 +148,7 @@ export class SchemasController {
 
 }
 angular.module(moduleName).component('schemasController', {
-    templateUrl: 'js/feed-mgr/tables/schemas.html',
+    templateUrl: './schemas.html',
     controller: SchemasController,
     controllerAs: "vm",
     bindings : {

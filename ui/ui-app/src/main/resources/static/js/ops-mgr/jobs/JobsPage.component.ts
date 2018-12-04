@@ -3,7 +3,7 @@ import { StateService } from "@uirouter/core";
 
 @Component({
     selector: 'jobs-page-controller',
-    templateUrl: 'js/ops-mgr/jobs/jobs.html'
+    templateUrl: './jobs.html'
 })
 export class JobsPageComponent implements ng.IComponentController{
 

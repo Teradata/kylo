@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.rest;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -182,7 +183,8 @@ public class Model {
      */
     public FeedSource domainToFeedSource(@Nonnull final com.thinkbiganalytics.metadata.api.feed.FeedSource domain) {
         FeedSource src = new FeedSource();
-        src.setDatasource(domainToDs(domain.getDatasource()));
+        domain.getDatasource().ifPresent(datasource -> src.setDatasource(domainToDs(datasource)));
+        domain.getDataSet().ifPresent(dataSet -> src.setDatasource(domainToDs(dataSet)));
         return src;
     }
 
@@ -194,7 +196,8 @@ public class Model {
      */
     public FeedDestination domainToFeedDestination(@Nonnull final com.thinkbiganalytics.metadata.api.feed.FeedDestination domain) {
         FeedDestination dest = new FeedDestination();
-        dest.setDatasource(domainToDs(domain.getDatasource()));
+        domain.getDatasource().ifPresent(datasource -> dest.setDatasource(domainToDs(datasource)));
+        domain.getDataSet().ifPresent(dataSet -> dest.setDatasource(domainToDs(dataSet)));
         return dest;
     }
 
@@ -205,6 +208,16 @@ public class Model {
      * @return the REST object
      */
     private Datasource domainToDs(@Nonnull final com.thinkbiganalytics.metadata.api.datasource.Datasource domain) {
+        return datasourceTransform.toDatasource(domain, DatasourceModelTransform.Level.CONNECTIONS);
+    }
+    
+    /**
+     * Transforms the specified data set domain object to a legacy datasource REST object.
+     *
+     * @param domain the data set object
+     * @return the datasource REST object
+     */
+    private Datasource domainToDs(@Nonnull final DataSet domain) {
         return datasourceTransform.toDatasource(domain, DatasourceModelTransform.Level.CONNECTIONS);
     }
 }

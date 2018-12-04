@@ -1,15 +1,15 @@
-import BroadcastService from "./broadcast-service";
+import {BroadcastService} from "./broadcast-service";
 
 
 import { Injectable } from "@angular/core";
 
 @Injectable()
-export default class AddButtonService {
+export class AddButtonService {
     addButtons: any = {};
     NEW_ADD_BUTTON_EVENT: any = 'newAddButton';
     HIDE_ADD_BUTTON_EVENT: any = 'hideAddButton';
     SHOW_ADD_BUTTON_EVENT: any = 'showAddButton';
-    
+
     constructor(private broadcastService: BroadcastService) { }
     AddButtonServiceTag() { }
 

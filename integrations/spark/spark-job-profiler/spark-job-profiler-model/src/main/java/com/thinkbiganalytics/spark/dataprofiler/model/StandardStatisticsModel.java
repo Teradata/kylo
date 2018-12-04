@@ -243,9 +243,11 @@ public class StandardStatisticsModel implements Serializable, StatisticsModel {
     public void addAggregate(Integer columnIndex, DataSet ds, StructField columnField) {
 
         // Generate histogram statistics (numeric columns) and add statistics to model
-        HistogramStatistics histogramStatistics = new HistogramStatistics(profilerConfiguration);
-        histogramStatistics.accomodate(columnIndex, ds.javaRDD(), columnField);
-        appendAll(columnIndex, histogramStatistics);
+        if (HistogramStatistics.isNumeric(columnField)) {
+            HistogramStatistics histogramStatistics = new HistogramStatistics(profilerConfiguration);
+            histogramStatistics.accomodate(columnIndex, ds.javaRDD(), columnField);
+            columnStatisticsMap.get(columnIndex).getStatistics().addAll(histogramStatistics.getStatistics());
+        }
     }
 
     protected Double toDoubleFunction(Row row) {
@@ -271,22 +273,6 @@ public class StandardStatisticsModel implements Serializable, StatisticsModel {
             }
         }
     }
-
-    /**
-     * Append  statistics output rows for a column
-     */
-    private void appendAll(Integer columnIndex, ColumnStatistics statistics) {
-        if (statistics.getStatistics().size() > 0) {
-            ColumnStatistics theseStats = getColumnStatisticsMap().get(columnIndex);
-            if (theseStats == null) {
-                getColumnStatisticsMap().put(columnIndex, statistics);
-            } else {
-                // Merge
-                theseStats.getStatistics().addAll(statistics.getStatistics());
-            }
-        }
-    }
-
 
     /**
      * Print the profile statistics on console

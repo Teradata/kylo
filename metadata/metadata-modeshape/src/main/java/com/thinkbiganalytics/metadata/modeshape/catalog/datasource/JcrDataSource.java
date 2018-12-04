@@ -41,10 +41,12 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 /**
  *
@@ -54,6 +56,7 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
     public static final String NODE_TYPE = "tba:DataSource";
     public static final String DATA_SETS_NODE_TYPE = "tba:DataSets";
     public static final String DATA_SETS = "dataSets";
+    public static final String NIFI_CONTROLLER_SVC_ID = "tba:nifiControllerServiceId";
 
     /**
      * @param node
@@ -92,6 +95,19 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
     }
     
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSource#getNifiControllerServiceId()
+     */
+    @Override
+    public String getNifiControllerServiceId() {
+        return getProperty(NIFI_CONTROLLER_SVC_ID, String.class, null);
+    }
+    
+    @Override
+    public void setNifiControllerServiceId(String id) {
+        setProperty(NIFI_CONTROLLER_SVC_ID, id);
+    }
+    
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSupplierMixin#getSparkParametersChain()
      */
     @Override
@@ -123,8 +139,21 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
      */
     @Override
     public List<? extends DataSet> getDataSets() {
-        Node setsNode = JcrUtil.getNode(getNode(), DATA_SETS);
-        return JcrUtil.getJcrObjects(setsNode, JcrDataSet.class);
+        try {
+            Node dsNode = getDataSetsNode();
+            NodeType type = JcrUtil.getNodeType(getNode().getSession(), JcrDataSet.NODE_TYPE);
+            return JcrUtil.getJcrObjects(dsNode, type, JcrDataSet.class);
+        }catch (RepositoryException e){
+            log.error("Unablt to get datasets for datasource ",e);
+            return Collections.emptyList();
+        }
+
+
+
+    }
+
+    public Node getDataSetsNode(){
+        return JcrUtil.getNode(getNode(), DATA_SETS);
     }
     
     public static class DataSourceId extends JcrEntity.EntityId implements DataSource.ID {

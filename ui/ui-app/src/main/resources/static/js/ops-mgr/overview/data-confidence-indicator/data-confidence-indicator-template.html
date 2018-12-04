@@ -27,7 +27,7 @@
             <nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi"></nvd3>
             <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
              <span layout="column" (click)="onHealthyClick()" style="cursor: pointer;">
-                <span class="kpi-health-count" [ngClass]="{'healthy':dataMap.Healthy.count >0}">{{dataMap.Healthy.count}}</span>
+                <span class="kpi-health-count" [ngClass]="{'tc-positive':dataMap.Healthy.count >0}">{{dataMap.Healthy.count}}</span>
                 <span class="md-caption kpi-health-label">{{"Healthy" | translate}}</span>
             </span>
             <span layout="column" (click)="onUnhealthyClick()" style="cursor: pointer;">
@@ -37,7 +37,7 @@
             </div>
         </div>
         <div *ngIf="!dataLoaded" class="kpi-loading" layout-align="center center" layout="column">
-            <mat-spinner mode="indeterminate" [diameter]="60"></mat-spinner>
+            <mat-spinner mode="indeterminate" [diameter]="60" class="md-accent"></mat-spinner>
         </div>
 
     </mat-card-content>

@@ -5,7 +5,7 @@ import { PolicyInputFormService } from '../policy-input-form/PolicyInputFormServ
 import { Injectable, Component, Inject } from '@angular/core';
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import { CloneUtil } from "../../../common/utils/clone-util";
-import StateService from "../../../services/StateService";
+import {StateService} from "../../../services/StateService";
 import { RestUrlService } from "../../services/RestUrlService";
 import { HttpClient } from "@angular/common/http";
 import {moduleName} from "../../module-name";
@@ -15,7 +15,7 @@ import { FeedFieldPolicyRuleService } from "./services/FeedFieldPolicyRuleServic
 import { FieldPolicyOptionsService } from "../field-policies-angular2/field-policy-options.service";
 
 @Component({
-    templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html'
+    templateUrl: './define-feed-data-processing-field-policy-dialog.html'
 })
 export class FeedFieldPolicyRuleDialogComponent {
 

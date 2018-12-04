@@ -1,0 +1,45 @@
+<mat-card class="feed-card">
+  <mat-card-header >
+    <mat-card-title>
+      <mat-icon class="kylo-title-icon">{{kyloIcons_Links_sla}}</mat-icon>
+      <span translate>Sla.ServiceLevelAgreements</span>
+    </mat-card-title>
+    <mat-card-subtitle *ngIf="feedModel && (feedModel.state === stateDisabled)" class="warn" translate>Sla.DisabledFeedWarning</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <mat-nav-list *ngIf="allowCreate">
+      <div *ngFor="let sla of serviceLevelAgreements; last as isLast;">
+        <a mat-list-item (click)="editExistingSla(sla)" class="sla-row">
+          <sla-row [sla]="sla" fxFlex></sla-row>
+        </a>
+        <mat-divider [inset]="true" *ngIf="!isLast"></mat-divider>
+      </div>
+    </mat-nav-list>
+    <mat-list *ngIf="!allowCreate">
+      <div *ngFor="let sla of serviceLevelAgreements; last as isLast;">
+        <mat-list-item>
+          <sla-row [sla]="sla" fxFlex></sla-row>
+        </mat-list-item>
+        <mat-divider [inset]="true" *ngIf="!isLast"></mat-divider>
+      </div>
+    </mat-list>
+
+    <div *ngIf="(serviceLevelAgreements && serviceLevelAgreements.length == 0 && !loading)" class="no-data" fxLayout="column" fxLayoutAlign="center center">
+      <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+      <h2 class="tc-grey-600" *ngIf="(serviceLevelAgreements && serviceLevelAgreements.length == 0) && !loading" translate>Sla.NoData</h2>
+    </div>
+
+    <div *ngIf="loading" fxLayout="column" fxLayoutAlign="center center">
+      <mat-progress-spinner [diameter]="70" mode="indeterminate" color="accent"></mat-progress-spinner>
+    </div>
+
+
+  </mat-card-content>
+
+  <mat-card-actions *ngIf="allowCreate">
+    <button mat-raised-button mat-button color="accent" (click)="createNewSla()">{{"Sla.AddSla" | translate}}</button>
+  </mat-card-actions>
+
+</mat-card>
+

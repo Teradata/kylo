@@ -21,20 +21,20 @@
 * ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
 * See the corresponding name references in app.js
 */
-import {FEED_DEFINITION_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
+import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_OVERVIEW_STATE_NAME} from "../feed-mgr/model/feed/feed-constants";
 
-import { ObjectUtils } from '../common/utils/object-utils';
+import { ObjectUtils } from '../../lib/common/utils/object-utils';
 import { Injectable } from "@angular/core";
 import { StateService as routerStateService}  from '@uirouter/core';
 @Injectable()
-export default class StateService {
+export class StateService {
     Auth: any;
     FeedManager: any;
     OpsManager: any;
     Search: any;
     Tables: any;
     Categories: any;
-    
+
     constructor(private state: routerStateService) {
 
         this.Auth = this.AuthStates();
@@ -116,27 +116,51 @@ export default class StateService {
 
     FeedStates = () => {
         var data: any = {};
-        data.navigateToFeedDetails = (feedId: any, tabIndex: any) => {
+        data.navigateToFeedDefinition = (feedId:string) => {
+            this.state.go(FEED_DEFINITION_SUMMARY_STATE_NAME,{feedId:feedId, refresh:true});
+        }
+
+
+        data.navigateToFeedDetails = (feedId: string, tabIndex: any) => {
             if (tabIndex == null || tabIndex == undefined) {
                 tabIndex = 0;
             }
-            this.state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
+            data.navigateToFeedDefinition(feedId)
         }
 
-        data.navigateToFeedDefinition = (feedId:string) => {
-            this.state.go(FEED_DEFINITION_STATE_NAME+".summary",{feedId:feedId});
+
+
+        data.navigateToFeedImport = () => {
+            this.state.go(FEED_DEFINITION_STATE_NAME+".import-feed");
         }
 
         data.navigateToEditFeedInStepper = (feedId: any) => {
-            this.state.go('edit-feed', {feedId: feedId});
+            data.navigateToFeedDefinition(feedId)
+          //  this.state.go('edit-feed', {feedId: feedId});
         }
 
         data.navigateToDefineFeed = (templateId: any) => {
-            this.state.go('define-feed', {templateId: templateId});
+            this.state.go(FEED_DEFINITION_STATE_NAME, {templateId: templateId});
+           // this.state.go('define-feed', {templateId: templateId});
         }
 
+        data.navigateToNewFeed = (templateId: string) => {
+            if(templateId == undefined){
+                this.state.go(FEED_DEFINITION_STATE_NAME+".select-template")
+            }
+            else {
+                this.state.go(FEED_DEFINITION_STATE_NAME, {templateId: templateId});
+            }
+        }
+
+        /**
+         * Deprecated.. redirecting to new feed screen
+         * @param feedName
+         */
         data.navigateToCloneFeed = (feedName: any) => {
-            this.state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
+            console.warn("You are using a deprecated state navigation.  'navigateToClonedFeed' is no longer available");
+            data.navigateToNewFeed()
+           // this.state.go('define-feed', {templateId: null,bcExclude_cloning:true,bcExclude_cloneFeedName:feedName});
         }
 
         data.navigateToDefineFeedComplete = (feedModel: any, error: any) => {
@@ -148,7 +172,8 @@ export default class StateService {
         }
 
         data.navigatetoImportFeed = () => {
-            this.state.go('import-feed');
+            this.state.go(FEED_DEFINITION_STATE_NAME+".import-feed");
+           // this.state.go('import-feed');
         }
         return data;
     }
@@ -188,16 +213,16 @@ export default class StateService {
     SlaStates = () => {
         var data: any = {};
         data.navigateToServiceLevelAgreements = () => {
-            this.state.go('service-level-agreements');
+            this.state.go('sla');
         }
         data.navigateToServiceLevelAgreement = (slaId: any) => {
-            this.state.go('service-level-agreements',{slaId:slaId});
+            this.state.go('sla.edit',{slaId:slaId});
         }
         data.navigateToNewEmailTemplate = (templateId ?: any) => {
-            this.state.go('sla-email-template',{emailTemplateId:templateId});
+            this.state.go('sla-email-template.edit',{emailTemplateId:templateId});
         }
         data.navigateToEmailTemplates = () => {
-            this.state.go('sla-email-templates');
+            this.state.go('sla-email-template.list');
         }
         return data;
     }

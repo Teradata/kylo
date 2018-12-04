@@ -54,15 +54,15 @@ public class PermissionsChangeTest {
         pc.union(otherActions);
 
         ActionGroup actionSet = pc.getActionSet();
-        Action a1 = actionSet.getAction("1").get();
-        a1.getAction("1.1").get();
-        a1.getAction("1.2").get();
+        Action a1 = actionSet.getAction("1");;
+        a1.getAction("1.1");
+        a1.getAction("1.2");
 
-        Action a2 = actionSet.getAction("2").get();
-        a2.getAction("2.1").get();
+        Action a2 = actionSet.getAction("2");
+        a2.getAction("2.1");
 
-        Action a3 = actionSet.getAction("3").get();
-        a3.getAction("3.1").get();
+        Action a3 = actionSet.getAction("3");
+        a3.getAction("3.1");
     }
 
 }

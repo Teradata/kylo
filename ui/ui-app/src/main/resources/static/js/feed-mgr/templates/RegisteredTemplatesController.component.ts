@@ -1,11 +1,11 @@
 import * as _ from 'underscore';
-import AccessControlService from "../../services/AccessControlService";
+import {AccessControlService} from "../../services/AccessControlService";
 import { ListTableView } from "../../services/ListTableViewTypes";
-import StateService from '../../services/StateService';
+import {StateService} from '../../services/StateService';
 import { RegisterTemplateServiceFactory } from '../services/RegisterTemplateServiceFactory';
 import { Component, Inject } from '@angular/core';
 import { RestUrlService } from '../services/RestUrlService';
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 import { TdDataTableSortingOrder, ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService } from '@covalent/core/data-table';
 import { IPageChangeEvent } from '@covalent/core/paging';
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
@@ -13,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'registered-templates-controller',
-    templateUrl: 'js/feed-mgr/templates/registered-templates.html'
+    templateUrl: './registered-templates.html'
 })
 export class RegisteredTemplatesController extends BaseFilteredPaginatedTableView{
 

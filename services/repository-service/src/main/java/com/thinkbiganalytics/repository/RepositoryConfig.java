@@ -20,8 +20,10 @@ package com.thinkbiganalytics.repository;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.thinkbiganalytics.repository.filesystem.RepositoryMonitor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +34,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+@EnableScheduling
 @ComponentScan(basePackages = {"com.thinkbiganalytics.repository", "com.thinkbiganalytics.repository.filesystem"})
 public class RepositoryConfig {
     private static final Logger log = LoggerFactory.getLogger(RepositoryConfig.class);
@@ -54,7 +58,10 @@ public class RepositoryConfig {
     }
 
     @Bean
-    public Cache<String, Long> templateUpdateInfoCache() {
+    public RepositoryMonitor repositoryMonitor() { return new RepositoryMonitor(); }
+
+    @Bean
+    public Cache<String, Boolean> templateUpdateInfoCache() {
         CacheBuilder builder = CacheBuilder.newBuilder();
 
         if(expireRepositoryCache){
@@ -63,5 +70,10 @@ public class RepositoryConfig {
         }
 
         return builder.build();
+    }
+
+    @Bean
+    public ObjectMapper mapper() {
+        return new ObjectMapper();
     }
 }

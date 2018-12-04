@@ -26,23 +26,56 @@ package com.thinkbiganalytics.metadata.api.versioning;
 import java.io.Serializable;
 import java.util.Optional;
 
+import com.thinkbiganalytics.metadata.api.template.ChangeComment;
+
 import org.joda.time.DateTime;
 
 /**
- *
+ * Generic definition of info about an entity version.
  */
-public interface EntityVersion<E> {
+public interface EntityVersion<I, E> {
     
+    /** The version name of a draft version */
+    String DRAFT_NAME = "draft";
+    
+    /**
+     * @return the ID of this version
+     */
     ID getId();
 
+    /**
+     * @return the name of this version
+     */
     String getName();
     
+    /**
+     * @return the date the version was created
+     */
     DateTime getCreatedDate();
     
+    /**
+     * @return an optional comment associated with the version
+     */
+    Optional<ChangeComment> getChangeComment();
+    
+    /**
+     * @return the ID of the entity
+     */
+    I getEntityId();
+    
+    /**
+     * @return the optional state of the entity for this version
+     */
     Optional<E> getEntity();
     
 
     interface ID extends Serializable {
 
     }
+
+    /**
+     * return true if this is the very first version, false if not
+     * @return
+     */
+    boolean isFirstVersion();
 }

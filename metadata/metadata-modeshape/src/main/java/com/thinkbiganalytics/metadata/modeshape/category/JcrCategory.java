@@ -31,12 +31,12 @@ import com.thinkbiganalytics.metadata.modeshape.category.security.JcrCategoryAll
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
+import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.IndexControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -55,14 +55,12 @@ import javax.jcr.RepositoryException;
 /**
  * An implementation of {@link Category} backed by a JCR repository.
  */
-public class JcrCategory extends JcrEntity<Category.ID> implements Category, AuditableMixin, SystemEntityMixin, PropertiedMixin, IndexControlledMixin, AccessControlledMixin {
+public class JcrCategory extends JcrEntity<Category.ID> implements Category, AuditableMixin, IconableMixin, SystemEntityMixin, PropertiedMixin, IndexControlledMixin, AccessControlledMixin {
 
     public static final String DETAILS = "tba:details";
 
     public static final String CATEGORY_NAME = "tba:category";
     public static final String NODE_TYPE = "tba:category";
-    public static final String ICON = "tba:icon";
-    public static final String ICON_COLOR = "tba:iconColor";
 
     private CategoryDetails details;
 
@@ -187,26 +185,8 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
     }
 
     @Override
-    public String getIconColor() {
-        return super.getProperty(ICON_COLOR, String.class);
-    }
-
-    public void setIconColor(String iconColor) {
-        super.setProperty(ICON_COLOR, iconColor);
-    }
-
-    @Override
     public Integer getVersion() {
         return null;
-    }
-
-    @Override
-    public String getIcon() {
-        return super.getProperty(ICON, String.class);
-    }
-
-    public void setIcon(String icon) {
-        super.setProperty(ICON, icon);
     }
 
     @Override
@@ -223,7 +203,10 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrCategoryAllowedActions.class;
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.category.Category#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed)
+     */
     public String getFeedParentPath() {
         return JcrUtil.path(getNode(), DETAILS).toString();
     }

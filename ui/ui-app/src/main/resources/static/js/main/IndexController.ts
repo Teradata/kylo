@@ -4,11 +4,12 @@ import {RejectType, Transition, TransitionService} from "@uirouter/core";
 import * as angular from 'angular';
 
 import "app";
-import StateService from  "../services/StateService";
-import AccessControlService from "../services/AccessControlService";
+import {StateService} from  "../services/StateService";
+import {AccessControlService} from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
-import SearchService from "../services/SearchService";
-import SideNavService from "../services/SideNavService";
+import {SearchService} from "../services/SearchService";
+import {SideNavService} from "../services/SideNavService";
+import '../../assets/images/kylo-logo-orange-200.png';
 
 export interface IMyScope extends ng.IScope {
     $mdMedia?: any;
@@ -36,6 +37,8 @@ export class IndexController implements angular.IComponentController {
      * Timeout for state loader
      */
     stateLoaderTimeout: number;
+
+    template = require("../common/ui-router-breadcrumbs/ui-router-breadcrumbs.component.html");
 
     static readonly $inject = ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia",
                                 "$mdBottomSheet", "$log", "$q", "$element","$rootScope", "$transitions", "$$angularInjector",
@@ -209,7 +212,7 @@ export class IndexController implements angular.IComponentController {
             this.loading = true;
 
             this.$mdDialog.show({
-                templateUrl: 'js/main/loading-dialog.html',
+                templateUrl: './loading-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true
@@ -224,12 +227,21 @@ export class IndexController implements angular.IComponentController {
 
         }, this.LOADING_DIALOG_WAIT_TIME);
 
+        getStateClassName(){
+            if(this.currentState && this.currentState.name){
+                return this.currentState.name.replace(/\./g,'-')
+            }
+            else {
+                return '';
+            }
+        }
+
     /**
      * Called when transitioning to a new state.
      */
     onTransitionStart(transition: Transition) {
         if (this.stateLoaderTimeout == null) {
-            this.stateLoaderTimeout = setTimeout(() => this.loadingService.register(STATE_LOADER), 250);
+            this.stateLoaderTimeout = setTimeout(() => this.loadingService.register(STATE_LOADER), 10);
         }
     }
 
@@ -284,5 +296,5 @@ export class IndexController implements angular.IComponentController {
   angular.module('kylo').component("indexController", {
         controller: IndexController,
         controllerAs: "mc",
-        templateUrl: "js/main/index.component.html"
+        template: require("./index.component.html")
     });

@@ -1,10 +1,12 @@
+import {tap} from "rxjs/operators/tap";
 import AccessConstants from '../constants/AccessConstants';
 import * as _ from "underscore";
-import CommonRestUrlService from "./CommonRestUrlService";
-import UserGroupService from "./UserGroupService";
+import {CommonRestUrlService} from "./CommonRestUrlService";
+import {UserGroupService} from "./UserGroupService";
+import {EntityAccessControlService} from "../feed-mgr/shared/entity-access-control/EntityAccessControlService";
 
 import { Injectable } from '@angular/core';
-import { ObjectUtils } from '../common/utils/object-utils';
+import { ObjectUtils } from '../../lib/common/utils/object-utils';
 import { CloneUtil } from '../common/utils/clone-util';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
@@ -12,7 +14,7 @@ import 'rxjs/add/observable/forkJoin';
 import 'rxjs/add/observable/of';
 
 @Injectable()
-export default class AccessControlService extends AccessConstants {
+export class AccessControlService extends AccessConstants {
     /**
     * Interacts with the Access Control REST API.
     * @constructor
@@ -40,7 +42,7 @@ export default class AccessControlService extends AccessConstants {
     }
 
     ROLE_CACHE: any = {};
-    // svc: any= angular.extend(AccessControlService.prototype, AccessConstants.default); // 
+    // svc: any= angular.extend(AccessControlService.prototype, AccessConstants.default); //
     // return angular.extend(svc, {
     /**
      * List of available actions
@@ -112,9 +114,7 @@ export default class AccessControlService extends AccessConstants {
             return Observable.of(this.entityAccessControlled);
         }
         else {
-            return this.http.get(this.commonRestUrlService.ENTITY_ACCESS_CONTROLLED_CHECK).toPromise().then((response: any) => {
-                this.entityAccessControlled = response;
-            });
+            return this.http.get(this.commonRestUrlService.ENTITY_ACCESS_CONTROLLED_CHECK).pipe(tap(response => this.entityAccessControlled = response));
         }
     }
 
@@ -135,7 +135,10 @@ export default class AccessControlService extends AccessConstants {
                 return true;
             }
             var requiredPermissions = data.permissions || null;
-            //if its a future lazy loaded state, allow it
+            if(requiredPermissions == null && data.permissionsKey) {
+                        requiredPermissions = AccessControlService.getStatePermissions(data.permissionsKey);
+                    }
+                    //if its a future lazy loaded state, allow it
             if (this.isFutureState(toStateName)) {
                 valid = true;
             } else {
@@ -146,7 +149,7 @@ export default class AccessControlService extends AccessConstants {
                     if (Array.isArray(requiredPermissions)) {
 
                         //find the first match
-                        valid = requiredPermissions.length == 0 || this.hasAnyAction(requiredPermissions, allowedActions)
+                        valid = requiredPermissions.length == 0 || this.hasAllActions(requiredPermissions, allowedActions)
                     }
                     else {
                         valid = this.hasAction(requiredPermissions, allowedActions);
@@ -157,6 +160,19 @@ export default class AccessControlService extends AccessConstants {
         return valid;
 
     };
+
+            /**
+             * Find the missing actions required for a given transition
+             * @param transition
+             */
+            findMissingPermissions = (requiredPermissions: string[])=>{
+                let missingPermissions = [];
+                var allowedActions = this.cachedUserAllowedActions[this.DEFAULT_MODULE];
+                    if(requiredPermissions != null) {
+                        missingPermissions  = this.findMissingActions(requiredPermissions, allowedActions)
+                    }
+                    return missingPermissions
+             };
     /**
      * Gets the current user from the server
      * @returns {*}
@@ -196,14 +212,15 @@ export default class AccessControlService extends AccessConstants {
 
     }
 
-    /**
-     * Gets the list of allowed actions for the current user.
-     *
-     * @param {string|null} [opt_module] name of the access module, or {@code null}
-     * @param {boolean|null} true to save the data in a cache, false or underfined to not.  default is false
-     * @returns {Promise} containing an {@link ActionSet} with the allowed actions
-     */
-    getUserAllowedActions(opt_module?: any, cache?: any) {
+            /**
+             * Gets the list of allowed actions for the current user.
+             *
+             * @param {string|null} [opt_module] name of the access module, or {@code null}
+             * @param {boolean|null} true to save the data in a cache, false or underfined to not.  default is false
+             * @returns {Promise} containing an {@link ActionSet} with the allowed actions
+             */
+            getUserAllowedActions(opt_module?: any, cache?: any):Promise<any> {
+                var defer: any = null;
 
         var safeModule = ObjectUtils.isString(opt_module) ? encodeURIComponent(opt_module) : this.DEFAULT_MODULE;
         if (ObjectUtils.isUndefined(cache)) {
@@ -251,7 +268,31 @@ export default class AccessControlService extends AccessConstants {
         }
         return this.AVAILABLE_ACTIONS_;
     };
-    /**
+    findMissingActions= (names: any, actions: any)=>{
+                if (names == "" || names == null || names == undefined || (Array.isArray(names) && names.length == 0)) {
+                    return [];
+                }
+                var missing = _.filter(names,(name: any)=>{
+                    return !this.hasAction(name.trim(), actions);
+                });
+                return missing;
+            }
+            /**
+             * Determines if any name in array of names is included in the allowed actions it will return true, otherwise false
+             *
+             * @param names an array of names
+             * @param actions An array of allowed actions
+             * @returns {boolean}
+             */
+            hasAllActions= (names: any, actions: any)=>{
+                if (names == "" || names == null || names == undefined || (Array.isArray(names) && names.length == 0)) {
+                    return true;
+                }
+                var valid = _.every(names,(name: any)=>{
+                    return this.hasAction(name.trim(), actions);
+                });
+                return valid;
+            }/**
      * Determines if any name in array of names is included in the allowed actions it will return true, otherwise false
      *
      * @param names an array of names

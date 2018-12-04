@@ -3,6 +3,7 @@ import {RepositoryComponent} from "./repository.component";
 import {TemplateInfoComponent} from "./template-info/template-info.component";
 import AccessConstants from "../constants/AccessConstants";
 import {ImportTemplateComponent} from "./ng5-import-template.component";
+import {Lazy} from '../kylo-utils/LazyLoadUtil';
 
 export const repositoryStates: Ng2StateDeclaration[] = [
     {
@@ -15,7 +16,8 @@ export const repositoryStates: Ng2StateDeclaration[] = [
         },
         data: {
             breadcrumbRoot: true,
-            displayName: "Resource Repository"
+            displayName: "Resource Repository",
+            permissionsKey: "IMPORT_TEMPLATE"
         }
     },
     {
@@ -29,10 +31,13 @@ export const repositoryStates: Ng2StateDeclaration[] = [
                 component: ImportTemplateComponent
             }
         },
+        resolve: {
+            loadMyCtrl: ['$ocLazyLoad', loadModule]
+        },
         data: {
             breadcrumbRoot: false,
             displayName: "Import Template",
-            permissions: AccessConstants.TEMPLATES_IMPORT
+            permissionsKey: "IMPORT_TEMPLATE"
         }
     },
     {
@@ -53,3 +58,12 @@ export const repositoryStates: Ng2StateDeclaration[] = [
         }
     }
 ];
+
+export function loadModule($ocLazyLoad: any) {
+    const onModuleLoad = () => {
+        return import(/* webpackChunkName: "feeds.import-template.controller" */ '../feed-mgr/templates/import-template/ImportTemplateController.component')
+            .then(Lazy.onModuleImport($ocLazyLoad));
+    };
+
+    return import(/* webpackChunkName: "feed-mgr.module-require" */ "../feed-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
+}

@@ -33,9 +33,12 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
+import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessControl;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
@@ -109,7 +112,10 @@ public class DatasourceController {
     private AccessController accessController;
 
     @Inject
-    private DatasourceProvider datasetProvider;
+    private DatasourceProvider datasourceProvider;
+    
+    @Inject
+    private DataSetProvider dataSetProvider;
 
     @Inject
     private DatasourceDefinitionProvider datasourceDefinitionProvider;
@@ -171,7 +177,7 @@ public class DatasourceController {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
             com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-            return datasetProvider.getDatasources(criteria).stream()
+            return datasourceProvider.getDatasources(criteria).stream()
                 .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.CONNECTIONS))
                 .collect(Collectors.toList());
         });
@@ -257,16 +263,23 @@ public class DatasourceController {
             // Check permissions
             accessController.checkPermission(AccessController.SERVICES, sensitive ? FeedServicesAccessControl.ADMIN_DATASOURCES : FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = this.datasetProvider.resolve(idStr);
-            com.thinkbiganalytics.metadata.api.datasource.Datasource ds = this.datasetProvider.getDatasource(id);
+            com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = this.datasourceProvider.resolve(idStr);
+            com.thinkbiganalytics.metadata.api.datasource.Datasource ds = this.datasourceProvider.getDatasource(id);
 
             if (ds != null) {
                 final Datasource restModel = datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
-                if (ds instanceof AccessControlled) {
+                if (accessController.isEntityAccessControlled() && ds instanceof AccessControlled) {
+                    ((AccessControlled) ds).getAllowedActions().checkPermission(DatasourceAccessControl.ACCESS_DETAILS);
+                    
                     securityTransform.applyAccessControl((AccessControlled) ds, restModel);
                 }
                 return restModel;
             } else {
+//                final DataSet.ID dataSetId = dataSetProvider.resolveId(idStr);
+//                
+//                return dataSetProvider.find(dataSetId)
+//                    .map(dSet -> datasourceTransform.toDatasource(dSet, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL))
+//                    .orElseThrow(() -> new NotFoundException("No datasource exists with the given ID: " + idStr));
                 throw new NotFoundException("No datasource exists with the given ID: " + idStr);
             }
         });
@@ -288,8 +301,8 @@ public class DatasourceController {
                   })
     public void deleteDatasource(@PathParam("id") final String idStr) {
         metadata.commit(() -> {
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = datasetProvider.resolve(idStr);
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(id);
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = datasourceProvider.resolve(idStr);
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
             if (datasource == null) {
                 throw new NotFoundException("No datasource exists with the given ID: " + idStr);
             }
@@ -301,7 +314,7 @@ public class DatasourceController {
                             .ifPresent(controllerServiceId -> nifiRestClient.controllerServices().disableAndDeleteAsync(controllerServiceId));
                     }
                 });
-                datasetProvider.removeDatasource(id);
+                datasourceProvider.removeDatasource(id);
             }
         });
     }
@@ -355,13 +368,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
 
         // Execute query
         return metadata.read(() -> {
-            final QueryResult result = id.map(datasetProvider::getDatasource)
+            final QueryResult result = id.map(datasourceProvider::getDatasource)
                 .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                 .filter(JdbcDatasource.class::isInstance)
                 .map(JdbcDatasource.class::cast)
@@ -396,13 +409,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
             
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
         
         // Execute query
         return metadata.read(() -> {
-            final String result = id.map(datasetProvider::getDatasource)
+            final String result = id.map(datasourceProvider::getDatasource)
                             .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                             .filter(JdbcDatasource.class::isInstance)
                             .map(JdbcDatasource.class::cast)
@@ -437,13 +450,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
             
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
         
         // Execute query
         return metadata.read(() -> {
-            final QueryResult result = id.map(datasetProvider::getDatasource)
+            final QueryResult result = id.map(datasourceProvider::getDatasource)
                             .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                             .filter(JdbcDatasource.class::isInstance)
                             .map(JdbcDatasource.class::cast)
@@ -474,13 +487,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
 
         // Retrieve table names using system user
         return metadata.read(() -> {
-            final List<String> tables = id.map(datasetProvider::getDatasource)
+            final List<String> tables = id.map(datasourceProvider::getDatasource)
                 .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                 .filter(JdbcDatasource.class::isInstance)
                 .map(JdbcDatasource.class::cast)
@@ -512,13 +525,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
 
         // Retrieve table names using system user
         return metadata.read(() -> {
-            final List<String> tables = id.map(datasetProvider::getDatasource)
+            final List<String> tables = id.map(datasourceProvider::getDatasource)
                 .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                 .filter(JdbcDatasource.class::isInstance)
                 .map(JdbcDatasource.class::cast)
@@ -550,13 +563,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
 
         // Retrieve table names using system user
         return metadata.read(() -> {
-            JdbcDatasource datasource = id.map(datasetProvider::getDatasource)
+            JdbcDatasource datasource = id.map(datasourceProvider::getDatasource)
                 .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                 .filter(JdbcDatasource.class::isInstance)
                 .map(JdbcDatasource.class::cast)
@@ -605,13 +618,13 @@ public class DatasourceController {
         final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
 
-            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(idStr));
             return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
         });
 
         // Retrieve table description using system user
         return metadata.read(() -> {
-            final TableSchema tableSchema = id.map(datasetProvider::getDatasource)
+            final TableSchema tableSchema = id.map(datasourceProvider::getDatasource)
                 .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
                 .filter(JdbcDatasource.class::isInstance)
                 .map(JdbcDatasource.class::cast)
@@ -736,7 +749,7 @@ public class DatasourceController {
                                                                                                       String after,
                                                                                                       String before,
                                                                                                       String type) {
-        com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = datasetProvider.datasetCriteria();
+        com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = datasourceProvider.datasetCriteria();
 
         if (StringUtils.isNotEmpty(name)) {
             criteria.name(name);

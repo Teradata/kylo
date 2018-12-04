@@ -1,42 +1,71 @@
 [
   {
+    "title": "Hive",
     "pluginId": "hive",
+    "format": "hive",
     "tabs": [
       {
         "label": "Connection",
         "sref": ".connection"
       }
     ],
-    "options": [
+    "nifiProperties": [
       {
-        "key": "driver",
-        "label": "Driver"
+        "processorTypes": ["com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQL"],
+        "properties": {
+          "SQL select query": "SELECT * FROM {{ paths[0] }}"
+        }
       },
       {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
+        "processorTypes": ["org.apache.nifi.processors.hive.SelectHiveQL"],
+        "properties": {
+          "HiveQL Select Query": "SELECT * FROM {{ paths[0] }}"
+        }
       }
     ]
   },
   {
-    "pluginId": "amazon-s3",
+    "title": "File Upload",
+    "pluginId": "file-upload",
+    "icon": "file_upload",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".upload"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "hint": "Supply a location to upload to. For example 'file:/var/upload', 'hdfs://master:8020/var/upload', or 's3a://kylo-upload/'",
+        "validators": [
+          {
+            "type": "url"
+          }
+        ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.FetchFile"],
+        "properties": {
+          "File to Fetch": "{{ paths[0].substring(5) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.GetFile"],
+        "properties": {
+          "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
+          "File Filter": "[^\\.].*"
+        }
+      }
+    ]
+  },
+  {
+    "title": "HDFS",
+    "pluginId": "hdfs",
+    "icon": "hadoop",
     "tabs": [
       {
         "label": "Files",
@@ -47,6 +76,168 @@
       {
         "key": "path",
         "label": "Path",
+        "hint":"The HDFS path to access.  For example 'hdfs://localhost:8020/app/warehouse' ",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "hdfs:"
+            }
+          }
+        ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.hadoop.FetchHDFS", "org.apache.nifi.processors.hadoop.ListHDFS"],
+        "properties": {
+          "HDFS Filename": "{{ paths[0] }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.hadoop.GetHDFS"],
+        "properties": {
+          "Directory": "{{ paths[0].substring(0, paths[0].lastIndexOf('/')) }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "JDBC",
+    "pluginId": "jdbc",
+    "format": "jdbc",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "options": [
+      {
+        "key": "url",
+        "label": "Connection URL",
+        "hint":"A database connection URL used to connect to a database. May contain database system name, host, port, database name and some parameters. For example 'jdbc:mysql://localhost:3306/kylo' ",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "driver",
+        "label": "Driver Class Name",
+        "hint":"Database driver class name.  For example 'org.mariadb.jdbc.Driver' "
+      },
+      {
+        "key": "jars",
+        "label": "Driver Location(s)",
+        "hint":"Comma-separated list of paths containing the driver JAR and dependencies. Path must be accessible to Kylo, Nifi, and Spark. For example: 'file:///var/shared/mariadb-java-client-1.1.7.jar,s3a:///mybucket/db.jar'",
+        "required": false,
+        "validators": [
+          {
+            "type": "jars"
+          }
+        ]
+      },
+      {
+        "key": "user",
+        "label": "User",
+        "hint":"Database user name"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password",
+        "sensitive": true,
+        "hint":"The password for the database user"
+      }
+    ],
+    "nifiControllerService": {
+      "type": "org.apache.nifi.dbcp.DBCPConnectionPool",
+      "properties": {
+        "Database Connection URL": "${url}",
+        "Database Driver Class Name": "${driver}",
+        "database-driver-locations": "${jars}",
+        "Database User": "${user}",
+        "Password": "${password}"
+      }
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData", "com.thinkbiganalytics.nifi.v2.ingest.GetTableData"],
+        "properties": {
+          "Source Database Connection": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
+      },
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+        "properties": {
+          "Source Connection Service": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Local File System",
+    "pluginId": "local-file-system",
+    "icon": "fas:folder",
+    "tabs": [
+      {
+        "label": "File",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "hint":" Path to a directory on the box where kylo is running starting with the prefix 'file:/'.  For example: 'file:/opt/kylo/setup/data/sample-data'",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "file:"
+            }
+          }
+        ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.FetchFile"],
+        "properties": {
+          "File to Fetch": "{{ paths[0].substring(5) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.standard.GetFile"],
+        "properties": {
+          "Input Directory": "{{ paths[0].substring(5, paths[0].lastIndexOf('/')) }}",
+          "File Filter": "{{ paths[0].substring(paths[0].lastIndexOf('/') + 1) }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Amazon S3",
+    "pluginId": "amazon-s3",
+    "icon": "amazon",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "hint":" Path to a s3 bucket starting with the prefix 's3a:'.  For example: 's3a:///my-bucket'.  To browse all buckets use, 's3a:/'",
         "validators": [
           {
             "type": "url",
@@ -63,19 +254,44 @@
       {
         "key": "spark.hadoop.fs.s3a.secret.key",
         "type": "password",
-        "label": "Secret Access Key"
+        "label": "Secret Access Key",
+        "sensitive": true
+      }
+    ],
+    "nifiControllerService": {
+      "type": "org.apache.nifi.processors.aws.credentials.provider.service.AWSCredentialsProviderControllerService",
+      "properties": {
+        "Access Key": "${spark.hadoop.fs.s3a.access.key}",
+        "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"
+      }
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.FetchS3Object"],
+        "properties": {
+          "Bucket": "{{ paths[0].substring(6, paths[0].substring(6).indexOf('/') + 6) }}",
+          "Object Key": "{{ paths[0].substring(paths[0].substring(6).indexOf('/') + 6) }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.aws.s3.ListS3"],
+        "properties": {
+          "Bucket": "{{ paths[0].substring(6, paths[0].substring(6).indexOf('/') + 6) }}",
+          "Prefix": "{{ paths[0].substring(paths[0].substring(6).indexOf('/') + 6) }}"
+        }
       }
     ]
   },
   {
-    "pluginId": "azure-storage",
+    "title": "Azure Data Lake",
+    "pluginId": "azure-data-lake",
+    "icon": "windows",
     "tabs": [
       {
         "label": "Files",
         "sref": ".browse"
       }
     ],
-    "optionsMapperId": "azureOptionsMapper",
     "options": [
       {
         "key": "path",
@@ -84,7 +300,47 @@
           {
             "type": "url",
             "params": {
-              "protocol": "wasb:"
+              "protocol": "adl:"
+            }
+          }
+        ]
+      }
+    ],
+    "nifiProperties": [
+      {
+        "processorTypes": ["org.apache.nifi.processors.hadoop.FetchHDFS", "org.apache.nifi.processors.hadoop.ListHDFS"],
+        "properties": {
+          "HDFS Filename": "{{ paths[0] }}"
+        }
+      },
+      {
+        "processorTypes": ["org.apache.nifi.processors.hadoop.GetHDFS"],
+        "properties": {
+          "Directory": "{{ paths[0].substring(0, paths[0].lastIndexOf('/')) }}"
+        }
+      }
+    ]
+  },
+  {
+    "title": "Azure Storage",
+    "pluginId": "azure-storage",
+    "icon": "windows",
+    "optionsMapperId": "azureOptionsMapper",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "options": [
+      {
+        "key": "path",
+        "label": "Path",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "wasbs:"
             }
           }
         ]
@@ -96,191 +352,28 @@
       {
         "key": "account-key",
         "type": "password",
-        "label": "Account Key"
-      }
-    ]
-  },
-  {
-    "pluginId": "kafka",
-    "options": [
-      {
-        "key": "kafka.bootstrap.servers",
-        "label": "Kafka Server",
-        "type": "select",
-        "value": "localhost:9093",
-        "hint": "Prefer 'Test Server'",
-        "flex": 50,
-        "selections": [
-          {
-            "label": "Dev Server",
-            "value": "localhost:9092"
-          },
-          {
-            "label": "Test Server",
-            "value": "localhost:9093"
-          },
-          {
-            "label": "Prod Server",
-            "value": "prod.server1:9092"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "pluginId": "file-upload",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".upload"
-      }
-    ]
-  },
-  {
-    "pluginId": "hdfs",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
+        "label": "Account Key",
+        "sensitive": true
       }
     ],
-    "options": [
+    "nifiProperties": [
       {
-        "key": "path",
-        "label": "Path",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "hdfs:"
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "pluginId": "teradata",
-    "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
+        "processorTypes": ["Fetch"],
+        "properties": {
+          "Storage Account Name": "{{ options['account-name'] }}",
+          "Storage Account Key": "{{ options['account-key'] }}",
+          "Container Name": "{{ paths[0].substring(7, paths[0].substring(7).indexOf('/') + 7) }}",
+          "Blob": "{{ paths[0].substring(paths[0].substring(7).indexOf('/') + 7) }}"
+        }
       },
       {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
-      }
-    ]
-  },
-  {
-    "pluginId": "mysql",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ],
-    "options": [
-      {
-        "key": "driver",
-        "label": "Driver"
-      },
-      {
-        "key": "url",
-        "label": "Url",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "jdbc:"
-            }
-          }
-        ]
-      },
-      {
-        "key": "user",
-        "label": "User"
-      },
-      {
-        "key": "password",
-        "type": "password",
-        "label": "Password"
-      }
-    ]
-  },
-  {
-    "pluginId": "oracle",
-    "color": "orange-700",
-    "tabs": [
-      {
-        "label": "Connection",
-        "sref": ".connection"
-      }
-    ]
-  },
-  {
-    "pluginId": "google-cloud-storage",
-    "tabs": [
-      {
-        "label": "Files",
-        "sref": ".browse"
-      }
-    ],
-    "options": [
-      {
-        "key": "spark.hadoop.google.cloud.auth.service.account.email",
-        "label": "Email"
-      },
-      {
-        "key": "spark.hadoop.google.cloud.auth.service.account.keyfile",
-        "label": "Key File"
-      }
-    ]
-  },
-  {
-    "pluginId": "local-file-system",
-    "tabs": [
-      {
-        "label": "File",
-        "sref": ".browse"
-      }
-    ],
-    "options": [
-      {
-        "key": "path",
-        "label": "Path",
-        "validators": [
-          {
-            "type": "url",
-            "params": {
-              "protocol": "file:"
-            }
-          }
-        ]
+        "processorTypes": ["List"],
+        "properties": {
+          "Storage Account Name": "{{ options['account-name'] }}",
+          "Storage Account Key": "{{ options['account-key'] }}",
+          "Container Name": "{{ paths[0].substring(7, paths[0].substring(7).indexOf('/') + 7) }}",
+          "Prefix": "{{ paths[0].substring(paths[0].substring(7).indexOf('/') + 7) }}"
+        }
       }
     ]
   }

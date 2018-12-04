@@ -1,0 +1,14 @@
+<div fxLayout="column" class="pad-left" fxFill>
+  <form [formGroup]="policyForm">
+  <inline-field-policy-form [policyForm]="policyForm" [(selectedPolicyRule)]="schemaParser" policyParameter="sparkSchemaParser" defaultValue="XML" selectLabel="Parser"></inline-field-policy-form>
+
+  <h3 class="mat-subheading-2 pad-top">Upload sample file</h3>
+  <!--<upload-file #fileUpload [files]="sampleFile" (onSubmit)="uploadSampleFile($event)"></upload-file>-->
+
+  </form>
+  <!--
+  <button mat-raised-button aria-label="Upload sample file" id="upload-sample-file-btn" color="primary" (click)="uploadSampleFile()" *ngIf="sampleFile != null"
+           [disabled]="uploadBtnDisabled">Upload
+</button>
+-->
+</div>

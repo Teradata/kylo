@@ -17,8 +17,8 @@
   limitations under the License.
   #L%
   -->
-<div > 
-    <mat-progress-linear [mode]="indeterminate" *ngIf="loading"></mat-progress-linear>
+<div >
+    <mat-progress-linear [mode]="indeterminate" color="accent" *ngIf="loading"></mat-progress-linear>
     <mat-card *ngIf="!loading">
         <mat-card-title>
             <div class="card-title">{{'FEEDMGR.BUSINESS_METADATA.PROPERTY_DEF' | translate}}</div>

@@ -209,6 +209,11 @@ public class TriggerCleanupTest {
      * A mock implementation of {@link CleanupEventService} for testing.
      */
     private class MockCleanupEventService extends AbstractControllerService implements CleanupEventService {
+        
+        @Override
+        public void addListener(CleanupListener listener) {
+            Assert.assertEquals(runner.getProcessor(), listener);
+        }
 
         @Override
         public void addListener(@Nonnull final String category, @Nonnull final String feedName, @Nonnull final CleanupListener listener) {

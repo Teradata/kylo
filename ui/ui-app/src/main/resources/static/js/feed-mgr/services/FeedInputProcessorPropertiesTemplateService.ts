@@ -21,7 +21,7 @@
  * Return a custom Property input template for a given Processor
  */
 import * as _ from "underscore";
-import { Templates } from "./TemplateTypes";
+import { Templates } from "../../../lib/feed-mgr/services/TemplateTypes";
 import { UiComponentsService } from "./UiComponentsService";
 import { Injectable } from "@angular/core";
 

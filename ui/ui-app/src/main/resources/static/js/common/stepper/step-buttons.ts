@@ -14,7 +14,7 @@ angular.module(moduleName).directive("thinkbigStepButtons",
 
             },
             require: '^thinkbigStepper',
-            templateUrl: 'js/common/stepper/step-buttons.html',
+            templateUrl: './step-buttons.html',
             link: function ($scope: any, element: any, attrs: any, stepperController: any) {
                 if (attrs.finalStep != undefined && attrs.finalStep != null) {
                     $scope.finalStep = true;

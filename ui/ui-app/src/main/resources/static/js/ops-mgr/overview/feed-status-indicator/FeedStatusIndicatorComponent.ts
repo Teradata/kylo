@@ -1,9 +1,9 @@
 import "pascalprecht.translate";
 import { Component, Input } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import BroadcastService from "../../../services/broadcast-service";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import { OpsManagerFeedService } from "../../services/OpsManagerFeedService";
+import {BroadcastService} from "../../../services/broadcast-service";
+import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
+import { OpsManagerFeedService } from "../../services/ops-manager-feed.service";
 import { TranslateService } from "@ngx-translate/core";
 
 import 'd3';
@@ -11,15 +11,15 @@ import 'nvd3';
 
 @Component({
     selector: 'tba-feed-status-indicator',
-    templateUrl: 'js/ops-mgr/overview/feed-status-indicator/feed-status-indicator-template.html'
+    templateUrl: './feed-status-indicator-template.html'
 })
-export default class FeedStatusIndicatorComponent {
+export class FeedStatusIndicatorComponent {
 
     chartApi: any = {};
     dataLoaded: boolean = false;
     feedSummaryData: any = null;
     chartData: any[] = [];
-    dataMap: any = {'Healthy':{count:0, color:'#009933'},'Unhealthy':{count:0,color:'#FF0000'}};
+    dataMap: any = {'Healthy':{count:0, color:'#388e3c'},'Unhealthy':{count:0,color:'#b71c1c'}};
     chartOptions: any;
     @Input() panelTitle: string;
 
@@ -38,7 +38,7 @@ export default class FeedStatusIndicatorComponent {
                 labelSunbeamLayout: false,
                 "margin":{"top":10,"right":10,"bottom":10,"left":10},
                 donut:true,
-                donutRatio:0.65,
+                donutRatio:0.62,
                 showLegend:false,
                 refreshDataOnly: false,
                 color:(d: any)=>{

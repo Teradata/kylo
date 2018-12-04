@@ -37,11 +37,13 @@ import javax.jcr.security.Privilege;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.WrappedNodeMixin;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -49,6 +51,20 @@ import com.thinkbiganalytics.security.role.SecurityRole;
  *
  */
 public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixin {
+
+    String OWNER = "tba:owner";
+    String DEFAULT_OWNER = "jcr:createdBy";
+
+    @Override
+    default Principal getOwner() {
+        String name = getProperty(OWNER, null);
+        name = name == null ? getProperty(DEFAULT_OWNER, null) : name;
+        return name != null ? new UsernamePrincipal(name) : null;
+    }
+    
+    default void setOwner(Principal principal) {
+        setProperty(OWNER, principal.getName());
+    }
     
     @Override
     default Set<RoleMembership> getRoleMemberships() {
@@ -77,7 +93,24 @@ public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixi
         // By default there are no inherited memberships.
         return Optional.empty();
     }
-    
+
+    /**
+     * Resets permission for principal based on the current role memberships.  Useful when the actions granted
+     * to any of the roles have changed.
+     */
+    default void updateRolePermissions(Principal principal) {
+        JcrAbstractRoleMembership.enableOnly(principal,getRoleMemberships().stream(), getJcrAllowedActions());
+    }
+
+
+    /**
+     * Resets permission based on the current role memberships.  Useful when the actions granted
+     * to any of the roles have changed.
+     */
+    default void updateRolePermissions() {
+        JcrAbstractRoleMembership.enableOnlyForAll(getRoleMemberships().stream(), getJcrAllowedActions());
+    }
+
     @Override
     default AllowedActions getAllowedActions() {
         return getJcrAllowedActions();
@@ -88,29 +121,37 @@ public interface AccessControlledMixin extends AccessControlled, WrappedNodeMixi
         return JcrUtil.createJcrObject(allowedNode, getJcrAllowedActionsType());
     }
     
-    default void disableAccessControl(JcrAllowedActions prototype, Principal owner) {
-        disableAccessControl(prototype, owner, Collections.emptyList());
+    default void disableAccessControl(Principal owner) {
+        disableAccessControl(owner, Collections.emptyList());
     }
     
-    default void disableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> roles) {
-        JcrAllowedActions allowed = getJcrAllowedActions();
-        prototype.copy(allowed.getNode(), owner);
-        allowed.removeAccessControl(owner);
-        
+    default void disableAccessControl(Principal owner, List<SecurityRole> roles) {
         if (roles.isEmpty()) {
             JcrEntityRoleMembership.removeAll(getNode());
         } else {
             roles.forEach(role -> JcrEntityRoleMembership.remove(getNode(), ((JcrSecurityRole) role).getNode(), JcrEntityRoleMembership.class));
         }
+        
+        JcrAllowedActions allowed = getJcrAllowedActions();
+        allowed.disableAccessControl(owner);
+        JcrAccessControlUtil.clearPermissions(getNode());
+    }
+    
+    default void clearAccessControl() {
+        disableAccessControl(getOwner());
+        JcrAllowedActions allowed = getJcrAllowedActions();
+        allowed.removeAccessControl(getOwner());
     }
 
     default void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> roles) {
         JcrAllowedActions allowed = getJcrAllowedActions();
+        
+        setOwner(owner);
         prototype.copy(allowed.getNode(), owner, Privilege.JCR_ALL);
         allowed.setupAccessControl(owner);
         
         roles.forEach(role -> JcrAbstractRoleMembership.create(getNode(), ((JcrSecurityRole) role).getNode(), JcrEntityRoleMembership.class, allowed));
     }
-
+    
     Class<? extends JcrAllowedActions> getJcrAllowedActionsType();
 }

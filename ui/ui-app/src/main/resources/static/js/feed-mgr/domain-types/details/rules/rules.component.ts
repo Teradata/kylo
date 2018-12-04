@@ -1,6 +1,6 @@
 import * as angular from "angular";
 
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {DomainType} from "../../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
 import { Component, Input } from "@angular/core";
@@ -15,8 +15,8 @@ import { FeedTagService } from "../../../services/FeedTagService";
  */
 @Component({
     selector: 'domain-type-rules-details',
-    templateUrl: 'js/feed-mgr/domain-types/details/rules/rules.component.html'
-})    
+    templateUrl: './rules.component.html'
+})
 export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
 
     @Input() allowEdit: any;
@@ -34,8 +34,8 @@ export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
     tagList : string[] = [];
 
 
-    constructor(DomainTypeDetailsService: DomainTypeDetailsService, 
-                private FeedFieldPolicyRuleService: FeedFieldPolicyRuleService, 
+    constructor(DomainTypeDetailsService: DomainTypeDetailsService,
+                private FeedFieldPolicyRuleService: FeedFieldPolicyRuleService,
                 private FeedService: FeedService,
                 private FeedTagService: FeedTagService,
                 private dialog: MatDialog) {

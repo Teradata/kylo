@@ -412,12 +412,15 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         }
         importTemplate.setTemplateResults(newTemplateInstance);
 
-        int templateValidationErrorCount = newTemplateInstance.getProcessGroupEntity().getContents().getProcessors()
-            .stream().filter(p -> p.getValidationErrors() != null)
-            .collect(Collectors.toSet()).size();
+        if(newTemplateInstance.isSuccess() && newTemplateInstance.getProcessGroupEntity() != null) {
 
-        newTemplateInstance.setSuccess(ensureSensitiveProperties(newTemplateInstance, templateValidationErrorCount));
+            int templateValidationErrorCount = newTemplateInstance.getProcessGroupEntity().getContents().getProcessors()
+                .stream().filter(p -> p.getValidationErrors() != null)
+                .collect(Collectors.toSet()).size();
 
+            newTemplateInstance.setSuccess(ensureSensitiveProperties(newTemplateInstance, templateValidationErrorCount));
+
+        }
         return newTemplateInstance;
 
     }

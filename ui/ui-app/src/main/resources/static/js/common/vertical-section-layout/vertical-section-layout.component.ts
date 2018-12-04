@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input,Output} from "@angular/core";
 
 @Component({
     selector: "vertical-section-layout",
-    templateUrl: "js/common/vertical-section-layout/vertical-section-layout-template.html",
+    templateUrl: "./vertical-section-layout-template.html",
     styles:[
         `.ng-md-icon {
             margin: auto;

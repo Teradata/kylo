@@ -21,6 +21,7 @@ export default class AccessConstants {
      */
     public static CATEGORIES_EDIT: string = "editCategories";
 
+
     /**
      * Allows access to data sources.
      * @type {string}
@@ -28,10 +29,9 @@ export default class AccessConstants {
     public static DATASOURCE_ACCESS: string = "accessDatasources";
 
     /**
-     * Allows access to repository.
-     * @type {string}
+     * Allows getting data source details with sensitive info
      */
-    public static REPOSITORY_ACCESS: string = "accessRepository";
+    public static DATASOURCE_ADMIN = "adminDatasources";
 
     /**
      * Allows creating and editing new data sources.
@@ -227,6 +227,14 @@ export default class AccessConstants {
 
     public static ADMIN_METADATA: string = "adminMetadata";
 
+    public static ACCESS_CONNECTOR: string = "accessConnectors";
+
+    public static ADMIN_CONNECTORS: string = "adminConnectors";
+
+    public static ACCESS_CATALOG:string = "accessCatalog"
+
+    public static EDIT_DATASOURCES:string = "editDatasources";
+
     public static ENTITY_ACCESS = {
         CATEGORY: {
             //   EDIT_CATEGORY_SUMMARY: "editCategorySummary", // will not be used in v 0.8.0
@@ -253,9 +261,16 @@ export default class AccessConstants {
             CHANGE_TEMPLATE_PERMISSIONS: "changeTemplatePermissions"
         },
         DATASOURCE: {
+            ACCESS_DATASOURCE: "accessDatasource",
             EDIT_DETAILS: "editDatasourceDetails",
             DELETE_DATASOURCE: "deleteDatasource",
             CHANGE_DATASOURCE_PERMISSIONS: "changeDatasourcePermissions"
+        },
+        CONNECTOR: {
+            EDIT_CONNECTOR:"editConnector",
+            CHANGE_CONNECTOR_PERMISSIONS:"changeConnectorPermissions",
+            ACTIVATE_CONNECTOR:"activateConnector",
+            CREATE_DATA_SOURCE:"createDataSource"
         }
     };
 
@@ -274,15 +289,17 @@ export default class AccessConstants {
         USERS_DETAILS: {state: "user-details", permissions: [AccessConstants.USERS_ACCESS]},
         GROUPS: {state: "groups", permissions: [AccessConstants.USERS_GROUPS_ACCESS]},
         GROUP_DETAILS: {state: "group-details", permissions: [AccessConstants.USERS_GROUPS_ACCESS]},
-        VISUAL_QUERY: {state: "visual-query", permissions: [AccessConstants.VISUAL_QUERY_ACCESS]},
-        SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [AccessConstants.SLA_ACCESS]},
+        VISUAL_QUERY: {state: "visual-query", permissions: [AccessConstants.VISUAL_QUERY_ACCESS, AccessConstants.DATASOURCE_ACCESS]},
+        SERVICE_LEVEL_AGREEMENTS: {state: "sla.list", permissions: [AccessConstants.SLA_ACCESS]},
+        EDIT_SERVICE_LEVEL_AGREEMENTS: {state: "sla.edit", permissions: [AccessConstants.SLA_EDIT]},
         SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: [AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE]},
-        CATALOG: {state: "catalog", permissions: [AccessConstants.TABLES_ACCESS]},
+        CATALOG: {state: "catalog", permissions: [AccessConstants.ACCESS_CATALOG]},
         SCHEMAS: {state: "schemas", permissions: [AccessConstants.TABLES_ACCESS]},
         TABLES: {state: "schemas-schema", permissions: [AccessConstants.TABLES_ACCESS]},
         TABLE: {state: "schemas-schema-table", permissions: [AccessConstants.TABLES_ACCESS]},
         DATASOURCES: {state: "datasources", permissions: [AccessConstants.DATASOURCE_ACCESS]},
         DATASOURCE_DETAILS: {state: "datasource-details", permissions: [AccessConstants.DATASOURCE_ACCESS]},
+        EDIT_DATASOURCES:{state:"catalog.connectors",permissions:[AccessConstants.EDIT_DATASOURCES]},
         REGISTERED_TEMPLATES: {state: "registered-templates", permissions: [AccessConstants.TEMPLATES_ACCESS]},
         REGISTER_NEW_TEMPLATE: {state: "register-new-template", permissions: [AccessConstants.TEMPLATES_EDIT]},
         REGISTER_TEMPLATE: {state: "register-template", permissions: [AccessConstants.TEMPLATES_EDIT]},
@@ -292,7 +309,7 @@ export default class AccessConstants {
         DOMAIN_TYPES: {state: "domain-types", permissions: [AccessConstants.FEEDS_ADMIN]},
         DOMAIN_TYPE_DETAILS: {state: "domain-type-details", permissions: [AccessConstants.FEEDS_ADMIN]},
         JCR_ADMIN: {state: "jcr-query", permissions: [AccessConstants.ADMIN_METADATA]},
-        REPOSITORY: {state: "repository", permissions: [AccessConstants.REPOSITORY_ACCESS]},
+        REPOSITORY: {state: "repository", permissions: [AccessConstants.TEMPLATES_IMPORT]},
         //Ops Manager
         ALERTS: {state: "alerts", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         ALERT_DETAILS: {state: "alert-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
@@ -307,6 +324,19 @@ export default class AccessConstants {
         SERVICE_DETAILS: {state: "service-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_COMPONENT_DETAILS: {state: "service-component-details", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
         SERVICE_LEVEL_ASSESSMENTS: {state: "service-level-assessments", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
-        SERVICE_LEVEL_ASSESSMENT: {state: "service-level-assessment", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]}
+        SERVICE_LEVEL_ASSESSMENT: {state: "service-level-assessment", permissions: [AccessConstants.OPERATIONS_MANAGER_ACCESS]},
+        ADMIN_CONNECTORS:{state:"catalog.admin-connectors",permissions:[AccessConstants.ADMIN_CONNECTORS]},
+        ADMIN_CONNECTOR:{state:"catalog.admin-connector",permissions:[AccessConstants.ADMIN_CONNECTORS]},
+        FEED_STEP_WRANGLER:{state:"feed-definition.section.wrangler",permissions:[AccessConstants.DATASOURCE_ACCESS, AccessConstants.FEEDS_ACCESS]}
+    }
+
+    public static getStatePermissions(key:string){
+       let state:any = AccessConstants.UI_STATES[key];
+       if(state != undefined && state.permissions){
+           return state.permissions;
+       }
+       else {
+           return [];
+       }
     }
 }

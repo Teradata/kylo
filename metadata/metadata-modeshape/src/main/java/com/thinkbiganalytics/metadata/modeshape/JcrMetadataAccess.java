@@ -35,8 +35,8 @@ import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrinci
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadWritePrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.MetadataLockException;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
@@ -47,8 +47,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -61,6 +64,8 @@ import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.lock.LockException;
+import javax.jcr.version.Version;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
@@ -70,6 +75,11 @@ import javax.transaction.TransactionManager;
  *
  */
 public class JcrMetadataAccess implements MetadataAccess {
+    
+    /** The default number of transaction retries that will be attempted due to lock acquisition failures */
+    private static final int DEFAULT_RETRY_COUNT = 10;
+    /** The default millisecond delay between transaction retry attempts due to lock acquisition failures */
+    private static final long DEFAULT_RETRY_DELAY = 200;
 
     public static final String TBA_PREFIX = "tba";
     /**
@@ -90,20 +100,14 @@ public class JcrMetadataAccess implements MetadataAccess {
         }
     };
 
-    private static final ThreadLocal<Set<Node>> checkedOutNodes = new ThreadLocal<Set<Node>>() {
-        protected java.util.Set<Node> initialValue() {
-            return new HashSet<>();
+    private static final ThreadLocal<Map<Node, Boolean>> checkedOutNodes = new ThreadLocal<Map<Node, Boolean>>() {
+        protected Map<Node, Boolean> initialValue() {
+            return new HashMap<>();
         }
     };
 
-    private static MetadataRollbackAction nullRollbackAction = (e) -> {
 
-    };
-
-
-    private static MetadataRollbackCommand nullRollbackCommand = (e) -> {
-        nullRollbackAction.execute(e);
-    };
+    private static final MetadataRollbackCommand nullRollbackCommand = (e) -> { }; 
 
 
     @Inject
@@ -138,30 +142,52 @@ public class JcrMetadataAccess implements MetadataAccess {
         }
     }
 
-
+    public static boolean hasCheckedOutNode(Node node) {
+        return checkedOutNodes.get().containsKey(node);
+    }
+    
     /**
-     * Return all nodes that have been checked out
+     * Return all nodes that have been checked out and should be automatically checked-in.
      */
-    public static Set<Node> getCheckedoutNodes() {
-        return checkedOutNodes.get();
+    public static Set<Node> getAutoCheckinNodes() {
+        return checkedOutNodes.get().entrySet().stream()
+                .filter(Entry::getValue)
+                .map(Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
 
     /**
      * Check out the node and add it to the Set of checked out nodes
+     * @return true if the node had not previously been checked out.
      */
-    public static void ensureCheckoutNode(Node n) {
+    public static boolean ensureCheckoutNode(Node n, boolean autoCheckin) {
         try {
-            if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n))) {
+            if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().containsKey(n))) {
                 log.debug("***** checking out node: {}", n);
             }
             
             // Checking out an already checked-out node is a no-op.
             JcrVersionUtil.checkout(n);
-            checkedOutNodes.get().add(n);
+            return checkedOutNodes.get().put(n, autoCheckin) == null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to checkout node: " + n, e);
         }
+    }
+
+    /**
+     * Forces creation of a new version of the node and removing if from the set of checked
+     * out nodes.  Node that this does not prevent the node from being checked out again
+     * within this session if it is subsequently modified and is setup for auto-checkout.
+     * @param node the node to version
+     * @return the new version
+     */
+    public static Version versionNode(Node node) {
+        // Ensure it is checked out first.
+        ensureCheckoutNode(node, true);
+        Version version = JcrVersionUtil.checkin(node);
+        checkedOutNodes.get().remove(node);
+        return version;
     }
 
     /**
@@ -170,7 +196,7 @@ public class JcrMetadataAccess implements MetadataAccess {
      * @see com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil#setProperty(Node, String, Object) which checks out the node before applying the update
      */
     public static void checkinNodes() throws RepositoryException {
-        Set<Node> checkedOutNodes = getCheckedoutNodes();
+        Set<Node> checkedOutNodes = getAutoCheckinNodes();
         for (Iterator<Node> itr = checkedOutNodes.iterator(); itr.hasNext(); ) {
             Node element = itr.next();
             JcrVersionUtil.checkin(element);
@@ -233,41 +259,37 @@ public class JcrMetadataAccess implements MetadataAccess {
             try {
                 activeSession.set(new ActiveSession(this.repository.login(creds)));
 
-                TransactionManager txnMgr = this.txnLookup.getTransactionManager();
-
                 try {
-                    txnMgr.begin();
-
-                    R result = execute(creds, cmd);
-
-                    activeSession.get().session.save();
-                    checkinNodes();
-                    txnMgr.commit();
-                    performPostTransactionActions(true);
-                    return result;
-                } catch (Exception e) {
-                    log.warn("Exception while execution a transactional operation - rolling back", e);
-
-                    try {
-                        txnMgr.rollback();
-                    } catch (SystemException se) {
-                        log.error("Failed to rollback transaction as a result of other transactional errors", se);
-                    }
-
-                    if (rollbackCmd != null) {
+                    Exception failException = null;
+                    
+                    while (failException == null) {
                         try {
-                            rollbackCmd.execute(e);
-                        } catch (Exception rbe) {
-                            log.error("Failed to execution rollback command", rbe);
+                            return doCommit(creds, cmd, rollbackCmd);
+                        } catch (MetadataLockException | LockException e) {
+                            // If a lock acquisition failed then retry the command if the number of retries has not been exceeded.
+                            if (activeSession.get().retriesRemaining > 0) {
+                                activeSession.get().decrementRetry();
+                                log.debug("Failed to aquire lock - retries remaining: {}", activeSession.get().retriesRemaining, e);
+                                
+                                try {
+                                    Thread.sleep(activeSession.get().retryDelay);
+                                } catch (InterruptedException ie) {
+                                    // Just continue.
+                                }
+                                
+                                // Start a new session before the retry.
+                                activeSession.get().updateSession(this.repository.login(creds));
+                            } else {
+                                performPostTransactionActions(false);
+                                failException = e;
+                            }
+                        } catch (Exception e) {
+                            failException = e;
                         }
                     }
-
-                    activeSession.get().session.refresh(false);
-                    performPostTransactionActions(false);
-
-                    throw e;
+                    
+                    throw failException;
                 } finally {
-                    activeSession.get().session.logout();
                     activeSession.remove();
                     postTransactionActions.remove();
                     checkedOutNodes.remove();
@@ -287,6 +309,55 @@ public class JcrMetadataAccess implements MetadataAccess {
             } catch (Exception e) {
                 throw new MetadataExecutionException(e);
             }
+        }
+    }
+
+    protected <R> R doCommit(Credentials creds, MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd) throws RepositoryException, Exception {
+        TransactionManager txnMgr = this.txnLookup.getTransactionManager();
+
+        try {
+            txnMgr.begin();
+
+            R result = execute(creds, cmd);
+
+            activeSession.get().session.save();
+            checkinNodes();
+            txnMgr.commit();
+            performPostTransactionActions(true);
+            return result;
+        } catch (MetadataLockException | LockException e) {
+            try {
+                txnMgr.rollback();
+            } catch (SystemException se) {
+                log.error("Failed to rollback transaction as a result of lock acquisition failure", se);
+            }
+            
+            activeSession.get().session.refresh(false);
+            
+            throw e;
+        } catch (Exception e) {
+            log.warn("Exception while execution a transactional operation - rolling back", e);
+
+            try {
+                txnMgr.rollback();
+            } catch (SystemException se) {
+                log.error("Failed to rollback transaction as a result of other transactional errors", se);
+            }
+
+            if (rollbackCmd != null) {
+                try {
+                    rollbackCmd.execute(e);
+                } catch (Exception rbe) {
+                    log.error("Failed to execution rollback command", rbe);
+                }
+            }
+
+            activeSession.get().session.refresh(false);
+            performPostTransactionActions(false);
+
+            throw e;
+        } finally {
+            activeSession.get().session.logout();
         }
     }
 
@@ -409,13 +480,32 @@ public class JcrMetadataAccess implements MetadataAccess {
     
     
     private static class ActiveSession {
-        private final Session session;
-        private final UsernamePrincipal userPrincipal;
+        
+        private Session session;
+        private UsernamePrincipal userPrincipal;
+        private int retriesRemaining;
+        private final long retryDelay;
         
         public ActiveSession(Session sess) {
-            this.session = sess;
-            this.userPrincipal = new UsernamePrincipal(sess.getUserID());
+            this(sess, DEFAULT_RETRY_COUNT, DEFAULT_RETRY_DELAY);
+        }
+        
+        public ActiveSession(Session sess, int retryCount, long retryDelay) {
+            this.retryDelay = retryDelay;
+            this.retriesRemaining = retryCount;
+            
+            updateSession(sess);
+        }
+        
+        public void updateSession(Session session) {
+            this.session = session;
+            this.userPrincipal = new UsernamePrincipal(session.getUserID());
+        }
+        
+        public void decrementRetry() {
+            this.retriesRemaining--;
         }
     }
+
 
 }

@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Exposes the NiFi Process Groups REST endpoint as a Java class.
@@ -49,6 +50,16 @@ public interface NiFiProcessGroupsRestClient {
      */
     @Nonnull
     ProcessGroupDTO create(@Nonnull String parentProcessGroupId, @Nonnull String name);
+
+    /**
+     * Create a process group at a specific position
+     * @param parentProcessGroupId
+     * @param name
+     * @param x
+     * @param y
+     * @return
+     */
+    ProcessGroupDTO create(@Nonnull String parentProcessGroupId, @Nonnull String name, @Nullable Double x, @Nullable Double y);
 
     /**
      * Creates a connection.
@@ -177,6 +188,13 @@ public interface NiFiProcessGroupsRestClient {
      */
     @Nonnull
     ProcessGroupDTO findRoot();
+
+    /**
+     * Check if a given processgroup id is root
+     * @param processGroupId
+     * @return
+     */
+    boolean isRoot(String processGroupId);
 
     /**
      * Gets all connections.

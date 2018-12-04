@@ -1,12 +1,12 @@
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
 import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { StateService } from "@uirouter/angular";
-import StateServices from '../../services/StateService';
+import {StateService as StateServices} from '../../services/StateService';
 
 @Component({
     selector: 'service-level-assessment',
-    templateUrl: 'js/ops-mgr/sla/assessment.html'
+    templateUrl: './assessment.html'
 })
 export class serviceLevelAssessmentComponent {
 

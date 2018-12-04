@@ -5,14 +5,18 @@ import {Observable} from "rxjs/Observable";
 
 import {DateFormatConfig, DateFormatResponse, DialogService} from "../../api/services/dialog.service";
 import {DateFormatDialog} from "../columns/date-format.component";
-import {ImputeMissingConfig, ImputeMissingResponse} from "../../api";
-import {ImputeMissingDialog} from "../columns/impute-missing.component";
+import {DynamicFormDialogData} from "../../../../../../lib/dynamic-form/simple-dynamic-form/dynamic-form-dialog-data";
+import {SimpleDynamicFormDialogComponent} from "../../../../../../lib/dynamic-form/simple-dynamic-form/simple-dynamic-form-dialog.component";
+import {ColumnForm} from "../columns/column-form";
 
 /**
  * Opens modal dialogs for alerting the user or receiving user input.
  */
 @Injectable()
 export class WranglerDialogService implements DialogService {
+
+    topOffset = '0px';
+    width ='350px'
 
     constructor(private dialog: TdDialogService) {
     }
@@ -24,19 +28,14 @@ export class WranglerDialogService implements DialogService {
      * @returns the date format string
      */
     openDateFormat(config: DateFormatConfig): Observable<DateFormatResponse> {
-        return this.dialog.open(DateFormatDialog, {data: config, panelClass: "full-screen-dialog"})
+        return this.dialog.open(DateFormatDialog, {data: config, panelClass: "full-screen-dialog",height:'100%',width:this.width,position:{top:this.topOffset,right:'0'}})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }
 
-    /**
-     * Opens a modal dialog for the user to input a impute method
-     *
-     * @param config - dialog configuration
-     * @returns the options selected
-     */
-    openImputeMissing(config: ImputeMissingConfig): Observable<ImputeMissingResponse> {
-        return this.dialog.open(ImputeMissingDialog, {data: config, panelClass: "full-screen-dialog"})
+    openColumnForm(data:ColumnForm):Observable<any>{
+      let dialogData:DynamicFormDialogData = new DynamicFormDialogData(data.formConfig)
+      return  this.dialog.open(SimpleDynamicFormDialogComponent,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:this.width,position:{top:this.topOffset,right:'0'}})
             .afterClosed()
             .filter(value => typeof value !== "undefined");
     }

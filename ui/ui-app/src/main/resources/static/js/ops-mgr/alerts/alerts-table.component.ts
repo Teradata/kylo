@@ -1,29 +1,28 @@
 import * as _ from "underscore";
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import {OpsManagerRestUrlService} from "../services/OpsManagerRestUrlService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 import {DefaultTableOptionsService}  from "../../services/TableOptionsService";
-import TabService from "../services/TabService";
+import {TabService} from "../../services/tab.service";
 import {Transition, StateService} from "@uirouter/core";
 import { Component, Input, Inject, SimpleChanges } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import StateServices from "../../services/StateService";
+import {StateService as StateServices} from "../../services/StateService";
 import { ITdDataTableColumn, TdDataTableService } from "@covalent/core/data-table";
 import { BaseFilteredPaginatedTableView } from "../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
 import { Subject } from "rxjs/Subject";
-import { ObjectUtils } from "../../common/utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 import { Subscription } from "rxjs/Subscription";
 import { IPageChangeEvent } from "@covalent/core/paging";
 
 @Component({
     selector: 'tba-alerts-table',
-    templateUrl: 'js/ops-mgr/alerts/alerts-table-template.html',
+    templateUrl: './alerts-table-template.html',
     styles:[`
         .mat-form-field-underline {
             background-color: transparent !important;
             display: none;
         }
         .optionsDialog {
-            width: -webkit-fill-available;
             display: inline-block;
             position: relative;
             line-height: 36px;
@@ -367,7 +366,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
 
 @Component({
     selector: 'alerts-controller',
-    templateUrl: 'js/ops-mgr/alerts/alerts-table.html'
+    templateUrl: './alerts-table.html'
 })
 export class AlertsComponent {
     query: any;

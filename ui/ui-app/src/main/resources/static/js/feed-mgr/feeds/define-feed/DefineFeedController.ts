@@ -1,7 +1,9 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import AccessControlService from '../../../services/AccessControlService';
-const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+import {AccessControlService} from '../../../services/AccessControlService';
+const moduleName = require('./module-name');
+import '../module-require';
+import './module-require';
 
 export class DefineFeedController implements ng.IComponentController {
 
@@ -263,7 +265,7 @@ export class DefineFeedController implements ng.IComponentController {
                 cloneFeedName = "the feed";
             }
             this.$mdDialog.show({
-                templateUrl: 'js/feed-mgr/feeds/define-feed/clone-feed-dialog.html',
+                templateUrl: './clone-feed-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: true,
                 locals: {
@@ -325,6 +327,7 @@ export class DefineFeedController implements ng.IComponentController {
     };
 
 }
-angular.module(moduleName).controller('DefineFeedController',
+const module = angular.module(moduleName).controller('DefineFeedController',
     ["$scope", "$http", "$mdDialog", "$q", "$transition$", "AccessControlService", "FeedService", "FeedSecurityGroups", "RestUrlService", "StateService",
      "UiComponentsService", DefineFeedController]);
+export default module;

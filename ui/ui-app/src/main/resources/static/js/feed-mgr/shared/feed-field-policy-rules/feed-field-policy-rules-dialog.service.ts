@@ -24,7 +24,7 @@ export class FeedFieldPolicyRulesDialogService {
         });
 
         dialogRef.afterClosed().subscribe((result:any) => {
-            console.log('The dialog was closed');
+
 
         });
 

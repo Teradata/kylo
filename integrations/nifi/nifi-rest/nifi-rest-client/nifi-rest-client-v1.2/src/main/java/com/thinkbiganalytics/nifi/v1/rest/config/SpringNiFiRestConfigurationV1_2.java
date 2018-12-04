@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v1.rest.config;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,6 @@ package com.thinkbiganalytics.nifi.v1.rest.config;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
-import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1_2;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 
@@ -37,7 +36,7 @@ import javax.annotation.Nonnull;
  * Configures a {@link NiFiRestClient} for NiFi v1.2+.
  */
 @Configuration
-@Profile({"nifi-v1.2","nifi-v1.3","nifi-v1.4","nifi-v1.5"})
+@Profile({"nifi-v1.2", "nifi-v1.3", "nifi-v1.4", "nifi-v1.5"})
 public class SpringNiFiRestConfigurationV1_2 {
 
     /**

@@ -75,7 +75,7 @@ public class BatchJobSupplier implements ChainableSupplier<SparkJobResponse> {
         SparkJobResponse response = restClient.createJob(process, request);
 
         // Wait for job to complete
-        while (response.getStatus() == SparkJobResponse.Status.PENDING || response.getStatus() == SparkJobResponse.Status.LIVY_PENDING) {
+        while (response.getStatus() == SparkJobResponse.Status.PENDING) {
             sleep(pollInterval);
             response = restClient.getJobResult(process, response.getId()).orElseThrow(NoSuchElementException::new);
         }

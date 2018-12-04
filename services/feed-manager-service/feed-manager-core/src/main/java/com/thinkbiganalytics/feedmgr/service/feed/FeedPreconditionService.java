@@ -85,9 +85,7 @@ public class FeedPreconditionService {
     }
 
     private void checkPrecondition(Feed feed, OperationStatus operationStatus) {
-        FeedPrecondition precond = feed.getPrecondition();
-
-        if (precond != null) {
+        feed.getPrecondition().ifPresent(precond -> {
             log.debug("Checking precondition of feed: {} ({})", feed.getName(), feed.getId());
 
             ServiceLevelAgreement sla = precond.getAgreement();
@@ -104,7 +102,7 @@ public class FeedPreconditionService {
             } else {
                 log.debug("Feed {}.{} does not depend on feed {}", feed.getCategory(), feed.getName(), operationStatus.getFeedName());
             }
-        }
+        });
     }
 
     /**

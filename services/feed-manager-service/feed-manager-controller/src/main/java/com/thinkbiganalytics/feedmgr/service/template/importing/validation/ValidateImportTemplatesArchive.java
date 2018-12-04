@@ -18,6 +18,7 @@ package com.thinkbiganalytics.feedmgr.service.template.importing.validation;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
@@ -62,36 +63,31 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
     private NiFiTemplateCache niFiTemplateCache;
 
 
-
-    public ValidateImportTemplatesArchive(ImportTemplate importTemplate, ImportTemplateOptions importTemplateOptions){
-       super(importTemplate,importTemplateOptions);
+    public ValidateImportTemplatesArchive(ImportTemplate importTemplate, ImportTemplateOptions importTemplateOptions) {
+        super(importTemplate, importTemplateOptions);
     }
 
-    public Logger getLogger(){
+    public Logger getLogger() {
         return log;
     }
 
-    public boolean validate(){
+    public boolean validate() {
+        validateReusableTemplate();
 
-    validateReusableTemplate();
+        validateRegisteredTemplate();
 
-    validateRegisteredTemplate();
+        if (importTemplate.isValid()) {
+            validateNiFiTemplateImport();
+        }
 
-   if (importTemplate.isValid()) {
-        validateNiFiTemplateImport();
+        return importTemplate.isValid();
     }
-
-    return importTemplate.isValid();
-
-    }
-
 
 
     /**
      * Validate any reusable templates as part of a zip file upload are valid for importing
-     *
      */
-    private void validateReusableTemplate()  {
+    private void validateReusableTemplate() {
         //validate the reusable template
         if (this.importTemplate.hasConnectingReusableTemplate()) {
 
@@ -104,8 +100,8 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
                     try {
                         String templateName = NifiTemplateParser.getTemplateName(reusableTemplateXml);
                         UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Validating Reusable Template. " + templateName);
-                        TemplateDTO dto =  niFiTemplateCache.geTemplate(null,templateName);
-                      //  TemplateDTO dto = nifiRestClient.getTemplateByName(templateName);
+                        TemplateDTO dto = niFiTemplateCache.geTemplate(null, templateName);
+                        //  TemplateDTO dto = nifiRestClient.getTemplateByName(templateName);
                         //if there is a match and it has not been acknowledged by the user to overwrite or not, error out
                         if (dto != null && !reusableTemplateOption.isUserAcknowledged()) {
                             //error out it exists
@@ -122,8 +118,8 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
                             //statusMessage.update("Validated Reusable Template", true);
                             validForImport &= true;
                         }
-                    }catch (Exception e){
-                        log.error("Error parsing template name from file {} ",fileName,e);
+                    } catch (Exception e) {
+                        log.error("Error parsing template name from file {} ", fileName, e);
                         validForImport = false;
                     }
 
@@ -131,7 +127,7 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
                 reusableTemplateOption.setValidForImport(validForImport);
                 reusableTemplateStatusMessage.update("Validated Reusable Templates ", !reusableTemplateOption.hasErrorMessages());
             } else if (!reusableTemplateOption.isUserAcknowledged()) {
-                this.importTemplate.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE, "The file " +  this.importTemplate.getFileName() + " has a reusable template to import.");
+                this.importTemplate.getImportOptions().addErrorMessage(ImportComponent.REUSABLE_TEMPLATE, "The file " + this.importTemplate.getFileName() + " has a reusable template to import.");
                 this.importTemplate.setValid(false);
                 reusableTemplateStatusMessage.update("A reusable template was found. Additional input needed.", false);
             } else {
@@ -145,7 +141,6 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
 
     /**
      * Validate the Registered Template is valid for importing
-     *
      */
     private void validateRegisteredTemplate() {
         ImportComponentOption registeredTemplateOption = this.importTemplateOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
@@ -228,7 +223,6 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
     /**
      * Validate the Template doesnt have any sensitive properties needing additional user input before importing
      *
-     *
      * @return true if valid, false if not
      */
     private boolean validateTemplateProperties() {
@@ -236,7 +230,7 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
         //detect any sensitive properties and prompt for input before proceeding
         List<NifiProperty> sensitiveProperties = template.getSensitiveProperties();
         //filter out only those that are not user editable
-        sensitiveProperties = sensitiveProperties.stream().filter(p->!p.isUserEditable()).collect(Collectors.toList());
+        sensitiveProperties = sensitiveProperties.stream().filter(p -> !p.isUserEditable()).collect(Collectors.toList());
         ImportUtil.addToImportOptionsSensitiveProperties(importTemplateOptions, sensitiveProperties, ImportComponent.TEMPLATE_DATA);
         boolean valid = ImportUtil.applyImportPropertiesToTemplate(template, importTemplate, ImportComponent.TEMPLATE_DATA);
         if (!valid) {

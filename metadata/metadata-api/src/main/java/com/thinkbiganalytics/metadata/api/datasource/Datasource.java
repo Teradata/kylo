@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.api.datasource;
 
 import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
 
@@ -36,7 +37,7 @@ import java.util.Set;
 /**
  *
  */
-public interface Datasource extends SystemEntity, Auditable, Taggable {
+public interface Datasource extends SystemEntity, Auditable, Iconable, Taggable {
 
     ID getId();
 

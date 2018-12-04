@@ -28,15 +28,24 @@ import com.thinkbiganalytics.metadata.api.catalog.Connector.ID;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.MetadataPaths;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
+import javax.inject.Inject;
 import javax.jcr.Node;
 
 /**
@@ -46,6 +55,16 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
 
     public static final Path CATALOG_PATH = JcrUtil.path("metadata", "catalog");
     public static final Path CONNECTORS_PATH = CATALOG_PATH.resolve("connectors");
+
+
+    @Inject
+    private AccessController accessController;
+
+    @Inject
+    private SecurityRoleProvider roleProvider;
+
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
@@ -59,15 +78,54 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
      * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#create(java.lang.String, java.lang.String)
      */
     @Override
-    public Connector create(String pluginId, String systemName) {
+    public Connector create(String pluginId, String title) {
+        String systemName = generateSystemName(title);
         Path connPath = MetadataPaths.connectorPath(systemName);
         
         if (JcrUtil.hasNode(getSession(), connPath)) {
             throw ConnectorAlreadyExistsException.fromSystemName(systemName);
         } else {
             Node connNode = JcrUtil.createNode(getSession(), connPath, JcrConnector.NODE_TYPE);
-            return JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
+            JcrConnector conn = JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
+            conn.setTitle(title);
+            conn.setActive(true);
+
+
+            if (this.accessController.isEntityAccessControlled()) {
+                final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.CONNECTOR);
+                actionsProvider.getAvailableActions(AllowedActions.CONNECTOR)
+                    .ifPresent(actions -> conn.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+            } else {
+                actionsProvider.getAvailableActions(AllowedActions.CONNECTOR)
+                    .ifPresent(actions -> conn.disableAccessControl(JcrMetadataAccess.getActiveUser()));
+            }
+            return conn;
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider#findAll(boolean)
+     */
+    @Override
+    public List<Connector> findAll(boolean includeInactive) {
+        return find(getFindAllQuery(includeInactive).toString());
+
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#getFindAllQuery()
+     */
+    @Override
+    protected StringBuilder getFindAllQuery() {
+        return getFindAllQuery(false);
+    }
+    
+    protected StringBuilder getFindAllQuery(boolean includeInactive) {
+        StringBuilder bldr = super.getFindAllQuery();
+        if (! includeInactive) {
+            bldr.append(" WHERE [tba:isActive] = true ");
+        }
+        return bldr;
     }
     
     /* (non-Javadoc)
@@ -101,6 +159,10 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
     @Override
     public String getNodeType(Class<? extends JcrObject> jcrEntityType) {
         return JcrConnector.NODE_TYPE;
+    }
+
+    private String generateSystemName(String title) {
+        return JcrUtil.toSystemName(title);
     }
 
 }

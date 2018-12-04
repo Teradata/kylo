@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.model;
  * #L%
  */
 
+
 import org.apache.hadoop.fs.Path;
 
 /**

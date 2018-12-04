@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.feedmgr.service;
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+
 /*-
  * #%L
  * thinkbig-metadata-rest-controller
@@ -55,6 +57,9 @@ import javax.inject.Inject;
  * Convenience functions and methods to transform between the metadata domain model and the REST model.
  */
 public class MetadataModelTransform {
+    
+    @Inject
+    private CatalogModelTransform catalogTransform;
     
     @Inject
     private SecurityModelTransform actionsTransform;
@@ -119,7 +124,8 @@ public class MetadataModelTransform {
     public Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource> domainToFeedSource() {
         return (domain) -> {
             FeedSource src = new FeedSource();
-            src.setDatasource(domainToDs().apply(domain.getDatasource()));
+            domain.getDatasource().ifPresent(datasource -> src.setDatasource(domainToDatasource().apply(datasource)));
+            domain.getDataSet().ifPresent(dataSet -> src.setDataSet(catalogTransform.dataSetToRestModel().apply(dataSet)));
             return src;
         };
     }
@@ -127,7 +133,8 @@ public class MetadataModelTransform {
     public Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination> domainToFeedDestination() {
         return (domain) -> {
             FeedDestination dest = new FeedDestination();
-            dest.setDatasource(domainToDs().apply(domain.getDatasource()));
+            domain.getDatasource().ifPresent(datasource -> dest.setDatasource(domainToDatasource().apply(datasource)));
+            domain.getDataSet().ifPresent(dataSet -> dest.setDataSet(catalogTransform.dataSetToRestModel().apply(dataSet)));
             return dest;
         };
     }
@@ -204,7 +211,7 @@ public class MetadataModelTransform {
     }
 
     
-    public Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> domainToDs() {
+    public Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> domainToDatasource() {
         return domainToDs(true);
     }
 

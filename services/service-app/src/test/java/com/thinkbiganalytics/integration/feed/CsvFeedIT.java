@@ -250,7 +250,7 @@ public class CsvFeedIT extends FeedITBase {
     }
 
     protected void assertEditChanges(ArrayNode diffs) {
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/properties/0/value", getEditedFileName())));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/properties/3/value", getEditedFileName())));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/schedule/schedulingPeriod", "20 sec")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("remove", "/description")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/tags/1")));

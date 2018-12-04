@@ -39,12 +39,16 @@ import java.util.Optional;
 public interface DataSetProvider extends BaseProvider<DataSet, DataSet.ID> {
     
     DataSet.ID resolveId(Serializable id);
-
-    DataSet create(DataSource.ID dataSourceId, String systemName);
+//
+//    DataSet create(DataSource.ID dataSourceId, String title);
+    
+    DataSetBuilder build(DataSource.ID dataSourceId);
 
     List<DataSet> findByDataSource(DataSource.ID dsId, DataSource.ID... otherIds);
     
     List<DataSet> findByDataSource(Collection<DataSource.ID> dsIds);
+
+    public DataSet findByDataSourceAndTitle(DataSource.ID dataSourceId, String title);
     
     List<DataSet> findAll();
     

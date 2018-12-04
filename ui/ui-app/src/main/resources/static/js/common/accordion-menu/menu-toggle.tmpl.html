@@ -1,0 +1,12 @@
+<div class="collapsible-item" ng-class="{open: section.expanded}" ng-if="section.hidden == false" id="{{section.elementId}}">
+  <div class="title" ng-class="{disabled: section.disabled}" ng-click="toggle()" flex layout-align="start start" layout="row"><span flex>{{section.text}}</span>
+    <ng-md-icon md-icon icon="{{section.expandIcon}}" ng-if="!isCollapsed()"></ng-md-icon>
+  </div>
+  <div class="accordion-body">
+    <md-list id="menu-{{section.text}}" class="accordion-list">
+      <md-list-item class="pad-none" ng-repeat="item in section.links" ng-if-permission="{{item.permission}}">
+        <menu-link section="item"></menu-link>
+      </md-list-item>
+    </md-list>
+  </div>
+</div>

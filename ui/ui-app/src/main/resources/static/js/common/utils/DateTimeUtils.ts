@@ -18,7 +18,13 @@
  * #L%
  */
 
-var DateTimeUtils: any = function ($translate: any): any{
+export class DateTimeUtils {
+
+    private $translate: any;
+
+    constructor($translate: any) {
+        this.$translate = $translate;
+    }
 
     /**
      *
@@ -27,11 +33,11 @@ var DateTimeUtils: any = function ($translate: any): any{
      * @param str str to pad with
      * @return {*} the padded str
      */
-    function padLeft(nr: any, n: any, str: any): any{
-        return Array(n-String(nr).length+1).join(str||'0')+nr;
+    padLeft(nr: any, n: any, str: any): any {
+        return Array(n - String(nr).length + 1).join(str || '0') + nr;
     }
 
-    function formatMillis(ms: any) : any{
+    formatMillis(ms: any): any {
         let days = Math.floor(ms / (24 * 60 * 60 * 1000));
         var daysms = ms % (24 * 60 * 60 * 1000);
         let hours = Math.floor((daysms) / (60 * 60 * 1000));
@@ -41,57 +47,53 @@ var DateTimeUtils: any = function ($translate: any): any{
         var seconds = Math.floor((minutesms) / (1000));
 
 
-
         var secondsStr = '';
         var minutesStr = '';
         var hoursStr = '';
         var daysStr = '';
 
         var millisStr = '';
-        var str = seconds + ' ' + $translate('views.Utils.sec');
+        var str = seconds + ' ' + this.$translate('views.Utils.sec');
         secondsStr = str;
         var truncateFormatStr = str;
-        var truncatedTimeFormat = padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
-        var timeFormat = padLeft(hours,2,'0')+":"+padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
+        var truncatedTimeFormat = this.padLeft(minutes, 2, '0') + ":" + this.padLeft(seconds, 2, '0');
+        var timeFormat = this.padLeft(hours, 2, '0') + ":" + this.padLeft(minutes, 2, '0') + ":" + this.padLeft(seconds, 2, '0');
 
-        if(seconds == 0 && minutes ==0){
-            var roundedMs = Math.ceil((minutesms/1000) * 100)/100;
-            millisStr = roundedMs + ' ' + $translate('views.Utils.sec');
+        if (seconds == 0 && minutes == 0) {
+            var roundedMs = Math.ceil((minutesms / 1000) * 100) / 100;
+            millisStr = roundedMs + ' ' + this.$translate('views.Utils.sec');
         }
         if (hours > 0 || (hours == 0 && minutes > 0)) {
-            minutesStr = minutes + ' ' + $translate('views.Utils.min');
-            str = minutesStr + ' '+str;
+            minutesStr = minutes + ' ' + this.$translate('views.Utils.min');
+            str = minutesStr + ' ' + str;
             truncateFormatStr = minutesStr;
         }
         if (days > 0 || days == 0 && hours > 0) {
-            hoursStr = hours + ' ' + $translate('views.Utils.hrs');
-            str = hoursStr + ' '+ str;
+            hoursStr = hours + ' ' + this.$translate('views.Utils.hrs');
+            str = hoursStr + ' ' + str;
             truncateFormatStr = hoursStr;
-            truncatedTimeFormat = padLeft(hours,2,'0')+':'+truncatedTimeFormat;
+            truncatedTimeFormat = this.padLeft(hours, 2, '0') + ':' + truncatedTimeFormat;
         }
         if (days > 0) {
-            daysStr = days + ' ' + $translate('views.Utils.days');
-            str = daysStr + ' '+str;
-            truncateFormatStr = daysStr ;
-            truncatedTimeFormat = padLeft(days,2,'0')+":"+truncatedTimeFormat;
-            timeFormat = padLeft(days,2,'0')+":"+timeFormat;
+            daysStr = days + ' ' + this.$translate('views.Utils.days');
+            str = daysStr + ' ' + str;
+            truncateFormatStr = daysStr;
+            truncatedTimeFormat = this.padLeft(days, 2, '0') + ":" + truncatedTimeFormat;
+            timeFormat = this.padLeft(days, 2, '0') + ":" + timeFormat;
         }
 
 
         return {
-            str:str,
-            truncatedStr:truncateFormatStr,
-            timeFormat:timeFormat,
-            truncatedTimeFormat:truncatedTimeFormat,
+            str: str,
+            truncatedStr: truncateFormatStr,
+            timeFormat: timeFormat,
+            truncatedTimeFormat: truncatedTimeFormat,
             millisStr: millisStr != '' ? millisStr : str,
-            truncatedMillisStr : millisStr != '' ? millisStr : truncatedTimeFormat,
+            truncatedMillisStr: millisStr != '' ? millisStr : truncatedTimeFormat,
             millisOnly: millisStr != ''
         }
 
     };
-
-    function DateTimeUtils($translate: any){
-    }
 
     /**
      * Return the time as a txt string  xx days xx hrs xx min xx sec  or truncated to the nearest value
@@ -99,9 +101,9 @@ var DateTimeUtils: any = function ($translate: any): any{
      * @param truncate true to truncate, false to not
      * @return {*}
      */
-    (DateTimeUtils as any).formatMillisAsText = (ms: any,truncate?: any, showMillis?: any)=>{
-        let format = formatMillis(ms);
-        if(truncate){
+    formatMillisAsText(ms: number, truncate?: boolean, showMillis?: boolean) {
+        let format = this.formatMillis(ms);
+        if (truncate) {
             return showMillis ? format.truncatedMillisStr : format.truncatedStr;
         }
         else {
@@ -115,17 +117,13 @@ var DateTimeUtils: any = function ($translate: any): any{
      * @param truncate true to truncate, false to not
      * @return {*} str is time  DD:HH:MM:SS  or truncated to the nearest value
      */
-    (DateTimeUtils as any).formatMillisAsTime =(ms: any,truncate: any, showMillis: any)=>{
-        var format = formatMillis(ms);
-        if(truncate){
+    formatMillisAsTime(ms: number, truncate: boolean, showMillis: boolean) {
+        var format = this.formatMillis(ms);
+        if (truncate) {
             return showMillis && format.millisOnly ? format.millisStr : format.truncatedTimeFormat;
         }
         else {
             return showMillis && format.millisOnly ? format.millisStr : format.timeFormat;
         }
     }
-
-
-    return DateTimeUtils;
-};
-
+}

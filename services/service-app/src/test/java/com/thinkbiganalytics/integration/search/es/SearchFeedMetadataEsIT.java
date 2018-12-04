@@ -51,9 +51,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * Integration test for searching feed metadata indexed in Elasticsearch
  */
 
-// Ignoring test since ES plugin is not loaded by default.
-// TODO: Enable when docker environment is available for running IT tests.
-@Ignore
 public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implements ISearchEsEntityMetadata {
 
     private static final Logger LOG = LoggerFactory.getLogger(SearchFeedMetadataEsIT.class);
@@ -93,6 +90,8 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
         LOG.info(getStepNumber() + "Importing a sample feed...");
         ImportFeed importedFeed = importSampleFeed();
         String importedFeedId = importedFeed.getNifiFeed().getFeedMetadata().getFeedId();
+        String categoryIdForImportedFeed = importedFeed.getNifiFeed().getFeedMetadata().getCategoryId();
+        LOG.info("Category ID for Imported Feed: " + categoryIdForImportedFeed);
 
         waitForSomeTime(FIVE_SECONDS_IN_MILLIS);
 
@@ -207,6 +206,19 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
         searchTerm = "Integration Test";
         LOG.info(getStepNumber() + "Executing search 4 (description) and verifying results with term: " + searchTerm + " ...");
         verifySearchResultOnDescription4(searchTerm);
+
+        waitForSomeTime(FOUR_SECONDS_IN_MILLIS);
+        LOG.info(getStepNumber() + "Deleting feed with id: " + importedFeedId + " ...");
+        deleteKyloFeed(importedFeedId);
+
+        waitForSomeTime(TWENTY_SECONDS_IN_MILLIS);
+
+        LOG.info(getStepNumber() + "Deleting the category for the deleted feed (category has id: " + categoryIdForImportedFeed + ") ...");
+        deleteKyloCategory(categoryIdForImportedFeed);
+
+        waitForSomeTime(TEN_SECONDS_IN_MILLIS);
+
+        verifySearchResultAfterDeletion(searchTerm);
 
         LOG.info("=== Finished Integration Test: " + this.getClass().getName());
     }
@@ -573,6 +585,15 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
         Assert.assertEquals(
             "Sample feed for property search - Integration Test - <font style='font-weight:bold'>UPDATEDDESCRIPTION</font>",
             searchResult.getSearchResults().get(0).getHighlights().get(0).getValue());
+    }
+
+    private void verifySearchResultAfterDeletion(String term) {
+        Response searchResponse = given(SearchRestController.BASE)
+            .when()
+            .get("/?q=" + term);
+        searchResponse.then().statusCode(HTTP_OK);
+        SearchResult searchResult = searchResponse.as(SearchResult.class);
+        Assert.assertEquals("0", searchResult.getTotalHits().toString());
     }
 
     public List<String> getIndexedFieldsWithJsonPathForEntity() {

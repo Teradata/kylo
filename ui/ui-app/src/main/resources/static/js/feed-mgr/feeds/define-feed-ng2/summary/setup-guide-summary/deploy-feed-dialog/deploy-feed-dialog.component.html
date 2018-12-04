@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>Deploy {{feed.getFullName()}}</h2>
+<div mat-dialog-content >
+  <div class="mat-padding" fxLayout="column" fxLayoutAlign="start" *ngIf="!deployingFeed">
+
+    <div *ngIf="deployError" fxLayout="column" class="pad-bottom">
+      <div fxLayout="row">
+        <mat-icon color="warn">error</mat-icon>
+        <span class=" pad-left mat-title">{{deployErrorMessage}}</span>
+      </div>
+      <div *ngIf="deployEntityErrors && deployEntityErrors.length >0">
+
+        <mat-list class="deploy-error-list">
+          <ng-template let-error let-last="last" ngFor [ngForOf]="deployEntityErrors">
+            <mat-list-item  >
+              <h4 matLine *ngIf="error.processorName != null && error.processorName != ''">{{error.processorName}}</h4>
+              <p matLine class="error-content">{{error.message}}</p>
+            </mat-list-item>
+            <mat-divider *ngIf="!last"> </mat-divider>
+          </ng-template>
+        </mat-list>
+
+      </div>
+
+      <mat-divider > </mat-divider>
+
+    </div>
+
+    <form [formGroup]="formGroup">
+
+      <feed-schedule #feedSchedule [parentForm]="formGroup"  [editable]="true" [(feed)]="feed"></feed-schedule>
+
+    <div fxLayout="column" class="pad-top pad-bottom">
+      <mat-checkbox #enableFeed formControlName="enableFeed"> {{"views.define-feed-schedule.EFI" | translate}}</mat-checkbox>
+      <span class="hint fade" [hidden]="!enableFeed.checked">{{"views.define-feed-schedule.TFW" | translate}}</span>
+      <span class="hint fade" [hidden]="enableFeed.checked">{{"views.define-feed-schedule.TFW2" | translate}}</span>
+    </div>
+    </form>
+
+
+  </div>
+
+<div *ngIf="deployingFeed" fxFlex fxLayout="column" fxLayoutAlign="center center" class="mad-padding">
+  <mat-progress-spinner mode="indeterminate" [diameter]="50" color="accent"></mat-progress-spinner>
+  <h3 class="subheading-2 pad-top">Deploying your feed</h3>
+</div>
+
+
+
+</div>
+<mat-dialog-actions  *ngIf="!deployingFeed">
+  <span fxFlex></span>
+  <button mat-button [mat-dialog-close]="true">Cancel</button>
+  <button mat-raised-button color="primary" [disabled]="formGroup.invalid || deployingFeed" (click)="deployFeed()">Deploy</button>
+</mat-dialog-actions>

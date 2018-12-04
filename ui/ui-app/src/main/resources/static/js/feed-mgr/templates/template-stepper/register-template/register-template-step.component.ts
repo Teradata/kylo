@@ -1,8 +1,8 @@
 import * as _ from "underscore";
-import { Common } from "../../../../common/CommonTypes";
+import {Common} from "../../../../../lib/common/CommonTypes";
 import LabelValue = Common.LabelValue;
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
-import StateService from '../../../../services/StateService';
+import {StateService} from '../../../../services/StateService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 import { Component, Input, Inject } from '@angular/core';
 import { RestUrlService } from '../../../services/RestUrlService';
@@ -13,7 +13,7 @@ import {IconPickerDialog} from '../../../../common/icon-picker-dialog/icon-picke
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
-import { ObjectUtils } from '../../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../../lib/common/utils/object-utils';
 import { TranslateService } from "@ngx-translate/core";
 
 export function invalidConnection(connectionMap: any, connection: any): ValidatorFn{
@@ -32,7 +32,7 @@ export function invalidConnection(connectionMap: any, connection: any): Validato
 
 @Component({
     selector: 'thinkbig-register-complete-registration',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-step.html'
+    templateUrl: './register-template-step.html'
 })
 export class RegisterCompleteRegistrationController {
 
@@ -105,8 +105,8 @@ export class RegisterCompleteRegistrationController {
     loaded: boolean = false;
 
     constructor(private RestUrlService: RestUrlService,
-                private stateService: StateService, 
-                private registerTemplateService: RegisterTemplateServiceFactory, 
+                private stateService: StateService,
+                private registerTemplateService: RegisterTemplateServiceFactory,
                 private entityAccessControlService: EntityAccessControlService,
                 private dialog: MatDialog,
                 private snackBar: MatSnackBar,
@@ -276,7 +276,7 @@ export class RegisterCompleteRegistrationController {
                     //initially mark as valid
                     this.formGroup.addControl("port-" + connection.feedOutputPortName,
                                 new FormControl(null,[Validators.required, invalidConnection(this.connectionMap, connection)]));
-                    
+
                 });
                 this.loaded = true;
 
@@ -288,7 +288,7 @@ export class RegisterCompleteRegistrationController {
         }
     }
 
-    
+
 
     /**
      * Called when the user changes the output port connections
@@ -313,7 +313,7 @@ export class RegisterCompleteRegistrationController {
             data: { iconModel: iconModel },
             panelClass: "full-screen-dialog"
           });
-      
+
         dialogRef.afterClosed().subscribe(msg => {
             if (msg) {
                 this.model.icon.title = msg.icon;
@@ -328,6 +328,7 @@ export class RegisterCompleteRegistrationController {
      */
     registerTemplate() {
 
+        console.log('register', this.registerTemplateService.model.changeComment);
         this.showRegistrationInProgressDialog();
 
         let successFn = (response: any) => {
@@ -388,7 +389,7 @@ export class RegisterCompleteRegistrationController {
      * Shows a dialog with a progress when the registration is in progress
      */
     showRegistrationInProgressDialog() {
-        //hide any dialogs  
+        //hide any dialogs
         let dialogRef = this.dialog.open(RegisterTemplateInprogressDialog, {
             data: { templateName: this.model.templateName },
             panelClass: "full-screen-dialog"
@@ -414,7 +415,7 @@ export class RegisterCompleteRegistrationController {
 
 @Component({
     selector: 'register-template-complete-controller',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html'
+    templateUrl: './register-template-complete.html'
 })
 export class RegisterTemplateCompleteController {
 

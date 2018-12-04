@@ -1,18 +1,18 @@
+import {HttpClient} from '@angular/common/http';
+import {Injectable} from "@angular/core";
 import * as _ from "underscore";
-import CommonRestUrlService from "./CommonRestUrlService";
-import BroadcastService from "./broadcast-service";
-import { HttpClient } from '@angular/common/http';
-import { ObjectUtils } from "../common/utils/object-utils";
-import { Injectable } from "@angular/core";
+import {ObjectUtils} from "../../lib/common/utils/object-utils";
+import {BroadcastService} from "./broadcast-service";
+import {CommonRestUrlService} from "./CommonRestUrlService";
 
 @Injectable()
-export default class AngularModuleExtensionService{
+export class AngularModuleExtensionService{
 
 constructor (private http: HttpClient,
              private commonRestUrlService: CommonRestUrlService,
              private broadcastService: BroadcastService) {}
 
-    EXTENSION_MODULES_INITIALIZED_EVENT = 'extensionModulesInitialized'
+    EXTENSION_MODULES_INITIALIZED_EVENT = 'extensionModulesInitialized';
     /**
     * The array of extension module metadata
     * @type {Array}
@@ -151,7 +151,7 @@ constructor (private http: HttpClient,
     urlExists(url: any) {
         let urlMatcher : any= _.find(this.urlMatchers,function(matcher: any){
             let params = matcher.exec(url);
-            return ObjectUtils.isObject(params);
+            return _.isObject(params);
 
         });
         return urlMatcher != undefined;
@@ -167,13 +167,13 @@ constructor (private http: HttpClient,
     * @param url
     * @return {{state: null, params: null, url: *, valid: boolean}}
     */
-    
+
     stateAndParamsForUrl(url: any) {
         let data = {state:this.nullValue,params:this.nullValue,url:url,valid:false}
 
         let urlMatcher = _.find(this.urlMatchers,function(matcher: any){
             let params = matcher.exec(url);
-            if(ObjectUtils.isObject(params)){
+            if(_.isObject(params)){
                 data.params=params;
                 return true;
             }

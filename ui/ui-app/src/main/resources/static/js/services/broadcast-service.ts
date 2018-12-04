@@ -1,6 +1,21 @@
+import {Injectable} from "@angular/core";
 import "jquery";
-import { Injectable } from "@angular/core";
-import {Subject} from 'rxjs/Subject';
+import "rxjs/add/operator/filter";
+import {Observable} from "rxjs/Observable";
+import {Subject} from "rxjs/Subject";
+
+export interface BroadcastEvent {
+
+    /**
+     * Optional one or more arguments
+     */
+    args: any[];
+
+    /**
+     * Name of the event
+     */
+    name: string
+}
 
 /**
  * Allow different controllers/services to subscribe and notify each other
@@ -12,77 +27,89 @@ import {Subject} from 'rxjs/Subject';
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
 @Injectable()
-export default class BroadcastService {
+export class BroadcastService {
+
+    private readonly bus  :{ [key: string]: Subject<BroadcastEvent>; } = {};
+    //new Subject<BroadcastEvent>();
 
     /**
-    * map to check if multiple events come in for those that {@code data.notifyAfterTime}
-    * to ensure multiple events are not fired.
-    * @type {{}}
-    */
+     * map to check if multiple events come in for those that {@code data.notifyAfterTime}
+     * to ensure multiple events are not fired.
+     * @type {{}}
+     */
     waitingEvents: any = {};
 
     subscribers = {};
     eventsMap : Map<String, Subject<any>> = new Map<String,Subject<any>>();
 
     constructor() {
-
     }
+
     /**
-    * notify subscribers of this event passing an optional data object and optional wait time (millis)
-    * @param event
-    * @param data
-    * @param waitTime
-    */
-    notify (event: any, data?: any, waitTime?: any) {
+     * notify subscribers of this event passing an optional data object and optional wait time (millis)
+     * @param event
+     * @param data
+     * @param waitTime
+     */
+    notify(event: any, data?: any, waitTime?: any): void {
         if (waitTime == undefined) {
             waitTime = 0;
         }
         if (this.waitingEvents[event] == undefined) {
             this.waitingEvents[event] = event;
             setTimeout(() => {
-                if(!this.eventsMap.has(event)){
-                    this.eventsMap.set(event, new Subject<any>());
+                const subject :Subject<BroadcastEvent> = this.bus[event];
+                if(subject) {
+                    subject.next({args: data, name: event} as BroadcastEvent)
                 }
-                this.eventsMap.get(event).next(data);
-                // this.$rootScope.$emit(event, data);
                 delete this.waitingEvents[event];
             }, waitTime);
         }
     };
+
     /**
      * Subscribe to some event
      */
-    subscribe (scope: any, event: any, callback: any) {
-        // const handler: any = this.$rootScope.$on(event, callback);
-        if(!this.eventsMap.has(event)){
-            this.eventsMap.set(event, new Subject<any>());
-        }
-        var subs  = this.eventsMap.get(event).subscribe(callback);
-        if(this.subscribers[event] == undefined){
-            this.subscribers[event] = 0;
-        }
-        this.subscribers[event] +=1;
-        if (scope != null) {
-            scope.$on('$destroy', ()=>{
-                subs.unsubscribe();
-                this.subscribers[event] -= 1;
-            });
-        }
-    };
-    /**
-     * Subscribe to some event
-     */
-    subscribeOnce (event: any, callback: any) {
-        if(!this.eventsMap.has(event)){
-            this.eventsMap.set(event, new Subject<any>());;
-        }
-        var subs  = this.eventsMap.get(event).subscribe((nextValue : any) => {
-            try{
-                callback();
-            }catch(err){
-                console.error("error calling callback for ", event);
+    subscribe(event: string): Observable<BroadcastEvent>;
+    subscribe(scope: angular.IScope, event: string, callback: ($event: any, ...args: any[]) => void): void;
+    subscribe(eventOrScope: string | angular.IScope, event?: string, callback?: ($event: any, ...args: any[]) => void): Observable<BroadcastEvent> | void {
+        let eventName = event != undefined ? event : (typeof eventOrScope === "string") ? (<string>eventOrScope) : undefined;
+        if(eventName != undefined) {
+            let subject = this.bus[eventName];
+            if(subject == undefined){
+                subject = new Subject<BroadcastEvent>();
+                this.bus[eventName] = subject;
             }
-            subs.unsubscribe();
+            if (typeof eventOrScope === "string") {
+                return subject.asObservable();
+            } else {
+                const subscription = subject.subscribe(event => callback(event, ...event.args));
+                if (eventOrScope != null) {
+                    (eventOrScope as angular.IScope).$on("$destroy", () => {
+
+                        subscription.unsubscribe()
+                    });
+                }
+            }
+        }
+        else {
+            //WARN!!
+            console.warn("Unable to subscribe event name is not supplied")
+        }
+
+
+    };
+
+    /**
+     * Subscribe to some event
+     */
+    subscribeOnce(event: string, callback: ($event: any, ...args: any[]) => void) {
+        const subscription = this.subscribe(event).subscribe(event => {
+            try {
+                callback(event, ...event.args);
+            } finally {
+                subscription.unsubscribe();
+            }
         });
     }
 }

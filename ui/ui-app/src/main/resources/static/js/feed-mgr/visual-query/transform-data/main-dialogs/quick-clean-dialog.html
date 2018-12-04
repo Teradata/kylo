@@ -1,0 +1,77 @@
+<form #theForm="ngForm">
+
+  <mat-toolbar color="primary">
+    <span>Quick Clean</span>
+    <span fxFlex="1 1 auto"></span>
+    <button mat-icon-button (click)="hide()">
+      <mat-icon arial-label="Close dialog">close</mat-icon>
+    </button>
+  </mat-toolbar>
+  <div mat-dialog-actions class="mat-dialog-actions">
+    <span fxFlex="1 1 auto"></span>
+    <button mat-button (click)="hide()">Cancel</button>
+    <button mat-raised-button style="margin-right:10px" color="primary" (click)="apply()" [disabled]="theForm.invalid || theForm.pristine">Apply</button>
+  </div>
+  <mat-divider [inset]="false"></mat-divider>
+
+  <div mat-dialog-content class="mat-dialog-content tc-gray-600" style="height:100%;max-height:80vh;padding:0px;padding-top:10px;overflow-x:hidden;overflow-y:auto">
+
+    <mat-card>
+      <mat-card-content>
+        <h2>Strings</h2>
+
+        <div class="qc-selected-value">Whitespace</div>
+        <mat-checkbox [(ngModel)]="operations[0].selected" name="ltrim" >Trim leading</mat-checkbox>
+        <mat-checkbox class="qc-margin" [(ngModel)]="operations[1].selected" name="rtrim">Trim trailing</mat-checkbox>
+
+        <div class="qc-selected-value">Normalize</div>
+        <mat-radio-group class="qc-radio-group" [(ngModel)]="operations[2].choice" name="normalize">
+          <mat-radio-button class="qc-margin-rb" value="upper">UPPERCASE</mat-radio-button>
+          <mat-radio-button class="qc-margin-rb" value="lower">lowercase</mat-radio-button>
+          <mat-radio-button class="qc-margin-rb" value="initcap">TitleCase</mat-radio-button>
+        </mat-radio-group>
+
+        <div class="qc-selected-value">Empty</div>
+        <div class="qc-check-input">
+          <mat-checkbox [(ngModel)]="operations[3].selected" name="replaceString">Replace</mat-checkbox>
+          <mat-form-field class="qc-check-input">
+            <input matInput placeholder="Value" [(ngModel)]="operations[3].replacementValue" name="stringReplaceValue"/>
+          </mat-form-field>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+    <mat-card-content>
+
+        <h2>Numeric</h2>
+        <div class="qc-selected-value">Empty</div>
+        <div class="qc-check-input">
+          <mat-checkbox class="qc-margin"  [(ngModel)]="operations[4].selected" name="replaceNumeric">Replace</mat-checkbox>
+          <mat-form-field class="qc-check-input" type="number">
+            <input matInput placeholder="Value" [(ngModel)]="operations[4].replacementValue" name="numericReplaceValue">
+          </mat-form-field>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+    <!--
+
+        <mat-list>
+          <mat-list-item *ngFor="let item of operations;let i=index;">
+            <mat-checkbox
+                class=""
+                [(ngModel)]="item.selected"
+                [labelPosition]="right"
+                [ngModelOptions]="{standalone: true}">
+              {{item.label}}
+            </mat-checkbox>
+            <mat-form-field *ngIf="item.showReplace">
+              <input matInput placeholder="Value" [(ngModel)]="item.replacementValue">
+            </mat-form-field>
+
+            <mat-divider [inset]="false"></mat-divider>
+          </mat-list-item>
+        </mat-list>
+        -->
+  </div>
+</form>

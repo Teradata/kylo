@@ -132,7 +132,7 @@ public interface UserGroup extends SystemEntity {
     /**
      * @return the full group principal (i.e. containing member principals) associated with this group
      */
-    GroupPrincipal getPrincial();
+    GroupPrincipal getPrincipal();
 
     /**
      * @return the group root principal (i.e. for the group only without member principals) associated with this group

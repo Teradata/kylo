@@ -1,0 +1,144 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<!--
+  #%L
+  kylo-spark-livy-server
+  %%
+  Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
+
+  <bean id="scriptRegistry" class="java.util.HashMap">
+    <constructor-arg>
+      <map key-type="java.lang.String" value-type="java.lang.String">
+        <entry key="initSession">
+          <value>
+            <![CDATA[
+val sqlContext = org.apache.spark.sql.SQLContext.getOrCreate(sc)
+val ctx = com.thinkbiganalytics.spark.LivyWrangler.createSpringContext(sc, sqlContext)
+val profiler = ctx.getBean(classOf[com.thinkbiganalytics.spark.dataprofiler.Profiler])
+val transformService =
+ctx.getBean(classOf[com.thinkbiganalytics.spark.service.TransformService])
+val sparkContextService = ctx.getBean(classOf[com.thinkbiganalytics.spark.SparkContextService])
+val converterService =
+ctx.getBean(classOf[com.thinkbiganalytics.spark.service.DataSetConverterService])
+val sparkShellTransformController =
+ctx.getBean(classOf[com.thinkbiganalytics.spark.rest.SparkShellTransformController])
+val sparkUtilityService =
+ctx.getBean(classOf[com.thinkbiganalytics.spark.service.SparkUtilityService])
+val mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+mapper.registerModule(com.fasterxml.jackson.module.scala.DefaultScalaModule)
+
+val logger = org.slf4j.LoggerFactory.getLogger("com.thinkbiganalytics.spark.logger.LivyLogger")
+             ]]>
+          </value>
+        </entry>
+        <entry key="submitSaveJob">
+          <value>
+            <![CDATA[
+val saveRequest: com.thinkbiganalytics.spark.rest.model.SaveRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.SaveRequest]);
+val dataSet = sparkContextService.toDataSet(sqlContext.sql("select * from %s"))
+val saveResponse = transformService.submitSaveJob(transformService.createSaveTask(saveRequest,
+    new com.thinkbiganalytics.spark.metadata.ShellTransformStage(dataSet, converterService)))
+val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
+%%json saveResponseAsStr
+             ]]>
+          </value>
+        </entry>
+        <entry key="getSave">
+          <value>
+            <![CDATA[
+val response = sparkShellTransformController.getSave("%s")
+val saveResponse =
+response.getEntity().asInstanceOf[com.thinkbiganalytics.spark.rest.model.SaveResponse]
+val saveResponseAsStr = mapper.writeValueAsString(saveResponse)
+%%json saveResponseAsStr
+             ]]>
+          </value>
+        </entry>
+        <entry key="profileDataFrame">
+          <value>
+            <![CDATA[
+val dfProf = com.thinkbiganalytics.spark.dataprofiler.LivyProfiler.profileDataFrame(sparkContextService,profiler,df)
+%%json dfProf
+            ]]>
+          </value>
+        </entry>
+
+
+        <entry key="pagedDataFrame">
+          <value>
+            <![CDATA[
+var dfResults = LivyPaginator.page( df, %s, %s, %s, %s )
+             ]]>
+          </value>
+        </entry>
+
+        <entry key="getDataSources">
+          <value>
+            <![CDATA[
+val dataSources = sparkUtilityService.getDataSources()
+
+val dataSourcesAsStr = mapper.writeValueAsString(dataSources)
+%%json dataSourcesAsStr
+             ]]>
+          </value>
+        </entry>
+        <entry key="getSaveResult">
+          <value>
+            <![CDATA[
+val saveResult = sparkShellTransformController.getSaveResult(%s)
+val saveResultAsStr = mapper.writeValueAsString(saveResult.getPath().toUri())
+%%json saveResultAsStr
+             ]]>
+          </value>
+        </entry>
+        <entry key="kyloCatalogTransform">
+          <value> <!-- takes a JSON string escaped for scala -->
+            <![CDATA[
+val kyloCatalogReadRequest: com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest = mapper.readValue(%s, classOf[com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest]);
+val kyloReadResponse = transformService.kyloReaderResponse(kyloCatalogReadRequest);
+val transformAsStr = mapper.writeValueAsString(kyloReadResponse)
+%%json transformAsStr
+]]>
+          </value>
+        </entry>
+        <entry key="getTransform">
+          <value> <!-- takes a JSON string escaped for scala -->
+            <![CDATA[
+val response = sparkShellTransformController.getTableTransformResponse(%s)
+val transformAsStr = mapper.writeValueAsString(response)
+%%json transformAsStr
+             ]]>
+          </value>
+        </entry>
+        <entry key="readTable">
+          <value> <!-- first parameter takes a JSON string escaped for scala, second parameter is valid scala -->
+            <![CDATA[
+var parent = LivyHistory.readOrExecute( sqlContext, %s, () => { %s } )
+             ]]>
+          </value>
+        </entry>
+      </map>
+    </constructor-arg>
+  </bean>
+
+</beans>

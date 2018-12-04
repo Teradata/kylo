@@ -35,10 +35,10 @@
                     pattern="property.patternRegExp"
                     [required]="property.required" [disabled]="!rule.editable" type="text" (change)="onPropertyChanged(property)"/>
               <mat-select [(ngModel)]="property.value" *ngIf="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" [required]="property.required"
-                        name="{{property.formKey}}" [formControlName]="property.formKey"
+                        [formControlName]="property.formKey"
                         [disabled]="!rule.editable || (property.type == 'currentFeed' && (feed != null || (rule.mode != undefined && rule.mode == 'EDIT')))"
                         (change)="onPropertyChanged(property)">
-                <mat-option *ngFor="let value of property.selectableValues" value="{{value.value}}">
+                <mat-option *ngFor="let value of property.selectableValues" [value]="value.value">
                   {{value.label}}
                 </mat-option>
               </mat-select>
@@ -134,4 +134,3 @@
         </ng-container>
       </div>
     </div>
-    

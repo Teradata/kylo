@@ -1,13 +1,13 @@
 import * as _ from "underscore";
-import AccessControlService from '../../../services/AccessControlService';
-import StateService from '../../../services/StateService';
+import {AccessControlService} from '../../../services/AccessControlService';
+import {StateService} from '../../../services/StateService';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 import { Component } from '@angular/core';
 import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector:'register-new-template-controller',
-    templateUrl: 'js/feed-mgr/templates/new-template/register-new-template.html'
+    templateUrl: './register-new-template.html'
 })
 export class RegisterNewTemplateController {
 

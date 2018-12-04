@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import * as _ from "underscore";
-import CategoriesService from '../services/CategoriesService';
-import AccessControlService from '../../services/AccessControlService';
-import AddButtonService from '../../services/AddButtonService';
-import StateService from '../../services/StateService';
+import {CategoriesService} from '../services/CategoriesService';
+import {AccessControlService} from '../../services/AccessControlService';
+import {AddButtonService} from '../../services/AddButtonService';
+import {StateService} from '../../services/StateService';
 import { TdDataTableService } from '@covalent/core/data-table';
 
 @Component({
     selector: 'categories-controller',
-    templateUrl: 'js/feed-mgr/categories/categories.html',
+    templateUrl: './categories.html',
     styles: [`
         mat-card {
             padding: 8px !important;
@@ -54,10 +54,17 @@ export class CategoriesComponent{
     */
     searchQuery: string = "";
     getIconColorStyle: any;
+    getColorStyle: any;
 
     ngOnInit(): void {
         this.getIconColorStyle = (color: any) => {
-            return { 'fill': color };
+            let fillColor = (!color || color == '' ? '#90CAF9' : color);
+            return { 'fill': fillColor };
+        };
+
+        this.getColorStyle = (color: any) => {
+            let fillColor = (!color || color == '' ? '#90CAF9' : color);
+            return { 'background-color': fillColor };
         };
 
         // Register Add button

@@ -4,7 +4,7 @@ package com.thinkbiganalytics.hashing;
  * #%L
  * kylo-commons-util
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ package com.thinkbiganalytics.hashing;
  * #L%
  */
 
+
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +32,6 @@ import java.security.NoSuchAlgorithmException;
 
 /**
  * Hashing utility class for hashing non secure objects such as lists. Never use weak crypto to hash passwords
- *
- *
  */
 public class InsecureHashingMessageUtil {
 

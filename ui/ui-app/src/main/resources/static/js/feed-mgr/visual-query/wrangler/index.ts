@@ -9,7 +9,6 @@ export * from "./column-delegate";
 export * from "./parse-exception";
 export * from "./query-engine";
 export * from "./query-engine-constants";
-export * from "./query-engine-factory.service";
 export * from "./query-parser";
 export * from "./script-builder";
 export * from "./script-expression";
@@ -172,9 +171,9 @@ export interface TableSchema extends Schema {
     databaseName: string;
 }
 
-export declare namespace DatasourcesServiceStatic {
+export namespace DatasourcesServiceStatic {
 
-    interface DatasourcesService {
+    export interface DatasourcesService {
         deleteById(id: string): angular.IPromise<any>;
 
         filterArrayByIds(ids: string | string[], array: JdbcDatasource[]): JdbcDatasource[];
@@ -192,7 +191,7 @@ export declare namespace DatasourcesServiceStatic {
         save(datasource: JdbcDatasource): angular.IPromise<JdbcDatasource>;
     }
 
-    interface JdbcDatasource {
+    export interface JdbcDatasource {
         id?: string;
         name: string;
         description: string;
@@ -205,7 +204,7 @@ export declare namespace DatasourcesServiceStatic {
         password: string;
     }
 
-    interface TableReference {
+    export interface TableReference {
         schema: string;
         tableName: string;
         fullName: string;

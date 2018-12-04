@@ -1,21 +1,23 @@
 import * as _ from 'underscore';
-import UserService from "../../services/UserService";
-import AccessControlService from "../../../services/AccessControlService";
+import {StateService as StateServices} from "../../../services/StateService";
+import {UserService} from "../../services/UserService";
+import {AccessControlService} from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
 import { Component, ViewContainerRef } from '@angular/core';
-import { StateService } from '@uirouter/core';
+import { StateService as UiStateService } from '@uirouter/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { CloneUtil } from '../../../common/utils/clone-util';
 import { TranslateService } from '@ngx-translate/core';
+import {LoadingDialogService} from "../../../common/loading-dialog/loading-dialog";
 
 @Component({
-    templateUrl: "js/auth/groups/group-details/group-details.html",
+    templateUrl: "./group-details.html",
     selector: 'groups-Table',
     styles: [' .block { display : block; margin: 18px;}']
 })
-export default class GroupDetailsComponent {
+export class GroupDetailsComponent {
     /**
      * Indicates that admin operations are allowed.
      * @type {boolean}
@@ -73,6 +75,11 @@ export default class GroupDetailsComponent {
      */
     users: any[] = [];
 
+    /**
+     * flag set when a delete is in progress
+     */
+    deleting:boolean = false;
+
     ngOnInit() { 
         this.onLoad();
     }
@@ -80,11 +87,13 @@ export default class GroupDetailsComponent {
     constructor(
         private accessControlService: AccessControlService,
         private UserService: UserService,
-        private stateService: StateService,
+        private stateService: UiStateService,
         private _dialogService: TdDialogService,
         private _viewContainerRef: ViewContainerRef,
         private snackBar: MatSnackBar,
-        private translate: TranslateService) {}
+        private translate: TranslateService,
+        private loadingDialog:LoadingDialogService,
+        private statesService: StateServices) {}
     /**
      * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
      * @param user the user
@@ -99,7 +108,7 @@ export default class GroupDetailsComponent {
      * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
      */
     canDelete = () => {
-        return (this.model.systemName !== null);
+        return (!this.deleting && this.model.systemName !== null);
     };
     isgroupNameEmpty = () => {
         return !ObjectUtils.isString(this.editModel.systemName) || this.editModel.systemName.length === 0;
@@ -115,21 +124,30 @@ export default class GroupDetailsComponent {
      */
     onCancel = () => {
         if (this.model.systemName === null) {
-            this.stateService.go("groups");
+            this.statesService.Auth.navigateToGroups();
         }
     };
+        testLoading(){
+            this.loadingDialog.showDialog();
+        }
     /**
-     * Deletes the current user.
+     * Deletes the current group.
      */
     onDelete () {
-
+            this.deleting = true;
+            this.loadingDialog.showDialog();
         var name = (ObjectUtils.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
-        this.UserService.deleteGroup(this.stateService.params.groupId)
+        this.UserService.deleteGroup(this.model.systemName)
             .then(() => {
+                        this.deleting = false;
+                        this.loadingDialog.hideDialog()
                 this.snackBar.open(this.translate.instant("views.common.delete.success",{entity:"the group"}) + name,this.translate.instant("views.common.ok"),{
                     duration : 3000
                 });
+                this.statesService.Auth.navigateToGroups();
             }, () => {
+                        this.deleting = false
+                        this.loadingDialog.hideDialog()
                 this._dialogService.openAlert({
                     message: this.translate.instant('views.common.delete.failure',{entity : name}),
                     viewContainerRef: this._viewContainerRef,
@@ -203,8 +221,8 @@ export default class GroupDetailsComponent {
     onSave () {
         var model = CloneUtil.deepCopy(this.editModel);
         this.UserService.saveGroup(model)
-            .then(() => {
-                this.model = model;
+                .then((updated: any) => {
+                    this.model = updated;
                 // this.groupId = this.model.systemName;
             });
     };
@@ -223,8 +241,7 @@ export default class GroupDetailsComponent {
      *
      * @param user the user
      */
-    onUserClick (user: any) {
-        var safeUserId: any = ObjectUtils.isString(user.systemName) ? encodeURIComponent(user.systemName) : null;
-        this.stateService.go("user-details", { userId: safeUserId });
+    onUserClick(user: any) {
+        this.statesService.Auth.navigateToUserDetails(user.systemName);
     };
 }

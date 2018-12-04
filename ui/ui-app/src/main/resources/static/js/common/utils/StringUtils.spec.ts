@@ -1,4 +1,4 @@
-import "./StringUtils";
+import {StringUtils} from "./StringUtils";
 
 describe("StringUtils", function () {
     // quote

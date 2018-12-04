@@ -69,6 +69,14 @@ import javax.jcr.observation.ObservationManager;
  */
 @Configuration
 public class MetadataJcrConfig {
+    
+    @Configuration
+    public class ConfigurerConfig {
+        @Bean(initMethod = "configure")
+        public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
+            return new MetadataJcrConfigurator(postConfigActions);
+        }
+    }
 
     @Bean
     public UserProvider userProvider() {
@@ -156,11 +164,6 @@ public class MetadataJcrConfig {
     @Bean
     public JcrMetadataAccess metadataAccess() {
         return new JcrMetadataAccess();
-    }
-
-    @Bean(initMethod = "configure")
-    public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
-        return new MetadataJcrConfigurator(postConfigActions);
     }
 
     /**

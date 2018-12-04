@@ -1,0 +1,24 @@
+<mat-toolbar [color]="['primary']">
+  <span>Profile</span>
+  <span fxFlex="1 1 auto"></span>
+  <button mat-icon-button (click)="hide()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+
+<div mat-dialog-content class="mat-dialog-content" style="height:90%;max-height:90%">
+  <mat-divider style="margin-bottom:15px"></mat-divider>
+  <ng-template let-profile let-last="last" ngFor [ngForOf]="data.items">
+
+    <div fxLayout="row">
+      <span style="overflow: hidden;white-space:nowrap;text-overflow:ellipsis;width:150px;display:inline-block;;color:#666;font-weight:bold">{{profile.field}}</span>
+      <span fxFlex="1 1 auto" style="color:#666;font-size:12px">{{profile.columnDataTypePlain}}</span>
+      <span class="bar bar-success" matTooltip="{{(100 - profile.percNull)}}% non-null values" [style.width]="(100 - profile.percNull) + 'px'" style="height:12px"></span>
+      <span class="bar bar-error"  matTooltip="{{profile.percNull}}% null values" [style.width]="profile.percNull + 'px'" style="height:12px"></span>
+    </div>
+    <mini-histogram *ngIf="profile.histo" [profile]="profile"></mini-histogram>
+    <mini-categorical *ngIf="!profile.histo" [profile]="profile"></mini-categorical>
+    <mat-divider *ngIf="!last"></mat-divider>
+    <br/>
+  </ng-template>
+</div>

@@ -1,0 +1,150 @@
+<div *ngIf="editSla != null" [formGroup]="slaForm">
+
+  <div class="section">
+
+    <div fxLayout="row" fxLayoutAlign="start start" *ngIf="mode != newMode" >
+    <h3 class="mat-subheading-3" translate>Sla.Details.SlaConditions</h3>
+      <div fxFlex></div>
+      <button mat-button color="accent" (click)="viewSlaAssessments($event)" [style.margin-top.px]="-50">{{'Sla.Details.SlaAssessments' | translate}}</button>
+    </div>
+
+
+    <div *ngFor="let rule of editSla.rules; last as isLast; let idx = index" fxLayout="column" class="push-bottom-md">
+      <div fxLayout="row">
+        <div class="push-right">{{(idx+1)}}.</div>
+        <div fxLayout="column" class="">
+          <span>{{rule.name}}</span>
+          <span class="hint">{{rule.description}}</span>
+        </div>
+        <div>
+          <div>
+            <button mat-button class="tc-grey-700" (click)="onDeleteSlaMetric(idx)" *ngIf="rule.editable">
+              <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <policy-input-form [parentFormGroup]="slaConditions" [groupId]="'rules'" [rule]="rule" [index]="idx" style="margin-left:28px"
+                         (onFormControlsAdded)="onPolicyInputControlsAdded()"></policy-input-form>
+
+    </div>
+
+    <div *ngIf="addingSlaCondition == false && editSla.editable" fxLayout="row" class="push-bottom">
+      <button mat-button mat-raised-button color="accent" (click)="addNewCondition()" [disabled]="loadingConditions">{{'Sla.Details.AddCondition' | translate}}</button>
+      <span fxFlex></span>
+    </div>
+
+    <div *ngIf="addingSlaCondition" fxLayout="row" fxFlex class="">
+      <mat-form-field>
+        <mat-select placeholder="{{'Sla.Details.SelectNewCondition' | translate}}" [formControl]="ruleType" (change)="onAddConditionRuleTypeChange()">
+          <mat-option *ngFor="let opt of options;" [value]="opt">
+            {{opt.name}}
+          </mat-option>
+        </mat-select>
+        <span fxFlex></span>
+      </mat-form-field>
+      <button mat-button (click)="addingSlaCondition = false" *ngIf="editSla != null && editSla.rules.length >0">
+        <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+
+  <div class="section">
+
+    <h3 class="mat-subheading-3" translate>Sla.Details.Actions</h3>
+
+    <div *ngIf="editSla.actionConfigurations.length == 0" fxLayout="column">
+      <span class="tc-grey-500" translate>Sla.Details.WillGenerateAlert</span>
+      <span *ngIf="showActionOptions">{{"Sla.Details.ClickAddAction" | translate}}</span>
+    </div>
+
+    <div *ngIf="editSla.actionErrors != null && editSla.actionErrors.length >0" fxLayout="column">
+      <div class="error mat-title" fxLayout="row">
+        <div class="pad-left">
+          <mat-icon [style.font-size.px]="20" class="error">warning</mat-icon>
+        </div>
+        <span translate>Sla.Details.ErrorsFound</span>
+      </div>
+
+      <div *ngFor="let error of editSla.actionErrors" fxLayout="column">
+        <span class="error">{{error}}</span>
+      </div>
+    </div>
+
+    <div *ngFor="let rule of editSla.actionConfigurations; last as isLast; let idx = index" fxLayout="column"class="push-bottom-md">
+      <div fxLayout="row" class="">
+        <div class="push-right-md">{{(idx+1)}}.</div>
+
+        <div fxLayout="column" fxFlex>
+          <span>{{rule.name}}</span>
+          <span class="hint">{{rule.description}}</span>
+          <span *ngIf="rule.validConfiguration == false" class="error"><strong translate>Sla.Details.Warning</strong>  {{"Sla.Details.Warning2" | translate}} {{rule.validationMessage}}</span>
+        </div>
+        <div>
+          <div>
+            <button mat-button class="tc-grey-700" (click)="onDeleteSlaAction(idx)" *ngIf="rule.editable">
+              <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <policy-input-form [parentFormGroup]="slaForm" [groupId]="'actions'" [rule]="rule" [index]="idx"
+                         (onFormControlsAdded)="onPolicyInputControlsAdded()" style="margin-left:28px"></policy-input-form>
+
+    </div>
+
+    <div *ngIf="addingSlaAction" class="pad-left pad-right" fxLayout="row">
+      <mat-form-field>
+        <mat-select placeholder="{{'Sla.Details.SelectNewAction' | translate}}" [formControl]="slaAction" (change)="onAddSlaActionChange()">
+          <mat-option *ngFor="let opt of slaActionOptions;" [value]="opt">
+            {{opt.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-button class="tc-grey-700" (click)="addingSlaAction = false">
+        <mat-icon [style.font-size.px]="20" style="fill:grey;">delete</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="addingSlaAction == false && editSla.editable" fxFlex fxLayout="row">
+      <button mat-button mat-raised-button color="accent" (click)="addingSlaAction = true" *ngIf="showActionOptions" [disabled]="editSla.rules.length == 0">
+        {{"Sla.Details.AddAction" | translate}}
+      </button>
+      <span fxFlex></span>
+    </div>
+  </div>
+
+  <div class="section">
+
+    <div fxLayout="column" class="">
+      <span class="md-subhead push-bottom-sm ">Summary</span>
+      <mat-form-field>
+        <input matInput name="slaName" type="text" formControlName="name" placeholder="{{'Sla.Details.SlaName' | translate}}"/>
+        <mat-error *ngIf="slaName.invalid && slaName.errors.required">{{'Sla.Details.Required' | translate}}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <input matInput name="slaDescription" type="text" formControlName="description" placeholder="{{'Sla.Details.SlaDescription' | translate}}"/>
+        <mat-error *ngIf="slaDescription.invalid && slaDescription.errors.required">{{'Sla.Details.Required' | translate}}</mat-error>
+      </mat-form-field>
+    </div>
+
+  </div>
+
+
+  <div *ngIf="isDebug" class="layout-padding-top-20 hint">
+    <div>
+      Form Status: {{ slaForm.status }}
+    </div>
+    <div>
+      <pre>Form Value: {{ slaForm.value | json }}</pre>
+    </div>
+    <div>
+      <pre>SLA: {{ editSla | json }}</pre>
+    </div>
+  </div>
+
+
+</div>

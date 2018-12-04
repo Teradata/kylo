@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import { Component, Input, ElementRef, SimpleChanges, OnChanges, DoCheck } from "@angular/core";
 import { AccordionMenuService } from "./AccordionMenuService";
-import { ObjectUtils } from "../utils/object-utils";
+import { ObjectUtils } from "../../../lib/common/utils/object-utils";
 
 
 @Component({
@@ -19,7 +19,7 @@ import { ObjectUtils } from "../utils/object-utils";
             </mat-list-item>
         </mat-list>    
     `,
-    styleUrls: ['js/common/accordion-menu/accordion.css']
+    styleUrls: ['./accordion.css']
 })
 export class AccordianMenuComponent implements OnChanges {
 

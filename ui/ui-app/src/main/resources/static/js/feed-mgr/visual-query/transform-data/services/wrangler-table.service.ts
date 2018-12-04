@@ -1,14 +1,13 @@
-import * as angular from "angular";
+import {Injectable} from "@angular/core";
 import {Subject} from "rxjs/Subject";
 
 import {WranglerEvent} from "./wrangler-event";
 import {WranglerEventType} from "./wrangler-event-type";
 
-const moduleName: string = require("feed-mgr/visual-query/module-name");
-
 /**
  * Handles communication between UI components and the wrangler table.
  */
+@Injectable()
 export class WranglerTableService {
 
     /**
@@ -63,5 +62,3 @@ export class WranglerTableService {
         this.tableSource = new Subject();
     }
 }
-
-angular.module(moduleName).service("WranglerTableService", WranglerTableService);

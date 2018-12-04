@@ -1,20 +1,43 @@
 {
   "compilerOptions": {
-    "allowUnreachableCode": false,
-    "declaration": false,
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "module": "amd",
+    "target": "es5",
+    "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["es2015", "dom"],
-    "module": "amd",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
+    "allowUnreachableCode": false,
+    "declaration": false,
+    "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "suppressImplicitAnyIndexErrors": true,
-    "target": "es5",
-    "typeRoots": ["../../../../node_modules/@types"],
+    "typeRoots": [
+      "../../../../node_modules/@types"
+    ],
     "outDir": "../../../../target/classes/static",
     "sourceMap": true,
-    "sourceRoot": "/"
+    "allowJs": true,
+    "sourceRoot": ".",
+    "importHelpers": true,
+    "skipLibCheck": true //to avoid https://github.com/ui-router/angular-hybrid/issues/70 ,i.e. jqlite.d.ts(29,5): error TS2375: Duplicate number index signature:
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "../../../../node_modules",
+    "./node_modules",
+    "./bower_components",
+    "./js/vendor"
+  ],
+  "angularCompilerOptions": {
+    "genDir": "../../../../target/classes/static",
+    "skipMetadataEmit" : false,
+    "fullTemplateTypeCheck": false,
+    "preserveWhitespaces": true
   }
 }

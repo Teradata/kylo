@@ -1,0 +1,68 @@
+<ng-template tdLoading [tdLoadingUntil]="!loading" tdLoadingStrategy="overlay" tdLoadingType="circular" class="layout-fill">
+  <mat-card class="mat-typography">
+   <mat-card-header>
+    <mat-card-title>
+      <mat-icon class="kylo-title-icon">{{kyloIcons_Links_profile}}</mat-icon>
+      <span translate>Profile.History.Title</span>
+    </mat-card-title>
+    <mat-card-subtitle translate>Profile.History.SubTitle</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div *ngIf="showSummary">
+
+      <mat-nav-list>
+        <div *ngFor="let row of profileSummary; last as isLast;">
+          <a mat-list-item (click)="viewProfileResults(row)" class="profile-row">
+            <div fxFlex fxLayout="row" fxLayoutAlign="space-around center">
+
+              <div>
+                <div class="item-title" title="{{row.TOTAL_COUNT}}">
+                  {{row.TOTAL_COUNT}}
+                </div>
+                <div class="hint" translate>views.profile-history.Rows</div>
+              </div>
+
+              <div>
+                <a (click)="onValidCountClick(row)" class="item-title primary-color-1" title="{{row.VALID_COUNT}}">
+                  {{row.VALID_COUNT}}
+                </a>
+                <div class="hint" translate>views.profile-history.Valid</div>
+              </div>
+
+              <div>
+                <div (click)="onInvalidCountClick(row)" class="item-title primary-color-1" title="{{row.INVALID_COUNT}}">
+                  {{row.INVALID_COUNT}}
+                </div>
+                <div class="hint" translate>views.profile-history.Invalid</div>
+              </div>
+
+              <div>
+                <div class="item-title" title="{{row.DATE_TIME}}">
+                  {{row.DATE_TIME | timeAgo:reference}}
+                </div>
+                <div class="hint" translate>views.profile-history.ProcessingDate</div>
+              </div>
+
+              <div *ngIf="row.MIN_TIMESTAMP">
+                <div class="item-title" title="{{row.MIN_TIMESTAMP}} - {{row.MAX_TIMESTAMP}}">
+                  {{row.MIN_TIMESTAMP}} to {{row.MAX_TIMESTAMP}}
+                </div>
+                <div class="hint" translate>views.profile-history.Dates Processed</div>
+              </div>
+
+            </div>
+          </a>
+
+          <mat-divider [inset]="true" *ngIf="!isLast"></mat-divider>
+        </div>
+      </mat-nav-list>
+    </div>
+    <div *ngIf="showNoResults" class="no-data" fxLayout="column" fxLayoutAlign="center center">
+        <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+        <h2 translate>views.profile-history.NoProfileData</h2>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+</ng-template>

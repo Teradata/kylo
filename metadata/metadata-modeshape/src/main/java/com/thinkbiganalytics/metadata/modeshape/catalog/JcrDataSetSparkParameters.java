@@ -58,7 +58,15 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public String getFormat() {
-        return getProperty(FORMAT);
+        return getProperty(FORMAT, "");
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#setFormat(java.lang.String)
+     */
+    @Override
+    public void setFormat(String format) {
+        setProperty(FORMAT, format);
     }
 
     /* (non-Javadoc)
@@ -67,6 +75,16 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
     @Override
     public List<String> getFiles() {
         return JcrPropertyUtil.getPropertyValuesList(getNode(), FILES);
+    }
+
+    public void setJars(List<String> jars){
+        if(jars != null){
+            jars.stream().forEach(jar -> addJar(jar));
+        }
+    }
+
+    public void addJar(String jar){
+        JcrPropertyUtil.addToSetProperty(getNode(),JARS,jar);
     }
 
     /* (non-Javadoc)
@@ -91,7 +109,8 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
     @Override
     public Map<String, String> getOptions() {
         return getProperties().entrySet().stream()
-                        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toString()));
+                .filter(entry -> ! entry.getKey().startsWith("jcr:"))
+                .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toString()));
     }
 
     /* (non-Javadoc)
@@ -99,7 +118,7 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public boolean addOption(String name, String value) {
-        String existing = getProperty(name);
+        String existing = getProperty(name, null);
         setProperty(name, value);
         return existing == null || ! existing.equals(value);
     }
@@ -109,9 +128,18 @@ public class JcrDataSetSparkParameters extends JcrObject implements DataSetSpark
      */
     @Override
     public String removeOption(String name) {
-        String existing = getProperty(name);
+        String existing = getProperty(name, null);
         removeProperty(name);
         return existing;
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters#clearOptions()
+     */
+    @Override
+    public boolean clearOptions() {
+        Map<String, Object> existing = getProperties();
+        clearAdditionalProperties();
+        return existing.size() > 0;
+    }
 }

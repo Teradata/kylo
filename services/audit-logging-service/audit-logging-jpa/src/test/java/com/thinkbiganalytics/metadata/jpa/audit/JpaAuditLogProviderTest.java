@@ -63,7 +63,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
     @Inject
     private MetadataAccess metadataAccess;
 
-    @Test
+//    @Test
     public void testAddAdminLogs() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.commit(() -> {
             AuditLogEntry log1 = provider.createEntry(ADMIN, "simple", "Admin: Simple, non-entity entry");
@@ -74,7 +74,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         assertThat(ids).hasSize(2);
     }
 
-    @Test
+//    @Test
     public void testAddUserLogs() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.commit(() -> {
             AuditLogEntry log1 = provider.createEntry(USER, "simple", "User: Simple, non-entity entry");
@@ -86,7 +86,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         assertThat(ids).hasSize(3);
     }
 
-    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
+//    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
     public void testListAll() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.read(() -> {
             return provider.list().stream()
@@ -97,7 +97,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         assertThat(ids).hasSize(5);
     }
 
-    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
+//    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
     public void testList3() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.read(() -> {
             return provider.list(3).stream()
@@ -108,7 +108,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         assertThat(ids).hasSize(3);
     }
 
-    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
+//    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
     public void testFindByAdmin() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.read(() -> {
             return provider.findByUser(ADMIN).stream()
@@ -119,7 +119,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         assertThat(ids).hasSize(2);
     }
 
-    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
+//    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
     public void testFindByUser() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.read(() -> {
             return provider.findByUser(USER).stream()
@@ -130,7 +130,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         assertThat(ids).hasSize(3);
     }
 
-    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
+//    @Test(dependsOnMethods = {"testAddAdminLogs", "testAddUserLogs"})
     public void testFindById() {
         final AuditLogEntry.ID id = this.metadataAccess.read(() -> {
             return provider.list(1).stream()

@@ -178,5 +178,11 @@ public class AbstractSparkDataSetProviderTest {
         protected StructType schema(@Nonnull final DataFrame dataSet) {
             return DataSetProviderUtil.schema(dataSet);
         }
+
+        @Nonnull
+        @Override
+        protected DataFrame union(@Nonnull final DataFrame left, @Nonnull final DataFrame right) {
+            return left;
+        }
     }
 }

@@ -92,6 +92,6 @@ angular.module(moduleName).component('thinkbigPreview', {
         datasourceId: '@'
     },
     controller : PreviewController,
-    templateUrl: 'js/feed-mgr/tables/preview.html',
+    templateUrl: './preview.html',
     controllerAs: 'vm'
 });

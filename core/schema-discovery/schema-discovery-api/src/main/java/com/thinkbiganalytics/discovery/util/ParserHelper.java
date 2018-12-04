@@ -48,44 +48,6 @@ public class ParserHelper {
 
     private static final Logger log = LoggerFactory.getLogger(ParserHelper.class);
 
-    /**
-     * Maximum number of characters to sample from a file protecting from memory
-     */
-    protected static int MAX_CHARS = 128000;
-
-    protected static int MAX_ROWS = 1000;
-
-    /**
-     * Extracts the given number of rows from the file and returns a new reader for the sample.
-     * This method protects memory in the case where a large file can be submitted with no delimiters.
-     */
-    public static String extractSampleLines(InputStream is, Charset charset, int rows) throws IOException {
-
-        StringWriter sw = new StringWriter();
-        Validate.notNull(is, "empty input stream");
-        Validate.notNull(charset, "charset cannot be null");
-        Validate.exclusiveBetween(1, MAX_ROWS, rows, "invalid number of sample rows");
-
-        // Sample the file in case there are no newlines
-        StringWriter swBlock = new StringWriter();
-        IOUtils.copyLarge(new InputStreamReader(is, charset), swBlock, -1, MAX_CHARS);
-        try (BufferedReader br = new BufferedReader(new StringReader(swBlock.toString()))) {
-            IOUtils.closeQuietly(swBlock);
-            String line = br.readLine();
-            int linesRead = 0;
-            for (int i = 1; i <= rows && line != null; i++) {
-                sw.write(line);
-                sw.write("\n");
-                linesRead++;
-                line = br.readLine();
-            }
-            if (linesRead <= 1 && sw.toString().length() >= MAX_CHARS) {
-                throw new IOException("Failed to detect newlines for sample file.");
-            }
-        }
-
-        return sw.toString();
-    }
 
     public static String sqlTypeToHiveType(Integer type) {
         switch (type) {

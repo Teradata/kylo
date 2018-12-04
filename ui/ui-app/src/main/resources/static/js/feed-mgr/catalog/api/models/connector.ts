@@ -17,5 +17,10 @@ export interface Connector {
 
     template?: DataSourceTemplate;
     
-//    plugin?: ConnectorPlugin;
+    plugin?: ConnectorPlugin;
+
+    /**
+     * Connector plugin ID (connector type)
+     */
+    pluginId?: string;
 }

@@ -81,9 +81,10 @@ public class DBSchemaParser {
     @Nonnull
     private List<String> listSchemas(@Nonnull final Connection conn) throws SQLException {
         List<String> schemas = new ArrayList<>();
-        try (ResultSet rs = conn.getMetaData().getSchemas()) {
+        String schemaQuery = "show databases";
+        try (ResultSet rs = conn.createStatement().executeQuery(schemaQuery)) {
             while (rs.next()) {
-                String schema = rs.getString(SCHEMA_COLUMN);
+                String schema = rs.getString(1);
                 schemas.add(schema);
             }
             return schemas;

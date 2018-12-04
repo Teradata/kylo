@@ -2,9 +2,9 @@ package com.thinkbiganalytics.hive.config;
 
 /*-
  * #%L
- * thinkbig-thrift-proxy-core
+ * kylo-thrift-proxy-core
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,12 @@ package com.thinkbiganalytics.hive.config;
  * #L%
  */
 
+
+
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.service.RefreshableDataSource;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,6 +50,11 @@ public class HiveDataSourceConfiguration {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private KerberosTicketConfiguration kerberosHiveConfiguration;
+
+    @Autowired
+    private UsernameCaseStrategyUtil usernameCaseStrategyUtil;
 
     @Bean(name = "hiveJdbcTemplate")
     public JdbcTemplate hiveJdbcTemplate(@Qualifier("hiveDataSource") DataSource dataSource) {
@@ -67,8 +76,9 @@ public class HiveDataSourceConfiguration {
 
     @Bean(name = "hiveDataSource")
     public DataSource dataSource() {
-
-        RefreshableDataSource ds = new RefreshableDataSource("hive.datasource");
+        RefreshableDataSource ds = new RefreshableDataSource(kerberosHiveConfiguration,
+                                                             usernameCaseStrategyUtil,
+                                                             env, "hive.datasource");
         return ds;
     }
 
@@ -78,8 +88,6 @@ public class HiveDataSourceConfiguration {
     public DataSource metadataDataSource() {
         DataSource ds = DataSourceBuilder.create().build();
         return ds;
-
-
     }
 
 }

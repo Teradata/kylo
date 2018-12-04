@@ -1,7 +1,7 @@
 import * as _ from 'underscore';
-import SearchService from "../../services/SearchService";
-import CategoriesService from "../../feed-mgr/services/CategoriesService";
-import StateServices from "../../services/StateService";
+import {SearchService} from "../../services/SearchService";
+import {CategoriesService} from "../../feed-mgr/services/CategoriesService";
+import {StateService as StateServices} from "../../services/StateService";
 import {FeedService} from "../../feed-mgr/services/FeedService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 import { DatasourcesService } from "../../feed-mgr/services/DatasourcesService";
@@ -12,7 +12,7 @@ import { SLIDE_TOGGLE_INPUT_CONTROL_VALUE_ACCESSOR } from '@covalent/dynamic-for
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
-    templateUrl: 'js/search/common/search.html',
+    templateUrl: './search.html',
 })
 export class SearchComponent implements OnInit {
     /**
@@ -47,16 +47,16 @@ export class SearchComponent implements OnInit {
         return null;
     };
 
-    constructor(@Inject("SearchService") private searchService: SearchService,
+    constructor(private searchService: SearchService,
                 private transition: StateService,
                 private CategoriesService: CategoriesService,
-                private StateService: StateServices,
+                private StateService: StateService,
                 private FeedService: FeedService,
                 private PaginationDataService: DefaultPaginationDataService,
                 private DatasourcesService: DatasourcesService,
                 private _dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
-                @Inject("$injector") private $injector: any) {}
+                private stateServices: StateServices) {}
 
     ngOnInit() {
 
@@ -127,34 +127,36 @@ export class SearchComponent implements OnInit {
     };
 
     onSearchResultItemClick($event: any, result: any) {
+        let feedSystemName: any;
+        let categorySystemName: any;
+
         switch (result.type) {
             case "KYLO_DATA":
-                this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
+                categorySystemName = result.schemaName;
+                feedSystemName = result.tableName;
+                this.FeedService.getFeedByName(categorySystemName + "." + feedSystemName)
+                    .then((feed: any) => {
+                        this.stateServices.FeedManager().Feed().navigateToFeedDetails(feed.id);
+                });
                 break;
 
             case "KYLO_SCHEMA":
-                this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
+                categorySystemName = result.databaseName;
+                feedSystemName = result.tableName;
+                this.FeedService.getFeedByName(categorySystemName + "." + feedSystemName)
+                    .then((feed: any) => {
+                        this.stateServices.FeedManager().Feed().navigateToFeedDetails(feed.id);
+                });
                 break;
 
             case "KYLO_FEEDS":
-                var category;
-                var feed;
-
-                this.CategoriesService.getCategoryById(this.cleanValue(result.feedCategoryId))
-                    .then((category1: any)=> {
-                        category = category1;
-                        this.FeedService.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
-                                        .then((feed1: any) =>{
-                                            feed = feed1;
-                                            this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
-                                        });
-                });
+                this.stateServices.FeedManager().Feed().navigateToFeedDetails(result.feedId);
                 break;
 
             case "KYLO_CATEGORIES":
                 this.CategoriesService.getCategoryBySystemName(this.cleanValue(result.categorySystemName))
-                                        .then((category: any)=> {
-                                        this.StateService.Categories().navigateToCategoryDetails(category.id);
+                                      .then((category: any)=> {
+                                        this.stateServices.Categories().navigateToCategoryDetails(category.id);
                 });
                 break;
 
@@ -167,7 +169,7 @@ export class SearchComponent implements OnInit {
     };
 
     renderHtml(htmlCode: any): any {
-        return this.$injector.get("$sce").trustAsHtml(htmlCode);
+        return htmlCode;
     };
 
 }

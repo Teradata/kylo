@@ -16,7 +16,7 @@
   <ng-form name="vm.feedAccessControlForm">
 
     <div layout="column">
-    <entity-access-control entity="vm.model" entity-type="feed"  the-form="vm.feedAccessControlForm"></entity-access-control>
+    <entity-access-control-ng2 [entity]="model" entityType="feed" [parentForm]="vm.feedAccessControlForm"></entity-access-control-ng2>
     </div>
     <div layout="column" ng-if="vm.securityGroupsEnabled == true">
       <div class="md-subhead">{{"views.ipmort_feed.data-access-control" | translate}}</div>

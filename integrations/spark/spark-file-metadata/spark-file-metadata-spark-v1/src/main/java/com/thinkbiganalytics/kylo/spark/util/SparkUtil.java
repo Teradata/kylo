@@ -24,7 +24,14 @@ import org.apache.spark.sql.DataFrame;
 
 import java.util.List;
 
+import scala.collection.JavaConverters;
+import scala.collection.Map;
+
 public class SparkUtil {
+
+    public static <A, B> Map<A, B> toScalaMap(java.util.Map<A, B> m) {
+        return JavaConverters.mapAsScalaMapConverter(m).asScala();
+    }
 
     public static DataFrame unionAll(List<DataFrame> dataFrameList) {
         DataFrame unionDf = null;

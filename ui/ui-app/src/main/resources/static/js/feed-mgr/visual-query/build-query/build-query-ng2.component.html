@@ -1,0 +1,133 @@
+<div fxLayout="column" [class.visual-query-auto-complete-centered]="chartViewModel.data.nodes.length ==0" [class.visual-query-auto-complete-top]="chartViewModel.data.nodes.length >0">
+  <div *ngIf="error != null" class="visual-query-error" fxLayout="row">
+    <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
+    <div fxLayout="column">
+      <div style="font-weight:500;line-height:24px;">Error!</div>
+      <div style="line-height:20px;">{{error}}</div>
+    </div>
+  </div>
+
+  <ng-template tdLoading [tdLoadingUntil]="!loadingPage" tdLoadingStrategy="overlay" tdLoadingType="circular" class="layout-fill">
+    <form [formGroup]="form">
+
+      <div fxLayout="column">
+
+        <mat-toolbar fxFlex="0 0 auto" class="md-kylo-theme">
+
+          <span fxFlex="1 1 auto"></span>
+
+          <div fxFlex *ngIf="advancedMode"></div>
+
+          <mat-form-field *ngIf="showDatasources" style="font-size:14px;padding-top:16px">
+            <mat-select formControlName="datasource" placeholder="Select source">
+              <mat-option *ngFor="let datasource of availableCatalogSQLDataSources" [value]="datasource.id">{{datasource.title}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div fxLayout="row" fxFlex="1 1 50%" fxLayoutAlign="start start" *ngIf="!advancedMode" fxFlex>
+
+            <!-- datasource autocomplete -->
+            <div style="font-size:14px;padding-top:16px" *ngIf="showDatasources"  fxLayout="column" class="pad-left pad-right" fxFlex="100">
+              <mat-form-field  style="min-width:320px">
+                <input #datasourceInput matInput placeholder="Table" aria-label="Table" formControlName="tableAutocomplete" [matAutocomplete]="auto" >
+                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption [displayWith]="tableAutocompleteDisplay">
+                  <mat-option *ngIf="autocompleteLoading" ><mat-spinner diameter="40" color="accent"></mat-spinner></mat-option>
+                  <ng-container *ngIf="!autocompleteLoading">
+                    <mat-option *ngFor="let table of filteredTables" [value]="table" class="autocomplete-option" >
+                  <span class="title">
+                    <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                    <span md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i" style="padding-left:5px;"> {{table.fullName}} </span>
+                  </span>
+                      <br/>
+                      <span>
+                    <span>
+                      <span class="sub-title hint">Schema:</span>
+                      <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.schema}}</span>
+                    </span>
+                    <span class="item-metastat" style="padding-left:10px;">
+                      <span class="sub-title hint">Table:</span>
+                      <span class="sub-title" md-highlight-text="tableAutocomplete.value" md-highlight-flags="^i">{{table.tableName}}</span>
+                    </span>
+                  </span>
+                    </mat-option>
+                  </ng-container>
+                  <mat-option *ngIf="!autocompleteLoading && model.$catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && !autocompleteNoDataFound" class="autocomplete-option" >
+                    <span class="title">
+                       Search tables
+                     </span><br/>
+                    <span class="sub-title hint">Type name of a table</span>
+                  </mat-option>
+                  <mat-option *ngIf="!autocompleteLoading && model.$catalogDataSourceId != undefined && filteredTables != undefined && filteredTables.length == 0 && autocompleteNoDataFound" class="autocomplete-option" >
+                    <span class="title">
+                       No tables found for {{datasourceInput.value}}
+                     </span><br/>
+                    <span class="sub-title hint">No tables found.  Try a different search.</span>
+                  </mat-option>
+                  <mat-option *ngIf="model.$catalogDataSourceId == undefined">
+                    <span class="title">Select a datasource first</span>
+                  </mat-option>
+
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-error *ngIf="databaseConnectionError" style="position:absolute;top:42px">Unable to connect to selected data source.</mat-error>
+            </div>
+          </div>
+          <button matTooltip="Add dataset" mat-raised-button mat-icon-button color="accent" aria-label="Add dataset" (click)="onAddTable()" [disabled]="selectedTable == null"
+                  style="margin-left:-5px"
+                  *ngIf=" showDatasources">
+            <ng-md-icon icon="add"></ng-md-icon>
+          </button>
+
+          <button matTooltip="Browse catalog" mat-raised-button mat-icon-button [color]="selectedTable == null ? 'accent' : 'primary'" class="md-kylo-theme" aria-label="Browse catalog"
+                  (click)="openCatalogBrowser()"
+                  *ngIf="!advancedMode">
+            <ng-md-icon icon="playlist_add"></ng-md-icon>
+          </button>
+
+          <span fxFlex="auto"></span>
+
+          <button matTooltip="Edit SQL" mat-raised-button mat-icon-button aria-label="Edit SQL" (click)="toggleAdvancedMode()" [disabled]="error != null">
+            <ng-md-icon icon="code" class="function-icon tc-grey-600"></ng-md-icon>
+          </button>
+
+          <div fxFlex="20px"></div>
+
+          <button mat-button (click)="back.emit()" type="button" *ngIf="showCancel" style="padding-top:3px" class="text-upper">Cancel</button>
+          <button mat-button [color]="form.valid ? 'accent' : ''" (click)="next.emit()" style="padding-top:3px" type="button"
+                  [disabled]="!form.valid || (chartViewModel.data.nodes.length == 0 && (model.sql == '' || model.sql == null))"
+                  class="text-upper">Next
+          </button>
+
+        </mat-toolbar>
+        <!-- Canvas -->
+
+        <div class="visual-query-canvas" style="margin-top:8px" mouse-capture [fxHide]="advancedMode == true || chartViewModel.data.nodes.length == 0">
+          <mat-divider></mat-divider>
+          <div class="svg-container" browser-height browser-height-scroll-y="false" browser-height-scroll-x="auto" [browser-height-offset]="(heightOffset || 0) + 136">
+            <flow-chart id="visual-query-canvas" #flowChart [chart]="chartViewModel"></flow-chart>
+          </div>
+        </div>
+
+        <!-- SQL Editor -->
+        <sql-editor [sql]="this.model.sql" [datasourceId]="model.$catalogDataSourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
+                    [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true" (sqlChange)="advancedModeSql($event)"></sql-editor>
+
+        <!-- nothing set and user cant change datasources mesage-->
+        <ng-template *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && !showDatasources">
+          No tables selected.
+        </ng-template>
+
+
+
+        <div *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && advancedMode == false" fxLayout="column" fxFlex style="min-height:500px;" fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad push-left-xxl">
+          <mat-icon matListAvatar class="text-super push-bottom-xl">find_in_page</mat-icon>
+          <h2>No datasets</h2>
+          <p>Choose one or more datasets from the toolbar
+          </p>
+        </div>
+
+      </div>
+
+    </form>
+  </ng-template>
+</div>

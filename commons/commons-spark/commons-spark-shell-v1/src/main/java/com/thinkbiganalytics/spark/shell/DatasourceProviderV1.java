@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 
 import org.apache.spark.sql.DataFrame;
@@ -29,24 +30,33 @@ import java.util.Collection;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * A data source provider for Spark 1.
  */
 public class DatasourceProviderV1 extends AbstractDatasourceProvider<DataFrame> {
 
+    @Inject
+    CatalogDataSetProvider catalogDataSetProvider;
+
     /**
      * Constructs a {@code DatasourceProviderV1}.
      *
      * @param datasources the data sources
      */
-    DatasourceProviderV1(@Nonnull final Collection<Datasource> datasources) {
-        super(datasources);
+    DatasourceProviderV1(@Nonnull final Collection<Datasource> datasources, Collection<DataSource> catalogDataSources) {
+        super(datasources,catalogDataSources);
     }
 
     @Nonnull
     @Override
     protected DataFrame readJdbcTable(@Nonnull final String url, @Nonnull final String table, @Nonnull final Properties properties, @Nonnull final SQLContext sqlContext) {
         return sqlContext.read().jdbc(url, table, properties);
+    }
+
+    @Override
+    public CatalogDataSetProvider getCatalogDataSetProvider() {
+        return catalogDataSetProvider;
     }
 }

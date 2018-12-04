@@ -1,0 +1,27 @@
+<mat-toolbar td-sidenav-content style="cursor:pointer">
+  <div (click)="gotoFeedSummary()">
+   <!-- <mat-icon>arrow_back</mat-icon> -->
+   Feed Summary</div>
+ </mat-toolbar>
+<div td-sidenav-content>
+  <mat-nav-list>
+
+    <a mat-list-item (click)="onLinkSelected(setupGuideLink)"  [ngClass]="{'selected-step': setupGuideLink.selected}">
+      <mat-icon [color]=" setupGuideLink.selected ? 'accent': ''" mat-list-icon *ngIf="setupGuideLink.icon != null">{{setupGuideLink.icon}}</mat-icon>
+      <div class="pull-left mat-list-text"><div  class="mat-line" mat-line="">{{setupGuideLink.label | translate}}</div></div>
+      <span></span>
+    </a>
+
+
+    <ng-template let-link let-last="last" ngFor [ngForOf]="stepLinks">
+      <a mat-list-item (click)="onLinkSelected(link)"  [ngClass]="{'selected-step': link.selected}">
+        <mat-icon [color]=" link.selected ? 'accent': ''" mat-list-icon *ngIf="link.icon != null">{{link.icon}}</mat-icon>
+        <div class="pull-left mat-list-text"><div  class="mat-line" mat-line="">{{link.label}}</div></div>
+        <span></span>
+      </a>
+    </ng-template>
+
+
+  </mat-nav-list>
+
+</div>

@@ -15,7 +15,7 @@
                         <div> {{"views.feed-details.Details" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
-                        <md-progress-linear md-mode="indeterminate" ng-if="vm.loadingFeedData"></md-progress-linear>
+                        <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.loadingFeedData"></md-progress-linear>
                         <thinkbig-feed-info ng-if="!vm.loadingFeedData && vm.model.loaded" selected-tab-index="vm.selectedTabIndex"></thinkbig-feed-info>
                         <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;"> {{"views.feed-details.LF" | translate}} </div>
                         <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding">{{vm.loadMessage}}</div>
@@ -65,38 +65,38 @@
             <div class="card-title" flex> {{"views.feed-details.FS" | translate}} </div>
             <div layout-align="center center" layout="column">
             <md-menu md-position-mode="target-right target">
-              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdOpenMenu, $event)" ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
+              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdMenu.open, $event)" ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                 <ng-md-icon icon="more_vert"></ng-md-icon>
               </md-button>
               <md-menu-content width="4">
 
                 <md-menu-item ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()">
                   <md-button ng-disabled="(vm.disabling || !vm.allowEdit)">
-                    <ng-md-icon icon="not_interested" class="orange"></ng-md-icon>
+                    <ng-md-icon icon="not_interested" class="accent-color"></ng-md-icon>
                     {{"views.feed-details.Disable" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'"  ng-click="vm.enableFeed()" >
                   <md-button ng-disabled="(vm.enabling || !vm.allowEdit)">
-                    <ng-md-icon icon="check_circle" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="check_circle" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     {{"views.feed-details.Enable" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item  ng-if="vm.allowStart" ng-click="vm.startFeed()" >
                   <md-button ng-disabled="(vm.startingFeed || self.allowStart)" >
-                    <ng-md-icon icon="play_circle_outline" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="play_circle_outline" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     {{"views.feed-details.StartFeed" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-click="vm.cloneFeed()" >
                   <md-button ng-disabled="!vm.allowEdit">
-                    <ng-md-icon icon="content_copy" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="content_copy" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     Clone
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()">
                   <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
-                    <ng-md-icon icon="delete_forever" class="orange" md-menu-align-target=""></ng-md-icon>
+                    <ng-md-icon icon="delete_forever" class="accent-color" md-menu-align-target=""></ng-md-icon>
                     {{"views.feed-details.Delete" | translate}}
                   </md-button>
                 </md-menu-item>
@@ -138,7 +138,7 @@
 
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
 
-                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling || vm.startingFeed"></md-progress-linear>
+                <md-progress-linear class="md-accent" md-mode="indeterminate" ng-if="vm.enabling || vm.disabling || vm.startingFeed"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}">
                         <span ng-if="vm.model.state == 'ENABLED'">{{"views.feed-details.Enabled" | translate}}</span>

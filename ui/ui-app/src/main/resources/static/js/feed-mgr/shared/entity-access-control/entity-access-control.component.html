@@ -1,0 +1,58 @@
+<form [formGroup]="entityAccessControlForm">
+  <div *ngIf="!enabled" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad-lg">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>{{"views.entity-access-control.NotEnabled" | translate}}</h2>
+  </div>
+  <div *ngIf="enabled">
+    <div fxLayout="row" class="layout-padding-bottom-15">
+      <div fxFlex="40" style="align-self:center;" layout="column">
+        <div class="hint">{{"views.entity-access-control.Owner" | translate}}</div>
+        <span *ngIf="entity && entity.owner">{{entity.owner.displayName}}</span>
+      </div>
+    </div>
+    <div fxLayout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
+      <div fxFlex="40" style="align-self:center;">
+        <span class="item-title tc-grey-500"> {{"views.entity-access-control.Roles" | translate}} </span>
+      </div>
+      <div fxflex class="">
+        <span class="item-title  tc-grey-500"> {{"views.entity-access-control.Members" | translate}} </span>
+      </div>
+    </div>
+    <div fxLayout="column" *ngFor="let roleMembership of entityRoleMemberships; let idx = index">
+      <div fxLayout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
+        <div fxFlex="40" style="align-self:center;" layout="column">
+          <span>{{roleMembership.role.title | translate}}</span>
+          <div *ngIf="roleMembership.role.description" class="hint layout-padding-top" [innerHTML]="roleMembership.role.description">
+          </div>
+        </div>
+        <div fxflex class="layout-padding-top-bottom">
+          <ng-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" md-no-float="true" flex>
+            <td-chips class="layout-padding-top-bottom"
+                      [disabled]="readOnly"
+                      [chipAddition]="true"
+                      [chipRemoval]="true"
+                      [items]="selectedRoles | async"
+                      [(ngModel)]="roleMembership.members"
+                      [inputPosition]="'after'" class="pad-sm"
+                      (remove)="onRemovedMember(roleMembership.members)"
+                      requireMatch
+                      placeholder="Type user(s) and/or group(s)"
+                      (inputChange)="queryUsersAndGroups($event)"
+                      [ngModelOptions]="{standalone: true}">
+            <ng-template td-chip let-chip="chip">
+              {{ chip.title ? chip.title : chip.systemName }}
+            </ng-template>
+            <ng-template td-autocomplete-option let-option="option">
+              <span>
+                <ng-md-icon icon="group" class="accent-color" *ngIf="option.type=='group'"></ng-md-icon>
+                <ng-md-icon icon="account_circle" class="accent-color" *ngIf="option.type=='user'"></ng-md-icon>
+                <span> {{ option.title ? option.title : option.systemName }} </span>
+              </span>
+            </ng-template>
+            </td-chips>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

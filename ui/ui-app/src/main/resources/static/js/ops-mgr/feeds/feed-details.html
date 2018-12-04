@@ -49,7 +49,7 @@
                     <mat-list-item style="padding: 16px;">
                         <div  fxLayout="column" class="listItemTitle ">
 
-                            <span class="item-title" [ngClass]="{'healthy':feed.displayStatus == 'COMPLETED' || feed.displayStatus =='RUNNING','error':feed.displayStatus == 'FAILED'}">
+                            <span class="item-title" [ngClass]="{'tc-positive':feed.displayStatus == 'COMPLETED' || feed.displayStatus =='RUNNING','tc-negative':feed.displayStatus == 'FAILED'}">
                                 {{feed.displayStatus | translate}}</span>
                             <span class="column-title column-title-bottom">
                                 {{"views.feeds.feed-details.Status" | translate}}
@@ -97,7 +97,7 @@
             {{"views.feeds.feed-details.LF" | translate}}
         </mat-card-title>
         <div layout-align="center center"  fxLayout="column">
-            <mat-spinner mode="indeterminate" diameter="30"></mat-spinner>
+            <mat-spinner mode="indeterminate" diameter="30" class="md-accent"></mat-spinner>
         </div>
     </mat-card>
 </div>

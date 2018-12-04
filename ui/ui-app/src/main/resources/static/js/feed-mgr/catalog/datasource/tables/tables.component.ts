@@ -3,11 +3,35 @@ import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../../api/models/browser-object';
 import {BrowserColumn} from '../../api/models/browser-column';
 import {Node} from '../../api/models/node';
+import {Component} from "@angular/core";
+import * as _ from "underscore"
 
+@Component({
+    selector: "catalog-table-browser",
+    styleUrls: ["../api/browser.component.scss"],
+    templateUrl: "../api/browser.component.html"
+})
 export class TablesComponent extends BrowserComponent {
+
+    hideInternalTables: boolean = true;
+    showHideInternalOption : boolean = true;
 
     init(): void {
         this.initData();
+        this.showHideInternalOption = (this.datasource.template.format === 'hive');
+        this.hideInternalTables = (this.showHideInternalOption);
+    }
+
+    /**
+     * Ensure the params has some values in it to trigger the state to reload
+     * @param params
+     */
+    protected browse(params: any): void {
+        if(_.isEmpty(params)){
+            params.schema="";
+            params.catalog = "";
+        }
+        this.browseTo(params, undefined);
     }
 
     getColumns(): BrowserColumn[] {
@@ -15,7 +39,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     getSortByColumnName(): string {
-        return this.columns[1].name;
+        return this.columns[2].name;
     }
 
     getStateName(): string {
@@ -27,33 +51,39 @@ export class TablesComponent extends BrowserComponent {
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {
-        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema);
+        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema, obj.qualifiedIdentifier);
     }
 
     createRootNode(): Node {
+        let node: Node = undefined;
         if (this.datasource.template && this.datasource.template.options && this.datasource.template.options.url) {
-            return new Node(this.datasource.template.options.url);
+            node = new Node(this.datasource.template.options.url);
         } else if (this.datasource.connector && this.datasource.connector.template && this.datasource.connector.template.options && this.datasource.connector.template.options.url) {
-            return new Node(this.datasource.connector.template.options.url);
+            node = new Node(this.datasource.connector.template.options.url);
         } else {
-            return new Node("");
+            node = new Node("");
         }
+        if (node.name == "" && this.datasource && this.datasource.title) {
+            node.name = this.datasource.title;
+        }
+        return node;
     }
 
     createParentNodeParams(node: Node): any {
-        const params = {
-            catalog: '',
-            schema: ''
-        };
+        let datasourceId = this.params && this.params.datasourceId ? this.params.datasourceId : undefined;
+        let params: any = {}
+        if (datasourceId) {
+            params.datasourceId = datasourceId;
+        }
         const dbObj: DatabaseObject = <DatabaseObject>node.getBrowserObject();
         if (dbObj === undefined) {
             //root node for database will have no browser object
             return params;
         }
         if (dbObj.type === DatabaseObjectType.Catalog) {
-            return params.catalog = dbObj.name;
+            params.catalog = dbObj.name;
         } else if (dbObj.type === DatabaseObjectType.Schema) {
-            return params.schema = dbObj.name;
+            params.schema = dbObj.name;
         }
 
         return params;
@@ -73,8 +103,12 @@ export class TablesComponent extends BrowserComponent {
         return this.params;
     }
 
+    private isEmpty(item: string) {
+        return item === undefined || item == "";
+    }
+
     findOrCreateThisNode(root: Node, params: any): Node {
-        if (params.catalog === undefined && params.schema === undefined) {
+        if (this.isEmpty(params.catalog) && this.isEmpty(params.schema)) {
             return root;
         }
         if (params.catalog) {
@@ -98,7 +132,23 @@ export class TablesComponent extends BrowserComponent {
         return undefined;
     }
 
-    private createTempPlaceholder(name: string, type: DatabaseObjectType) {
-        return new DatabaseObject(name, type, undefined, undefined);
+    /**
+     * Filter internal tables
+     * @param {BrowserObject[]} data
+     * @returns {BrowserObject[]}
+     */
+    applyCustomFilter(data: BrowserObject[]): BrowserObject[] {
+
+        if (this.hideInternalTables) {
+            data = data.filter((item) => {
+                return (!(item.name.endsWith("_invalid") || item.name.endsWith("_profile") || item.name.endsWith("_valid") || item.name.endsWith("_feed")));
+            });
+        }
+        return data;
     }
+
+    private createTempPlaceholder(name: string, type: DatabaseObjectType) {
+        return new DatabaseObject(name, type, undefined, undefined, undefined);
+    }
+
 }

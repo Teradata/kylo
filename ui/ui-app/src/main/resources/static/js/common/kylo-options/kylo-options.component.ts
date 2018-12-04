@@ -1,13 +1,12 @@
-import {Component, ElementRef} from "@angular/core";
-import {moduleName} from "../module-name";
-import { AboutKyloService } from "../about-kylo/AboutKyloService";
-import { HttpClient } from '@angular/common/http';
-import { ObjectUtils } from "../utils/object-utils";
+import {HttpClient} from '@angular/common/http';
+import {Component} from "@angular/core";
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
+import {AboutKyloService} from "../about-kylo/AboutKyloService";
 
 @Component({
     selector: "kylo-options",
-    templateUrl: "js/common/kylo-options/kylo-options.html",
-    styleUrls: ["js/common/kylo-options/kylo-options-style.css"]
+    templateUrl: "./kylo-options.html",
+    styleUrls: ["./kylo-options-style.css"]
 })
 export class KyloOptionsComponent {
 
@@ -34,13 +33,31 @@ export class KyloOptionsComponent {
     constructor(private http: HttpClient,
                 private AboutKyloService: AboutKyloService) {}
 
-    openMenu ($mdOpenMenu: any, ev: any) {
+    openMenu () {
         //callback
         if (this.openedMenu) {
             this.openedMenu();
         }
         // $mdOpenMenu(ev);
     };
+
+    openDocs(thisVersion:boolean) {
+        const THIS_DOCS_URL_PREFIX = "https://kylo.readthedocs.io/en/v";
+        const LATEST_DOCS_URL_PREFIX = "https://kylo.readthedocs.io/en/latest";
+        const TRAILING_SLASH = "/";
+        const URL = "/proxy/v1/about/version";
+
+        if (thisVersion) {
+            this.http.get(URL).toPromise().then(function success(response: any) {
+                window.open(THIS_DOCS_URL_PREFIX + response + TRAILING_SLASH);
+            }, function failure(response: any) {
+                console.log("Could not determine this Kylo version. Will open docs for latest version");
+                window.open(LATEST_DOCS_URL_PREFIX + TRAILING_SLASH);
+            });
+        } else {
+            window.open(LATEST_DOCS_URL_PREFIX + TRAILING_SLASH);
+        }
+    }
 
     aboutKylo() {
         this.AboutKyloService.showAboutDialog();

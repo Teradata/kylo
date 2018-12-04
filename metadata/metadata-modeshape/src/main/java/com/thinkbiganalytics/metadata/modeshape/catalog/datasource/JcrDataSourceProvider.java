@@ -30,11 +30,18 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.catalog.connector.JcrConnector;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.MetadataPaths;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.SecurityRole;
+import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -56,6 +63,15 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
     @Inject
     private ConnectorProvider connectorProvider;
 
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
+    
+    @Inject
+    private SecurityRoleProvider roleProvider;
+
+    @Inject
+    private AccessController accessController;
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.BaseProvider#resolveId(java.io.Serializable)
      */
@@ -68,15 +84,28 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider#create(com.thinkbiganalytics.metadata.api.catalog.Connector.ID, java.lang.String)
      */
     @Override
-    public DataSource create(ID connId, String systemName) {
+    public DataSource create(ID connId, String title) {
         return this.connectorProvider.find(connId)
                 .map(conn -> {
+                    String systemName = generateSystemName(title);
                     Path dsPath = MetadataPaths.dataSourcePath(conn.getSystemName(), systemName);
                     if (JcrUtil.hasNode(getSession(), dsPath)) {
-                        throw DataSourceAlreadyExistsException.fromSystemName(systemName);
+                        throw DataSourceAlreadyExistsException.fromSystemName(title);
                     } else {
                         Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrDataSource.NODE_TYPE);
-                        return JcrUtil.createJcrObject(connNode, JcrDataSource.class);
+                        JcrDataSource dsrc = JcrUtil.createJcrObject(connNode, JcrDataSource.class);
+                        dsrc.setTitle(title);
+                        
+                        if (this.accessController.isEntityAccessControlled()) {
+                            final List<SecurityRole> roles = roleProvider.getEntityRoles(SecurityRole.DATASOURCE);
+                            actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                                .ifPresent(actions -> dsrc.enableAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser(), roles));
+                        } else {
+                            actionsProvider.getAvailableActions(AllowedActions.DATASOURCE)
+                                .ifPresent(actions -> dsrc.disableAccessControl(JcrMetadataAccess.getActiveUser()));
+                        }
+                        
+                        return dsrc;
                     } 
                 })
                 .orElseThrow(() -> new ConnectorNotFoundException(connId));
@@ -140,5 +169,15 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
         return JcrDataSource.NODE_TYPE;
     }
 
-
+    @Override
+    public Optional<DataSource> findByNifiControlerServiceId(final String serviceId) {
+        final String query = startBaseQuery()
+            .append(" WHERE e.[tba:nifiControllerServiceId] = '").append(serviceId.replaceAll("'", "''")).append("'")
+            .toString();
+        return Optional.ofNullable(findFirst(query));
+    }
+    
+    public String generateSystemName(String title) {
+        return JcrUtil.toSystemName(title);
+    }
 }

@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 
@@ -31,7 +32,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -113,6 +114,49 @@ public interface FeedManagerFeedService {
 
     /**
      * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param versionId
+     * @return
+     */
+    DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param comment option comment to attach to the new version
+     * @return
+     */
+    EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param versionId TODO
+     * @param includeContent
+     * @return
+     */
+    EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
      * @param versionId1
      * @param versionId2
      * @return
@@ -183,6 +227,19 @@ public interface FeedManagerFeedService {
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
     NifiFeed createFeed(FeedMetadata feedMetadata);
+
+    /**
+     * @param feedMetadata
+     * @return
+     */
+    FeedMetadata saveDraftFeed(FeedMetadata feedMetadata);
+
+    /**
+     * @param feedId
+     * @param includeContent
+     * @return
+     */
+    Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent);
 
     /**
      * Deletes the specified feed.

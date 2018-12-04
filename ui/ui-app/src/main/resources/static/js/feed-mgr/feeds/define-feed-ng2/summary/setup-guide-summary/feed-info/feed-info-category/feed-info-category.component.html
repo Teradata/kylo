@@ -1,0 +1,10 @@
+<feed-info-item [feed]="feed" name="{{feed.category.name}}" description="Category" icon="folder" (cancel)="cancel()" (save)="save()" [(editing)]="editing" [editable]="editable">
+<form [formGroup]="formGroup">
+
+  <category-autocomplete [formGroup]="formGroup" [category]="feed.category">
+  </category-autocomplete>
+</form>
+</feed-info-item>
+
+
+

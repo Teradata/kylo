@@ -1,7 +1,15 @@
-<h2 mat-dialog-title>{{'SHARED.APPLY_DOMAIN_TYPE.APPLY_DOMAIN_TYPE' | translate}}</h2>
 
-<mat-dialog-content class="mat-typography">
-    <div style="padding-bottom: 12px;">{{'SHARED.APPLY_DOMAIN_TYPE.COLOUMN_DESELECT' | translate}}</div>
+<div class="layout-padding">
+<h2 class="pull-bottom-md">
+  <span>Domain Types</span>
+  <span fxFlex="1 1 auto"></span>
+</h2>
+<h4 class="tc-grey-500">Field validation will be visible in grid. Domain type, name, and standardization rules will be deferred.</h4>
+</div>
+
+<mat-dialog-content ngClass="tc-gray-600">
+
+  <div class="push-pad-bottom">Apply the following domain types:</div>
 
     <td-data-table
         #dataTable
@@ -10,7 +18,7 @@
         [selectable]="true"
         [clickable]="false"
         [(value)]="selectedRows"
-        [multiple]="false"
+        [multiple]="true"
         [sortable]="true"
         [sortBy]="sortBy"
         [sortOrder]="sortOrder"

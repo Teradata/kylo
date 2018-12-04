@@ -114,6 +114,6 @@ public class JcrPropertyUtilTest {
         Mockito.when(field.isRequired()).thenReturn(true);
 
         // Test required property
-        JcrPropertyUtil.setUserProperties(Mockito.mock(Node.class), Collections.singleton(field), Collections.emptyMap());
+        JcrPropertyUtil.setUserProperties(Mockito.mock(Node.class), Collections.singleton(field), Collections.emptyMap(),true);
     }
 }

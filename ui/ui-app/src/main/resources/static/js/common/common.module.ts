@@ -6,6 +6,7 @@ import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from '@angular/material/card';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatGridListModule} from '@angular/material/grid-list';
 import {MatIconModule} from "@angular/material/icon";
 import {MatInputModule} from '@angular/material/input';
@@ -15,129 +16,150 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatSelectModule} from '@angular/material/select';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
+import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentLoadingModule} from "@covalent/core/loading";
 import {CovalentMenuModule} from "@covalent/core/menu";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
 import {CovalentPagingModule} from '@covalent/core/paging';
 import {CovalentSearchModule} from '@covalent/core/search';
 import {TranslateModule} from "@ngx-translate/core";
+import {UIRouterModule} from "@uirouter/angular";
 
 import {RestUrlService} from "../feed-mgr/services/RestUrlService";
 import {KyloServicesModule} from "../services/services.module";
-import AboutKyloDialogController, {AboutKyloService} from "./about-kylo/AboutKyloService";
+import {AboutKyloDialogController, AboutKyloService} from "./about-kylo/AboutKyloService";
+import {AccessDeniedComponent} from "./access-denied/access-denied.component";
+import {AccordianMenuComponent} from "./accordion-menu/accordionMenuComponent";
+import {AccordionMenuService} from "./accordion-menu/AccordionMenuService";
+import {menuLinkComponent} from "./accordion-menu/menuLinkComponent";
+import {MenuToggleComponent} from "./accordion-menu/menuToggleComponent";
 import {AddButtonComponent} from "./add-button/add-button.component";
+import {BrowserHeight} from "./browser-height/browser-height";
 import {CardFilterHeaderComponent} from "./card-filter-header/card-filter-header.component";
 import {CardLayoutComponent} from "./card-layout/card-layout.component";
+import {BaseDraggableDirective} from "./draggable-ng2/base-draggable.directive";
+import {KyloDraggableDirective} from "./draggable-ng2/kylo-draggable.directive";
 import {UploadFileComponent} from "./file-upload/file-upload.component";
-import {FilteredPaginatedTableViewComponent} from "./filtered-paginated-table-view/filteredPaginatedTableView.component";
+import {FilteredPaginatedTableViewComponent} from "./filtered-paginated-table-view/filtered-paginated-table-view.component";
 import {IconPickerDialog} from "./icon-picker-dialog/icon-picker-dialog.component";
 import {KyloIconComponent} from "./kylo-icon/kylo-icon.component";
 import {KyloOptionsComponent} from "./kylo-options/kylo-options.component";
+import {KyloVisNetworkComponent} from "./kylo-vis-network/kylo-vis-network.component";
+import {LocalStorageService} from "./local-storage/local-storage.service";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
 import {OptionsMenuComponent} from "./options-menu/OptionsMenu.component"
+import {SafeHtmlPipe} from "./safe-html/safe-html.pipe";
 import {KyloTimerDirective} from "./timer/kylo-timer.component";
 import {RouterBreadcrumbsComponent} from "./ui-router-breadcrumbs/ui-router-breadcrumbs.component";
+import {DateTimeService} from "./utils/date-time.service";
 import {VerticalSectionLayoutComponent} from "./vertical-section-layout/vertical-section-layout.component";
 import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-selection.component";
-import { AccordianMenuComponent } from "./accordion-menu/accordionMenuComponent";
-import { MenuToggleComponent } from "./accordion-menu/menuToggleComponent";
-import { menuLinkComponent } from "./accordion-menu/menuLinkComponent";
-// import { IfPermissionDirective } from "./ng-if-permission/ng-if-permission.directive";
-import { AccordionMenuService } from "./accordion-menu/AccordionMenuService";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { UIRouterModule } from "@uirouter/angular";
 
 @NgModule({
     declarations: [
+        AboutKyloDialogController,
+        AccessDeniedComponent,
+        AccordianMenuComponent,
         AddButtonComponent,
-        NotificationMenuComponent,
+        BaseDraggableDirective,
+        BrowserHeight,
+        CardFilterHeaderComponent,
+        CardLayoutComponent,
+        FilteredPaginatedTableViewComponent,
+        IconPickerDialog,
+        KyloDraggableDirective,
         KyloIconComponent,
-        ViewTypeSelectionComponent,
-        VerticalSectionLayoutComponent,
+        KyloOptionsComponent,
+        KyloTimerDirective,
+        KyloVisNetworkComponent,
+        menuLinkComponent,
+        MenuToggleComponent,
+        NotificationMenuComponent,
         OptionsMenuComponent,
         RouterBreadcrumbsComponent,
-        KyloOptionsComponent,
-        CardFilterHeaderComponent,
+        SafeHtmlPipe,
         UploadFileComponent,
-        CardLayoutComponent,
-        IconPickerDialog,
-        AboutKyloDialogController,
-        FilteredPaginatedTableViewComponent,
-        KyloTimerDirective,
-        // IfPermissionDirective,
-        AccordianMenuComponent,
-        MenuToggleComponent,
-        menuLinkComponent
+        VerticalSectionLayoutComponent,
+        ViewTypeSelectionComponent
     ],
     entryComponents: [
+        AboutKyloDialogController,
+        AccordianMenuComponent,
         AddButtonComponent,
+        CardFilterHeaderComponent,
+        CardLayoutComponent,
+        FilteredPaginatedTableViewComponent,
+        IconPickerDialog,
+        KyloOptionsComponent,
+        menuLinkComponent,
+        MenuToggleComponent,
         NotificationMenuComponent,
-        ViewTypeSelectionComponent,
-        VerticalSectionLayoutComponent,
         OptionsMenuComponent,
         RouterBreadcrumbsComponent,
-        KyloOptionsComponent,
-        CardFilterHeaderComponent,
         UploadFileComponent,
-        CardLayoutComponent,
-        AboutKyloDialogController,
-        IconPickerDialog,
-        FilteredPaginatedTableViewComponent,
-        AccordianMenuComponent,
-        MenuToggleComponent,
-        menuLinkComponent,
-        menuLinkComponent
-    ],
-    imports: [
-        CommonModule,
-        CovalentLoadingModule,
-        CovalentMenuModule,
-        CovalentNotificationsModule,
-        CovalentDataTableModule,
-        CovalentPagingModule,
-        CovalentSearchModule,
-        KyloServicesModule,
-        MatButtonModule,
-        MatIconModule,
-        MatListModule,
-        MatMenuModule,
-        MatInputModule,
-        MatSelectModule,
-        MatProgressSpinnerModule,
-        MatGridListModule,
-        MatDialogModule,
-        MatToolbarModule,
-        MatCardModule,
-        FormsModule,
-        FlexLayoutModule,
-        HttpClientModule,
-        TranslateModule,
-        MatProgressBarModule,
-        MatTooltipModule,
-        UIRouterModule.forChild()
-    ],
-    exports: [
-        KyloIconComponent,
         VerticalSectionLayoutComponent,
-        CardFilterHeaderComponent,
-        IconPickerDialog,
-        FilteredPaginatedTableViewComponent,
-        UploadFileComponent,
-        CovalentDataTableModule,
-        KyloTimerDirective,
-        // IfPermissionDirective,
-        AccordianMenuComponent,
-        MenuToggleComponent,
-        AddButtonComponent,
-        RouterBreadcrumbsComponent,
-        NotificationMenuComponent,
-        KyloOptionsComponent
+        ViewTypeSelectionComponent
     ],
     providers: [
         AboutKyloService,
-        RestUrlService,
-        AccordionMenuService
+        AccordionMenuService,
+        DateTimeService,
+        LocalStorageService,
+        RestUrlService
+    ],
+    imports: [
+        CommonModule,
+        CovalentDataTableModule,
+        CovalentFileModule,
+        CovalentLoadingModule,
+        CovalentMenuModule,
+        CovalentNotificationsModule,
+        CovalentPagingModule,
+        CovalentSearchModule,
+        FlexLayoutModule,
+        FormsModule,
+        HttpClientModule,
+        KyloServicesModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatGridListModule,
+        MatIconModule,
+        MatInputModule,
+        MatListModule,
+        MatMenuModule,
+        MatProgressBarModule,
+        MatProgressSpinnerModule,
+        MatSelectModule,
+        MatToolbarModule,
+        MatTooltipModule,
+        TranslateModule,
+        UIRouterModule.forChild()
+    ],
+    exports: [
+        AccessDeniedComponent,
+        AccordianMenuComponent,
+        AddButtonComponent,
+        BaseDraggableDirective,
+        BrowserHeight,
+        CardFilterHeaderComponent,
+        CovalentDataTableModule,
+        FilteredPaginatedTableViewComponent,
+        IconPickerDialog,
+        KyloDraggableDirective,
+        KyloIconComponent,
+        KyloOptionsComponent,
+        KyloTimerDirective,
+        KyloVisNetworkComponent,
+        MenuToggleComponent,
+        NotificationMenuComponent,
+        RouterBreadcrumbsComponent,
+        SafeHtmlPipe,
+        UploadFileComponent,
+        VerticalSectionLayoutComponent
     ]
 })
 export class KyloCommonModule {

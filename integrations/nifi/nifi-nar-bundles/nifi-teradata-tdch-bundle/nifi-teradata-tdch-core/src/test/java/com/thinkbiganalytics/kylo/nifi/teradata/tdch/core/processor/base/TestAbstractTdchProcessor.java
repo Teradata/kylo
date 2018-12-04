@@ -59,6 +59,7 @@ public class TestAbstractTdchProcessor extends AbstractTdchProcessor {
         properties.add(TARGET_TIMESTAMP_FORMAT);
         properties.add(TARGET_TIMEZONE_ID);
         properties.add(STRING_TRUNCATE_FLAG);
+        properties.add(CHARSET);
         this.properties = Collections.unmodifiableList(properties);
     }
 

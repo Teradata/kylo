@@ -1,6 +1,6 @@
 <div layout="row">
     <div flex="95" [ngClass]="{'editMode' : !isReadonly}">
-        <codemirror class="regexCodeMirror" name="pattern" rows="1" (change)="patternChange($event)" [(ngModel)]="pattern" (onLoad) = "onLoaded()" [config]="options">
+        <codemirror class="regexCodeMirror" name="pattern" (change)="patternChange($event)" [(ngModel)]="pattern" [config]="options">
         </codemirror >
     </div>
     <mat-menu #menu="matMenu" flex="5">

@@ -1,0 +1,33 @@
+<ng-container *ngIf="!showCatalog && dataSets && dataSets.length >0 ">
+  <mat-list class="pull-top">
+    <mat-list-item *ngFor="let dataset of dataSets; let last=last">
+      <h4 mat-line>{{dataset.dataSource ? dataset.dataSource.title : ""}}</h4>
+      <p mat-line>{{dataset.resolvePath()}}</p>
+      <button mat-icon-button color="accent" (click)="browseCatalog()" *ngIf="!feed.readonly && allowEdit" matTooltip="Choose a different sample"><mat-icon color="accent">edit</mat-icon></button>
+      <mat-divider  *ngIf="!last"></mat-divider>
+    </mat-list-item>
+  </mat-list>
+</ng-container>
+
+  <ng-container *ngIf="!showCatalog && (!dataSets || dataSets.length ==0)">
+    <mat-list class="pull-top">
+      <mat-list-item >
+        <h4 mat-line class="tc-grey-600 pull-left">No sample selected</h4>
+        <button mat-icon-button color="accent" (click)="browseCatalog()" *ngIf="!feed.readonly && allowEdit" matTooltip="Choose a sample"><mat-icon color="accent">edit</mat-icon></button>
+      </mat-list-item>
+    </mat-list>
+</ng-container>
+
+<div *ngIf="showCatalog && feed.readonly" fxLayout="column">
+  No source(s) has been selected for this feed.
+</div>
+
+<ng-container *ngIf="showCatalog && !feed.readonly">
+
+  <dataset-preview-stepper [showSkipSourceButton]="showSkipSourceButton" [displayBottomActionButtons]="true" (previewSaved)="onSave($event)" (previewCanceled)="onCancel($event)"
+                           saveLabel="Apply"></dataset-preview-stepper>
+
+</ng-container>
+
+
+

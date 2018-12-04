@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service;
  */
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.DeployResponseEntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -32,7 +33,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
+import com.thinkbiganalytics.feedmgr.service.feed.DeployFeedException;
+import com.thinkbiganalytics.metadata.api.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.security.action.Action;
@@ -46,6 +48,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -110,6 +113,14 @@ public interface MetadataService {
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
     NifiFeed createFeed(FeedMetadata feedMetadata);
+
+    /**
+     * Save the feed as a draft version.
+     * 
+     * @param feedMetadata metadata about the feed
+     * @return an object with status information about the newly created feed, or error information if unsuccessful
+     */
+    FeedMetadata saveDraftFeed(FeedMetadata feedMetadata);
 
     /**
      * Deletes the specified feed.
@@ -284,7 +295,8 @@ public interface MetadataService {
     /**
      * Get a version for the given feed and version ID.  The returned 
      * optional will be empty if no feed exists with the given ID.  A
-     * VersionNotFoundException will 
+     * VersionNotFoundException will thrown if the feed exists bot no 
+     * version for the given ID is found.
      * @param feedId the feed ID
      * @param versionId the version ID
      * @param includeContent indicates whether the feed content should be included in the version
@@ -292,6 +304,66 @@ public interface MetadataService {
      * @throws VersionNotFoundException if no version exists with the given ID
      */
     Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * Get a latest version for the given feed.  The returned 
+     * optional will be empty if no feed exists with the given ID.
+     * @param feedId the feed ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return an optional feed version
+     */
+    Optional<EntityVersion> getLatestFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * Get the draft version of the feed (if any.)
+     * @param feedId the feed ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return an optional feed version
+     */
+    Optional<EntityVersion> getDraftFeedVersion(String feedId, boolean includeContent);
+
+    /**
+     * Get the version of the feed that is currently deployed (if any.)
+     * @param feedId the feed ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return an optional feed version
+     */
+    Optional<EntityVersion> getDeployedFeedVersion(String feedId, boolean includeContent);
+    
+    /**
+     * Deploys a particular version of a feed.  If that version is already deployed then this
+     * method has no effect.
+     * @param feedId the feed ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return the current state of feed versions; including which is version is deployed
+     */
+    DeployResponseEntityVersion deployFeedVersion(String feedId, String versionId, boolean includeContent) throws DeployFeedException;
+    
+    /**
+     * Creates a new version from the current draft version of a feed.  If the feed does not
+     * have a draft version then this method has no effect.
+     * @param feedId the feed ID
+     * @param comment TODO
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return the current state of feed versions (no feed content)
+     */
+    EntityVersion createVersionFromDraftFeed(String feedId, String comment, boolean includeContent);
+
+    /**
+     * Creates a new draft feed from a specific feed version.
+     * @param feedId the feed ID
+     * @param versionId the version ID
+     * @param includeContent indicates whether the feed content should be included in the version
+     * @return the current state of feed versions (no feed content)
+     */
+    EntityVersion createDraftFromFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param b
+     * @return
+     */
+    Optional<EntityVersion> revertFeedDraftVersion(String feedId, boolean includeContent);
 
     /**
      * @param feedId1

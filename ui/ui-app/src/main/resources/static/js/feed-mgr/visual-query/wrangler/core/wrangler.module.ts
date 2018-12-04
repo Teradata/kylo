@@ -1,5 +1,4 @@
 import {CommonModule} from "@angular/common";
-import {HttpClientModule} from "@angular/common/http";
 import {Injector, NgModule} from "@angular/core";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatButtonModule} from "@angular/material/button";
@@ -11,27 +10,24 @@ import {MatSelectModule} from "@angular/material/select";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
 
+import {DynamicFormModule} from "../../../../../lib/dynamic-form/dynamic-form.module";
 import {DIALOG_SERVICE, INJECTOR} from "../api/index";
 import {DateFormatDialog} from "./columns/date-format.component";
 import {WranglerDialogService} from "./services/dialog.service";
-import {ImputeMissingDialog} from "./columns/impute-missing.component";
 
 /**
  *
  */
 @NgModule({
     declarations: [
-        DateFormatDialog,
-        ImputeMissingDialog
+        DateFormatDialog
     ],
     entryComponents: [
-        DateFormatDialog,
-        ImputeMissingDialog
+        DateFormatDialog
     ],
     imports: [
         CommonModule,
         CovalentDialogsModule,
-        HttpClientModule,
         FormsModule,
         MatButtonModule,
         MatFormFieldModule,
@@ -40,7 +36,8 @@ import {ImputeMissingDialog} from "./columns/impute-missing.component";
         MatProgressBarModule,
         MatSelectModule,
         MatToolbarModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        DynamicFormModule
     ],
     providers: [
         {provide: DIALOG_SERVICE, useClass: WranglerDialogService},
@@ -48,5 +45,4 @@ import {ImputeMissingDialog} from "./columns/impute-missing.component";
     ]
 })
 export class WranglerModule {
-
 }

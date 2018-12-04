@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.api.catalog;
  */
 
 import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
@@ -33,7 +34,7 @@ import java.util.List;
 /**
  *
  */
-public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Auditable, AccessControlled {
+public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Auditable, Iconable, AccessControlled {
     
     interface ID extends Serializable { }
     
@@ -41,11 +42,9 @@ public interface Connector extends DataSetSparkParamsSupplier, SystemEntity, Aud
     
     boolean isActive();
     
+    void setActive(boolean flag);
+    
     String getPluginId();
-    
-    String getIcon();
-    
-    String getColor();
     
     List<? extends DataSource> getDataSources();
 }

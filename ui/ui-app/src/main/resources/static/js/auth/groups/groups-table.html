@@ -19,18 +19,18 @@
   -->
   <filtered-paginated-table-view      
       [cardTitle]="cardTitle"
+      (searchDebounced)="search($event)"
       [filteredData]="filteredData"
       [columns]="columns"
       [clickable]="true"
       [sortable]="true"
       [sortOrder]="sortOrder"
       [sortBy]="sortBy"
+      (sortChanged)="sort($event)"
+      (rowClicked)="groupDetails($event)"
       [firstLast]="false"
       [pageSize]="pageSize"
       [filteredTotal]="filteredTotal"
-      (rowClicked)="groupDetails($event)"
-      (sortChanged)="sort($event)"
-      (searchDebounced)="search($event)"
       (pageSizeChanged)="onPageSizeChange($event)"
       [allowedPageSize]="[5,10,20,50]"
       >

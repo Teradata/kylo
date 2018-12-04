@@ -39,6 +39,7 @@ import static com.thinkbiganalytics.install.inspector.inspection.Configuration.S
 @Component
 public class NifiConnectionInspection extends InspectionBase {
 
+    private static final String DEFAULT_PROFILE = "1.2";
     private static final String NIFI_API_FLOW_ABOUT = "/nifi-api/flow/about";
     private static final String NIFI_V = "nifi-v";
 
@@ -186,13 +187,13 @@ public class NifiConnectionInspection extends InspectionBase {
 
         status.addDescription(String.format("Successfully connected to Nifi version '%s' running at '%s'", nifiVersion, jerseyClientConfig.getUrl()));
 
-        String nifiProfileKey = nifiVersion.substring(0, nifiVersion.lastIndexOf(".")) + ".x";
-        List<String> nifiProfiles = nifiVersionsToProfiles.get(nifiProfileKey);
+        String nifiProfileKey = nifiVersion.substring(0, nifiVersion.lastIndexOf('.')) + ".x";
+        List<String> nifiProfiles = nifiVersionsToProfiles.getOrDefault(nifiProfileKey, Collections.singletonList(DEFAULT_PROFILE));
         String expectedNifiProfile = NIFI_V + nifiProfiles.get(nifiProfiles.size() - 1);
 
         List<String> profiles = configuration.getServicesProfiles();
         List<String> selectedNifiProfiles = profiles.stream().filter(profile -> profile.startsWith(NIFI_V)).collect(Collectors.toList());
-        if (selectedNifiProfiles.size() == 0) {
+        if (selectedNifiProfiles.isEmpty()) {
             status.addError(String.format("Nifi profile is not set in '%s'. Add Nifi profile to '%s' property, e.g. '%s=<all-other-profiles>,%s'",
                                           configuration.getServicesConfigLocation(), SPRING_PROFILES_INCLUDE, SPRING_PROFILES_INCLUDE, expectedNifiProfile));
             return status;

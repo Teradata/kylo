@@ -1,0 +1,14 @@
+
+::ng-deep .mat-dialog-content .mat-horizontal-content-container {
+ /* min-height: 65vh; */
+  height:65vh;
+}
+
+
+:host ::ng-deep .mat-dialog-content {
+  overflow: hidden !important;
+}
+
+::ng-deep .td-data-table-scrollable {
+  overflow-x: hidden !important;
+}

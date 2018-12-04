@@ -1,9 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { ObjectUtils } from "../utils/object-utils";
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
 
 @Component({
     selector: 'card-layout',
-    templateUrl: 'js/common/card-layout/card-layout.html'
+    templateUrl: './card-layout.html'
 })
 export class CardLayoutComponent {
 

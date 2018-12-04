@@ -2,8 +2,7 @@ import {Component, Inject, OnDestroy} from "@angular/core";
 import {Subscription} from "rxjs/Subscription";
 
 import {KyloNotification, NotificationEvent, NotificationEventListener, NotificationService} from "../../services/notification.service";
-
-declare const DateTimeUtils: any;
+import {DateTimeUtils} from '../utils/DateTimeUtils';
 
 /**
  * Displays a toolbar button that opens a menu containing notifications from {@link NotificationService}.
@@ -23,7 +22,7 @@ declare const DateTimeUtils: any;
           <div td-menu-header class="mat-subheading-2" style="margin: 0;">Notifications</div>
           <mat-nav-list dense>
             <ng-template ngFor let-item let-index="index" let-last="last" [ngForOf]="notifications">
-              <a mat-list-item [ngClass]="{'not-clickable': item.callback == null}" (click)="onClick(item)">
+              <a mat-list-item [ngClass]="{'not-clickable': item.callback == null}" (click)="onClick(item)" title="{{item.message}}">
                 <mat-icon *ngIf="!item.loading; else loadingIcon" mat-list-icon>{{item.icon}}</mat-icon>
                 <ng-template #loadingIcon>
                   <mat-progress-spinner [diameter]="20" matListIcon mode="indeterminate"></mat-progress-spinner>
@@ -102,7 +101,7 @@ export class NotificationMenuComponent implements NotificationEventListener, OnD
         // Update durations
         const now = new Date().getTime();
         this.durations = this.notifications.map(notification => {
-            return DateTimeUtils(this.$injector.get("$filter")("translate")).formatMillisAsText(now - notification.createTime.getTime(), true, false);
+            return new DateTimeUtils(this.$injector.get("$filter")("translate")).formatMillisAsText(now - notification.createTime.getTime(), true, false);
         });
     }
 

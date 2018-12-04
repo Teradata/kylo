@@ -47,6 +47,8 @@
  *                      allowedActions
  *                  "datasource"
  *                      allowedActions
+ *                  "connector"
+ *                      allowedActions
  *              "services"
  *                  allowedActions
  *              "roles"
@@ -90,7 +92,7 @@
  */
 [tba:metadataFolder] 
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
-	+ catalog (tba:catalogFolder) = tba:catalogFolder autocreated mandatory
+	+ catalog (tba:catalogFolder) = tba:catalogFolder autocreated 
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
 	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
@@ -149,7 +151,7 @@
 /* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
 
 [tba:securityFolder] > nt:folder
-    - tba:entityAccessControlled (BOOLEAN) = 'false'
+    - tba:entityAccessControlled (BOOLEAN) = 'false' autocreated 
     + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
     + roles (tba:entityRolesFolder) = tba:entityRolesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
@@ -160,6 +162,7 @@
     + template (tba:allowedActions) = tba:allowedActions autocreated mandatory
     + category (tba:allowedActions) = tba:allowedActions autocreated mandatory
  	+ datasource (tba:allowedActions) = tba:allowedActions autocreated mandatory
+ 	+ connector (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:allowedActions] > nt:hierarchyNode
     + * (tba:allowableAction)
@@ -167,7 +170,8 @@
 [tba:allowableAction] > nt:hierarchyNode, mix:title
     + * (tba:allowableAction)
 
-[tba:accessControlled] mixin
+[tba:accessControlled] > mix:created mixin
+    - tba:owner (STRING)        // Defaults to jcr:createdBy if this is not set
     + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
     + tba:roleMemberships (tba:roleMembership) sns
 
@@ -178,6 +182,7 @@
     + template (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
     + category (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
  	+ datasource (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+ 	+ connector (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
 
 [tba:rolesFolder] > nt:folder
     + * (tba:securityRole)
@@ -213,7 +218,7 @@
     - usr:mandatory (BOOLEAN)
     - usr:order (LONG)
     
-[tba:Iconed] mixin
+[tba:Iconable] mixin
     - tba:icon (STRING)
     - tba:iconColor (STRING)
 
@@ -246,7 +251,11 @@
 
 /* -=-=-=-=-=--=-=-  Metadata types  -=-=-=-=-=-=-=-=- */
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconed, mix:referenceable, tba:accessControlled
+[tba:ChangeComment] > nt:hierarchyNode, mix:created, mix:lastModified
+    - tba:comment
+    - tba:createDateTime
+
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:Iconable, mix:referenceable, tba:accessControlled, mix:lockable
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -257,11 +266,12 @@
     - tba:order (LONG)
     - tba:isStream (BOOLEAN) = 'false'
     - tba:templateTableOption (STRING)
+    + tba:changeComments (tba:ChangeComment) sns
 
 [tba:indexControlled] mixin
 	- tba:allowIndexing (STRING) = 'Y' mandatory
 
-[tba:category] > tba:extensibleEntity, tba:propertied, mix:referenceable, mix:title, tba:accessControlled, tba:indexControlled
+[tba:category] > tba:extensibleEntity, tba:propertied, tba:Iconable, mix:referenceable, mix:title, tba:accessControlled, tba:indexControlled
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	+ tba:details (tba:categoryDetails) = tba:categoryDetails autocreated mandatory
@@ -281,14 +291,16 @@
 
 
 [tba:feed] > tba:extensibleEntity, mix:referenceable, tba:accessControlled
+    - tba:deployedVersion (WEAKREFERENCE)
     + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory
     + tba:data (tba:feedData) = tba:feedData autocreated mandatory
 
 [tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable, tba:indexControlled
     - tba:systemName (STRING) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
+    + tba:versionComment (tba:ChangeComment)
 
-[tba:feedDetails] > nt:hierarchyNode, tba:propertied, tba:extensibleEntity
+[tba:feedDetails] > nt:hierarchyNode, mix:lastModified, tba:propertied, tba:extensibleEntity
     - tba:feedTemplate (WEAKREFERENCE)
     - tba:slas (WEAKREFERENCE) multiple
     - tba:dependentFeeds (WEAKREFERENCE) multiple
@@ -300,7 +312,6 @@
 
 [tba:feedData] > nt:hierarchyNode, tba:propertied
     - tba:state (STRING) = 'ENABLED'
-    - tba:mode (STRING) = 'COMPLETE'
     - tba:schedulingPeriod (STRING)
     - tba:schedulingStrategy (STRING)
     - tba:securityGroups (WEAKREFERENCE) multiple
@@ -314,9 +325,11 @@
     // TODO: when to check conditions (schedule, event, ...)
 
 [tba:feedConnection] > nt:hierarchyNode, mix:referenceable
-    - tba:datasource (WEAKREFERENCE) mandatory COPY
+    - tba:datasource (WEAKREFERENCE) 
+    - tba:dataSet (WEAKREFERENCE) 
 
 [tba:feedSource] > tba:feedConnection
+    - tba:isSample (BOOLEAN) = false
 
 [tba:feedDestination] > tba:feedConnection 
 //  + fieldPolicies (tba:fieldPolicy) sns
@@ -333,7 +346,7 @@
     - tba:identityString (STRING) // string defining this identity
 
 // @deprecated This type is being superceded in the Catalog schema
-[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+[tba:datasource] > tba:extensibleEntity, tba:Iconable, mix:referenceable, mix:title, tba:propertied
     - tba.datasourceDefinition (REFERENCE)
     - tba:systemName (STRING) mandatory
     - tba:feedSources (WEAKREFERENCE) multiple
@@ -399,7 +412,7 @@
  	- tba:controlerServiceId (STRING)
  	- tba:password (STRING)
 
-[tba:domainType] > mix:referenceable, mix:title, tba:Iconed
+[tba:domainType] > mix:referenceable, mix:title, tba:Iconable
 	- tba:fieldJson (STRING)
 	- tba:fieldNameFlags (STRING)
 	- tba:fieldNamePattern (STRING)
@@ -407,7 +420,7 @@
 	- tba:regexFlags (STRING)
 	- tba:regexPattern (STRING)
 
-[tba:project] > tba:entity, mix:title, tba:accessControlled, tba:propertied
+[tba:project] > tba:entity, tba:Iconable, mix:title, tba:accessControlled, tba:propertied
     - tba:systemName (STRING)
     - tba:icon (STRING)
     - tba:iconColor (STRING)
@@ -419,7 +432,7 @@
 [tba:DataSetSparkParamsSupplier] mixin
     + tba:sparkParams (tba:DataSetSparkParams) = tba:DataSetSparkParams autocreated mandatory
 
-[tba:Connector] > mix:title, tba:entity, mix:title, tba:Iconed, tba:DataSetSparkParamsSupplier, tba:accessControlled
+[tba:Connector] > tba:entity, mix:title, tba:Iconable, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:isActive (BOOLEAN) = true
     - tba:pluginId (STRING) mandatory
     + dataSources (tba:ConnectorDataSources) = tba:ConnectorDataSources autocreated mandatory
@@ -427,16 +440,20 @@
 [tba:ConnectorDataSources]
     + * (tba:DataSource) 
 
-[tba:DataSource] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
+[tba:DataSource] > tba:entity, mix:title, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
+    - tba:nifiControllerServiceId (STRING)
     + dataSets (tba:DataSets) = tba:DataSets autocreated mandatory
     
 [tba:DataSets]
     + * (tba:DataSet) 
 
-[tba:DataSet] > mix:title, tba:entity, tba:DataSetSparkParamsSupplier, tba:accessControlled
-    - mimeType (STRING)
+[tba:DataSet] > tba:entity, mix:title, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
+    - tba:paramsHashCode (LONG) = 0
+    - tba:mimeType (STRING)
+    - tba:feedSources (WEAKREFERENCE) multiple
+    - tba:feedTargets (WEAKREFERENCE) multiple
 
-[tba:DataSetSparkParams] > tba:propertied
+[tba:DataSetSparkParams] > mix:lastModified, tba:propertied
     - tba:format (STRING)
     - tba:paths (STRING) multiple
     - tba:files (STRING) multiple
@@ -444,22 +461,3 @@
 
 [tba:DataSetSchema]
 
-/**
-* [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable
-*     - tba:message (STRING)
-*     - tba:result (STRING) mandatory
-*     + tba:obligationAssessments (tba:obligationAssessment) sns
-*
-* [tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
-*    - tba:obligation (WEAKREFERENCE) mandatory
-*     - tba:message (STRING)
-*     - tba:result (STRING) mandatory
-*     + tba:metricAssessments (tba:metricAssessment) sns
-*
-* [tba:metricAssessment] > nt:hierarchyNode, mix:referenceable
-*     - tba:metric (WEAKREFERENCE) mandatory
-*     - tba:message (STRING)
-*     - tba:result (STRING) mandatory
-*     + tba:resource (nt:resource)
-*
-**/

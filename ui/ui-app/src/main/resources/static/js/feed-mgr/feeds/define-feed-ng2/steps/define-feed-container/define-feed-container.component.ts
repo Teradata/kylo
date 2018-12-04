@@ -1,178 +1,154 @@
-import {Component, Injector, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../model/feed/feed.model";
-import {Step} from "../../../../model/feed/feed-step.model";
-import {DefineFeedService} from "../../services/define-feed.service";
-import {StateRegistry, StateService} from "@uirouter/angular";
-import { TdMediaService } from '@covalent/core/media';
-import { TdLoadingService } from '@covalent/core/loading';
-import {SaveFeedResponse} from "../../model/save-feed-response.model";
-import {MatSnackBar} from "@angular/material/snack-bar";
-import {ISubscription} from "rxjs/Subscription";
-import {FeedLoadingService} from "../../services/feed-loading-service";
-import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
+import {Component, Injector, Input, OnDestroy, OnInit, TemplateRef, ViewChild, ViewContainerRef} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
+import {TdLoadingService} from '@covalent/core/loading';
+import {TdMediaService} from '@covalent/core/media';
+import {StateService} from "@uirouter/angular";
+import {ISubscription} from "rxjs/Subscription";
+
+import {SETUP_GUIDE_LINK} from "../../model/feed-link-constants";
+import {FeedLink} from "../../model/feed-link.model";
+import {SaveFeedResponse} from "../../model/save-feed-response.model";
+import {DefineFeedContainerSideNavEvent, DefineFeedService} from "../../services/define-feed.service";
+import {FeedLoadingService} from "../../services/feed-loading-service";
+import {FeedLinkSelectionChangedEvent, FeedSideNavService, ToolbarActionTemplateChangedEvent} from "../../services/feed-side-nav.service";
+import {AbstractLoadFeedComponent} from "../../shared/AbstractLoadFeedComponent";
 import * as angular from "angular";
-import {FEED_DEFINITION_STATE_NAME} from "../../../../model/feed/feed-constants";
 import * as _ from "underscore";
+import {FEED_DEFINITION_SUMMARY_STATE_NAME, FEED_SETUP_GUIDE_STATE_NAME} from "../../../../model/feed/feed-constants";
+import {KyloRouterService} from "../../../../../services/kylo-router.service";
+
 
 @Component({
     selector: "define-feed-step-container",
-    styleUrls: ["js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-container/define-feed-container.component.css"],
-    templateUrl: "js/feed-mgr/feeds/define-feed-ng2/steps/define-feed-container/define-feed-container.component.html"
+    styleUrls: ["./define-feed-container.component.scss"],
+    templateUrl: "./define-feed-container.component.html"
 })
 export class DefineFeedContainerComponent extends AbstractLoadFeedComponent implements OnInit, OnDestroy {
 
-    @Input() stateParams :any;
+    @Input()
+    stateParams: any;
 
-    public savingFeed:boolean;
+    @Input()
+    toolbarActionLinks: TemplateRef<any>;
 
-    onCurrentStepSubscription: ISubscription;
+    @ViewChild("defaultToolbarActionLinks")
+    defaultToolbarActionLinks: TemplateRef<any>;
 
-    onFeedSavedSubscription: ISubscription;
+    @ViewChild("setupGuideToolbarActions")
+    setupGuideToolbarActionLinksTemplate: TemplateRef<any>;
+
+    /**
+     * should we show the side nav or not
+     */
+    sideNavOpened:boolean = true;
+
+    public savingFeed: boolean;
 
     /**
      * copy of the feed name.
      * the template will reference this for display so the name doesnt change until we save
      */
-    public feedName:string;
+    public feedName: string;
 
-    constructor(feedLoadingService: FeedLoadingService, defineFeedService :DefineFeedService,  stateService:StateService, private $$angularInjector: Injector, public media: TdMediaService,private loadingService: TdLoadingService,private dialogService: TdDialogService,
-                private viewContainerRef: ViewContainerRef,public snackBar: MatSnackBar) {
-        super(feedLoadingService, stateService,defineFeedService);
-          let sideNavService = $$angularInjector.get("SideNavService");
-          sideNavService.hideSideNav();
-        this.onCurrentStepSubscription = this.defineFeedService.currentStep$.subscribe(this.onCurrentStepChanged.bind(this))
-        this.onFeedSavedSubscription = this.defineFeedService.savedFeed$.subscribe(this.onFeedFinishedSaving.bind(this))
+    currentLink: FeedLink = FeedLink.emptyLink();
+
+    feedLinkSelectionChangeSubscription: ISubscription;
+    onFeedSaveSubscription: ISubscription;
+    toolbarActionTemplateChangeSubscription: ISubscription;
+    onSideNavStateChangedSubscription:ISubscription;
+
+
+    constructor(feedLoadingService: FeedLoadingService, defineFeedService: DefineFeedService, stateService: StateService, private $$angularInjector: Injector, public media: TdMediaService, private loadingService: TdLoadingService, private dialogService: TdDialogService,
+                private viewContainerRef: ViewContainerRef,
+                feedSideNavService: FeedSideNavService,
+                private kyloRouterService:KyloRouterService) {
+        super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
+        let sideNavService = $$angularInjector.get("SideNavService");
+        sideNavService.hideSideNav();
+        this.feedLinkSelectionChangeSubscription = this.feedSideNavService.subscribeToFeedLinkSelectionChanges(this.onFeedLinkChanged.bind(this));
+        this.onFeedSaveSubscription = this.defineFeedService.subscribeToFeedSaveEvent(this.onFeedSaved.bind(this));
+        this.toolbarActionTemplateChangeSubscription = this.feedSideNavService.subscribeToToolbarActionTemplateChanges(this.onTemplateActionTemplateChanged.bind(this))
+        this.onSideNavStateChangedSubscription = this.defineFeedService.subscribeToSideNavChanges(this.onSideNavStateChanged.bind(this))
+
     }
 
-    ngOnInit() {
-        let feedId = this.stateParams? this.stateParams.feedId : undefined;
-        this.initializeFeed(feedId);
+    init() {
+        //register the setupguide action template
+        this.feedSideNavService.registerStepToolbarActionTemplate(SETUP_GUIDE_LINK, this.setupGuideToolbarActionLinksTemplate)
     }
 
-    ngOnDestroy() {
-        this.onCurrentStepSubscription.unsubscribe();
-        this.onFeedSavedSubscription.unsubscribe();
+    destroy() {
+        this.feedLinkSelectionChangeSubscription.unsubscribe();
+        this.onFeedSaveSubscription.unsubscribe();
+        this.toolbarActionTemplateChangeSubscription.unsubscribe();
+        this.onSideNavStateChangedSubscription.unsubscribe();
     }
 
+    onTemplateActionTemplateChanged(change: ToolbarActionTemplateChangedEvent) {
 
-    onStepSelected(step:Step){
-        if(!step.isDisabled()) {
-            this.selectedStep = step;
-            this.stateService.go(step.sref,{"feedId":this.feed.id})
+        if (this.toolbarActionLinks != change.templateRef) {
+
+            this.toolbarActionLinks = change.templateRef;
         }
     }
 
-    onSummarySelected(){
-        this.stateService.go(FEED_DEFINITION_STATE_NAME+".summary",{"feedId":this.feed.id})
+    onFeedLinkChanged(link: FeedLinkSelectionChangedEvent) {
+        this.currentLink = link.newLink;
+        if(this.currentLink.isStepLink()){
+            const fullScreen = this.currentLink.step.fullscreen;
+            if(fullScreen){
+                this.sideNavOpened = false;
+            }
+            else {
+                this.sideNavOpened = true;
+            }
+        }
+        //see if we have an action template
+        let templateRef = this.feedSideNavService.getLinkTemplateRef(this.currentLink.label);
+        this.toolbarActionLinks = templateRef;
     }
 
-    onSave(){
-        this.registerLoading();
-        //notify any subscribers that we are about to save the service feed model.
-        //this gives them a chance to update the service with their data prior to the actual save call
-        this.defineFeedService.beforeSave();
-        //notify the subscribers on the actual save call so they can listen when the save finishes
-        this.defineFeedService.saveFeed();
+    onSideNavStateChanged(change:DefineFeedContainerSideNavEvent){
+        this.sideNavOpened = change.opened;
     }
-    onEdit(){
+
+    onEdit() {
         this.feed.readonly = false;
-        this.defineFeedService.onFeedEdit();
+        this.defineFeedService.markFeedAsEditable();
+
     }
+
     onCancelEdit() {
-
-        this.dialogService.openConfirm({
-            message: 'Are you sure you want to canel editing  '+this.feed.feedName+'?  All pending edits will be lost.',
-            disableClose: true,
-            viewContainerRef: this.viewContainerRef, //OPTIONAL
-            title: 'Confirm Cancel Edit', //OPTIONAL, hides if not provided
-            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
-            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
-            width: '500px', //OPTIONAL, defaults to 400px
-        }).afterClosed().subscribe((accept: boolean) => {
-            if (accept) {
-                if(this.feed.isNew()){
-                    this.stateService.go('feeds')
-                }
-                else {
-                  let oldFeed = this.defineFeedService.restoreLastSavedFeed();
-                  this.feed.update(oldFeed);
-                    this.openSnackBar("Restored this feed")
-                    this.feed.readonly = true;
-                }
-            } else {
-                // DO SOMETHING ELSE
-            }
-        });
-    }
-    onDelete(){
-      //confirm then delete
-
-        this.dialogService.openConfirm({
-            message: 'Are you sure want to delete feed '+this.feed.feedName+'?',
-            disableClose: true,
-            viewContainerRef: this.viewContainerRef, //OPTIONAL
-            title: 'Confirm Delete', //OPTIONAL, hides if not provided
-            cancelButton: 'No', //OPTIONAL, defaults to 'CANCEL'
-            acceptButton: 'Yes', //OPTIONAL, defaults to 'ACCEPT'
-            width: '500px', //OPTIONAL, defaults to 400px
-        }).afterClosed().subscribe((accept: boolean) => {
-            if (accept) {
-                this.registerLoading();
-                this.defineFeedService.deleteFeed().subscribe(() => {
-                    this.openSnackBar("Deleted the feed")
-                    this.resolveLoading();
-                    this.stateService.go('feeds')
-                },(error:any) => {
-                    this.openSnackBar("Error deleting the feed ")
-                    this.resolveLoading();
-                })
-            } else {
-                // DO SOMETHING ELSE
-            }
-        });
-
-
-
-
+        this.feed.readonly = true;
+        this.defineFeedService.markFeedAsReadonly();
 
     }
-    private openSnackBar(message:string, duration?:number){
-        if(duration == undefined){
-            duration = 3000;
+
+    onDelete() {
+        //confirm then delete
+        this.defineFeedService.deleteFeed(this.viewContainerRef);
+    }
+
+    onFeedSaved(response: SaveFeedResponse) {
+        if (response.success) {
+            //update this feed
+            this.feed = response.feed;
         }
-        this.snackBar.open(message, null, {
-            duration: duration,
-        });
     }
 
-
-    /**
-     * Called when the feed finished saving.
-     *
-     * @param {SaveFeedResponse} response
-     */
-    onFeedFinishedSaving(response:SaveFeedResponse){
-        this.resolveLoading();
-        this.savingFeed = false;
-        let message = response.message;
-        this.openSnackBar(message)
-        if(response.success){
-            _.extend(this.feed,response.feed);
-          //  this.feed = response.feed;
-            this.feedName = this.feed.feedName;
+    gotoFeedSummary(){
+        if(!this.sideNavOpened) {
+            this.stateService.go(FEED_DEFINITION_SUMMARY_STATE_NAME, {feedId: this.feed.id});
         }
-        if(response.newFeed){
-            this.stateService.go(FEED_DEFINITION_STATE_NAME+".feed-step.general-info",{"feedId":response.feed.id},{location:"replace"})
-        }
-
+    }
+    gotoSetupGuide(){
+        this.sideNavOpened = true;
+        this.stateService.go(FEED_SETUP_GUIDE_STATE_NAME, {feedId: this.feed.id});
     }
 
-    /**
-     * Listener for changes from the service
-     */
-    onCurrentStepChanged(step:Step){
-        this.selectedStep = step;
+    goBack(){
+        this.kyloRouterService.back(FEED_DEFINITION_SUMMARY_STATE_NAME, {feedId: this.feed.id})
     }
+
 
 }

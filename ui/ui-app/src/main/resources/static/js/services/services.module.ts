@@ -1,59 +1,67 @@
 import {CommonModule} from "@angular/common";
-import {NgModule} from "@angular/core";
+import {ModuleWithProviders, NgModule} from "@angular/core";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
-import CommonRestUrlService from "./CommonRestUrlService";
-import SearchService from "./SearchService";
-import AccessControlService from "./AccessControlService";
-import AngularModuleExtensionService from "./AngularModuleExtensionService";
-import AddButtonService from "./AddButtonService";
-import FileUpload from "./FileUploadService";
-import { NotificationService } from "./notification.service";
-import BroadcastService from "./broadcast-service";
-import { DefaultPaginationDataService } from "./PaginationDataService";
-import { DefaultTableOptionsService } from "./TableOptionsService";
-import StateService from "./StateService";
-import UserGroupService from "./UserGroupService";
-import Utils from "./Utils";
-import { MatSnackBarModule } from "@angular/material/snack-bar";
-import { TemplateService } from "./template.service";
-import ConfigurationService from "./ConfigurationService";
-import LoginNotificationService from "./LoginNotificationService";
-import SideNavService from "./SideNavService";
-import { WindowUnloadService } from "./WindowUnloadService";
+import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
+import {AccessControlService} from "./AccessControlService";
+import {AddButtonService} from "./AddButtonService";
+import {AngularModuleExtensionService} from "./AngularModuleExtensionService";
+import {BroadcastService} from "./broadcast-service";
+import {CommonRestUrlService} from "./CommonRestUrlService";
+import {ConfigurationService} from "./ConfigurationService";
+import {FileUpload} from "./FileUploadService";
+import {FormGroupUtil} from "./form-group-util";
+import {HttpBackendClient} from "./http-backend-client";
+import {KyloRouterService} from "./kylo-router.service";
+import {LoginNotificationService} from "./LoginNotificationService";
+import {NotificationService} from "./notification.service";
+import {DefaultPaginationDataService} from "./PaginationDataService";
+import {SearchService} from "./SearchService";
+import {SideNavService} from "./SideNavService";
+import {StateService} from "./StateService";
+import {TabService} from "./tab.service";
+import {DefaultTableOptionsService} from "./TableOptionsService";
+import {TemplateService} from "./template.service";
+import {UserGroupService} from "./UserGroupService";
+import {Utils} from "./Utils";
+import {WindowUnloadService} from "./WindowUnloadService";
 
 @NgModule({
     imports: [
         CommonModule,
         MatSnackBarModule,
+        OpsManagerServicesModule
     ],
     providers: [
-        NotificationService,
-        PreviewDatasetCollectionService,
-        DefaultPaginationDataService,
-        DefaultTableOptionsService,
-        StateService,
-        UserGroupService,
-        Utils,
-        TemplateService,
+        AccessControlService,
+        AddButtonService,
+        AngularModuleExtensionService,
+        BroadcastService,
         CommonRestUrlService,
         ConfigurationService,
+        DefaultPaginationDataService,
+        DefaultTableOptionsService,
+        FileUpload,
+        FormGroupUtil,
+        HttpBackendClient,
+        LoginNotificationService,
+        NotificationService,
+        PreviewDatasetCollectionService,
         SearchService,
         SideNavService,
-        AngularModuleExtensionService,
-        FileUpload,
-        WindowUnloadService,
-        LoginNotificationService
-        
+        StateService,
+        TabService,
+        TemplateService,
+        UserGroupService,
+        Utils,
+        WindowUnloadService
     ]
 })
 export class KyloServicesModule {
-    static forRoot(){
-        return{
-
+    static forRoot() : ModuleWithProviders {
+        return {
             ngModule:KyloServicesModule,
-         
-            providers:[BroadcastService,AddButtonService,AccessControlService]
-         
-          };
+            providers:[KyloRouterService,BroadcastService,AddButtonService,AccessControlService]
+        }
     }
 }

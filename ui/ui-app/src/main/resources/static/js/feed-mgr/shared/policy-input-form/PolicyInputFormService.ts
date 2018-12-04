@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 import * as $ from "jquery";
 import { Injectable, Inject } from '@angular/core';
-import { ObjectUtils } from '../../../common/utils/object-utils';
+import { ObjectUtils } from '../../../../lib/common/utils/object-utils';
 import { TranslateService } from "@ngx-translate/core";
 
 @Injectable()
@@ -232,7 +232,7 @@ export class PolicyInputFormService {
     };
     transformChip (chip: any) {
         // If it is an object, it's already a known chip
-        if (ObjectUtils.isObject(chip)) {
+        if (_.isObject(chip)) {
             return chip;
         }
         // Otherwise, create a new one

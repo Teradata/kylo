@@ -1,4 +1,4 @@
-import {DomainType} from "../../../services/DomainTypesService.d";
+import {DomainType} from "../../../services/DomainTypesService";
 import {Component, Inject, OnDestroy, OnInit} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
@@ -22,6 +22,10 @@ export interface DomainTypeConflictDialogData {
      * Domain type.
      */
     domainType: DomainType;
+
+    propertyName: string;
+
+    propertyValue: string;
 }
 
 /**
@@ -29,7 +33,7 @@ export interface DomainTypeConflictDialogData {
  */
 @Component({
     selector:"domain-type-conflict-dialog",
-    templateUrl: "js/feed-mgr/shared/domain-type/domain-type-conflict/domain-type-conflict-dialog.component.html"
+    templateUrl: "./domain-type-conflict-dialog.component.html"
 })
 export class DomainTypeConflictDialogComponent implements OnInit, OnDestroy{
 

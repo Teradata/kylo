@@ -8,7 +8,7 @@ import {TemplateRepository} from "../../services/model";
 
 @Component({
     selector: 'template-publish-dialog',
-    templateUrl: 'js/repository/dialog/template-publish-dialog.html',
+    templateUrl: './template-publish-dialog.html',
 })
 export class TemplatePublishDialog implements OnInit {
 
@@ -29,7 +29,7 @@ export class TemplatePublishDialog implements OnInit {
     public ngOnInit() {
         this.templateService.getRepositories()
             .subscribe((data: TemplateRepository[]) => {
-                this.repositories = data;
+                this.repositories = data.filter(r => !r.readOnly);
                 this.loading = false;
             }, (errorRsp: any) => {
                 this.error = true;
@@ -45,7 +45,7 @@ export class TemplatePublishDialog implements OnInit {
 
     publishTemplate() {
         this.loading = true;
-        console.log(this.data.templateId, this.selectedRepository, this.overwrite);
+
         if (this.selectedRepository) {
             this.templateService
                 .publishTemplate({ "repositoryName": this.selectedRepository.name,

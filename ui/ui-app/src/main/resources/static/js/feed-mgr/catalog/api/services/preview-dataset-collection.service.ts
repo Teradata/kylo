@@ -5,7 +5,23 @@ import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import {PreviewDataSetRequest} from "../../datasource/preview-schema/model/preview-data-set-request";
 import {HttpClient} from "@angular/common/http";
+import {PartialObserver} from "rxjs/Observer";
+import {ISubscription} from "rxjs/Subscription";
 
+
+
+export class DatasetChangeEvent{
+    public totalDatasets:number = 0;
+    constructor(public dataset:PreviewDataSet, public allDataSets:PreviewDataSet[]) {
+        if(allDataSets && allDataSets.length){
+            this.totalDatasets = allDataSets.length;
+        }
+        else {
+            this.totalDatasets = 0;
+        }
+    }
+
+}
 /**
  * This is a joined service loaded by the root /services module that both Visual Query and Catalog use
  *
@@ -20,23 +36,32 @@ export class PreviewDatasetCollectionService {
      *
      * onDataSetCollectionChanged(dataSets:PreviewDataSet[]) { ...}
      */
-    public datasets$: Observable<PreviewDataSet[]>;
+    public datasets$: Observable<DatasetChangeEvent>;
 
     /**
      * The datasets subject for listening
      */
-    private datasetsSubject: Subject<PreviewDataSet[]>;
+    private datasetsSubject: Subject<DatasetChangeEvent>;
 
 
     datasets:PreviewDataSet[];
 
+    id:string;
+
     constructor(private http: HttpClient){
         this.datasets = [];
-        this.datasetsSubject = new Subject<PreviewDataSet[]>();
+        this.datasetsSubject = new Subject<DatasetChangeEvent>();
         this.datasets$ = this.datasetsSubject.asObservable();
+        this.id = _.uniqueId("previewDatasetCollection-")
+
+    }
+
+    public subscribeToDatasetChanges(observer:PartialObserver<DatasetChangeEvent>):ISubscription{
+        return this.datasetsSubject.subscribe(observer);
     }
 
     public reset(){
+
         this.datasets.forEach(dataset => dataset.collectionStatus = DatasetCollectionStatus.REMOVED);
         this.datasets = [];
     }
@@ -44,15 +69,30 @@ export class PreviewDatasetCollectionService {
     /**
      * Add a dataset to the collection
      * @param {PreviewDataSet} dataset
+     *
+     *
+     * TODO build schema out of dataset.headers.properties
      */
     public addDataSet(dataset:PreviewDataSet){
         //only add if it doesnt exist yet
         if(!this.exists(dataset)) {
+
             this.datasets.push(dataset);
             dataset.collectionStatus = DatasetCollectionStatus.COLLECTED;
             //notify the observers of the change
-            this.datasetsSubject.next(this.datasets);
+            this.datasetsSubject.next(new DatasetChangeEvent(dataset,this.datasets));
           }
+          else {
+            let existingDataset = this.findByKey(dataset.key);
+            if(!existingDataset.hasPreview() && dataset.hasPreview()){
+                //update the preview
+                existingDataset.preview = dataset.preview;
+                //notify???
+            }
+            if(existingDataset.schema == undefined && dataset.schema != undefined){
+                existingDataset.schema = dataset.schema;
+            }
+        }
     }
 
     /**
@@ -75,6 +115,10 @@ export class PreviewDatasetCollectionService {
       return null;
     }
 
+    public findByPath(path:string):PreviewDataSet[]{
+        return this.datasets.filter((ds) => ds.getPreviewItemPath() == path);
+    }
+
     /**
      * remove a data set from the collection
      * @param {PreviewDataSet} dataset
@@ -88,7 +132,7 @@ export class PreviewDatasetCollectionService {
                 this.datasets.splice(index, 1)
                 dataset.collectionStatus = DatasetCollectionStatus.REMOVED;
                 //notify the observers of the change
-                this.datasetsSubject.next(this.datasets);
+                this.datasetsSubject.next(new DatasetChangeEvent(dataset,this.datasets));
             }
         }
 

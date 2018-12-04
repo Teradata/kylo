@@ -1,5 +1,5 @@
 <form #myForm name="form">
-  <vertical-section-layout section-title="Properties" (on-save-edit)="onSave()" (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" 
+  <vertical-section-layout section-title="Properties" (on-save-edit)="onSave()" (on-edit)="onEdit()" (on-cancel-edit)="onCancel()"
                             [editable]="isEditable" [isValid]="myForm.$valid" [allowEdit]="allowEdit">
     <readonly-section>
       <div layout="row" class="layout-padding-top-bottom">
@@ -82,7 +82,7 @@
             </button>
             ADD
           </div>
-          <div *ngIf="hasFieldPolicies(editModel)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+          <div *ngIf="hasFieldPolicies(editModel)" class="accent-color layout-padding-bottom" style="padding-left:32px;" layout="column">
             <span *ngIf="editModel.fieldPolicy.standardization.length > 0">{{editModel.fieldPolicy.standardization.length}} {{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.STANDARDIZERS" | translate}}</span>
             <span *ngIf="editModel.fieldPolicy.validation.length > 0">{{editModel.fieldPolicy.validation.length}} {{"FEED_MGR.DOMAIN_TYPES.DETAILS.RULES.VALIDATORS" | translate}}</span>
           </div>

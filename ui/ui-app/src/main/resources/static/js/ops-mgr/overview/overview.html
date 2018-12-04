@@ -18,21 +18,21 @@
   #L%
   -->
 <div>
-    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <mat-progress-bar color="accent" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
     <div layout="row" layout-sm="column" layout-xs="column" *ngIf="allowed">
         <div layout="column" flex-gt-sm="70" flex-order="1" flex-order-xs= "2" flex-order-sm="2">
             <!-- THE KPIs -->
             <div layout="row" layout-xs="column" layout-wrap layout-align="space-between center" class="kpi-row">
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi"  layout-wrap id="services-summary" panel-title="Services">
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" style="max-width:265px"  layout-wrap id="services-summary" panel-title="Services">
                     <tba-services-indicator></tba-services-indicator>
                 </div>
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap id="feeds-health-summary" panel-title="Feed Status">
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" style="max-width:265px"layout-wrap id="feeds-health-summary" panel-title="Feed Status">
                     <tba-feed-status-indicator></tba-feed-status-indicator>
                 </div>
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap id="data-confidence-summary" panel-title="Data Confidence">
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" style="max-width:265px"layout-wrap id="data-confidence-summary" panel-title="Data Confidence">
                     <tba-data-confidence-indicator></tba-data-confidence-indicator>
                 </div>
-                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" layout-wrap id="job-activity-kpi" panel-title="Job Status" refresh-interval-time="1000">
+                <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" style="max-width:265px" layout-wrap id="job-activity-kpi" panel-title="Job Status" refresh-interval-time="1000">
                     <tba-job-status-indicator></tba-job-status-indicator>
                 </div>
             </div>

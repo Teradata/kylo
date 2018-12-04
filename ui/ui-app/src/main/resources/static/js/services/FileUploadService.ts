@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 
 @Injectable()
-export default class FileUpload{
+export class FileUpload{
     constructor(private http: HttpClient){
     }
     uploadFileToUrl (files: any, uploadUrl: any, successFn: any, errorFn: any, params: any) {
@@ -26,7 +26,7 @@ export default class FileUpload{
                 fd.append(key, val);
             })
         }
-        this.http.post(uploadUrl, fd, { 
+        this.http.post(uploadUrl, fd, {
             // transformRequest: angular.identity,
             headers: {'Content-Type': undefined}
         }).toPromise().then((data: any) => {

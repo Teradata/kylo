@@ -1,30 +1,24 @@
 import * as _ from "underscore";
 
 import {HttpClient} from "@angular/common/http";
-import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
-import {Component, Input, OnInit, ChangeDetectionStrategy, Injector, Inject, EventEmitter, Output, ChangeDetectorRef} from "@angular/core";
+import {StateService} from "@uirouter/angular";
+import {Component, EventEmitter, Injector, Input, OnInit, Output} from "@angular/core";
 import {DomSanitizer} from "@angular/platform-browser";
 import {SelectionService, SingleSelectionPolicy} from "../../api/services/selection.service";
 import {DataSource} from "../../api/models/datasource";
 import {Node} from '../../api/models/node';
-import {MAT_DIALOG_DATA, MatDialog} from "@angular/material/dialog";
+import {MatDialog} from "@angular/material/dialog";
 import {SatusDialogComponent} from "../../dialog/status-dialog.component";
-import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import {MatDialogRef} from "@angular/material/dialog/typings/dialog-ref";
-import {TransformResponse} from "../../../visual-query/wrangler/model/transform-response";
-import {QueryResultColumn} from "../../../visual-query/wrangler/model/query-result-column";
-import {QueryEngine} from "../../../visual-query/wrangler/query-engine";
-import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
-import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
+import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
+import {PreviewUploadDataSet} from "./model/preview-upload-data-set";
 import {SchemaParseSettingsDialog} from "./schema-parse-settings-dialog.component";
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 
-import {TableViewModel, TableColumn} from "./model/table-view-model"
-import {Common} from "../../../../common/CommonTypes"
+import {TableColumn} from "./model/table-view-model"
 
 import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
-import {FileMetadata} from "./model/file-metadata";
 import {FileMetadataTransformResponse} from "./model/file-metadata-transform-response";
 
 import {PreviewSchemaService} from "./service/preview-schema.service";
@@ -33,17 +27,16 @@ import {PreviewDataSetRequest} from "./model/preview-data-set-request";
 import {DatasetCollectionStatus, PreviewDataSet} from "./model/preview-data-set";
 import {PreviewJdbcDataSet} from "./model/preview-jdbc-data-set";
 import {PreviewFileDataSet} from "./model/preview-file-data-set";
-//import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
 import {PreviewDatasetCollectionService} from "../../api/services/preview-dataset-collection.service";
+import {Common} from '../../../../../lib/common/CommonTypes';
 import { TranslateService } from "@ngx-translate/core";
 
 
 
-
+//NOT USED NOW!!!
 @Component({
     selector: "preview-schema",
-    styleUrls: ["js/feed-mgr/catalog/datasource/preview-schema/preview-schema.component.css"],
-    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview-schema.component.html"
+    template: "<div></div>"
 })
 export class PreviewSchemaComponent implements OnInit {
 
@@ -146,13 +139,13 @@ export class PreviewSchemaComponent implements OnInit {
   //  engine: QueryEngine<any>  ;
 
     constructor(private http: HttpClient,
-        private sanitizer: DomSanitizer, 
-        private selectionService: SelectionService, 
-        private dialog: MatDialog, 
-        private fileMetadataTransformService: FileMetadataTransformService, 
+        private sanitizer: DomSanitizer,
+        private selectionService: SelectionService,
+        private dialog: MatDialog,
+        private fileMetadataTransformService: FileMetadataTransformService,
         private previewRawService :PreviewRawService,
         private previewSchemaService :PreviewSchemaService,
-        private $$angularInjector: Injector, 
+        private $$angularInjector: Injector,
         private stateService: StateService,
         private translate : TranslateService) {
 
@@ -169,7 +162,7 @@ export class PreviewSchemaComponent implements OnInit {
 
     public showAddToCollectionButton(dataSet:PreviewDataSet){
         let collectedSize = this.previewDatasetCollectionService.datasetCount();
-        return this.editable && !dataSet.isCollected() && dataSet.loading == false;
+        return this.editable && !dataSet.isCollected() && !dataSet.isLoading();
     }
 
     public showRemoveFromCollectionButton(dataSet:PreviewDataSet){
@@ -186,7 +179,7 @@ export class PreviewSchemaComponent implements OnInit {
                 this.datasets.push(dataset)
             }
             else {
-                console.log("skipping collected dataset ",dataset,this)
+
             }
 
         })
@@ -275,10 +268,10 @@ export class PreviewSchemaComponent implements OnInit {
             let isNew = !this.selectedDataSet.hasPreview();
             this.selectedDataSet.dataSource = this.datasource;
             //add in other properties
-            this.previewSchemaService.preview(this.selectedDataSet, previewRequest).subscribe((data: PreviewDataSet) => {
+            this.previewSchemaService.preview(this.selectedDataSet, previewRequest,false).subscribe((data: PreviewDataSet) => {
                 this.selectedDataSetViewRaw = false;
                 //auto collect the first one if there is only 1 dataset and its editable
-                if(this.datasetKeys.length == 1 && this.autoCollect && this.editable){
+                if(this.autoCollect && this.editable){  //this.datasetKeys.length == 1 &&
                     this.addToCollection(this.selectedDataSet);
                 }
             }, (error1:any) => {
@@ -363,12 +356,55 @@ export class PreviewSchemaComponent implements OnInit {
                     if(this.previewDatasetCollectionService.exists(dataSet) && !dataSet.isCollected()){
                         dataSet.collectionStatus = DatasetCollectionStatus.COLLECTED;
                     }
+                    if(this.autoCollect && this.editable){
+
+                        this.addToCollection(dataSet);
+                    }
                 });
                 this.setAndSelectFirstDataSet(datasets);
 
             }
-        }
-        else {
+        } else if ((this.datasource as any).$uploadDataSet) {
+            this.openStatusDialog("Examining file metadata", "Validating file metadata",true,false);
+
+            const dataSet = (this.datasource as any).$uploadDataSet;
+            this.fileMetadataTransformService.detectFormatForPaths(dataSet.paths, this.datasource).subscribe((response: FileMetadataTransformResponse) => {
+                if (response.results) {
+                    this.message = response.message;
+
+                    //add in any cached preview responses
+                    const resultDataSet: PreviewDataSet = (Object as any).values(response.results.datasets as any)[0];
+                    const previewDataSet = new PreviewUploadDataSet(resultDataSet, dataSet);
+
+                    this.previewSchemaService.updateDataSetsWithCachedPreview([previewDataSet])
+                    if(this.autoCollect && this.editable){
+
+                        this.addToCollection(previewDataSet);
+                    }
+                    if(this.previewDatasetCollectionService.exists(previewDataSet) && !previewDataSet.isCollected()){
+                        previewDataSet.collectionStatus = DatasetCollectionStatus.COLLECTED;
+                    }
+
+                    //select and transform the first dataset
+                    const map = {};
+                    map[previewDataSet.key] = previewDataSet;
+                    this.setAndSelectFirstDataSet(map);
+                    this.closeStatusDialog();
+                }
+                else {
+                    this.openStatusDialog("Error. Cant process", "No results found ", false,true);
+                }
+            },error1 => (response:FileMetadataTransformResponse) => {
+                this.openStatusDialog("Error","Error",false,true);
+            });
+
+            // const dataSets = {};
+            // dataSets[uploadDataSet.id] = new PreviewSparkDataSet(uploadDataSet);
+            // this.setAndSelectFirstDataSet(daat);
+
+
+
+        } else {
             this.openStatusDialog(this.translate.instant("FEEDMGR.PREVIEW_SCHEMA.DIALOG.NO_PATH_SUPPLIED"),this.translate.instant('FEEDMGR.PREVIEW_SCHEMA.DIALOG.PLEASE_SELECT_ITEM'),false,true);
         }
     }
@@ -401,10 +437,16 @@ export class PreviewSchemaComponent implements OnInit {
                     //add in any cached preview responses
                     _.each(response.results.datasets,(dataset:PreviewDataSet,key:string)=> {
                         this.previewSchemaService.updateDataSetsWithCachedPreview([dataset])
+                        if(this.autoCollect && this.editable){
+
+                            this.addToCollection(dataset);
+                        }
                         if(this.previewDatasetCollectionService.exists(dataset) && !dataset.isCollected()){
                             dataset.collectionStatus = DatasetCollectionStatus.COLLECTED;
                         }
                     });
+
+
 
                     //select and transform the first dataset
                     this.setAndSelectFirstDataSet(response.results.datasets);
@@ -420,15 +462,15 @@ export class PreviewSchemaComponent implements OnInit {
         }
 
     }
-
-
 }
 
 
 @Component({
-    selector: 'dataset-simple-table',
-    styleUrls:["js/feed-mgr/catalog/datasource/preview-schema/dataset-simple-table.component.css"],
+    selector: 'dataset-simple-table-X',
+    styleUrls:["./dataset-simple-table.component.scss"],
     template:`
+   
+    <div class="dataset-simple-table">
     <table td-data-table >
       <thead>
       <tr td-data-table-column-row>
@@ -453,13 +495,30 @@ export class PreviewSchemaComponent implements OnInit {
       </tr>
       </tbody>
     </table>
+   </div>
+
+    <!--
+          <td-data-table
+          [data]="filteredData"
+          [columns]="columns"
+          [selectable]="false"
+          [clickable]="true"
+          [multiple]="multiple"
+          [sortable]="false"
+          [sortBy]="sortBy"
+          [(ngModel)]="selected"
+          [sortOrder]="sortOrder"
+          (rowClick)="rowSelected($event)"
+          (sortChange)="sort($event)"
+          [style.height.px]="325" class="dataset-simple-table">
+      </td-data-table>     
+      -->
     
     
     
     
     
-    
-    <div  *ngIf="!filteredData.length ===0" fxLayout="row" fxLayoutAlign="center center">
+    <div  *ngIf="filteredData.length !== 0" fxLayout="row" fxLayoutAlign="center center">
       <h3>No results to display.</h3>
     </div>`
 })
@@ -533,71 +592,42 @@ export class SimpleTableComponent {
         this.data = this.rows;
         this.filter();
     }
-
-
-
-
-
 }
 
 
 @Component({
-    selector:'dataset-schema-definition',
+    selector:'dataset-schema-definition-X',
     template:`
-      <div *ngFor="let column of columns" fxLayout="row">
-
-          <mat-form-field>
-            <input matInput placeholder="Column Name" [(value)]="column.label">
-          </mat-form-field>
-        <span fxFlex="10"></span>
-          <mat-form-field>
-          <mat-select placeholder="Select"  [(value)]="column.dataType" (change)="onColumnChange(column)">
-            <mat-option [value]="option" *ngFor="let option of columnDataTypes">{{option}}</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-      </div>
+        <dataset-simple-table [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
     `
 
 })
 export class SchemaDefinitionComponent  implements OnInit {
 
-    private columnDataTypes: string[] = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary']
-
     @Input()
     columns:TableColumn[]
 
+    @Input()
+        smallView:boolean = true;
 
-    @Output()
-    columnsChange = new EventEmitter<TableColumn[]>();
+    schemaColumns:TableColumn[]
 
     constructor() {
 
+    }
+
+    private toDataTable(){
+        let schemaColumns :TableColumn[] = []
+        schemaColumns.push({"name":"name","label":"Column Name","dataType":"string","sortable":true})
+        schemaColumns.push({"name":"dataType","label":"Data Type","dataType":"string","sortable":true})
+       this.schemaColumns = schemaColumns;
     }
 
     ngOnInit(){
         if(this.columns == undefined){
             this.columns = [];
         }
-
-        this.columns.forEach(column => {
-            if(this.columnDataTypes.indexOf(column.dataType) == -1) {
-                this.columnDataTypes.push(column.dataType);
-            }
-        });
+        this.toDataTable();
     }
-
-    onColumnChange(column:TableColumn){
-        column.numeric = TableViewModel.isNumeric(column.dataType)
-        if(this.columnsChange){
-           this.columnsChange.emit(this.columns)
-        }
-    }
-
-
-    compareFn(x: string, y: string): boolean {
-        return x && y ? x == y : x ===y;
-    }
-
 
 }

@@ -1,56 +1,74 @@
-import AccessConstants from "../../constants/AccessConstants";
-import { Ng2StateDeclaration } from "@uirouter/angular";
-import ServiceLevelAgreementInit from "./ServiceLevelAgreementInit.component";
-import {SlaEmailTemplates} from "./sla-email-templates/SlaEmailTemplates.component";
-import {SlaEmailTemplate} from "./sla-email-templates/SlaEmailTemplate.component";
+import {SlaComponent} from "./sla.componment";
+import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
+import {SlaListComponent} from "./list/sla-list.componment";
+import {SlaDetailsComponent} from "./details/sla-details.componment";
 
-export const slaStates: Ng2StateDeclaration[] = [ 
-    { 
-        name: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state, 
-        url: "/service-level-agreements/:slaId", 
-        views: { 
-            "content": { 
-                component: ServiceLevelAgreementInit
-            } 
-        }, 
-        params: {
-            slaId: null
+export const SLA_ROOT_STATE = "sla";
+
+export const slaStates: Ng2StateDeclaration[] = [
+
+    {
+        name: SLA_ROOT_STATE,
+        url: "/sla",
+        redirectTo: SLA_ROOT_STATE+".list",
+        views: {
+            "content": {
+                component: SlaComponent
+            }
         },
-        data:{
-            breadcrumbRoot:false,
-            displayName:'Service Level Agreements',
-            permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions
+        data: {
+            breadcrumbRoot: true,
+            displayName: "",
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
         }
     },
     {
-        name: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.state,
-        url :"/sla-email-templates",
-        views: {
-            "content": {
-                component: SlaEmailTemplates
+        name: SLA_ROOT_STATE+".list",
+        url: "/list",
+        component: SlaListComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: resolveParams
             }
-        },
-        data:{
-            breadcrumbRoot:false,
-            displayName:'SLA Email Templates',
-            permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
+        ],
+        data: {
+            permissionsKey:"SERVICE_LEVEL_AGREEMENTS"
         }
     },
     {
-        name: "sla-email-template",
-        url :"/sla-email-template/:emailTemplateId",
-        params:{
-            emailTemplateId:null
-        },
-        views: {
-            "content": {
-                component: SlaEmailTemplate
+        name: SLA_ROOT_STATE+".new",
+        url: "/new",
+        component: SlaDetailsComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: resolveParams
             }
-        },
-        data:{
-            breadcrumbRoot:false,
-            displayName:'SLA Email Template',
-            permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
+        ],
+        data: {
+            permissionsKey:"EDIT_SERVICE_LEVEL_AGREEMENTS"
+        }
+    },
+    {
+        name: SLA_ROOT_STATE+".edit",
+        url: "/:slaId",
+        component: SlaDetailsComponent,
+        resolve: [
+            {
+                token: 'stateParams',
+                deps: [StateService],
+                resolveFn: resolveParams
+            }
+        ],
+        data: {
+            permissionsKey:"EDIT_SERVICE_LEVEL_AGREEMENTS"
         }
     }
-]; 
+];
+
+export function resolveParams(state: StateService) {
+    return state.transition.params();
+}

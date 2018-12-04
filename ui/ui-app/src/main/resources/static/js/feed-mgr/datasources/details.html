@@ -1,5 +1,5 @@
 <div class="flex-container" fxLayoutAlign="center center">
-  <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+  <mat-progress-bar color="accent" flex="90" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
   <mat-card flex="70">
       <mat-card-title>
           <mat-toolbar style="background: none;">
@@ -112,10 +112,10 @@
       <ng-form name="datasourceAccessControlForm" *ngIf="allowChangePermissions && !isNew()">
         <vertical-section-layout section-title="Access Control" (on-save-edit)="onAccessControlSave()" (on-edit)="onEdit()" [editable]="isAccessControlEditable" [is-valid]="isValid">
           <readonly-section>
-            <entity-access-control (entity)="model" (entityType)="datasource" (theForm)="datasourceAccessControlForm" (readOnly)="true"></entity-access-control>
+            <entity-access-control-ng2 [entity]="model" entityType="datasource" [parentForm]="datasourceAccessControlForm" [readOnly]="true"></entity-access-control-ng2>
           </readonly-section>
           <editable-section>
-            <entity-access-control (entity)="editModel" (entityType)="datasource" (theForm)="datasourceAccessControlForm"></entity-access-control>
+            <entity-access-control-ng2 [entity]="editModel" entityType="datasource" [parentForm]="datasourceAccessControlForm"></entity-access-control-ng2>
           </editable-section>
         </vertical-section-layout>
       </ng-form>

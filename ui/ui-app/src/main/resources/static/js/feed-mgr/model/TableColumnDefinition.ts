@@ -1,10 +1,11 @@
 import * as _ from "underscore";
 import {DomainType, DomainTypesService} from "../services/DomainTypesService";
-import {Common} from "../../common/CommonTypes";
 import {SchemaField} from "./schema-field"
 import {CloneUtil} from "../../common/utils/clone-util";
-import {KyloObject} from "../../common/common.model";
+import {StringUtils} from "../../common/utils/StringUtils";
+import {KyloObject} from "../../../lib/common/common.model";
 import {TableFieldPolicy} from "./TableFieldPolicy";
+import {Common} from '../../../lib/common/CommonTypes';
 
 
 export class ColumnDefinitionHistoryRecord {
@@ -180,13 +181,23 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     }
 
     initFeedColumn() {
-        if (this.origName == undefined || this.history.length == 0) {
+        if (this.origName == undefined) {
             this.origName = this.name;
             this.origDataType = this.derivedDataType;
             this.deleted = false;
             this.history = [];
             this.dataTypeDisplay = this.getDataTypeDisplay();
+        }
+        if(this.history.length == 0){
+            if(this.deleted){
+                let undoDeleted = new ColumnDefinitionHistoryRecord(this);
+                undoDeleted.deleted = false;
+                this.history.push(undoDeleted);
+            }
             this.addHistoryItem();
+        }
+        if(this.dataTypeDisplay == undefined) {
+         this.dataTypeDisplay  = this.getDataTypeDisplay();
         }
     }
 
@@ -341,9 +352,10 @@ export class TableColumnDefinition extends SchemaField implements KyloObject{
     copy() :TableColumnDefinition{
         let policy = this.fieldPolicy;
         this.fieldPolicy = null;
-        let copy :TableColumnDefinition = CloneUtil.deepCopy(this);
+        let copy :TableColumnDefinition = CloneUtil.deepCopyWithoutCircularReferences(this);
         let policyCopy = policy.copy();
         copy.fieldPolicy= policyCopy;
+        this.fieldPolicy = policy;
         return copy;
     }
 

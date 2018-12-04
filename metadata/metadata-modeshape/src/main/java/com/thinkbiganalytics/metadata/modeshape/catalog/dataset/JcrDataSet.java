@@ -24,19 +24,26 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
  */
 
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
+import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSupplierMixin;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedDestination;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedSource;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -46,6 +53,13 @@ import javax.jcr.RepositoryException;
  */
 public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataSet, AuditableMixin, SystemEntityMixin, AccessControlledMixin, DataSetSparkParamsSupplierMixin {
 
+    public static final String NODE_TYPE = "tba:DataSet";
+    
+    public static final String MIME_TYPE = "tba:mimeType";
+    public static final String FEED_SOURCES = "tba:feedSources";
+    public static final String FEED_TARGETS = "tba:feedTargets";
+    public static final String PARAMS_HASH = "tba:paramsHashCode";
+    
 
     public JcrDataSet(Node node) {
         super(node);
@@ -90,6 +104,26 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
         
         return JcrUtil.getJcrObject(connNode, JcrDataSource.class);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSet#getFeedSources()
+     */
+    @Override
+    public Set<FeedSource> getFeedSources() {
+        return JcrPropertyUtil.<Node>getPropertyValuesSet(getNode(), FEED_SOURCES).stream()
+            .map(node -> JcrUtil.getJcrObject(node, JcrFeedSource.class))
+            .collect(Collectors.toSet());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.catalog.DataSet#getFeedDestinations()
+     */
+    @Override
+    public Set<FeedDestination> getFeedTargets() {
+        return JcrPropertyUtil.<Node>getPropertyValuesSet(getNode(), FEED_TARGETS).stream()
+                .map(node -> JcrUtil.getJcrObject(node, JcrFeedDestination.class))
+                .collect(Collectors.toSet());
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin#getJcrAllowedActionsType()
@@ -99,6 +133,38 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
         return JcrDataSetAllowedActions.class;
     }
     
+    public long getParamsHash() {
+        return getProperty(PARAMS_HASH, 0L);
+    }
+    
+    public void setParamsHash(long hash) {
+        setProperty(PARAMS_HASH, hash);
+    }
+    
+    public void addSourceNode(Node node) {
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_SOURCES, true).add(node);
+    }
+    
+    public void removeSourceNode(Node node) {
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_SOURCES, true).remove(node);
+    }
+    
+    public void addTargetNode(Node node) {
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS, true).add(node);
+    }
+    
+    public void removeTargetNode(Node node) {
+        JcrPropertyUtil.getPropertyValuesSet(getNode(), FEED_TARGETS, true).remove(node);
+    }
+
+    public long generateHashCode() {
+        DataSetSparkParameters params = getEffectiveSparkParameters();
+//        long hash = JcrDataSetProvider.generateHashCode(params.getFormat(), params.getPaths(), params.getJars(), params.getFiles(), params.getOptions());
+        long hash = JcrDataSetProvider.generateHashCode(params.getFormat(), params.getPaths(), params.getOptions());
+        setParamsHash(hash);
+        return hash;
+    }
+
     
     public static class DataSetId extends JcrEntity.EntityId implements DataSet.ID {
         
@@ -108,5 +174,7 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
             super(ser);
         }
     }
+
+
 
 }

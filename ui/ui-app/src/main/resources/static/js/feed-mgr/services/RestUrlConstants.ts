@@ -28,6 +28,7 @@ export class RestUrlConstants {
     static TEMPLATES_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/templates";
     static FEEDS_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/feeds";
     static SLA_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/sla";
+    static CATALOG_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/catalog";
     static CONTROLLER_SERVICES_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/controller-services";
     static SCHEMA_DISCOVERY_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/schema-discovery";
     static GET_TEMPLATES_URL = RestUrlConstants.TEMPLATES_BASE_URL;
@@ -378,7 +379,16 @@ export class RestUrlConstants {
      * @returns {string} the url for datasource role changes
      */
     static DATASOURCE_ROLES_URL(datasourceId:string) {
-        return RestUrlConstants.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
+        return RestUrlConstants.CATALOG_BASE_URL + "/datasource/" + encodeURIComponent(datasourceId) + "/roles";
+    };
+
+    /**
+     * Endpoint for roles changes to a Datasource entity.
+     * @param {string} datasourceId the datasource id
+     * @returns {string} the url for datasource role changes
+     */
+    static CONNECTOR_ROLES_URL(connectorId:string) {
+        return RestUrlConstants.CATALOG_BASE_URL + "/connector/" + encodeURIComponent(connectorId) + "/roles";
     };
 
     /**
@@ -408,6 +418,12 @@ export class RestUrlConstants {
      * Parses a string as a date.
      */
     static PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
+
+    static SCHEMA_DISCOVERY_PARSE_DATA_SET = "/proxy/v1/schema-discovery/hive/dataset"
+
+    static SCHEMA_DISCOVERY_TABLE_SETTINGS_DATA_SET = "/proxy/v1/schema-discovery/table-settings/dataset"
+
+
 
 
     constructor(){}

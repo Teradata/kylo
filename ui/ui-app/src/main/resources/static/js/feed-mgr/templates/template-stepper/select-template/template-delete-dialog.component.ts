@@ -3,7 +3,7 @@ import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog
 
 @Component({
     selector: 'template-delete-dialog',
-    templateUrl: 'js/feed-mgr/templates/template-stepper/select-template/template-delete-dialog.html'
+    templateUrl: './template-delete-dialog.html'
 })
 export class TemplateDeleteDialog {
 

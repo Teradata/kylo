@@ -23,11 +23,15 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.model.DefaultHiveTableSettings;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
+import com.thinkbiganalytics.discovery.model.DefaultTableSettings;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.HiveTableSettings;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.schema.TableSettings;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
@@ -162,6 +166,22 @@ public class SparkFileSchemaParserService {
                 return toHiveSchema(results, fileType);
             default:
                 throw new IOException("Unsupported schema type [" + tableSchemaType + "]");
+        }
+    }
+
+    public TableSettings toTableSettings(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+       return deriveTableSettings(fileType,tableSchemaType);
+    }
+
+    public TableSettings deriveTableSettings(SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+        switch (tableSchemaType) {
+            case HIVE:
+                HiveTableSettings hiveTableSettings = new DefaultHiveTableSettings();
+                hiveTableSettings.setHiveFormat("STORED AS " + fileType);
+                hiveTableSettings.setStructured(true);
+                return hiveTableSettings;
+            default:
+                return new DefaultTableSettings();
         }
     }
 

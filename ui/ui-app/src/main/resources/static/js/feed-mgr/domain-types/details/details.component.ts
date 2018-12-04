@@ -1,21 +1,21 @@
 import {Input, OnDestroy, OnInit, Component} from "@angular/core";
 import {Subscription} from "rxjs/Subscription";
 
-import {DomainType} from "../../services/DomainTypesService.d";
+import {DomainType} from "../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../services/details.service";
-import AccessControlService from "../../../services/AccessControlService";
-import StateServices from "../../../services/StateService";
+import {AccessControlService} from "../../../services/AccessControlService";
+import {StateService as StateServices} from "../../../services/StateService";
 import { DomainTypesService } from "../../services/DomainTypesService";
 import { TdDialogService } from "@covalent/core/dialogs";
 import { MatSnackBar } from "@angular/material/snack-bar";
-import { ObjectUtils } from "../../../common/utils/object-utils";
+import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import { StateService } from "@uirouter/core";
 
 /**
  * Adds or updates domain types.
  */
 @Component({
-    templateUrl: 'js/feed-mgr/domain-types/details/details.component.html'
+    templateUrl: './details.component.html'
 })
 export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
 
@@ -46,8 +46,8 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
     loaded: boolean = false;
 
     constructor(private accessControlService: AccessControlService,
-                private DomainTypeDetailService: DomainTypeDetailsService, 
-                private DomainTypesService: DomainTypesService, 
+                private DomainTypeDetailService: DomainTypeDetailsService,
+                private DomainTypesService: DomainTypesService,
                 private StateService: StateServices,
                 private dialog: TdDialogService,
                 private snackBar: MatSnackBar,
@@ -64,7 +64,7 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
     get isNew() {
         return (!ObjectUtils.isString(this.model.id) || this.model.id.length === 0);
     }
-    
+
     ngOnDestroy(): void {
         this.cancelSubscription.unsubscribe();
         this.deleteSubscription.unsubscribe();

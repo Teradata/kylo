@@ -17,7 +17,7 @@
 
       <div class="md-block">
         <mat-label style="color: rgba(0,0,0,0.54); transform: translate3d(0,6px,0) scale(.75);">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.MATCHERS.COLUMN_NAME" | translate}}</mat-label>
-        <regexp-editor flex name="columnNameRegex" [(model)]="columnNameEditValue" (on-syntax-error)="columnNameSyntaxError = error" ngDefaultControl></regexp-editor>
+        <regexp-editor flex [(model)]="columnNameEditValue" (on-syntax-error)="columnNameSyntaxError = $event" ngDefaultControl></regexp-editor>
         <!-- <div ng-messages="form.columnNameRegex.$error" md-auto-hide="false">
           <div ng-message="syntaxError">{{columnNameSyntaxError}}</div>
         </div> -->
@@ -25,7 +25,7 @@
 
       <div class="md-block">
         <mat-label style="color: rgba(0,0,0,0.54); transform: translate3d(0,6px,0) scale(.75);">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.MATCHERS.SAMPLE_VALUES" | translate}}</mat-label>
-        <regexp-editor flex name="sampleDataRegex" [(model)]="sampleDataEditValue" (on-syntax-error)="sampleDataSyntaxError = error" ngDefaultControl></regexp-editor>
+        <regexp-editor flex [(model)]="sampleDataEditValue" (on-syntax-error)="sampleDataSyntaxError = $event" ngDefaultControl></regexp-editor>
         <!-- <div ng-messages="form.sampleDataRegex.$error" md-auto-hide="false">
           <div ng-message="syntaxError">{{sampleDataSyntaxError}}</div>
         </div> -->

@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
-import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
-
 /*-
  * #%L
  * kylo-catalog-controller
@@ -22,43 +20,89 @@ import com.thinkbiganalytics.kylo.catalog.ConnectorProvider;
  * #L%
  */
 
-import com.thinkbiganalytics.kylo.catalog.connector.FileConnectorProvider;
-import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
-import com.thinkbiganalytics.metadata.MockMetadataAccess;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
 
-import org.junit.Assert;
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
+import com.thinkbiganalytics.metadata.MockMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.Connector;
+import com.thinkbiganalytics.metadata.api.catalog.ConnectorProvider;
+import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
+
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.context.support.StaticMessageSource;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.springframework.context.MessageSource;
 
 import java.util.Optional;
 
-import javax.annotation.Nonnull;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
 public class ConnectorControllerTest {
 
+    @Mock
+    private ConnectorProvider provider;
+    
+    @Mock
+    private MessageSource messages;
+    
+    @Mock
+    private Connector.ID connectorId;
+    
+    @Spy
+    private TestConnector connector;
+    
+    @Spy
+    private TestConnectorPlugin connectorPlugin;
+    
+    @Spy
+    private SecurityModelTransform securityTransform = Mockito.mock(SecurityModelTransform.class);
+    
+    @Spy
+    private ConnectorPluginManager connectorPluginManager = Mockito.mock(ConnectorPluginManager.class);
+    
+    @Spy
+    private MetadataAccess metadataService = new MockMetadataAccess();
+    
+    @Spy
+    private CatalogModelTransform modelTransform = new CatalogModelTransform(this.securityTransform, this.connectorPluginManager, null);
+    
+    @InjectMocks
+    private ConnectorController controller = new ConnectorController() {
+        @Override
+        protected String getMessage(String code, Object... args) { return code; };
+        @Override
+        protected String getMessage(String code) { return code; }
+    };
+    
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+        Mockito.when(connectorPluginManager.getPlugin(anyString())).thenReturn(Optional.of(this.connectorPlugin));
+        Mockito.when(provider.resolveId(Mockito.anyString())).thenReturn(connectorId);
+        Mockito.when(connector.getId()).thenReturn(connectorId);
+    }
+    
     /**
      * Verify retrieving a connector.
      */
     @Test
     public void getConnector() {
-        // Mock connector provider
-        final ConnectorProvider provider = Mockito.mock(ConnectorProvider.class);
+        Mockito.when(provider.find(Mockito.any(Connector.ID.class))).thenReturn(Optional.of(connector));
+        Mockito.when(connectorId.toString()).thenReturn("C1");
 
-        final Connector connector = new Connector();
-        connector.setId("C1");
-        Mockito.when(provider.findConnector("C1")).thenReturn(Optional.of(connector));
+        final Response response = controller.getConnector("C1", true);
 
-        // Test retrieving connector
-        final ConnectorController controller = newConnectionController();
-        controller.connectorProvider = provider;
-        controller.metadataService = new MockMetadataAccess();
-
-        final Response response = controller.getConnector("C1");
-        Assert.assertEquals(connector, response.getEntity());
+        assertThat(response.getEntity())
+            .isNotNull()
+            .extracting("id").contains("C1");
     }
 
     /**
@@ -66,31 +110,8 @@ public class ConnectorControllerTest {
      */
     @Test(expected = NotFoundException.class)
     public void getConnectorForMissing() {
-        // Mock connector provider
-        final ConnectorProvider provider = Mockito.mock(ConnectorProvider.class);
-        Mockito.when(provider.findConnector(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(provider.find(Mockito.any(Connector.ID.class))).thenReturn(Optional.empty());
 
-        // Test retrieving connector
-        final ConnectorController controller = newConnectionController();
-        controller.connectorProvider = provider;
-        controller.metadataService = new MockMetadataAccess();
-        controller.getConnector("C1");
-    }
-
-    /**
-     * Creates a new connection controller.
-     */
-    @Nonnull
-    private ConnectorController newConnectionController() {
-        final ConnectorController controller = new ConnectorController();
-        controller.connectorProvider = Mockito.mock(ConnectorProvider.class);
-        controller.metadataService = new MockMetadataAccess();
-        controller.request = Mockito.mock(HttpServletRequest.class);
-
-        final StaticMessageSource messages = new StaticMessageSource();
-        messages.setUseCodeAsDefaultMessage(true);
-        controller.messages = messages;
-
-        return controller;
+        controller.getConnector("C1", true);
     }
 }

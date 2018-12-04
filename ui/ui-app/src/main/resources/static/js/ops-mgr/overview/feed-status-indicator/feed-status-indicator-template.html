@@ -27,17 +27,17 @@
             <nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" config="chartConfig"></nvd3>
             <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
             <span layout="column" (click)="onHealthyClick()" style="cursor: pointer;">
-                <span class="kpi-health-count" [ngClass]="{'healthy':dataMap.Healthy.count >0}">{{dataMap.Healthy.count}}</span>
+                <span class="kpi-health-count" [ngClass]="{'tc-positive':dataMap.Healthy.count >0}">{{dataMap.Healthy.count}}</span>
                 <span class="md-caption kpi-health-label">{{"Healthy" | translate}}</span>
             </span>
             <span layout="column" (click)="onUnhealthyClick()" style="cursor: pointer;">
-                <span class="kpi-health-count" [ngClass]="{'unhealthy':dataMap.Unhealthy.count >0}">{{dataMap.Unhealthy.count}}</span>
+                <span class="kpi-health-count" [ngClass]="{'tc-negative':dataMap.Unhealthy.count >0}">{{dataMap.Unhealthy.count}}</span>
                 <span class="md-caption kpi-health-label">{{"Unhealthy" | translate}}</span>
             </span>
             </div>
         </div>
-        <div  *ngIf="!dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  
-            <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
+        <div  *ngIf="!dataLoaded" class="kpi-loading" layout-align="center center" layout="column">
+            <md-progress-circular md-mode="indeterminate" md-diameter="60" class="md-accent"></md-progress-circular>
         </div>
 
     </mat-card-content>

@@ -1,9 +1,9 @@
 
 import * as _ from "underscore";
-import AddButtonService from '../../services/AddButtonService';
+import {AddButtonService} from '../../services/AddButtonService';
 import { DomainTypesService } from '../services/DomainTypesService';
 import { Component } from "@angular/core";
-import StateService from "../../services/StateService";
+import {StateService} from "../../services/StateService";
 import { FeedFieldPolicyRuleService } from "../shared/feed-field-policy-rules/services/FeedFieldPolicyRuleService";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
@@ -15,7 +15,7 @@ const PAGE_NAME = "domain-types";
 
 @Component({
     selector:'domain-types-component',
-    templateUrl:'js/feed-mgr/domain-types/domain-types.html'
+    templateUrl:'./domain-types.html'
 })
 export class DomainTypesComponent {
 
@@ -56,8 +56,8 @@ export class DomainTypesComponent {
      *
      * @constructor
      */
-    constructor(private addButtonService: AddButtonService, 
-                private domainTypesService: DomainTypesService, 
+    constructor(private addButtonService: AddButtonService,
+                private domainTypesService: DomainTypesService,
                 private FeedFieldPolicyRuleService: FeedFieldPolicyRuleService,
                 private StateService: StateService,
                 private snackBar: MatSnackBar) {

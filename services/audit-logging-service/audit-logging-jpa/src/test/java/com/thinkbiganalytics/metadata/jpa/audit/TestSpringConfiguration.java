@@ -22,14 +22,22 @@ package com.thinkbiganalytics.metadata.jpa.audit;
 
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 
 @Configuration
 public class TestSpringConfiguration {
+    
+    @Bean
+    @Primary
+    public ConnectorPluginManager mockConnectorPluginManager() {
+        return Mockito.mock(ConnectorPluginManager.class);
+    }
 
     @Bean
     AlertProvider alertProvider(){

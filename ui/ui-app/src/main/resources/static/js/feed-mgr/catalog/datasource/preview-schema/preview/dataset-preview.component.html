@@ -1,0 +1,43 @@
+<ng-container *ngIf="displayTitle">
+  <h4>DataSource: {{dataset.dataSource.title}}<br/>
+    {{dataset.key}}
+  </h4>
+</ng-container>
+<mat-tab-group (selectedTabChange)="onTabChange($event)">
+  <mat-tab label="Preview">
+    <div fxLayout="column">
+      <ng-template tdLoading [tdLoadingUntil]="!dataset.previewLoading" tdLoadingStrategy="overlay" tdLoadingType="linear">
+        <ng-container *ngIf="dataset.preview && dataset.preview.error == false">
+          <dataset-simple-table [calcColumnWidth]="true" [(columns)]="dataset.preview.columns" [rows]="dataset.preview.rows"></dataset-simple-table>
+        </ng-container>
+        <div *ngIf="!dataset.preview || dataset.preview.error == true" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+          <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+          <h2>Preview Unavailable</h2>
+          <p *ngIf="dataset.schemaParser">There was an error previewing the data. Try adjusting the settings.</p>
+          <button class="icon-button" mat-raised-button color="accent" (click)="openSchemaParseSettingsDialog(dataset)" *ngIf="dataset.schemaParser">
+            Change Parse Settings
+          </button>
+        </div>
+      </ng-template>
+
+    </div>
+  </mat-tab>
+  <mat-tab label="Raw" *ngIf="dataset.allowsRawView">
+    <ng-template tdLoading [tdLoadingUntil]="rawReady" tdLoadingStrategy="overlay" tdLoadingType="linear">
+      <div *ngIf="dataset.raw && rawReady">
+        <dataset-simple-table [calcColumnWidth]="false" [(columns)]="dataset.raw.columns" [rows]="dataset.raw.rows"></dataset-simple-table>
+      </div>
+      <div *ngIf="!dataset.raw || dataset.raw.error == true">
+        Unable to view raw data
+      </div>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Schema">
+    <dataset-schema-definition [smallView]="false" [(columns)]="dataset.schema" *ngIf="dataset.schema"></dataset-schema-definition>
+
+    <div *ngIf="!dataset.schema">
+      Unable to review schema
+    </div>
+  </mat-tab>
+</mat-tab-group>
+

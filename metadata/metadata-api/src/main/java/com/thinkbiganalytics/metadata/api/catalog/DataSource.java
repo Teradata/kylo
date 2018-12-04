@@ -38,6 +38,10 @@ public interface DataSource extends SystemEntity, Auditable, DataSetSparkParamsS
     interface ID extends Serializable { }
 
     ID getId();
+    
+    String getNifiControllerServiceId();
+    
+    void setNifiControllerServiceId(String id);
 
     Connector getConnector();
     
