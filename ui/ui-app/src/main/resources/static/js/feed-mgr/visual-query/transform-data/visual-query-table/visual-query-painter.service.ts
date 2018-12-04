@@ -7,16 +7,12 @@ import { Injectable, Inject, Injector, ComponentFactoryResolver, ComponentFactor
 import { downgradeInjectable } from "@angular/upgrade/static";
 import {moduleName} from "../../../module-name";
 import { VisualQueryTableHeader } from "./visual-query-table-header.component";
+import { Component } from "@angular/compiler/src/core";
 
 /**
  * Default font.
  */
 const DEFAULT_FONT = "10px ''SourceSansPro'";
-
-/**
- * HTML template for header cells.
- */
-const HEADER_TEMPLATE = "js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html";
 
 /**
  * Pixel unit.
@@ -113,7 +109,11 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     private waitingHeaderDivs : HTMLElement[] = [];
 
-    componentFactory: ComponentFactory<any>;
+    private componentFactory: ComponentFactory<any>;
+
+    private componentRef: any;
+
+    private viewContainerRef : ViewContainerRef;
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
@@ -123,14 +123,7 @@ export class VisualQueryPainterService extends fattable.Painter {
                 private _appRef : ApplicationRef
                 ) {
         super();
-        // Hide tooltip on scroll. Skip Angular change detection.
-       /*
-        window.addEventListener("scroll", () => {
-            if (this.tooltipVisible) {
-                this.hideTooltip();
-            }
-        }, {passive:true, capture:true});
-    */
+      
         // Create menu
         this.menuPanel = this.$injector.get("$mdPanel").create({
             animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
@@ -154,6 +147,12 @@ export class VisualQueryPainterService extends fattable.Painter {
             zIndex: 100
         });
         this.tooltipPanel.attach();
+
+    }
+
+    ngOnDestroy() {
+        this._appRef.detachView(this.componentRef.hostView);
+        this.componentRef.destroy();
 
     }
 
@@ -263,10 +262,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     fillHeader(headerDiv: HTMLElement, header: any) {
 
-        // Update scope in a separate thread
-        const $scope: any = angular.element(headerDiv).scope();
-
-        if (header != null && $scope.header !== header && header.delegate != undefined) {
+        if (header != null && header.delegate != undefined) {
             this.compileHeader(headerDiv,header);
         }
         
@@ -318,14 +314,9 @@ export class VisualQueryPainterService extends fattable.Painter {
         headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
         //if the header template is not loaded yet then fill it with Loading text.
         // the callback on the templateRequest will compile those headers waiting
-        // if(!this.headerTemplateLoaded) {
-            headerDiv.textContent = "Loading...";
-            headerDiv.className = "pending";
-            this.waitingHeaderDivs.push(headerDiv)
-        // }
-        // else {
-            // this.compileHeader(headerDiv,header);
-        // }
+        headerDiv.textContent = "Loading...";
+        headerDiv.className = "pending";
+        this.waitingHeaderDivs.push(headerDiv)
 
     }
 
@@ -335,10 +326,10 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     cleanUpHeader(headerDiv: HTMLElement){
         //destroy the old scope if it exists
-        let oldScope = angular.element(headerDiv).isolateScope();
-        if(angular.isDefined(oldScope)){
-            oldScope.$destroy();
-        }
+        // let oldScope = angular.element(headerDiv).isolateScope();
+        // if(angular.isDefined(oldScope)){
+        //     oldScope.$destroy();
+        // }
     }
 
     /**
@@ -355,38 +346,31 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param table
      */
     cleanUp(table:HTMLElement){
-        //remove all header scopes
-        this.headerScopes.forEach((headerScope: IScope) => {
-            headerScope.$destroy();
-        });
-        this.headerScopes = [];
-
         super.cleanUp(table);
         angular.element(table).unbind();
     }
-    private headerScopes : IScope[] = []
-    private viewContainerRef : ViewContainerRef;
+    
     public setViewContainerRef(viewContainerRef : ViewContainerRef){
         this.viewContainerRef = viewContainerRef;
     }
+
     private compileHeader(headerDiv: HTMLElement, header : any) {
         // Load template
         
         const componentFactory = this.componentFactoryResolver.resolveComponentFactory(VisualQueryTableHeader);
-        let componentRef = componentFactory.create(this.injector);
+        this.componentRef = componentFactory.create(this.injector);
         
+        this.componentRef.instance.header = header;
+        this.componentRef.instance.table = this.delegate;
+        this.componentRef.instance.availableCasts = header.delegate.getAvailableCasts();
+        this.componentRef.instance.availableDomainTypes = this.domainTypes;
+        this.componentRef.instance.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
+        this.componentRef.instance.header.unsort = this.unsort.bind(this);
         
-        componentRef.instance.header = header;
-        componentRef.instance.table = this.delegate;
-        componentRef.instance.availableCasts = header.delegate.getAvailableCasts();
-        componentRef.instance.availableDomainTypes = this.domainTypes;
-        componentRef.instance.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
-        componentRef.instance.header.unsort = this.unsort.bind(this);
-        
-        this._appRef.attachView(componentRef.hostView);
+        this._appRef.attachView(this.componentRef.hostView);
 
         // outletElement should be the HTMLElement for the header
-        headerDiv.replaceChild((componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement,headerDiv.firstChild);
+        headerDiv.replaceChild((this.componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement,headerDiv.firstChild);
     }
 
     buildComponent(viewContainerRef: any) {
@@ -558,5 +542,4 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 }
-// angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);
 angular.module(moduleName).service('VisualQueryPainterService',downgradeInjectable(VisualQueryPainterService));

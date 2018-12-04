@@ -1,9 +1,11 @@
-import { Component, Input } from "@angular/core";
+import { Component, Input, ViewEncapsulation } from "@angular/core";
 
 
 @Component({
     selector: 'vs-table-header',
-    templateUrl: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html'
+    templateUrl: 'js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html',
+    styleUrls: ['js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.scss'],
+    encapsulation: ViewEncapsulation.None
 })
 export class VisualQueryTableHeader {
 
@@ -12,7 +14,5 @@ export class VisualQueryTableHeader {
     @Input("availableCasts") availableCasts : any;
     @Input("availableDomainTypes") availableDomainTypes : any;
     @Input("domainType") domainType : any;
-    constructor() {
-        
-    }
+    
 }

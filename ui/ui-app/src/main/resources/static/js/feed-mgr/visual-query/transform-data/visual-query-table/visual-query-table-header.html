@@ -1,4 +1,4 @@
-<div style="display: inline-block;" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" style="padding: 0;">
+<div class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" style="padding: 0; display: inline-flex">
   <span class="ui-grid-header-cell-label">
     <div class="ui-grid-header-cell-title" matToolTip="header.headerTooltip || 'Loading'">{{ header.displayName || 'Loading'}}</div>
     <span *ngIf="header.dataType" style="display: block;">{{ header.dataType || ''}}</span>
@@ -10,10 +10,10 @@
 <span *ngIf="domainType" class="kylo-visual-query-table-domain-type">
   <mat-icon [ngStyle]="{'color': domainType.iconColor}" matTooltip="domainType.title">{{ domainType.icon }}</mat-icon>
 </span>
-<button mat-button [matMenuTriggerFor]="tableMenu" class="md-icon-button" style="line-height: 24px;">
-  <mat-icon>help</mat-icon>
+<button mat-button [matMenuTriggerFor]="tableMenu" class="md-icon-button dropDown-button" style="line-height: 24px;">
+  <mat-icon>arrow_drop_down</mat-icon>
 </button> 
-<mat-menu #tableMenu="matMenu" class="ui-grid-column-menu-button" md-position-mode="target-right target" md-offset="0 42">
+<mat-menu #tableMenu="matMenu" xPosition="before" yPosition="below" [overlapTrigger]="false">
     <div mat-menu-item>
       <button mat-button (click)="header.delegate.showAnalyzeColumn(header, table)">
         <i class="material-icons">assessment&nbsp;</i> {{"views.query-table-header.analyze" | translate}}
