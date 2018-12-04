@@ -1,5 +1,5 @@
 import {CommonModule} from "@angular/common";
-import {Injector, NgModule} from "@angular/core";
+import {Injector, NgModule, ViewContainerRef, InjectionToken} from "@angular/core";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {VisualQueryComponent, VisualQueryDirective} from "./angular2";
@@ -22,12 +22,10 @@ const moduleName: string = require("./module-name");
     declarations: [
         VisualQueryComponent,
         VisualQueryDirective,
-        VisualQueryTableHeader
     ],
-    entryComponents : [
-        VisualQueryTableHeader
+    providers:[
+        VisualQueryPainterService,
     ],
-    providers:[VisualQueryPainterService],
     imports: [
         CommonModule,
         MatFormFieldModule,

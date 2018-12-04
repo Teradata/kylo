@@ -46,7 +46,6 @@ import {DynamicFormModule} from "./shared/dynamic-form/dynamic-form.module";
 import {EntityAccessControlService} from "./shared/entity-access-control/EntityAccessControlService";
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import { VisualQueryPainterService } from "./visual-query/transform-data/visual-query-table/visual-query-painter.service";
-import { INJECTOR, VIEW_CONTAINER_REF } from "./visual-query/transform-data/transform-data.component";
 // import {PropertyListModule} from "./shared/property-list/property-list.module";
 
 @NgModule({
@@ -110,8 +109,6 @@ import { INJECTOR, VIEW_CONTAINER_REF } from "./visual-query/transform-data/tran
         UiComponentsService,
         VisualQueryService,
         VisualQueryPainterService,
-        {provide: INJECTOR, useExisting: Injector},
-        {provide : VIEW_CONTAINER_REF, useExisting : ViewContainerRef},
         PolicyInputFormService,
         NiFiService
     ],

@@ -47,6 +47,7 @@ import { menuLinkComponent } from "./accordion-menu/menuLinkComponent";
 import { AccordionMenuService } from "./accordion-menu/AccordionMenuService";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { UIRouterModule } from "@uirouter/angular";
+import { VisualQueryTableHeader } from "../feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.component";
 
 @NgModule({
     declarations: [
@@ -68,7 +69,8 @@ import { UIRouterModule } from "@uirouter/angular";
         // IfPermissionDirective,
         AccordianMenuComponent,
         MenuToggleComponent,
-        menuLinkComponent
+        menuLinkComponent,
+        VisualQueryTableHeader
     ],
     entryComponents: [
         AddButtonComponent,
@@ -87,7 +89,8 @@ import { UIRouterModule } from "@uirouter/angular";
         AccordianMenuComponent,
         MenuToggleComponent,
         menuLinkComponent,
-        menuLinkComponent
+        menuLinkComponent,
+        VisualQueryTableHeader
     ],
     imports: [
         CommonModule,

@@ -1,4 +1,4 @@
-import { Component, ViewContainerRef, SkipSelf } from "@angular/core";
+import { Component, Input } from "@angular/core";
 
 
 @Component({
@@ -7,8 +7,12 @@ import { Component, ViewContainerRef, SkipSelf } from "@angular/core";
 })
 export class VisualQueryTableHeader {
 
-    // @Input("header") header : WranglerColumn;
-    constructor(@SkipSelf() viewContainerRef: ViewContainerRef) {
+    @Input("header") header : any;
+    @Input("table") table : any;
+    @Input("availableCasts") availableCasts : any;
+    @Input("availableDomainTypes") availableDomainTypes : any;
+    @Input("domainType") domainType : any;
+    constructor() {
         
     }
 }

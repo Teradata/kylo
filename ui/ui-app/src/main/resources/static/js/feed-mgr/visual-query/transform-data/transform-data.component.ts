@@ -19,6 +19,7 @@ import BroadcastService from '../../../services/broadcast-service';
 import {FeedService} from '../../services/FeedService';
 import StepperService from '../../../common/stepper/StepperService';
 import { VisualQueryPainterService } from "./visual-query-table/visual-query-painter.service";
+// import { VIEW_CONTAINER_REF } from "../visual-query.module";
 
 declare const CodeMirror: any;
 
@@ -36,8 +37,7 @@ export class WranglerColumn {
     name: string = null;
 }
 
-export const VIEW_CONTAINER_REF = new InjectionToken<ViewContainerRef>("ViewContainerRef");
-export const INJECTOR = new InjectionToken<Injector>("$$viewContainerRef");
+
 /**
  * Transform Data step of the Visual Query page.
  */
@@ -206,10 +206,8 @@ export class TransformDataComponent implements OnInit {
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
                 private domainTypesService: DomainTypesService, private RestUrlService: any, private SideNavService: any, private uiGridConstants: any, private feedService: FeedService, private broadcastService: BroadcastService,
-                private stepperService: StepperService, private WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService, private painterServ : VisualQueryPainterService,
-                private viewContainerInjector?: Injector) {
+                private stepperService: StepperService, private WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService, private painterServ : VisualQueryPainterService) {
         
-        this.painterServ.setViewContainerRef(this.viewContainerInjector.get(VIEW_CONTAINER_REF));
         //Listen for when the next step is active
         this.broadcastService.subscribe($scope, this.stepperService.STEP_CHANGED_EVENT, (changedSteps : { newStep: number, oldStep: number })=> { this.onStepChange(changedSteps)});
 
@@ -1338,7 +1336,7 @@ angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         stepIndex: "@"
     },
     controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-        "WindowUnloadService", "WranglerDataService", "$timeout","VisualQueryPainterService", "$$viewContainerRef", TransformDataComponent],
+        "WindowUnloadService", "WranglerDataService", "$timeout","VisualQueryPainterService", TransformDataComponent],
     controllerAs: "$td",
     require: {
         stepperController: "^thinkbigStepper"
