@@ -10,193 +10,174 @@
 <span *ngIf="domainType" class="kylo-visual-query-table-domain-type">
   <mat-icon [ngStyle]="{'color': domainType.iconColor}" matTooltip="domainType.title">{{ domainType.icon }}</mat-icon>
 </span>
-<button mat-button [matMenuTriggerFor]="tableMenu" class="md-icon-button dropDown-button" style="line-height: 24px;">
+<button [matMenuTriggerFor]="tableMenu" class="md-icon-button dropDown-button" style="line-height: 24px;">
   <mat-icon>arrow_drop_down</mat-icon>
 </button> 
 <mat-menu #tableMenu="matMenu" xPosition="before" yPosition="below" [overlapTrigger]="false">
-    <div mat-menu-item>
-      <button mat-button (click)="header.delegate.showAnalyzeColumn(header, table)">
+      <button mat-menu-item (click)="header.delegate.showAnalyzeColumn(header, table)">
         <i class="material-icons">assessment&nbsp;</i> {{"views.query-table-header.analyze" | translate}}
       </button>
-    </div>
     <mat-divider></mat-divider>
-    <div mat-menu-item>
-      <button mat-button (click)="header.delegate.renameColumn(header, table)">
+      <button mat-menu-item (click)="header.delegate.renameColumn(header, table)">
         <i class="material-icons">mode_edit</i> {{"views.query-table-header.rename-column" | translate}}
       </button>
-    </div>
-    <div mat-menu-item>
-      <button mat-button (click)="header.delegate.hideColumn(header, table)">
+      <button mat-menu-item (click)="header.delegate.hideColumn(header, table)">
         <i class="material-icons">remove_circle</i> {{"views.query-table-header.hide-column" | translate}}
       </button>
-    </div>
-    <div mat-menu-item>
-      <button mat-button (click)="header.delegate.cloneColumn(header, table)">
+      <button mat-menu-item (click)="header.delegate.cloneColumn(header, table)">
         <i class="material-icons">content_copy</i> {{"views.query-table-header.clone-column" | translate}}
       </button>
-    </div>
-    <div mat-menu-item *ngIf="availableCasts.length > 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">font_download</i> Change type
-        </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let type of availableCasts">
-            <button mat-button (click)="header.delegate.castTo(type)">
-              <i class="material-icons" [ngStyle]="{'color':type.iconColor}">{{type.icon}}</i>
-              {{type.name}}
-            </button>
-          </div>
-          <mat-divider></mat-divider>
-          <div mat-menu-item *ngIf="availableDomainTypes != null && availableDomainTypes.length > 0">
-            <mat-menu>
-              <button mat-button (click)="$mdOpenMenu()">
-                <i class="material-icons">local_offer</i> Other
-              </button>
-              <div class="visual-query-column-menu">
-                <div mat-menu-item>
-                  <button mat-button (click)="header.delegate.setDomainType(header, null)"><em>None</em></button>
-                </div>
-                <div mat-menu-item *ngFor="let domainType of availableDomainTypes">
-                  <button mat-button (click)="header.delegate.setDomainType(header, domainType.id)">
-                    <i class="material-icons" [ngStyle]="{'color':domainType.iconColor}">{{domainType.icon}}</i>
-                    {{domainType.title}}
-                  </button>
-                </div>
-              </div>
-            </mat-menu>
-          </div>
-        </div>
-      </mat-menu>
-    </div>
+
+    <button mat-menu-item [matMenuTriggerFor]="availableCastsMenu" *ngIf="availableCasts.length > 0"  >
+        <i class="material-icons">font_download</i> Change type
+      </button>
+      
     <mat-divider></mat-divider>
-    <div mat-menu-item *ngIf="header.sort.direction != 'asc'">
-      <button mat-button (click)="header.delegate.sortColumn('asc', header, table)">
+      <button mat-menu-item *ngIf="header.sort.direction != 'asc'" (click)="header.delegate.sortColumn('asc', header, table)">
         <i class="ui-grid-icon-sort-alt-up">&nbsp;</i> {{"views.query-table-header.sort-ascending" | translate}}
       </button>
-    </div>
-    <div mat-menu-item *ngIf="header.sort.direction != 'desc'">
-      <button mat-button (click)="header.delegate.sortColumn('desc', header, table)">
+      <button mat-menu-item *ngIf="header.sort.direction != 'desc'" (click)="header.delegate.sortColumn('desc', header, table)">
         <i class="ui-grid-icon-sort-alt-down">&nbsp;</i> {{"views.query-table-header.sort-descending" | translate}}
       </button>
-    </div>
 
-    <div mat-menu-item *ngIf="header.delegate.filters.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">filter_list</i> {{"views.query-table-header.filter" | translate}}
-        </button>
-        <div class="visual-query-column-menu visual-query-filter-menu">
-          <div mat-menu-item *ngFor="let filter of header.delegate.filters">
-            <i class="material-icons" [ngClass]="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
-            <mat-form-field md-no-float>
-              <input matInput placeholder="{{ filter.label }}" type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(header,filter, table)" >
-            </mat-form-field>
-          </div>
-          <button mat-button class="md-raised" (click)="header.delegate.applyFilters(header,header.delegate.filters, table)">
-            {{"views.query-table-header.filter-apply" | translate}}
+        <button mat-menu-item *ngIf="header.delegate.filters.length !== 0"  >
+            <i class="material-icons">filter_list</i> {{"views.query-table-header.filter" | translate}}
           </button>
-        </div>
-      </mat-menu>
-    </div>
+    
+    <ng-container  *ngIf="header.delegate.transforms.defaults.length !== 0">
+         <mat-divider></mat-divider>
 
-    <mat-divider *ngIf="header.delegate.transforms.defaults !== 0"></mat-divider>
-
-    <div *ngIf="header.delegate.transforms.defaults !== 0">
-      <div mat-menu-item *ngFor="let transform of header.delegate.transforms.defaults">
-        <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <button mat-menu-item *ngFor="let transform of header.delegate.transforms.defaults" (click)="header.delegate.transformColumn(transform, header, table)">
           <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+        </button>
+      </ng-container>
+      <button mat-menu-item *ngIf="header.delegate.transforms.math.length !== 0"   [matMenuTriggerFor]="mathMenu">
+        <i class="material-icons">transform</i> {{"views.query-table-header.math" | translate}}
+         
+      </button>
+
+      <button mat-menu-item *ngIf="header.delegate.transforms.format.length !== 0"   [matMenuTriggerFor]="formatMenu">
+        <i class="material-icons">transform</i> {{"views.query-table-header.format" | translate}}   
+      </button>
+
+      <button mat-menu-item *ngIf="header.delegate.transforms.replace.length !== 0"   [matMenuTriggerFor]="replaceMenu">
+        <i class="material-icons">transform</i> {{"views.query-table-header.replace" | translate}}
+      </button>
+
+      <button mat-menu-item *ngIf="header.delegate.transforms.extract.length !== 0"   [matMenuTriggerFor]="extractMenu">
+        <i class="material-icons">transform</i> {{"views.query-table-header.extract" | translate}}
+      </button>
+
+      <button mat-menu-item *ngIf="header.delegate.transforms.ml.length !== 0"   [matMenuTriggerFor]="mlMenu">
+        <i class="material-icons">transform</i> {{"views.query-table-header.ml" | translate}}
+      </button>
+
+      <button mat-menu-item *ngIf="header.delegate.transforms.other.length !== 0" [matMenuTriggerFor]="otherMenu">
+        <i class="material-icons">transform</i> {{"views.query-table-header.other" | translate}}
+      </button>
+</mat-menu>
+
+<mat-menu>
+  <div class="visual-query-column-menu visual-query-filter-menu">
+    <div mat-menu-item *ngFor="let filter of header.delegate.filters">
+      <i class="material-icons" [ngClass]="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
+      <mat-form-field md-no-float>
+        <input matInput placeholder="{{ filter.label }}" type="text" [ngModel]="filter.term" (change)="header.delegate.validateFilter(header,filter, table)" >
+      </mat-form-field>
+    </div>
+    <button mat-button class="md-raised" (click)="header.delegate.applyFilters(header,header.delegate.filters, table)">
+      {{"views.query-table-header.filter-apply" | translate}}
+    </button>
+  </div>
+</mat-menu>
+
+<mat-menu #mathMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
+  <div class="visual-query-column-menu">
+    <div mat-menu-item *ngFor="let transform of header.delegate.transforms.math">
+      <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+      </button>
+    </div>
+  </div>
+</mat-menu>
+
+<mat-menu #formatMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
+  <div class="visual-query-column-menu">
+    <div mat-menu-item *ngFor="let transform of header.delegate.transforms.format">
+      <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+      </button>
+    </div>
+  </div>
+</mat-menu>
+
+<mat-menu #replaceMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
+  <div class="visual-query-column-menu">
+    <div mat-menu-item *ngFor="let transform of header.delegate.transforms.replace">
+      <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+      </button>
+    </div>
+  </div>
+</mat-menu>
+
+<mat-menu #extractMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
+  <div class="visual-query-column-menu">
+    <div mat-menu-item *ngFor="let transform of header.delegate.transforms.extract">
+      <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+      </button>
+    </div>
+  </div>
+</mat-menu>
+
+<mat-menu #mlMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
+  <div class="visual-query-column-menu">
+    <div mat-menu-item *ngFor="let transform of header.delegate.transforms.ml">
+      <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+      </button>
+    </div>
+  </div>
+</mat-menu>
+
+<mat-menu #otherMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
+  <div class="visual-query-column-menu">
+    <div mat-menu-item *ngFor="let transform of header.delegate.transforms.other">
+      <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
+        <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
+      </button>
+    </div>
+  </div>
+</mat-menu>
+
+<mat-menu #availableDomainTypesMenu="matMenu">
+    <div class="visual-query-column-menu">
+      <div mat-menu-item>
+        <button mat-button (click)="header.delegate.setDomainType(header, null)"><em>None</em></button>
+      </div>
+      <div mat-menu-item *ngFor="let domainType of availableDomainTypes">
+        <button mat-button (click)="header.delegate.setDomainType(header, domainType.id)">
+          <i class="material-icons" [ngStyle]="{'color':domainType.iconColor}">{{domainType.icon}}</i>
+          {{domainType.title}}
         </button>
       </div>
     </div>
+  </mat-menu>
 
-    <div mat-menu-item *ngIf="header.delegate.transforms.math.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">transform</i> {{"views.query-table-header.math" | translate}}
-        </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let transform of header.delegate.transforms.math">
-            <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
-            </button>
-          </div>
-        </div>
-      </mat-menu>
-    </div>
 
-    <div mat-menu-item *ngIf="header.delegate.transforms.format.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">transform</i> {{"views.query-table-header.format" | translate}}
+<mat-menu #availableCastsMenu="matMenu">
+    <div class="visual-query-column-menu">
+      <ng-container  *ngFor="let type of availableCasts">
+        <button mat-menu-item (click)="header.delegate.castTo(type)">
+          <i class="material-icons" [ngStyle]="{'color':type.iconColor}">{{type.icon}}</i>
+          {{type.name}}
         </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let transform of header.delegate.transforms.format">
-            <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
-            </button>
-          </div>
-        </div>
-      </mat-menu>
+      </ng-container>
+      <mat-divider></mat-divider>
+      <button mat-menu-item *ngIf="availableDomainTypes != null && availableDomainTypes.length > 0" [matMenuTriggerFor]="availableDomainTypesMenu">
+            <i class="material-icons">local_offer</i> Other
+      </button>
+        
     </div>
-
-    <div mat-menu-item *ngIf="header.delegate.transforms.replace.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">transform</i> {{"views.query-table-header.replace" | translate}}
-        </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let transform of header.delegate.transforms.replace">
-            <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
-            </button>
-          </div>
-        </div>
-      </mat-menu>
-    </div>
-
-    <div mat-menu-item *ngIf="header.delegate.transforms.extract.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">transform</i> {{"views.query-table-header.extract" | translate}}
-        </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let transform of header.delegate.transforms.extract">
-            <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
-            </button>
-          </div>
-        </div>
-      </mat-menu>
-    </div>
-
-    <div mat-menu-item *ngIf="header.delegate.transforms.ml.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">transform</i> {{"views.query-table-header.ml" | translate}}
-        </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let transform of header.delegate.transforms.ml">
-            <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
-            </button>
-          </div>
-        </div>
-      </mat-menu>
-    </div>
-
-    <div mat-menu-item *ngIf="header.delegate.transforms.other.length !== 0">
-      <mat-menu>
-        <button mat-button (click)="$mdOpenMenu()">
-          <i class="material-icons">transform</i> {{"views.query-table-header.other" | translate}}
-        </button>
-        <div class="visual-query-column-menu">
-          <div mat-menu-item *ngFor="let transform of header.delegate.transforms.other">
-            <button mat-button (click)="header.delegate.transformColumn(transform, header, table)">
-              <i class="material-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
-            </button>
-          </div>
-        </div>
-      </mat-menu>
-    </div>
-</mat-menu>
+  </mat-menu>

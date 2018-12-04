@@ -13,3 +13,19 @@ vs-table-header {
     min-width: 20px;
     padding: 0;
 }
+
+.hoverMenu { 
+    transform: rotate(270deg);
+}
+
+.mat-menu-item {
+    padding: 6px 16px 6px 16px;
+    display: inline-flex;
+}
+
+.material-icons {
+    padding-right: 25px;
+    margin-right: 4px;
+    font-size: 20px;
+    vertical-align: sub;
+}

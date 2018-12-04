@@ -7,7 +7,6 @@ import { Injectable, Inject, Injector, ComponentFactoryResolver, ComponentFactor
 import { downgradeInjectable } from "@angular/upgrade/static";
 import {moduleName} from "../../../module-name";
 import { VisualQueryTableHeader } from "./visual-query-table-header.component";
-import { Component } from "@angular/compiler/src/core";
 
 /**
  * Default font.
