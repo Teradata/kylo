@@ -359,6 +359,8 @@
       <excludes>
         <exclude>**/node_modules/**</exclude>
         <exclude>**/target/**</exclude>
+        <exclude>templates/**/*.json</exclude>
+        <exclude>feeds/**/*.json</exclude>
       </excludes>
     </fileSet>
 
