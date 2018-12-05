@@ -1,7 +1,7 @@
-<div class="cellMenu" [ngStyle]="{'top': menuTop, 'left': menuLeft}" style="position: absolute;z-index: 100;">
+<div class="cellMenu" [ngStyle]="{'top': menuTop, 'left': menuLeft}" style="position: absolute;">
   <span #cellButton [matMenuTriggerFor]="tableMenu" >
   </span>
-  <mat-menu #tableMenu="matMenu" xPosition="before" yPosition="below" [overlapTrigger]="false">
+  <mat-menu #tableMenu="matMenu" xPosition="after" yPosition="below" [overlapTrigger]="false">
     <ng-container *ngIf="selection && value !== null">
       <button mat-menu-item class="list-items" (click)="header.delegate.findRowsContaining(selection, header)">Find rows containing {{ selectionDisplay }}</button>
     </ng-container>

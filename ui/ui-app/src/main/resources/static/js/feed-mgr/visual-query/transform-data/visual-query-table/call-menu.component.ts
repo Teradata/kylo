@@ -28,7 +28,6 @@ export class CellMenuComponent implements AfterViewInit {
     @ViewChild('cellButton') cellButton: ElementRef;
 
     ngAfterViewInit() {
-        // this.tableMenu.openMenu();
         this.cellButton.nativeElement.click();
         this.tableMenu.onMenuClose.subscribe(()=>{
             this.broadcastService.notify("CLOSE_CELL_MENU");
