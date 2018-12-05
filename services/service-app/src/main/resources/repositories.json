@@ -1,6 +1,3 @@
 [
-  {"name": "Demo Repository", "readOnly": false, "location": "samples/templates", "icon":"", "type":"FileSystem"},
-  {"name": "Templates Nifi 1.5", "readOnly": false, "location": "samples/templates/nifi-1.5", "icon":"", "type":"FileSystem"},
-  {"name": "Feeds Nifi 1.0", "readOnly": false, "location": "samples/feeds/nifi-1.0", "icon":"", "type":"FileSystem"},
-  {"name": "Feeds Nifi 1.3", "readOnly": false, "location": "samples/feeds/nifi-1.3", "icon":"", "type":"FileSystem"}
+
 ]
