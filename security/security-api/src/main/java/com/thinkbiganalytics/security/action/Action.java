@@ -98,7 +98,7 @@ public interface Action {
     /**
      * Returns the full hierarchy of this action starting from the top and including this action.
      *
-     * @return the hierachy as a list
+     * @return the hierarchy as a list
      */
     List<Action> getHierarchy();
 

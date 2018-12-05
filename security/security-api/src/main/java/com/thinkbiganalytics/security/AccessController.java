@@ -46,6 +46,7 @@ public interface AccessController {
      * @param moduleName the module name
      * @param action     the action being checked
      * @param others     additional actions that are being checked
+     * @throws AccessControlException if the action(s) are not permitted
      */
     void checkPermission(String moduleName, Action action, Action... others);
 
@@ -54,17 +55,26 @@ public interface AccessController {
      *
      * @param moduleName the module name
      * @param actions    the actions being checked
+     * @throws AccessControlException if the action(s) are not permitted
      */
     void checkPermission(String moduleName, Set<Action> actions);
 
     /**
-     * Check to see if the user has an service permission for a given module
+     * Check to see if the user has the permission(s) for a given module
      * @param moduleName the service module to check
      * @param action the permission to check
      * @param others additional permissions
-     * @return true if valid, false if not
+     * @return true if the action(s) are permitted, false if not
      */
     boolean hasPermission(String moduleName, Action action, Action... others);
+    
+    /**
+     * Check to see if the user has the permission(s) for a given module
+     * @param moduleName the service module to check
+     * @param actions    the actions being checked
+     * @return true if the actions are permitted, false if not
+     */
+    boolean hasPermission(String moduleName, Set<Action> actions);
 
     /**
      * Check whether an access controlled entity is permitted the specified actions. Does not perform 
@@ -74,6 +84,7 @@ public interface AccessController {
      * @param accessControlled the access controlled entity
      * @param action an action to check
      * @param others additional actions
+     * @throws AccessControlException if the action(s) are not permitted
      */
     void checkPermission(AccessControlled accessControlled, Action action, Action... others);
     
@@ -84,6 +95,7 @@ public interface AccessController {
      *  
      * @param accessControlled the access controlled entity
      * @param actions the actions being checked
+     * @throws AccessControlException if the action(s) are not permitted
      */
     void checkPermission(AccessControlled accessControlled, Set<Action> actions);
 
@@ -92,9 +104,17 @@ public interface AccessController {
      * @param accessControlled the access controlled entity
      * @param action the permission to check
      * @param others additional permissions
-     * @return true if valid, false if not
+     * @return true if the actions are permitted, false if not
      */
     boolean hasPermission(AccessControlled accessControlled, Action action, Action... others);
+    
+    /**
+     * Check to see if the user has the specified permissions for the given access controlled entity.
+     * @param accessControlled the access controlled entity
+     * @param actions the actions to check
+     * @return true if the actions are permitted, false if not
+     */
+    boolean hasPermission(AccessControlled accessControlled, Set<Action> actions);
 
     /**
      * Returns true if setup to use Entity access control, false if not

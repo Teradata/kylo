@@ -205,6 +205,14 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
     }
     
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Category:" + getId();
+    }
+    
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.category.Category#moveFeed(com.thinkbiganalytics.metadata.api.feed.Feed)
      */
     public String getFeedParentPath() {

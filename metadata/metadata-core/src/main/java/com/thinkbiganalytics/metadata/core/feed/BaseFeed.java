@@ -455,6 +455,14 @@ public class BaseFeed implements Feed {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Feed:" + getId();
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()

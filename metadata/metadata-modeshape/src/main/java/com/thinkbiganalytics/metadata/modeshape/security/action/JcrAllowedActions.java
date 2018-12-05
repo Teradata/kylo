@@ -194,16 +194,13 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                            .collect(Collectors.toSet()));
     }
 
-    /**
-     * validate a user has a given permission(s)
-     *
-     * @param action the action to check
-     * @param more   additional actions to check
-     * @return true if user has the permission(s), false if not
-     */
+    @Override
     public boolean hasPermission(Action action, Action... more) {
-        Set<Action> actions = new HashSet<>(Arrays.asList(more));
-        actions.add(action);
+        return hasPermission(Stream.concat(Stream.of(action), Stream.of(more)).collect(Collectors.toSet()));
+    }
+    
+    @Override
+    public boolean hasPermission(Set<Action> actions) {
         try {
             checkPermission(actions);
         } catch (AccessControlException e) {

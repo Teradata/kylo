@@ -124,6 +124,14 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrDatasourceAllowedActions.class;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "User Datasource:" + getId();
+    }
 
     @Override
     public void setName(@Nonnull final String name) {

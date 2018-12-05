@@ -213,6 +213,14 @@ public class JcrFeedTemplate extends JcrEntity<FeedManagerTemplate.ID> implement
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrTemplateAllowedActions.class;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Template:" + getId();
+    }
 
     @Override
     public String getTemplateTableOption() {

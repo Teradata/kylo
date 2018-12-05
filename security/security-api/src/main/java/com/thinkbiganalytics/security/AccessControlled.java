@@ -48,5 +48,8 @@ public interface AccessControlled {
 
     Principal getOwner();
 
-
+    /**
+     * @return an identifier of this access controlled entity for audit logging purposes
+     */
+    String getAuditId();
 }

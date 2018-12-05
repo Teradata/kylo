@@ -172,6 +172,14 @@ public class BaseCategory implements Category {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Category:" + getId();
+    }
 
     @Override
     public Set<RoleMembership> getRoleMemberships() {

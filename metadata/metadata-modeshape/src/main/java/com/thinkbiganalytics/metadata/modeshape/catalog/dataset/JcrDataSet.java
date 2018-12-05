@@ -133,6 +133,14 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
         return JcrDataSetAllowedActions.class;
     }
     
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Data Set:" + getId();
+    }
+
     public long getParamsHash() {
         return getProperty(PARAMS_HASH, 0L);
     }

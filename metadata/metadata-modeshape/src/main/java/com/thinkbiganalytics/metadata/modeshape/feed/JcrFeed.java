@@ -561,6 +561,14 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     public Class<JcrFeedAllowedActions> getJcrAllowedActionsType() {
         return JcrFeedAllowedActions.class;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Feed:" + getId();
+    }
 
     public Optional<FeedSummary> getFeedSummary() {
         if (this.summary == null) {

@@ -122,6 +122,14 @@ public class JcrDataSource extends JcrEntity<JcrDataSource.DataSourceId> impleme
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrDataSourceAllowedActions.class;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Data Source:" + getId();
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.DataSource#getConnector()

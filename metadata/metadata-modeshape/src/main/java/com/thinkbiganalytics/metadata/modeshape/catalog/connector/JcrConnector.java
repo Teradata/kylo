@@ -106,6 +106,14 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrConnectorAllowedActions.class;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Connector:" + getId();
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.catalog.Connector#isActive()
