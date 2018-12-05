@@ -350,9 +350,7 @@ public class FeedManagerMetadataService implements MetadataService {
             Feed domainFeed = domainFeedProvider.findById(domainId);
 
             if (domainFeed != null) {
-                if (this.accessController.isEntityAccessControlled()) {
-                    domainFeed.getAllowedActions().checkPermission(FeedAccessControl.START);
-                }
+                this.accessController.checkPermission(domainFeed, FeedAccessControl.START);
                 return feedModelTransform.domainToFeedMetadata(domainFeed);
             } else {
                 throw new FeedNotFoundException(domainId);

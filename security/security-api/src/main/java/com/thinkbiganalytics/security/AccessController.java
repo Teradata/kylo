@@ -88,6 +88,15 @@ public interface AccessController {
     void checkPermission(AccessControlled accessControlled, Set<Action> actions);
 
     /**
+     * Check to see if the user has the specified permissions for the given access controlled entity.
+     * @param accessControlled the access controlled entity
+     * @param action the permission to check
+     * @param others additional permissions
+     * @return true if valid, false if not
+     */
+    boolean hasPermission(AccessControlled accessControlled, Action action, Action... others);
+
+    /**
      * Returns true if setup to use Entity access control, false if not
      * @return true if using entity access control, false if not
      */

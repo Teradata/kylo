@@ -88,6 +88,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
 
@@ -259,8 +260,9 @@ public class FeedManagerConfiguration {
     @Bean
     @Nonnull
     public DatasourceModelTransform datasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor textEncryptor,
-                                                             @Nonnull final NiFiRestClient niFiRestClient, @Nonnull final SecurityService securityService) {
-        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient, securityService);
+                                                             @Nonnull final NiFiRestClient niFiRestClient, @Nonnull final SecurityService securityService,
+                                                             @Nonnull final AccessController accessController) {
+        return new DatasourceModelTransform(datasourceProvider, textEncryptor, niFiRestClient, securityService, accessController);
     }
 
     /**

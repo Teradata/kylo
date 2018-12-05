@@ -96,9 +96,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public Category update(Category category) {
-        if (accessController.isEntityAccessControlled()) {
-            category.getAllowedActions().checkPermission(CategoryAccessControl.EDIT_DETAILS);
-        }
+        accessController.checkPermission(category, CategoryAccessControl.EDIT_DETAILS);
         return super.update(category);
     }
 

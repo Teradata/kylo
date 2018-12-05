@@ -182,22 +182,13 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
 
         List<Project> projects = getProjects();
         return projects.stream()
-            .filter(prj ->
-                    {
-                        try {
-                            prj.getAllowedActions().checkPermission(ProjectAccessControl.EDIT_PROJECT);
-                            return true;
-                        } catch (AccessControlException ace) {
-                            return false;
-                        }
-                    }).collect(Collectors.toList());
+            .filter(prj -> accessController.hasPermission(prj, ProjectAccessControl.EDIT_PROJECT))
+            .collect(Collectors.toList());
     }
 
     @Override
     public void deleteProject(Project domain) {
-        if (accessController.isEntityAccessControlled()) {
-            domain.getAllowedActions().checkPermission(ProjectAccessControl.DELETE_PROJECT);
-        }
+        accessController.checkPermission(domain, ProjectAccessControl.DELETE_PROJECT);
 
         super.delete(domain);
     }

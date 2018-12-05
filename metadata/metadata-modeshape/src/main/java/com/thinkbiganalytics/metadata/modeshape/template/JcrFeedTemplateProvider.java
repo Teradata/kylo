@@ -188,10 +188,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     public boolean deleteTemplate(FeedManagerTemplate feedManagerTemplate) throws TemplateDeletionException {
         if (feedManagerTemplate != null && (feedManagerTemplate.getFeeds() == null || feedManagerTemplate.getFeeds().size() == 0)) {
-
-            if(accessController.isEntityAccessControlled()) {
-                feedManagerTemplate.getAllowedActions().checkPermission(TemplateAccessControl.DELETE);
-            }
+            accessController.checkPermission(feedManagerTemplate, TemplateAccessControl.DELETE);
             addPostFeedChangeAction(feedManagerTemplate, ChangeType.DELETE);
             super.delete(feedManagerTemplate);
             return true;

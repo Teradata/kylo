@@ -50,7 +50,7 @@ public class DefaultAccessController implements AccessController {
     private AllowedEntityActionsProvider actionsProvider;
 
     @org.springframework.beans.factory.annotation.Value("${security.entity.access.controlled:false}")
-    private boolean entityAccessControlled;
+    private volatile boolean entityAccessControlled;
 
     public DefaultAccessController() {
 
@@ -78,14 +78,7 @@ public class DefaultAccessController implements AccessController {
         });
     }
 
-    /**
-     * Check to see if the user has an service permission for a given module
-     *
-     * @param moduleName the service module to check
-     * @param action     the permission to check
-     * @param others     additional permissions
-     * @return true if valid, false if not
-     */
+    @Override
     public boolean hasPermission(String moduleName, Action action, Action... others) {
         try {
             checkPermission(moduleName, action, others);
@@ -107,7 +100,17 @@ public class DefaultAccessController implements AccessController {
             accessControlled.getAllowedActions().checkPermission(actions);
         }
     }
+    
+    @Override
+    public boolean hasPermission(AccessControlled accessControlled, Action action, Action... others) {
+        if (isEntityAccessControlled()) {
+            return accessControlled.getAllowedActions().hasPermission(action, others);
+        } else {
+            return true;
+        }
+    }
 
+    @Override
     public boolean isEntityAccessControlled() {
         return entityAccessControlled;
     }

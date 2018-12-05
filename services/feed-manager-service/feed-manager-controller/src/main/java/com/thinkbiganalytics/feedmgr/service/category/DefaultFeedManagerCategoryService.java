@@ -88,7 +88,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
                 final Category domainCategory = categoryProvider.findById(domainId);
 
                 if (domainCategory != null) {
-                    domainCategory.getAllowedActions().checkPermission(action, more);
+                    accessController.checkPermission(domainCategory, action, more);
                     return true;
                 } else {
                     return false;
@@ -163,7 +163,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             ///update access control
             //TODO only do this when modifying the access control
-            if (domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+            if (accessController.hasPermission(domainCategory, CategoryAccessControl.CHANGE_PERMS)) {
                 feedCategory.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeCategoryRoleMemberships(feedCategory.getId(), roleMembershipChange));
                 feedCategory.toFeedRoleMembershipChangeList().stream()
                     .forEach(roleMembershipChange -> securityService.changeCategoryFeedRoleMemberships(feedCategory.getId(), roleMembershipChange));
@@ -188,11 +188,8 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             final Category category = categoryProvider.findById(id);
 
             if (category != null) {
-
-                if (accessController.isEntityAccessControlled()) {
-                    //this check should throw a runtime exception
-                    category.getAllowedActions().checkPermission(CategoryAccessControl.DELETE);
-                }
+                //this check should throw a runtime exception
+                this.accessController.checkPermission(category, CategoryAccessControl.DELETE);
                 return new SimpleCategory(id, category.getSystemName());
             } else {
                 //unable to read the category

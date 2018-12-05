@@ -268,8 +268,8 @@ public class DatasourceController {
 
             if (ds != null) {
                 final Datasource restModel = datasourceTransform.toDatasource(ds, sensitive ? DatasourceModelTransform.Level.ADMIN : DatasourceModelTransform.Level.FULL);
-                if (accessController.isEntityAccessControlled() && ds instanceof AccessControlled) {
-                    ((AccessControlled) ds).getAllowedActions().checkPermission(DatasourceAccessControl.ACCESS_DETAILS);
+                if (ds instanceof AccessControlled) {
+                    accessController.checkPermission((AccessControlled) ds, DatasourceAccessControl.ACCESS_DETAILS);
                     
                     securityTransform.applyAccessControl((AccessControlled) ds, restModel);
                 }

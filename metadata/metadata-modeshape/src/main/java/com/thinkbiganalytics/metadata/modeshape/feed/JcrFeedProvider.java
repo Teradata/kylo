@@ -328,7 +328,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed update(Feed feed) {
 
-        //   feed.getCategory().getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+        //   accessController.checkPermission(feed.getCategory(), CategoryAccessControl.CREATE_FEED);
         return super.update(feed);
     }
 
@@ -800,9 +800,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean enableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-        if (accessController.isEntityAccessControlled()) {
-            feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
-        }
+        accessController.checkPermission(feed, FeedAccessControl.ENABLE_DISABLE);
 
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
@@ -822,9 +820,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean disableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
-        if (accessController.isEntityAccessControlled()) {
-            feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
-        }
+        accessController.checkPermission(feed, FeedAccessControl.ENABLE_DISABLE);
 
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
@@ -851,9 +847,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void delete(Feed feed) {
-        if (accessController.isEntityAccessControlled()) {
-            feed.getAllowedActions().checkPermission(FeedAccessControl.DELETE);
-        }
+        accessController.checkPermission(feed, FeedAccessControl.DELETE);
 
         addPostFeedChangeAction(feed, ChangeType.DELETE);
 
@@ -883,10 +877,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         final JcrFeed feed = (JcrFeed) super.findById(feedId);
         
         if (feed != null) {
-            if (accessController.isEntityAccessControlled()) {
-                // TODO: Add deploy feed action?
-                feed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
-            }
+            accessController.checkPermission(feed, FeedAccessControl.EDIT_DETAILS);
             
             findVersion(feedId, versionId, false)
                 .map(JcrEntityVersion.class::cast)
