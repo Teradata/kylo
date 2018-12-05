@@ -1,13 +1,14 @@
-import { Component, Input, ViewEncapsulation } from "@angular/core";
-
+import { Component, Input, ViewEncapsulation, AfterViewInit, ViewChild, ElementRef } from "@angular/core";
+import { MatMenuTrigger } from "@angular/material/menu";
+import BroadcastService from "../../../../services/broadcast-service";
 
 @Component({
     selector: 'vs-cell-menu',
     templateUrl: 'js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html',
     styleUrls: ['js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.scss'],
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
 })
-export class CellMenuComponent {
+export class CellMenuComponent implements AfterViewInit {
 
     @Input("selection") selection : any;
     @Input("value") value : any;
@@ -19,5 +20,23 @@ export class CellMenuComponent {
 
     @Input("table") table : any;
     @Input("displayValue") displayValue : any;
+
+    @Input() menuTop: any = 0;
+    @Input() menuLeft: any = 0;
     
+    @ViewChild(MatMenuTrigger) tableMenu: MatMenuTrigger;
+    @ViewChild('cellButton') cellButton: ElementRef;
+
+    ngAfterViewInit() {
+        // this.tableMenu.openMenu();
+        this.cellButton.nativeElement.click();
+        this.tableMenu.onMenuClose.subscribe(()=>{
+            this.broadcastService.notify("CLOSE_CELL_MENU");
+        });
+    }
+
+    constructor(private broadcastService: BroadcastService) {
+
+    }
+
 }

@@ -1,49 +1,54 @@
-<mat-menu class="md-kylo-theme" role="menu">
-  <div mat-menu-item *ngIf="selection && value !== null">
-    <button mat-button (click)="header.delegate.findRowsContaining(selection, header)">Find rows containing {{ selectionDisplay }}</button>
-  </div>
-  <div mat-menu-item *ngIf="selection && value !== null">
-    <button mat-button (click)="header.delegate.deleteRowsContaining(selection, header)">Delete rows containing {{ selectionDisplay }}</button>
-  </div>
-  <div mat-menu-item *ngIf="selection && value !== null">
-    <button mat-button (click)="header.delegate.splitOn(selection, header, table)">Split on {{ selectionDisplay }}</button>
-  </div>
-  <div mat-menu-item *ngIf="selection !== null && selection.length > 0">
-    <button mat-button (click)="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selectionDisplay }}</button>
-  </div>
-  <div mat-menu-item *ngIf="range && value !== null && selection &&  selection.length > 0">
-    <button mat-button (click)="header.delegate.extractStringAtSelectedIndex(range, header, table)">Extract string at index {{ range.startOffset }} to {{ range.endOffset }}</button>
-  </div>
-  <mat-divider *ngIf="value !== null"></mat-divider>
-  <div mat-menu-item *ngIf="value !== null">
-    <button mat-button (click)="header.delegate.replaceValueEqualTo(value, header, table)">Replace values equal to {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null">
-    <button mat-button (click)="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <button mat-button (click)="header.delegate.findRowsLessThan(value, header)">Find rows less than {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <button mat-button (click)="header.delegate.findRowsGreaterThan(value, header)">Find rows greater than {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null">
-    <button mat-button (click)="header.delegate.deleteRowsEqualTo(value, header)">Delete rows equal to {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <button mat-button (click)="header.delegate.deleteRowsLessThan(value, header)">Delete rows less than {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <button mat-button (click)="header.delegate.deleteRowsGreaterThan(value, header)">Delete rows greater than {{ displayValue }}</button>
-  </div>
-  <div mat-menu-item *ngIf="value === null">
-    <button mat-button (click)="header.delegate.findNullRows(header)">Find null rows</button>
-  </div>
-  <div mat-menu-item *ngIf="value === null">
-    <button mat-button (click)="header.delegate.deleteNullRows(header)">Delete null rows</button>
-  </div>
-  <div mat-menu-item *ngIf="value !== null">
-    <button mat-button (click)="header.delegate.clearRowsEquals(value, header, table)">Clear values equal to {{displayValue}}</button>
-  </div>
-
-</mat-menu>
+<div class="cellMenu" [ngStyle]="{'top': menuTop, 'left': menuLeft}" style="position: absolute;z-index: 100;">
+  <div>'top': {{menuTop}}, 'left': {{menuLeft}}</div>
+  <button #cellButton style="display:none;" [matMenuTriggerFor]="tableMenu" >
+    Cell Menu
+  </button>
+  <mat-menu #tableMenu="matMenu" xPosition="before" yPosition="below" [overlapTrigger]="false">
+    <ng-container *ngIf="selection && value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.findRowsContaining(selection, header)">Find rows containing {{ selectionDisplay }}</button>
+    </ng-container>
+    <ng-container *ngIf="selection && value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.deleteRowsContaining(selection, header)">Delete rows containing {{ selectionDisplay }}</button>
+    </ng-container>
+    <ng-container *ngIf="selection && value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.splitOn(selection, header, table)">Split on {{ selectionDisplay }}</button>
+    </ng-container>
+    <ng-container *ngIf="selection !== null && selection.length > 0">
+      <button mat-menu-item class="list-items" (click)="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selectionDisplay }}</button>
+    </ng-container>
+    <ng-container *ngIf="range && value !== null && selection &&  selection.length > 0">
+      <button mat-menu-item class="list-items" (click)="header.delegate.extractStringAtSelectedIndex(range, header, table)">Extract string at index {{ range.startOffset }} to {{ range.endOffset }}</button>
+    </ng-container>
+    <mat-divider *ngIf="value !== null"></mat-divider>
+    <ng-container *ngIf="value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.replaceValueEqualTo(value, header, table)">Replace values equal to {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
+      <button mat-menu-item class="list-items" (click)="header.delegate.findRowsLessThan(value, header)">Find rows less than {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
+      <button mat-menu-item class="list-items" (click)="header.delegate.findRowsGreaterThan(value, header)">Find rows greater than {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.deleteRowsEqualTo(value, header)">Delete rows equal to {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
+      <button mat-menu-item class="list-items" (click)="header.delegate.deleteRowsLessThan(value, header)">Delete rows less than {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
+      <button mat-menu-item class="list-items" (click)="header.delegate.deleteRowsGreaterThan(value, header)">Delete rows greater than {{ displayValue }}</button>
+    </ng-container>
+    <ng-container *ngIf="value === null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.findNullRows(header)">Find null rows</button>
+    </ng-container>
+    <ng-container *ngIf="value === null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.deleteNullRows(header)">Delete null rows</button>
+    </ng-container>
+    <ng-container *ngIf="value !== null">
+      <button mat-menu-item class="list-items" (click)="header.delegate.clearRowsEquals(value, header, table)">Clear values equal to {{displayValue}}</button>
+    </ng-container>
+  </mat-menu>
+</div>

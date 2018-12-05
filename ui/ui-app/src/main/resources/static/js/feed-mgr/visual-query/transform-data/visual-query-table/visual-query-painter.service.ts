@@ -7,6 +7,8 @@ import { Injectable, Inject, Injector, ComponentFactoryResolver, ComponentFactor
 import { downgradeInjectable } from "@angular/upgrade/static";
 import {moduleName} from "../../../module-name";
 import { VisualQueryTableHeader } from "./visual-query-table-header.component";
+import { CellMenuComponent } from "./call-menu.component";
+import BroadcastService from "../../../../services/broadcast-service";
 
 /**
  * Default font.
@@ -74,7 +76,7 @@ export class VisualQueryPainterService extends fattable.Painter {
     /**
      * Panel containing the cell menu.
      */
-    private menuPanel: angular.material.IPanelRef;
+    private menuPanel: any;
 
     /**
      * Indicates that the menu should be visible.
@@ -113,27 +115,32 @@ export class VisualQueryPainterService extends fattable.Painter {
     private componentRef: any;
 
     private viewContainerRef : ViewContainerRef;
+    private componentRefMenu: any;
+    private componentFactoryMenu: any;
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
     constructor(@Inject("$injector") private $injector: any,
                 private injector: Injector, 
                 private componentFactoryResolver: ComponentFactoryResolver,
-                private _appRef : ApplicationRef
+                private _appRef : ApplicationRef,
+                private broadcastService: BroadcastService
                 ) {
         super();
+
+        this.broadcastService.subscribe(null, "CLOSE_CELL_MENU", () => this.hideCellMenu());
       
         // Create menu
-        this.menuPanel = this.$injector.get("$mdPanel").create({
-            animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
-            attachTo: angular.element(document.body),
-            clickOutsideToClose: true,
-            escapeToClose: true,
-            focusOnOpen: true,
-            panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
-            templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
-        });
-        this.menuPanel.attach();
+        // this.menuPanel = this.$injector.get("$mdPanel").create({
+        //     animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
+        //     attachTo: angular.element(document.body),
+        //     clickOutsideToClose: true,
+        //     escapeToClose: true,
+        //     focusOnOpen: true,
+        //     panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
+        //     templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
+        // });
+        // this.menuPanel.attach();
 
         // Create tooltip
         this.tooltipPanel = this.$injector.get("$mdPanel").create({
@@ -152,7 +159,6 @@ export class VisualQueryPainterService extends fattable.Painter {
     ngOnDestroy() {
         this._appRef.detachView(this.componentRef.hostView);
         this.componentRef.destroy();
-
     }
 
     /**
@@ -388,6 +394,10 @@ export class VisualQueryPainterService extends fattable.Painter {
       //   providers: [{provide: viewContainerRef, useValue: viewContainer}],
         //   parent: this.injector
 
+    hideCellMenu() {
+        this._appRef.detachView(this.componentRefMenu.hostView);
+        this.componentRefMenu.destroy();
+    }
     /**
      * Hides the cell menu.
      */
@@ -453,47 +463,54 @@ export class VisualQueryPainterService extends fattable.Painter {
             return;  // ignore clicks on columns with unsupported data types
         }
 
-        // Update content
-        const $scope: IScope = (this.menuPanel.config as any).scope;
-        $scope.DataCategory = DataCategory;
-        $scope.header = header;
-        $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·"," ") : null;
-        $scope.selectionDisplay = this.niceSelection($scope.selection)
-        $scope.range = range;
-        $scope.table = this.delegate;
-        $scope.value = isNull ? null : $(cellDiv).data('realValue');
-        $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
+        // Update Menu
 
-        // Update position
-        this.menuPanel.updatePosition(
-            this.$injector.get("$mdPanel").newPanelPosition()
-                .left(event.clientX + PIXELS)
-                .top(event.clientY + PIXELS)
-        );
+        this.componentFactoryMenu = this.componentFactoryResolver.resolveComponentFactory(CellMenuComponent);
+        this.componentRefMenu = this.componentFactoryMenu.create(this.injector);
+
+        this.componentRefMenu.instance.DataCategory = DataCategory;
+        this.componentRefMenu.instance.header = header;
+        this.componentRefMenu.instance.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·"," ") : null;
+        this.componentRefMenu.instance.selectionDisplay = this.niceSelection(this.componentRefMenu.instance.selection)
+        this.componentRefMenu.instance.range = range;
+        this.componentRefMenu.instance.table = this.delegate;
+        this.componentRefMenu.instance.value = isNull ? null : $(cellDiv).data('realValue');
+        this.componentRefMenu.instance.displayValue = (this.componentRefMenu.instance.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? this.componentRefMenu.instance.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": this.componentRefMenu.instance.value)
+        
+        const top =  (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+        const left = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
+
+        this.componentRefMenu.instance.menuTop = left + PIXELS;
+        this.componentRefMenu.instance.menuLeft = top + PIXELS;
+
+        this._appRef.attachView(this.componentRefMenu.hostView);
+        // outletElement should be the HTMLElement for the header
+        $(document.body).append((this.componentRefMenu.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement);
+       
 
         // Show menu
-        this.menuPanel.open()
-            .then(() => {
-                // Add click listener
-                this.menuPanel.panelEl.on("click", "button", () => this.hideMenu());
+        // this.menuPanel.open()
+        //     .then(() => {
+        //         // Add click listener
+        //         this.menuPanel.panelEl.on("click", "button", () => this.hideMenu());
 
-                // Calculate position
-                const element = angular.element(this.menuPanel.panelEl);
-                const height = element.height();
-                const offset = element.offset();
-                const width = element.width();
+        //         // Calculate position
+        //         const element = angular.element(this.menuPanel.panelEl);
+        //         const height = element.height();
+        //         const offset = element.offset();
+        //         const width = element.width();
 
-                // Fix position if off screen
-                const left = (offset.left + width > window.innerWidth) ? window.innerWidth - width - 8 : event.clientX;
-                const top = (offset.top + height > window.innerHeight) ? window.innerHeight - height - 8 : event.clientY;
-                if (left !== event.clientX || top !== event.clientY) {
-                    this.menuPanel.updatePosition(
-                        this.$injector.get("$mdPanel").newPanelPosition()
-                            .left(left + PIXELS)
-                            .top(top + PIXELS)
-                    );
-                }
-            });
+        //         // Fix position if off screen
+        //         const left = (offset.left + width > window.innerWidth) ? window.innerWidth - width - 8 : event.clientX;
+        //         const top = (offset.top + height > window.innerHeight) ? window.innerHeight - height - 8 : event.clientY;
+        //         if (left !== event.clientX || top !== event.clientY) {
+        //             this.menuPanel.updatePosition(
+        //                 this.$injector.get("$mdPanel").newPanelPosition()
+        //                     .left(left + PIXELS)
+        //                     .top(top + PIXELS)
+        //             );
+        //         }
+        //     });
     }
 
     /**
