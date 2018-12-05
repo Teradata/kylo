@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.shell;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,9 +26,12 @@ import com.thinkbiganalytics.spark.shell.locator.HdpSparkHomeLocator;
 import com.thinkbiganalytics.spark.shell.locator.SparkHomeLocator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +46,8 @@ import javax.annotation.Nullable;
  * Utility functions for using Spark.
  */
 public final class SparkClientUtil {
+
+    private static final Logger log = LoggerFactory.getLogger(SparkClientUtil.class);
 
     /**
      * Cached Spark major version number
@@ -107,6 +112,8 @@ public final class SparkClientUtil {
     private static String getVersion() throws IOException {
         // Build spark-submit process
         final String sparkSubmitCommand = new StringJoiner(File.separator).add(getSparkHome()).add("bin").add("spark-submit").toString();
+        log.debug("Executing spark-submit command: {} --version", sparkSubmitCommand);
+
         final Process process = new ProcessBuilder()
             .command(sparkSubmitCommand, "--version")
             .redirectErrorStream(true)
@@ -121,17 +128,23 @@ public final class SparkClientUtil {
             exited = !process.isAlive();
         }
 
-        if (!exited) {
-            throw new IOException("Timeout waiting for Spark version");
-        }
-
         // Read stdout
         final byte[] bytes = new byte[1024];
         final int length = process.getInputStream().read(bytes);
 
-        final String output = new String(bytes, 0, length, "UTF-8");
+        final String output = new String(bytes, 0, length, StandardCharsets.UTF_8);
+        log.debug("Spark process exited [{}] with code [{}] and output: {}", exited, exited ? process.exitValue() : -1, output);
+
+        if (!exited) {
+            throw new IOException("Timeout waiting for Spark version");
+        }
+
+        // Parse version from output
         final Matcher matcher = Pattern.compile("version ([\\d+.]+)").matcher(output);
         if (matcher.find()) {
+            if (log.isDebugEnabled()) {
+                log.debug("Found Spark version: {}", matcher.group(1));
+            }
             return matcher.group(1);
         } else {
             throw new IllegalStateException("Unable to determine version from Spark Submit");
