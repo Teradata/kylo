@@ -1,7 +1,17 @@
 vs-table-header {
-    display: inline-flex;
+    display: flex;
     width: 100%;
+}
+
+.table-header {
+    display: inline-flex;
     justify-content: space-between;
+    width: 100%;
+}
+
+.table-header-data {
+    padding: 0; 
+    display: inline-flex;
 }
 
 .mat-menu-item {
@@ -12,6 +22,8 @@ vs-table-header {
 .dropDown-button {
     min-width: 20px;
     padding: 0;
+    background: none;
+    border: 0;
 }
 
 .hoverMenu { 
@@ -19,8 +31,11 @@ vs-table-header {
 }
 
 .mat-menu-item {
-    padding: 6px 16px 6px 16px;
+    padding: 0 16px;
     display: inline-flex;
+    line-height: 27px;
+    font-size: 14px;
+    display: inline-block;
 }
 
 .material-icons {
@@ -28,4 +43,16 @@ vs-table-header {
     margin-right: 4px;
     font-size: 20px;
     vertical-align: sub;
+}
+
+.dropdown-icons {
+    font-size: 14px;
+}
+
+.mat-menu-content {
+    width: min-content;
+}
+
+.dropDown-button:focus, .material-icons:focus {
+    outline: none;
 }
