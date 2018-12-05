@@ -797,7 +797,7 @@ public class FeedImporter {
                 return metadataAccess.read(() -> {
                     //Query for Category and ensure the user has access to create feeds on that category
                     Category domainCategory = categoryProvider.findBySystemName(feedCategory);
-                    if (domainCategory == null || (!domainCategory.getAllowedActions().hasPermission(CategoryAccessControl.CREATE_FEED))) {
+                    if (domainCategory == null || (!accessController.hasPermission(domainCategory, CategoryAccessControl.CREATE_FEED))) {
                         String msg = "Access Denied. You do not have access to create feeds under the category " + feedCategory
                                      + ". Attempt made to create feed " + FeedNameUtil.fullName(feedCategory, importingFeed.getSystemFeedName()) + ".";
                         importFeed.getImportOptions().addErrorMessage(ImportComponent.FEED_DATA, msg);

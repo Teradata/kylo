@@ -29,8 +29,8 @@ import java.util.stream.Stream;
 import javax.jcr.Node;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 /**
  * The default role memberships for all feeds contained within a category.  These are independent 

@@ -24,7 +24,6 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  */
 
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.security.RoleMembershipProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -41,6 +40,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.security.role.RoleMembership;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.util.HashMap;

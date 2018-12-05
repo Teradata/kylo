@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.security;
 
+import com.thinkbiganalytics.security.role.RoleMembership;
+
 /*-
  * #%L
  * kylo-metadata-api

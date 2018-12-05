@@ -24,8 +24,10 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.AccessControlled;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.security.AccessControlException;
@@ -48,7 +50,7 @@ public class DefaultAccessController implements AccessController {
     private AllowedEntityActionsProvider actionsProvider;
 
     @org.springframework.beans.factory.annotation.Value("${security.entity.access.controlled:false}")
-    private boolean entityAccessControlled;
+    private volatile boolean entityAccessControlled;
 
     public DefaultAccessController() {
 
@@ -70,23 +72,13 @@ public class DefaultAccessController implements AccessController {
     @Override
     public void checkPermission(String moduleName, Set<Action> actions) {
         this.metadata.read(() -> {
-            return this.actionsProvider.getAllowedActions(moduleName)
-                .map((allowed) -> {
-                    allowed.checkPermission(actions);
-                    return moduleName;
-                })
-                .<AccessControlException>orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
+            AllowedActions allowed = this.actionsProvider.getAllowedActions(moduleName)
+                .orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
+            allowed.checkPermission(actions);
         });
     }
 
-    /**
-     * Check to see if the user has an service permission for a given module
-     *
-     * @param moduleName the service module to check
-     * @param action     the permission to check
-     * @param others     additional permissions
-     * @return true if valid, false if not
-     */
+    @Override
     public boolean hasPermission(String moduleName, Action action, Action... others) {
         try {
             checkPermission(moduleName, action, others);
@@ -95,7 +87,30 @@ public class DefaultAccessController implements AccessController {
             return false;
         }
     }
+    
+    @Override
+    public void checkPermission(AccessControlled accessControlled, Action action, Action... others) {
+        checkPermission(accessControlled, Stream.concat(Stream.of(action), 
+                                                        Arrays.stream(others)).collect(Collectors.toSet()));   
+    }
+    
+    @Override
+    public void checkPermission(AccessControlled accessControlled, Set<Action> actions) {
+        if (isEntityAccessControlled()) {
+            accessControlled.getAllowedActions().checkPermission(actions);
+        }
+    }
+    
+    @Override
+    public boolean hasPermission(AccessControlled accessControlled, Action action, Action... others) {
+        if (isEntityAccessControlled()) {
+            return accessControlled.getAllowedActions().hasPermission(action, others);
+        } else {
+            return true;
+        }
+    }
 
+    @Override
     public boolean isEntityAccessControlled() {
         return entityAccessControlled;
     }

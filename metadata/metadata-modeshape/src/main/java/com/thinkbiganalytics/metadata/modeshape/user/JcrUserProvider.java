@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.security.RoleMembershipProvider;
 
 /*-
@@ -39,6 +38,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 import java.io.Serializable;
 import java.util.Collections;
