@@ -119,7 +119,7 @@ public class RegisteredTemplateService {
                 final FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
 
                 if (domainTemplate != null) {
-                    domainTemplate.getAllowedActions().checkPermission(action, more);
+                    accessController.checkPermission(domainTemplate, action, more);
                     return true;
                 } else {
                     return false;
@@ -144,7 +144,7 @@ public class RegisteredTemplateService {
             return metadataAccess.read(() -> {
                 final FeedManagerTemplate.ID domainId = templateProvider.resolveId(id);
                 final FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
-                return domainTemplate != null && domainTemplate.getAllowedActions().hasPermission(action, more);
+                return domainTemplate != null && accessController.hasPermission(domainTemplate, action, more);
             });
         } else {
             return true;

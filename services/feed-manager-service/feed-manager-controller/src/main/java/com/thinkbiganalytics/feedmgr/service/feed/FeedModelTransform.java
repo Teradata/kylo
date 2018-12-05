@@ -683,8 +683,7 @@ public class FeedModelTransform {
                             final com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dataSourceId = dataSourceProvider.resolveId(dataSet.getDataSource().getId());
                             dataSource = dataSourceProvider.find(dataSourceId).orElse(null);
                         }
-                        if (dataSource == null || (accessController.isEntityAccessControlled()
-                                                   && !dataSource.getAllowedActions().hasPermission(DatasourceAccessControl.ACCESS_DATASOURCE, DatasourceAccessControl.ACCESS_DETAILS))) {
+                        if (dataSource == null || accessController.hasPermission(dataSource, DatasourceAccessControl.ACCESS_DATASOURCE, DatasourceAccessControl.ACCESS_DETAILS)) {
                             dataSet.setDataSource(new com.thinkbiganalytics.kylo.catalog.rest.model.DataSource());
                             dataSet.getDataSource().setAllowedActions(new ActionGroup());
                         }

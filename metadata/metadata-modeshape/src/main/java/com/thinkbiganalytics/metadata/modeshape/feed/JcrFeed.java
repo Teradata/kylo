@@ -33,7 +33,6 @@ import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.catalog.dataset.JcrDataSet;
@@ -53,6 +52,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.security.role.RoleMembership;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.joda.time.DateTime;

@@ -272,9 +272,9 @@ public class ServiceLevelAgreementModelTransform {
             feedServiceLevelAgreement.setFeeds(feedModels);
             if (accessController.isEntityAccessControlled()) {
                 //set the flag on the sla edit to true only if the user has access to edit the feeds assigned to this sla
-                canEdit = feeds.stream().allMatch(feed -> feed.getAllowedActions().hasPermission(FeedAccessControl.EDIT_DETAILS));
+                canEdit = feeds.stream().allMatch(feed -> accessController.hasPermission(feed, FeedAccessControl.EDIT_DETAILS));
                 //can view
-                canView = feeds.stream().allMatch(feed -> feed.getAllowedActions().hasPermission(FeedAccessControl.ACCESS_FEED));
+                canView = feeds.stream().allMatch(feed -> accessController.hasPermission(feed, FeedAccessControl.ACCESS_FEED));
             } else {
                 canEdit = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
             }

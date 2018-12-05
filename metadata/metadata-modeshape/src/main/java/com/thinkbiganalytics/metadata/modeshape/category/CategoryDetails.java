@@ -37,7 +37,6 @@ import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.PropertiedMixin;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
@@ -47,6 +46,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembe
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.role.RoleMembership;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 /**

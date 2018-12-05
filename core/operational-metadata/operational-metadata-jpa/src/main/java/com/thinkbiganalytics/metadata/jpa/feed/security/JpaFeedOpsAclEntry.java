@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.feed.security;
 
@@ -12,9 +12,9 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,26 +51,26 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
  */
 @Entity
 @Table(name = "FEED_ACL_INDEX")
-public class JpaFeedOpsAclEntry implements FeedOpsAclEntry, Serializable{
+public class JpaFeedOpsAclEntry implements FeedOpsAclEntry, Serializable {
 
     @EmbeddedId
     private EntryId id;
-    
+
     @Column(name = "feed_id", insertable = false, updatable = false)
     private UUID feedId;
-    
+
     @Column(name = "principal", insertable = false, updatable = false)
     private String principalName;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "principal_type", insertable = false, updatable = false)
     @QueryType(PropertyType.ENUM)
-    private com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType principalType =  com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType.USER;
+    private com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType principalType = com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType.USER;
 
     @ManyToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "FEED_ID", nullable = true, insertable = false, updatable = false)
     private OpsManagerFeed feed;
-    
+
     public JpaFeedOpsAclEntry() {
         super();
     }
@@ -78,12 +78,12 @@ public class JpaFeedOpsAclEntry implements FeedOpsAclEntry, Serializable{
     public JpaFeedOpsAclEntry(Feed.ID id, Principal principal) {
         this(id, principal.getName(), principal instanceof Group ? PrincipalType.GROUP : PrincipalType.USER);
     }
-    
+
     public JpaFeedOpsAclEntry(Feed.ID id, String principalName, PrincipalType type) {
         this.id = new EntryId(UUID.fromString(id.toString()), principalName, type);
     }
-    
-    
+
+
     @Override
     public UUID getFeedId() {
         return this.feedId != null ? this.feedId : (this.getId() != null ? this.getId().getUuid() : null);
@@ -96,7 +96,7 @@ public class JpaFeedOpsAclEntry implements FeedOpsAclEntry, Serializable{
 
     @Override
     public com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry.PrincipalType getPrincipalType() {
-       return this.getId() != null && this.getId().getPrincipalType() != null ? this.getId().getPrincipalType() : this.principalType;
+        return this.getId() != null && this.getId().getPrincipalType() != null ? this.getId().getPrincipalType() : this.principalType;
     }
 
     @Override
@@ -164,23 +164,23 @@ public class JpaFeedOpsAclEntry implements FeedOpsAclEntry, Serializable{
         }
 
         @Override
-        public int hashCode() {
-            return Objects.hash(getUuid(), getPrincipalName());
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof EntryId)) {
+                return false;
+            }
+            EntryId entryId = (EntryId) o;
+            return Objects.equals(uuid, entryId.uuid) &&
+                   Objects.equals(principalName, entryId.principalName) &&
+                   principalType == entryId.principalType;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass().isAssignableFrom(obj.getClass())) {
-                EntryId that = (EntryId) obj;
-                return Objects.equals(getUuid(), that.getUuid()) && Objects.equals(getPrincipalName(), that.getPrincipalName());
-            } else {
-                return false;
-            }
+        public int hashCode() {
+            return Objects.hash(uuid, principalName, principalType);
         }
-
-
     }
 
 }

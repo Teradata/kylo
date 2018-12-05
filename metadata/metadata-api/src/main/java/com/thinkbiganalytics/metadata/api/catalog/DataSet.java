@@ -27,7 +27,7 @@ import com.thinkbiganalytics.metadata.api.Auditable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.security.AccessControlled;
 
 import java.io.Serializable;
 import java.util.Set;

@@ -28,10 +28,10 @@ import java.util.stream.Stream;
 
 import javax.jcr.Node;
 
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 /**
  * Role memberships that affect an individual entity and controls access to that entity's allowed actions.

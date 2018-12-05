@@ -24,8 +24,8 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 import org.joda.time.DateTime;
 

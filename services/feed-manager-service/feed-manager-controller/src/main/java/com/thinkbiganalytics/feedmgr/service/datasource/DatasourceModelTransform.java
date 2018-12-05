@@ -21,10 +21,8 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
  */
 
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
-import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
-import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDetails;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.JdbcDatasourceDetails;
@@ -38,6 +36,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -121,6 +120,12 @@ public class DatasourceModelTransform {
      */
     @Nonnull
     private final SecurityService securityService;
+    
+    /**
+     * Security service
+     */
+    @Nonnull
+    private final AccessController accessController;
 
     /**
      * Constructs a {@code DatasourceModelTransform}.
@@ -130,12 +135,16 @@ public class DatasourceModelTransform {
      * @param nifiRestClient     the NiFi REST client
      * @param securityService    the security service
      */
-    public DatasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, @Nonnull final TextEncryptor encryptor, @Nonnull final NiFiRestClient nifiRestClient,
-                                    @Nonnull final SecurityService securityService) {
+    public DatasourceModelTransform(@Nonnull final DatasourceProvider datasourceProvider, 
+                                    @Nonnull final TextEncryptor encryptor, 
+                                    @Nonnull final NiFiRestClient nifiRestClient,
+                                    @Nonnull final SecurityService securityService,
+                                    @Nonnull final AccessController accessController) {
         this.datasourceProvider = datasourceProvider;
         this.encryptor = encryptor;
         this.nifiRestClient = nifiRestClient;
         this.securityService = securityService;
+        this.accessController = accessController;
     }
 
     public com.thinkbiganalytics.metadata.api.datasource.Datasource findDomainDatasource(DataSet domainDataSet){
@@ -446,7 +455,7 @@ public class DatasourceModelTransform {
         domain.setIconColor(ds.getIconColor());
 
         // Update access control
-        if (domain.getAllowedActions().hasPermission(DatasourceAccessControl.CHANGE_PERMS)) {
+        if (accessController.hasPermission(domain, DatasourceAccessControl.CHANGE_PERMS)) {
             ds.toRoleMembershipChangeList().forEach(roleMembershipChange -> securityService.changeDatasourceRoleMemberships(ds.getId(), roleMembershipChange));
         }
     }
