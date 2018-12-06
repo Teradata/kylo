@@ -1,4 +1,5 @@
 import * as angular from "angular";
+import * as $ from "jquery";
 import "fattable";
 
 import {DomainType} from "../../../services/DomainTypesService.d";
@@ -117,6 +118,11 @@ export class VisualQueryPainterService extends fattable.Painter {
     private viewContainerRef : ViewContainerRef;
     private componentRefMenu: any;
     private componentFactoryMenu: any;
+
+    private componentRefTooltip: any;
+    private componentFactoryTooltip: any;
+
+    private previousCellDiv: HTMLElement;
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
@@ -130,29 +136,8 @@ export class VisualQueryPainterService extends fattable.Painter {
 
         this.broadcastService.subscribe(null, "CLOSE_CELL_MENU", () => this.hideCellMenu());
       
-        // Create menu
-        // this.menuPanel = this.$injector.get("$mdPanel").create({
-        //     animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
-        //     attachTo: angular.element(document.body),
-        //     clickOutsideToClose: true,
-        //     escapeToClose: true,
-        //     focusOnOpen: true,
-        //     panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
-        //     templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
-        // });
-        // this.menuPanel.attach();
-
-        // Create tooltip
-        this.tooltipPanel = this.$injector.get("$mdPanel").create({
-            animation: this.$injector.get("$mdPanel").newPanelAnimation().withAnimation({open: "md-show", close: "md-hide"}),
-            attachTo: angular.element(document.body),
-            template: `{{value}}<ul><li ng-repeat="item in validation">{{item.rule}}: {{item.reason}}</li></ul>`,
-            focusOnOpen: false,
-            panelClass: "md-tooltip md-origin-bottom visual-query-tooltip",
-            propagateContainerEvents: true,
-            zIndex: 100
-        });
-        this.tooltipPanel.attach();
+        // Create tooltip   
+        $(document.body).append("<div id=\"cellTooltip\" style=\"position: absolute; z-index: 101; background-color:#e63838; padding: 4px; border-radius: 5px; font-size: 10px;\">");
 
     }
 
@@ -280,7 +265,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.tooltipVisible = false;
         setTimeout(() => {
             if (this.tooltipVisible === false) {
-                this.tooltipPanel.hide();
+                $("#cellTooltip").css({"display": "none"});
             }
         }, 75);
     }
@@ -297,7 +282,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         angular.element(cellDiv)
             .on("contextmenu", () => false)
             .on("mousedown", () => this.setSelected(cellDiv))
-            .on("mouseenter", () => this.showTooltip(cellDiv))
+            .on("mouseenter", (event) => this.showTooltip(cellDiv, event))
             .on("mouseleave", () => this.hideTooltip())
             .on("mouseup", event => this.showMenu(cellDiv, event));
 
@@ -391,9 +376,6 @@ export class VisualQueryPainterService extends fattable.Painter {
         )
       }
 
-      //   providers: [{provide: viewContainerRef, useValue: viewContainer}],
-        //   parent: this.injector
-
     hideCellMenu() {
         this._appRef.detachView(this.componentRefMenu.hostView);
         this.componentRefMenu.destroy();
@@ -477,76 +459,47 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.componentRefMenu.instance.value = isNull ? null : $(cellDiv).data('realValue');
         this.componentRefMenu.instance.displayValue = (this.componentRefMenu.instance.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? this.componentRefMenu.instance.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": this.componentRefMenu.instance.value)
         
-        const top =  (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
-        const left = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
+        const left =  (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+        const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
 
-        this.componentRefMenu.instance.menuTop = left + PIXELS;
-        this.componentRefMenu.instance.menuLeft = top + PIXELS;
+        this.componentRefMenu.instance.menuTop = top + PIXELS;
+        this.componentRefMenu.instance.menuLeft = left + PIXELS;
 
         this._appRef.attachView(this.componentRefMenu.hostView);
         // outletElement should be the HTMLElement for the header
         $(document.body).append((this.componentRefMenu.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement);
-       
-
-        // Show menu
-        // this.menuPanel.open()
-        //     .then(() => {
-        //         // Add click listener
-        //         this.menuPanel.panelEl.on("click", "button", () => this.hideMenu());
-
-        //         // Calculate position
-        //         const element = angular.element(this.menuPanel.panelEl);
-        //         const height = element.height();
-        //         const offset = element.offset();
-        //         const width = element.width();
-
-        //         // Fix position if off screen
-        //         const left = (offset.left + width > window.innerWidth) ? window.innerWidth - width - 8 : event.clientX;
-        //         const top = (offset.top + height > window.innerHeight) ? window.innerHeight - height - 8 : event.clientY;
-        //         if (left !== event.clientX || top !== event.clientY) {
-        //             this.menuPanel.updatePosition(
-        //                 this.$injector.get("$mdPanel").newPanelPosition()
-        //                     .left(left + PIXELS)
-        //                     .top(top + PIXELS)
-        //             );
-        //         }
-        //     });
     }
 
     /**
      * Shows the tooltip on the specified cell.
      */
-    private showTooltip(cellDiv: HTMLElement) {
-        this.tooltipVisible = true;
-
-        // Update content
-        const $scope = this.tooltipPanel.panelEl.scope() as any;
-        $scope.validation = angular.element(cellDiv).data("validation");
-        $scope.value = cellDiv.innerText;
-
+    private showTooltip(cellDiv: HTMLElement, event: any) {
+        
         // Update position
-        const cellOffset = angular.element(cellDiv).offset();
-        let offsetY;
-        let yPosition;
+        if (!this.previousCellDiv || (this.previousCellDiv != cellDiv)) {
+            const cellOffset = $(cellDiv).offset();
+            let offsetY;
+            let yPosition;
 
-        if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > window.innerHeight) {
-            offsetY = "-27" + PIXELS;
-            yPosition = this.$injector.get("$mdPanel").yPosition.ABOVE;
-        } else {
-            offsetY = "0";
-            yPosition = this.$injector.get("$mdPanel").yPosition.BELOW;
+            if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > window.innerHeight) {
+                offsetY = "-27";
+            } else {
+                offsetY = "0";
+            }
+
+            const left =  (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+            const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
+
+            const tootlTipLeft =  (left + cellOffset.left + 28) + PIXELS;
+            const tooltipTop = (top + cellOffset.top + offsetY) + PIXELS;
+
+            if (!this.tooltipVisible) {
+                $("#cellTooltip").html(cellDiv.innerText);
+                $("#cellTooltip").css({"top": top, "left": left, "display": "block"});
+            }
         }
 
-        this.tooltipPanel.updatePosition(
-            this.$injector.get("$mdPanel").newPanelPosition()
-                .relativeTo(cellDiv)
-                .addPanelPosition(this.$injector.get("$mdPanel").xPosition.ALIGN_START, yPosition)
-                .withOffsetX("28px")
-                .withOffsetY(offsetY)
-        );
-
-        // Show tooltip
-        this.tooltipPanel.open();
+        this.tooltipVisible = true;
     }
 
     /**
