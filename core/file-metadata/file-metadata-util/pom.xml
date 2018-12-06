@@ -50,17 +50,6 @@
       <artifactId>slf4j-log4j12</artifactId>
       <scope>provided</scope>
     </dependency>
-
   </dependencies>
 
-  <!--
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
-  -->
 </project>

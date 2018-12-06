@@ -11,8 +11,6 @@
     <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 
