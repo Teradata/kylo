@@ -345,10 +345,12 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
     containsFilterOperator(filterStr: any) {
         var contains = false;
         var ops = ['==', '>', '<', '>=', '<=', '=~']
-        for (var i = 0; i < ops.length; i++) {
-            contains = filterStr.indexOf(ops[i]) >= 0;
-            if (contains) {
-                break;
+        if(filterStr != null) {
+            for (var i = 0; i < ops.length; i++) {
+                contains = filterStr.indexOf(ops[i]) >= 0;
+                if (contains) {
+                    break;
+                }
             }
         }
         return contains;

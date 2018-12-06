@@ -104,7 +104,7 @@ if(this.refreshIntervalTime == undefined) {
         chartClick () {
             this.StateService.OpsManager().Job().navigateToJobs("Running",null);
         }
-        getRunningFailedCounts () {
+        getRunningFailedCounts() {
                 var successFn = (response: any)=> {
                     if(response){
                      this.updateCounts(response.data);
@@ -127,7 +127,7 @@ if(this.refreshIntervalTime == undefined) {
                     (error: any)=>{ errorFn(error, status)
                 });
 
-        };
+        }
 
         refresh () {
             this.getRunningFailedCounts();
@@ -252,7 +252,7 @@ if(this.refreshIntervalTime == undefined) {
         setRefreshInterval () {
             this.clearRefreshInterval();
             if(this.refreshIntervalTime) {
-                this.refreshInterval = setInterval(this.refresh,this.refreshIntervalTime);
+                this.refreshInterval = setInterval(this.refresh.bind(this),this.refreshIntervalTime);
             }
         }
 

@@ -43,4 +43,18 @@ export class SideNavService {
             this.broadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
         }
     }
+    toggle() {
+        if (this.isLockOpen) {
+            this.hideSideNav();
+        }
+        else {
+            this.showSideNav();
+        }
+    }
+    close(){
+        this.hideSideNav();
+    }
+    open(){
+        this.showSideNav();
+    }
 }
