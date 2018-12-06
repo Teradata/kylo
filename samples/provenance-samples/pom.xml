@@ -9,7 +9,6 @@
   <version>0.10.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-samples</artifactId>

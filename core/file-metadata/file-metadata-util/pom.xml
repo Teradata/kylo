@@ -10,8 +10,6 @@
     <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 
@@ -21,8 +19,6 @@
       <artifactId>kylo-file-metadata-model</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
 
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -38,8 +34,6 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
-
-
 
     <!-- Logging -->
     <dependency>
@@ -57,7 +51,16 @@
       <scope>provided</scope>
     </dependency>
 
-
   </dependencies>
 
+  <!--
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+  -->
 </project>

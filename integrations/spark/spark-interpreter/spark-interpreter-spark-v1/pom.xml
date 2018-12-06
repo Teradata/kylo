@@ -13,8 +13,6 @@
   <artifactId>kylo-spark-interpreter-spark-v1</artifactId>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
     <spark.avro.version>2.0.1</spark.avro.version>
   </properties>
