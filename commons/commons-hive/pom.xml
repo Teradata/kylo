@@ -14,8 +14,6 @@
   <description>Common Utilities for Hive</description>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 
@@ -32,4 +30,18 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+          <source>${spark.java.version}</source>
+          <target>${spark.java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
