@@ -2,11 +2,11 @@ import * as angular from "angular";
 import * as $ from "jquery";
 import "fattable";
 
-import {DomainType} from "../../../services/DomainTypesService.d";
-import {DataCategory} from "../../wrangler/column-delegate";
-import { Injectable, Inject, Injector, ComponentFactoryResolver, ComponentFactory, ViewContainerRef, ApplicationRef, EmbeddedViewRef } from "@angular/core";
+import { DomainType } from "../../../services/DomainTypesService.d";
+import { DataCategory } from "../../wrangler/column-delegate";
+import { Injectable,  Injector, ComponentFactoryResolver, ApplicationRef, EmbeddedViewRef } from "@angular/core";
 import { downgradeInjectable } from "@angular/upgrade/static";
-import {moduleName} from "../../../module-name";
+import { moduleName } from "../../../module-name";
 import { VisualQueryTableHeader } from "./visual-query-table-header.component";
 import { CellMenuComponent } from "./call-menu.component";
 import BroadcastService from "../../../../services/broadcast-service";
@@ -75,24 +75,9 @@ export class VisualQueryPainterService extends fattable.Painter {
     private _rowFont: string;
 
     /**
-     * Panel containing the cell menu.
-     */
-    private menuPanel: any;
-
-    /**
-     * Indicates that the menu should be visible.
-     */
-    private menuVisible: boolean = false;
-
-    /**
      * Cell that was last clicked.
      */
     private selectedCell: HTMLElement;
-
-    /**
-     * Panel containing the tooltip.
-     */
-    private tooltipPanel: angular.material.IPanelRef;
 
     /**
      * Indicates that the tooltip should be visible.
@@ -100,36 +85,27 @@ export class VisualQueryPainterService extends fattable.Painter {
     private tooltipVisible: boolean = false;
 
     /**
-     * Indicate thate the header template has been loaded into the $templateCache
-     * @type {boolean}
-     */
-    private headerTemplateLoaded : boolean = false;
-    /**
      * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
      * Once the template is loaded these elements will get filled
      * @type {any[]}
      */
-    private waitingHeaderDivs : HTMLElement[] = [];
+    private waitingHeaderDivs: HTMLElement[] = [];
 
-    private componentFactory: ComponentFactory<any>;
 
     private componentRef: any;
 
-    private viewContainerRef : ViewContainerRef;
     private componentRefMenu: any;
     private componentFactoryMenu: any;
 
-    private componentRefTooltip: any;
-    private componentFactoryTooltip: any;
 
     private previousCellDiv: HTMLElement;
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
-    constructor(private injector: Injector, 
-                private componentFactoryResolver: ComponentFactoryResolver,
-                private _appRef : ApplicationRef,
-                private broadcastService: BroadcastService) {
+    constructor(private injector: Injector,
+        private componentFactoryResolver: ComponentFactoryResolver,
+        private _appRef: ApplicationRef,
+        private broadcastService: BroadcastService) {
 
         super();
         this.broadcastService.subscribe(null, "CLOSE_CELL_MENU", () => this.hideCellMenu());
@@ -237,7 +213,7 @@ export class VisualQueryPainterService extends fattable.Painter {
                 .data("realValue", cell.value);
         }
 
-        $(cellDiv).html(cellDiv.textContent.replace(/\s/g,"<span class='ws-text'>·</span>"))
+        $(cellDiv).html(cellDiv.textContent.replace(/\s/g, "<span class='ws-text'>·</span>"))
     }
 
     /**
@@ -248,7 +224,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     fillHeader(headerDiv: HTMLElement, header: any) {
         if (header != null && header.delegate != undefined) {
-            this.compileHeader(headerDiv,header);
+            this.compileHeader(headerDiv, header);
         }
     }
 
@@ -259,7 +235,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.tooltipVisible = false;
         setTimeout(() => {
             if (this.tooltipVisible === false) {
-                $("#cellTooltip").css({"display": "none"});
+                $("#cellTooltip").css({ "display": "none" });
             }
         }, 75);
     }
@@ -305,19 +281,11 @@ export class VisualQueryPainterService extends fattable.Painter {
     }
 
     /**
-     * Cleanup any events attached to the header
-     * @param headerDiv
-     */
-    cleanUpHeader(headerDiv: HTMLElement){
-        //destroy the old scope if it exists
-    }
-
-    /**
      * Cleanup any events attached to the cell
      * @param cellDiv
      */
     cleanUpCell(cellDiv: HTMLElement) {
-       angular.element(cellDiv).unbind();
+        angular.element(cellDiv).unbind();
     }
 
     /**
@@ -325,63 +293,33 @@ export class VisualQueryPainterService extends fattable.Painter {
      * This should cleanup any events/bindings/scopes created by the prior render of the table
      * @param table
      */
-    cleanUp(table:HTMLElement){
+    cleanUp(table: HTMLElement) {
         super.cleanUp(table);
         angular.element(table).unbind();
     }
-    
-    public setViewContainerRef(viewContainerRef : ViewContainerRef){
-        this.viewContainerRef = viewContainerRef;
-    }
 
-    private compileHeader(headerDiv: HTMLElement, header : any) {
+    private compileHeader(headerDiv: HTMLElement, header: any) {
         // Load template
-        
+
         const componentFactory = this.componentFactoryResolver.resolveComponentFactory(VisualQueryTableHeader);
         this.componentRef = componentFactory.create(this.injector);
-        
+
         this.componentRef.instance.header = header;
         this.componentRef.instance.table = this.delegate;
         this.componentRef.instance.availableCasts = header.delegate.getAvailableCasts();
         this.componentRef.instance.availableDomainTypes = this.domainTypes;
         this.componentRef.instance.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
         this.componentRef.instance.header.unsort = this.unsort.bind(this);
-        
+
         this._appRef.attachView(this.componentRef.hostView);
 
         // outletElement should be the HTMLElement for the header
-        headerDiv.replaceChild((this.componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement,headerDiv.firstChild);
+        headerDiv.replaceChild((this.componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement, headerDiv.firstChild);
     }
-
-    buildComponent(viewContainerRef: any) {
-        const inj: Injector = this.makeCustomInjector(viewContainerRef);
-        const factory = this.componentFactoryResolver.resolveComponentFactory(VisualQueryTableHeader);
-        const componentRef = viewContainerRef.createComponent(this.componentFactory, undefined, inj);
-      }
-      
-      makeCustomInjector(viewContainerRef: any) {
-        return Injector.create(
-            [{provide: ViewContainerRef, useValue: viewContainerRef}],
-           this.injector
-        )
-      }
-
     hideCellMenu() {
         this._appRef.detachView(this.componentRefMenu.hostView);
         this.componentRefMenu.destroy();
     }
-    /**
-     * Hides the cell menu.
-     */
-    private hideMenu() {
-        this.menuVisible = false;
-        setTimeout(() => {
-            if (this.menuVisible === false) {
-                this.menuPanel.close();
-            }
-        }, 75);
-    }
-
     /**
      * Sets the currently selected cell.
      */
@@ -395,11 +333,10 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.selectedCell = cellDiv;
         angular.element(this.selectedCell).addClass(VisualQueryPainterService.SELECTED_CLASS);
     }
-
     /**
      * Create the display string for a selection
      */
-    private niceSelection(selection:string) : string {
+    private niceSelection(selection: string): string {
         switch (selection) {
             case ' ':
                 return '(space)';
@@ -430,41 +367,37 @@ export class VisualQueryPainterService extends fattable.Painter {
         if (angular.element(document.body).children(".CodeMirror-hints").length > 0) {
             return;  // ignore clicks when CodeMirror function list is active
         } else if (header.delegate.dataCategory === DataCategory.DATETIME || header.delegate.dataCategory === DataCategory.NUMERIC || header.delegate.dataCategory === DataCategory.STRING) {
-            this.menuVisible = true;
+            // Update Menu
+            this.componentFactoryMenu = this.componentFactoryResolver.resolveComponentFactory(CellMenuComponent);
+            this.componentRefMenu = this.componentFactoryMenu.create(this.injector);
+
+            this.componentRefMenu.instance.DataCategory = DataCategory;
+            this.componentRefMenu.instance.header = header;
+            this.componentRefMenu.instance.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·", " ") : null;
+            this.componentRefMenu.instance.selectionDisplay = this.niceSelection(this.componentRefMenu.instance.selection)
+            this.componentRefMenu.instance.range = range;
+            this.componentRefMenu.instance.table = this.delegate;
+            this.componentRefMenu.instance.value = isNull ? null : $(cellDiv).data('realValue');
+            this.componentRefMenu.instance.displayValue = (this.componentRefMenu.instance.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? this.componentRefMenu.instance.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "..." : this.componentRefMenu.instance.value)
+
+            const left = (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+            const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
+
+            this.componentRefMenu.instance.menuTop = top + PIXELS;
+            this.componentRefMenu.instance.menuLeft = left + PIXELS;
+
+            this._appRef.attachView(this.componentRefMenu.hostView);
+            // outletElement should be the HTMLElement for the header
+            $(document.body).append((this.componentRefMenu.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement);
         } else {
             return;  // ignore clicks on columns with unsupported data types
         }
-
-        // Update Menu
-
-        this.componentFactoryMenu = this.componentFactoryResolver.resolveComponentFactory(CellMenuComponent);
-        this.componentRefMenu = this.componentFactoryMenu.create(this.injector);
-
-        this.componentRefMenu.instance.DataCategory = DataCategory;
-        this.componentRefMenu.instance.header = header;
-        this.componentRefMenu.instance.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·"," ") : null;
-        this.componentRefMenu.instance.selectionDisplay = this.niceSelection(this.componentRefMenu.instance.selection)
-        this.componentRefMenu.instance.range = range;
-        this.componentRefMenu.instance.table = this.delegate;
-        this.componentRefMenu.instance.value = isNull ? null : $(cellDiv).data('realValue');
-        this.componentRefMenu.instance.displayValue = (this.componentRefMenu.instance.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? this.componentRefMenu.instance.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": this.componentRefMenu.instance.value)
-        
-        const left =  (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
-        const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
-
-        this.componentRefMenu.instance.menuTop = top + PIXELS;
-        this.componentRefMenu.instance.menuLeft = left + PIXELS;
-
-        this._appRef.attachView(this.componentRefMenu.hostView);
-        // outletElement should be the HTMLElement for the header
-        $(document.body).append((this.componentRefMenu.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement);
     }
-
     /**
      * Shows the tooltip on the specified cell.
      */
     private showTooltip(cellDiv: HTMLElement, event: any) {
-        
+
         // Update position
         if (!this.previousCellDiv || (this.previousCellDiv != cellDiv)) {
             const cellOffset = $(cellDiv).offset();
@@ -477,21 +410,17 @@ export class VisualQueryPainterService extends fattable.Painter {
                 offsetY = "0";
             }
 
-            const left =  (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+            const left = (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
             const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
-
-            const tootlTipLeft =  (left + cellOffset.left + 28) + PIXELS;
-            const tooltipTop = (top + cellOffset.top + offsetY) + PIXELS;
 
             if (!this.tooltipVisible) {
                 $("#cellTooltip").html(cellDiv.innerText);
-                $("#cellTooltip").css({"top": top, "left": left, "display": "block"});
+                $("#cellTooltip").css({ "top": top, "left": left, "display": "block" });
             }
         }
 
         this.tooltipVisible = true;
     }
-
     /**
      * Turns off sorting.
      */
@@ -501,4 +430,4 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 }
-angular.module(moduleName).service('VisualQueryPainterService',downgradeInjectable(VisualQueryPainterService));
+angular.module(moduleName).service('VisualQueryPainterService', downgradeInjectable(VisualQueryPainterService));
