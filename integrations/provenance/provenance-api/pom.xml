@@ -20,24 +20,6 @@
       <artifactId>kylo-nifi-provenance-model</artifactId>
       <version>0.10.1-SNAPSHOT</version>
     </dependency>
-
-
-
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-
-    </plugins>
-
-  </build>
 
 </project>

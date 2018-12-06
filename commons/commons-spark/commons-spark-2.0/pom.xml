@@ -14,8 +14,6 @@
   <version>0.10.1-SNAPSHOT</version>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <spark.version>2.0.0</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
