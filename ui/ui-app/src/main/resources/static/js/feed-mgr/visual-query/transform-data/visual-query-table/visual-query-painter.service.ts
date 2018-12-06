@@ -126,19 +126,15 @@ export class VisualQueryPainterService extends fattable.Painter {
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
-    constructor(@Inject("$injector") private $injector: any,
-                private injector: Injector, 
+    constructor(private injector: Injector, 
                 private componentFactoryResolver: ComponentFactoryResolver,
                 private _appRef : ApplicationRef,
-                private broadcastService: BroadcastService
-                ) {
-        super();
+                private broadcastService: BroadcastService) {
 
+        super();
         this.broadcastService.subscribe(null, "CLOSE_CELL_MENU", () => this.hideCellMenu());
-      
         // Create tooltip   
         $(document.body).append("<div id=\"cellTooltip\" style=\"position: absolute; z-index: 101; background-color:#e63838; padding: 4px; border-radius: 5px; font-size: 10px;\">");
-
     }
 
     ngOnDestroy() {
@@ -251,11 +247,9 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableHeader|null} header the column header
      */
     fillHeader(headerDiv: HTMLElement, header: any) {
-
         if (header != null && header.delegate != undefined) {
             this.compileHeader(headerDiv,header);
         }
-        
     }
 
     /**
@@ -316,10 +310,6 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     cleanUpHeader(headerDiv: HTMLElement){
         //destroy the old scope if it exists
-        // let oldScope = angular.element(headerDiv).isolateScope();
-        // if(angular.isDefined(oldScope)){
-        //     oldScope.$destroy();
-        // }
     }
 
     /**
