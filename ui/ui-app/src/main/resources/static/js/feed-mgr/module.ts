@@ -7,7 +7,6 @@ import "codemirror-require/module";
 import "jquery";
 import  'angular-drag-and-drop-lists';
 import 'fattable';
-import './catalog/catalog.module';
 import './shared/apply-domain-type/apply-table-domain-types.component.scss';
 
 class ModuleFactory  {

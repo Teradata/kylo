@@ -1,6 +1,4 @@
 import {Injectable} from "@angular/core";
-import * as angular from "angular";
-import {moduleName} from "../module-name";
 import IconUtil from "../../services/icon-util";
 
 @Injectable()
@@ -22,5 +20,3 @@ export class IconService {
     }
 
 }
-
-angular.module(moduleName).service('IconService', [IconService]);

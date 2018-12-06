@@ -43,7 +43,7 @@ import {MatToolbarModule} from "@angular/material/toolbar";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {AbandonAllJobsDialogComponent} from "./abandon-all-jobs-dialog.component";
 import {JobsFilterHelpPanelDialogComponent} from "./jobs-filter-help-panel-dialog.component";
-import {OpsManagerServicesModule} from "../../services/ops-manager-services.module";
+import {OpsManagerServicesModule} from "../../services/ops-mgr.services.module";
 @NgModule({
     declarations: [
         JobsListComponent,

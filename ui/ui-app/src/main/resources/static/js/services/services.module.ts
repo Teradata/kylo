@@ -2,7 +2,6 @@ import {CommonModule} from "@angular/common";
 import {ModuleWithProviders, NgModule} from "@angular/core";
 import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {PreviewDatasetCollectionService} from "../feed-mgr/catalog/api/services/preview-dataset-collection.service";
-import {OpsManagerServicesModule} from "../ops-mgr/services/ops-manager-services.module";
 import {AccessControlService} from "./AccessControlService";
 import {AddButtonService} from "./AddButtonService";
 import {AngularModuleExtensionService} from "./AngularModuleExtensionService";
@@ -30,7 +29,6 @@ import {WindowUnloadService} from "./WindowUnloadService";
     imports: [
         CommonModule,
         MatSnackBarModule,
-        OpsManagerServicesModule
     ],
     providers: [
         AccessControlService,
