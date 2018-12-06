@@ -40,7 +40,6 @@
     <div>Cannot publish '{{data.templateName}}': {{errorMsg}}</div>
   </div>
   <div fxLayout="row" fxLayoutAlign="space-evenly center">
-    {{repositories.length}}
     <mat-form-field>
       <mat-select [(ngModel)]="selectedRepository" placeholder="Select Repository">
         <ng-container *ngFor="let repo of repositories">
