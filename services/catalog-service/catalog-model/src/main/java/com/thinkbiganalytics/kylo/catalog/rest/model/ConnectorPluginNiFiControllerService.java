@@ -35,6 +35,12 @@ public class ConnectorPluginNiFiControllerService {
      */
     private Map<String, String> properties;
 
+
+    /**
+     * Map of controller service property key to propertydescriptors
+     */
+    private Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> propertyDescriptors;
+
     /**
      * Type of controller service
      */
@@ -45,7 +51,19 @@ public class ConnectorPluginNiFiControllerService {
 
     public ConnectorPluginNiFiControllerService(@Nonnull final ConnectorPluginNiFiControllerService other) {
         properties = (other.properties != null) ? new HashMap<>(other.properties) : null;
+        propertyDescriptors = copyDescriptorMap(other.propertyDescriptors);
         type = other.type;
+    }
+
+    private Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor>  copyDescriptorMap(Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> map){
+        if(map != null){
+            Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> copy = new HashMap<>();
+            for(Map.Entry<String,ConnectorPluginNiFiControllerServicePropertyDescriptor> entry: map.entrySet()){
+                copy.put(entry.getKey(),new ConnectorPluginNiFiControllerServicePropertyDescriptor(entry.getValue()));
+            }
+            return copy;
+        }
+        return null;
     }
 
     public Map<String, String> getProperties() {
@@ -62,5 +80,13 @@ public class ConnectorPluginNiFiControllerService {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> getPropertyDescriptors() {
+        return propertyDescriptors;
+    }
+
+    public void setPropertyDescriptors(Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> propertyDescriptors) {
+        this.propertyDescriptors = propertyDescriptors;
     }
 }

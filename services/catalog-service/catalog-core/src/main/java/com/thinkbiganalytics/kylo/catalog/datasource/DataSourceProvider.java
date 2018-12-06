@@ -28,6 +28,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginDescriptor;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginNiFiControllerService;
+import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorPluginNiFiControllerServicePropertyDescriptor;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
@@ -56,7 +57,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.PropertyPlaceholderHelper;
 
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -163,6 +163,7 @@ public class DataSourceProvider {
     @Nonnull
     public DataSource createDataSource(@Nonnull final DataSource source) {
         return metadataService.commit(() -> {
+
             // Find connector
             final com.thinkbiganalytics.metadata.api.catalog.Connector connector = Optional.ofNullable(source.getConnector()).map(Connector::getId).map(connectorProvider::resolveId)
                 .flatMap(connectorProvider::find).orElseThrow(() -> new CatalogException("catalog.datasource.connector.invalid"));
@@ -174,7 +175,7 @@ public class DataSourceProvider {
             final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(connector.getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
 
             if (plugin != null && plugin.getNifiControllerService() != null) {
-                createOrUpdateNiFiControllerService(source, plugin.getNifiControllerService());
+                createOrUpdateNiFiControllerService(source, plugin);
             }
 
             // Update catalog
@@ -279,7 +280,7 @@ public class DataSourceProvider {
             final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(domain.getConnector().getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
 
             if (plugin != null && plugin.getNifiControllerService() != null) {
-                createOrUpdateNiFiControllerService(source, plugin.getNifiControllerService());
+                createOrUpdateNiFiControllerService(source, plugin);
             }
 
             // Update catalog
@@ -294,13 +295,22 @@ public class DataSourceProvider {
     /**
      * Creates or updates the NiFi controller service linked to the specified data source.
      */
-    private void createOrUpdateNiFiControllerService(@Nonnull final DataSource dataSource, @Nonnull final ConnectorPluginNiFiControllerService plugin) {
+    private void createOrUpdateNiFiControllerService(@Nonnull final DataSource dataSource, @Nonnull final ConnectorPluginDescriptor connectorPluginDescriptor) {
+
+        ConnectorPluginNiFiControllerService plugin = connectorPluginDescriptor.getNifiControllerService();
         // Resolve properties
         final PropertyPlaceholderHelper.PlaceholderResolver resolver = new DataSourcePlaceholderResolver(dataSource);
         final Map<String, String> properties = new HashMap<>(plugin.getProperties().size());
+        final Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> propertyDescriptors = plugin.getPropertyDescriptors();
+
         plugin.getProperties().forEach((key, value) -> {
             final String resolvedValue = placeholderHelper.replacePlaceholders(value, resolver);
-            if (resolvedValue != null && !resolvedValue.startsWith("{cipher}")) {
+            //set empty string to null
+            ConnectorPluginNiFiControllerServicePropertyDescriptor descriptor = propertyDescriptors != null ? propertyDescriptors.get(key) : null;
+            if (StringUtils.isBlank(resolvedValue) && (descriptor == null || (descriptor != null && !descriptor.isEmptyStringIfNull()))) {
+                //set the value to null if its not explicitly configured to be set to an empty string
+                properties.put(key, null);
+            } else if (resolvedValue != null && !resolvedValue.startsWith("{cipher}")) {
                 properties.put(key, resolvedValue);
             }
         });
