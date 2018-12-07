@@ -272,4 +272,11 @@ public class HiveService {
         this.perUserAccessCache.refresh(currentUser);
     }
 
+    public QueryResult getTablePartitions(String tableName) {
+        if (!isTableAccessibleByImpersonatedUser(tableName)) {
+            throw new RuntimeException(String.format("Table '%s' not found", tableName));
+        }
+
+        return new QueryRunner(jdbcTemplate).query("show partitions " + HiveUtils.quoteIdentifier(tableName));
+    }
 }

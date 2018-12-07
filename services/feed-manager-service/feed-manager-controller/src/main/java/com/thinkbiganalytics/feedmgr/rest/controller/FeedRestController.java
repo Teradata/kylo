@@ -87,6 +87,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -103,6 +104,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -995,10 +997,27 @@ public class FeedRestController {
                       @ApiResponse(code = 200, message = "Returns the profile summaries.", response = Map.class, responseContainer = "List"),
                       @ApiResponse(code = 500, message = "The profiles are unavailable.", response = RestResponseStatus.class)
                   })
-    public Response profileSummary(@PathParam("feedId") String feedId) {
+    public Response profileSummary(@PathParam("feedId") String feedId,
+                                   @QueryParam("page") Integer page,
+                                   @QueryParam("pageSize") Integer pageSize) {
+        if (page == null || page <= 0) {
+            page = 1;
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = 10;
+        }
+
+
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
-        final String profileTable = HiveUtils.quoteIdentifier(feedMetadata.getProfileTableName());
-        String query = "SELECT * from " + profileTable + " where columnname = '(ALL)'";
+        String profileTableName = feedMetadata.getProfileTableName();
+        QueryResult tablePartitions = hiveService.getTablePartitions(profileTableName);
+        List<Map<String, Object>> partitions = tablePartitions.getRows();
+        Stream<Long> sortedPartitions = partitions.stream().map(row -> Long.parseLong(row.get("partition").toString().substring("processing_dttm=".length()))).sorted(Comparator.reverseOrder());
+        long totalPartitions = partitions.size();
+        List<String> partitionsPage = sortedPartitions.skip((page - 1) * pageSize).limit(pageSize).map(partition -> "'" + Long.toString(partition) + "'").collect(Collectors.toList());
+
+        final String profileTable = HiveUtils.quoteIdentifier(profileTableName);
+        String query = "SELECT * from " + profileTable + " where columnname = '(ALL)' and processing_dttm in (" + StringUtils.join(partitionsPage, ',') +  ")";
 
         List<Map<String, Object>> rows = new ArrayList<>();
         try {
@@ -1032,7 +1051,8 @@ public class FeedRestController {
             }
         }
 
-        return Response.ok(rows).build();
+        PageImpl<Map<String, Object>> response = new PageImpl<>(rows, null, totalPartitions);
+        return Response.ok(response).build();
     }
 
     @GET

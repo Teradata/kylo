@@ -126,6 +126,7 @@ import {TruncatePipe} from './summary/profile/container/stats/truncate-pipe';
 import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module';
 import {MetadataIndexingComponent} from "../../shared/metadata-indexing/metadata-indexing.component";
 import {JitCompilerFactory} from '@angular/platform-browser-dynamic';
+import {CovalentPagingModule} from '@covalent/core/paging';
 
 export function createCompilerFn(c: CompilerFactory) {
         return c.createCompiler([{useJit: true}]);
@@ -217,6 +218,7 @@ export function createCompilerFn(c: CompilerFactory) {
         CovalentCommonModule,
         CovalentChipsModule,
         CovalentDataTableModule,
+        CovalentPagingModule,
         CovalentDialogsModule,
         CovalentLayoutModule,
         CovalentLoadingModule,

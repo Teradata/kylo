@@ -10,59 +10,26 @@
 
     <mat-card-content>
       <div *ngIf="showSummary">
-
-        <mat-nav-list browser-height
-                      browser-height-scroll-y="false"
-                      browser-height-offset="265">
-
-          <td-virtual-scroll-container #virtualScroll [data]="profileSummary">
-            <ng-template let-row="row" let-last="isLast" tdVirtualScrollRow>
-
-              <a mat-list-item (click)="viewProfileResults(row)" class="profile-row">
-                <div fxFlex fxLayout="row" fxLayoutAlign="space-around center">
-
-                  <div>
-                    <div class="item-title" title="{{row.TOTAL_COUNT}}">
-                      {{row.TOTAL_COUNT}}
-                    </div>
-                    <div class="hint" translate>views.profile-history.Rows</div>
-                  </div>
-
-                  <div>
-                    <a (click)="onValidCountClick(row)" class="item-title primary-color-1" title="{{row.VALID_COUNT}}">
-                      {{row.VALID_COUNT}}
-                    </a>
-                    <div class="hint" translate>views.profile-history.Valid</div>
-                  </div>
-
-                  <div>
-                    <div (click)="onInvalidCountClick(row)" class="item-title primary-color-1" title="{{row.INVALID_COUNT}}">
-                      {{row.INVALID_COUNT}}
-                    </div>
-                    <div class="hint" translate>views.profile-history.Invalid</div>
-                  </div>
-
-                  <div>
-                    <div class="item-title" title="{{row.DATE_TIME}}">
-                      {{row.DATE_TIME | timeAgo:reference}}
-                    </div>
-                    <div class="hint" translate>views.profile-history.ProcessingDate</div>
-                  </div>
-
-                  <div *ngIf="row.MIN_TIMESTAMP">
-                    <div class="item-title" title="{{row.MIN_TIMESTAMP}} - {{row.MAX_TIMESTAMP}}">
-                      {{row.MIN_TIMESTAMP}} to {{row.MAX_TIMESTAMP}}
-                    </div>
-                    <div class="hint" translate>views.profile-history.Dates Processed</div>
-                  </div>
-
-                </div>
-              </a>
-
-              <mat-divider [inset]="true" *ngIf="!isLast"></mat-divider>
-            </ng-template>
-          </td-virtual-scroll-container>
-        </mat-nav-list>
+        <td-data-table
+            #dataTable
+            [data]="profileSummary"
+            [columns]="columns"
+            [clickable]="true"
+            (rowClick)="viewProfileResults($event)"
+            [style.min-height.px]="200">
+        </td-data-table>
+        <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
+          <h3>No results to display.</h3>
+        </div>
+        <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+          <span hide-xs>Rows per page:</span>
+          <mat-select [style.width.px]="50" [(ngModel)]="pageSize">
+            <mat-option *ngFor="let size of [10, 50, 100, 200, 500]" [value]="size">
+              {{size}}
+            </mat-option>
+          </mat-select>
+          {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+        </td-paging-bar>
       </div>
       <div *ngIf="showNoResults" class="no-data" fxLayout="column" fxLayoutAlign="center center">
         <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
