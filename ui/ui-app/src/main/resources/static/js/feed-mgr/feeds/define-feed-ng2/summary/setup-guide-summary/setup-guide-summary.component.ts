@@ -157,7 +157,7 @@ export class SetupGuideSummaryComponent extends AbstractLoadFeedComponent  {
      * @returns {boolean}
      */
     showSetPermissions() {
-        return this.feed.accessControl.allowAdmin;
+        return this.feed.accessControl.allowChangePermissions;
     }
 
     /**
