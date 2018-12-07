@@ -76,11 +76,11 @@ export class IndexComponent {
     };
 
     toggleSideNavList=()=>{
-        this.sideNavService('left').toggle();
+        this.sideNavService.toggle();
     };
 
     closeSideNavList() {
-        this.sideNavService('left').close();
+        this.sideNavService.close();
     }
 
     showPreSearchBar() : boolean {
