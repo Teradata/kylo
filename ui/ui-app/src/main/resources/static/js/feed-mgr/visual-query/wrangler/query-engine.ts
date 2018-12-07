@@ -135,7 +135,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Construct a {@code QueryEngine}.
      */
-    constructor(protected dialog: TdDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
+    constructor(protected dialog: TdDialogService, protected DatasourcesService: any, protected uiGridConstants: any, private injector: Injector) {
     }
 
     /**

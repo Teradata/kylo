@@ -33,7 +33,6 @@ import {AboutKyloDialogController, AboutKyloService} from "./about-kylo/AboutKyl
 import {AccessDeniedComponent} from "./access-denied/access-denied.component";
 import {AccordianMenuComponent} from "./accordion-menu/accordionMenuComponent";
 import {AccordionMenuService} from "./accordion-menu/AccordionMenuService";
-import {menuLinkComponent} from "./accordion-menu/menuLinkComponent";
 import {MenuToggleComponent} from "./accordion-menu/menuToggleComponent";
 import {AddButtonComponent} from "./add-button/add-button.component";
 import {BrowserHeight} from "./browser-height/browser-height";
@@ -56,6 +55,9 @@ import {RouterBreadcrumbsComponent} from "./ui-router-breadcrumbs/ui-router-brea
 import {DateTimeService} from "./utils/date-time.service";
 import {VerticalSectionLayoutComponent} from "./vertical-section-layout/vertical-section-layout.component";
 import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-selection.component";
+import { menuLinkComponent } from "./accordion-menu/menuLinkComponent";
+import { VisualQueryTableHeader } from "../feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.component";
+import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.component";
 
 @NgModule({
     declarations: [
@@ -82,7 +84,10 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
         SafeHtmlPipe,
         UploadFileComponent,
         VerticalSectionLayoutComponent,
-        ViewTypeSelectionComponent
+        ViewTypeSelectionComponent,
+        menuLinkComponent,
+        VisualQueryTableHeader,
+        CellMenuComponent
     ],
     entryComponents: [
         AboutKyloDialogController,

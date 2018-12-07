@@ -530,7 +530,7 @@ export class ProfileStatsController {
 angular.module(moduleName).component("profileStats", {
     controller: ProfileStatsController,
     controllerAs: "vm",
-    templateUrl: "js/feed-mgr/shared/profile-stats/profile-stats.html",
+    templateUrl: "./profile-stats.html",
     bindings: {
         hideColumns: "=",
         model: "="

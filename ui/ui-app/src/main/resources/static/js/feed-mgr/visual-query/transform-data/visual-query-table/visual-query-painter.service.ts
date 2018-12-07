@@ -1,20 +1,20 @@
-import {Injectable} from "@angular/core";
 import * as angular from "angular";
+import * as $ from "jquery";
 import "fattable";
 
-import {DomainType} from "../../../services/DomainTypesService";
-import {DataCategory} from "../../wrangler/column-delegate";
-// import './cell-menu.template.scss';
+import { DomainType } from "../../../services/DomainTypesService";
+import { DataCategory } from "../../wrangler/column-delegate";
+import { Injectable,  Injector, ComponentFactoryResolver, ApplicationRef, EmbeddedViewRef } from "@angular/core";
+import { downgradeInjectable } from "@angular/upgrade/static";
+import { moduleName } from "../../../module-name";
+import { VisualQueryTableHeader } from "./visual-query-table-header.component";
+import { CellMenuComponent } from "./cell-menu.component";
+import {BroadcastService} from "../../../../services/broadcast-service";
 
 /**
  * Default font.
  */
 const DEFAULT_FONT = "10px ''SourceSansPro'";
-
-/**
- * HTML template for header cells.
- */
-const HEADER_TEMPLATE = "js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html";
 
 /**
  * Pixel unit.
@@ -75,24 +75,9 @@ export class VisualQueryPainterService extends fattable.Painter {
     private _rowFont: string;
 
     /**
-     * Panel containing the cell menu.
-     */
-    private menuPanel: angular.material.IPanelRef;
-
-    /**
-     * Indicates that the menu should be visible.
-     */
-    private menuVisible: boolean = false;
-
-    /**
      * Cell that was last clicked.
      */
     private selectedCell: HTMLElement;
-
-    /**
-     * Panel containing the tooltip.
-     */
-    private tooltipPanel: angular.material.IPanelRef;
 
     /**
      * Indicates that the tooltip should be visible.
@@ -100,84 +85,37 @@ export class VisualQueryPainterService extends fattable.Painter {
     private tooltipVisible: boolean = false;
 
     /**
-     * Indicate thate the header template has been loaded into the $templateCache
-     * @type {boolean}
-     */
-    private headerTemplateLoaded : boolean = false;
-
-
-    /**
      * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
      * Once the template is loaded these elements will get filled
      * @type {any[]}
      */
-    private waitingHeaderDivs : HTMLElement[] = [];
+    private waitingHeaderDivs: HTMLElement[] = [];
 
-    private $compile: angular.ICompileService;
-    private $mdPanel: angular.material.IPanelService;
-    private $scope: angular.IRootScopeService;
-    private $templateCache: angular.ITemplateCacheService;
-    private $templateRequest: angular.ITemplateRequestService;
-    private $timeout: angular.ITimeoutService;
-    private $window: angular.IWindowService;
 
+    private componentRef: any;
+
+    private componentRefMenu: any;
+    private componentFactoryMenu: any;
+
+
+    private previousCellDiv: HTMLElement;
     /**
      * Constructs a {@code VisualQueryPainterService}.
      */
-    constructor() {
+    constructor(private injector: Injector,
+        private componentFactoryResolver: ComponentFactoryResolver,
+        private _appRef: ApplicationRef,
+        private broadcastService: BroadcastService) {
+
         super();
+        this.broadcastService.subscribe(null, "CLOSE_CELL_MENU", () => this.hideCellMenu());
+        // Create tooltip   
+        $(document.body).append("<div id=\"cellTooltip\" style=\"position: absolute; z-index: 101; background-color:#e63838; padding: 4px; border-radius: 5px; font-size: 10px;\">");
+    }
 
-        // Load AngularJS services
-        const injector = angular.element(document.body).injector();
-        this.$compile = injector.get("$compile");
-        this.$mdPanel = injector.get("$mdPanel");
-        this.$scope = injector.get("$rootScope");
-        this.$templateCache = injector.get("$templateCache");
-        this.$templateRequest = injector.get("$templateRequest");
-        this.$timeout = injector.get("$timeout");
-        this.$window = injector.get("$window");
-
-        //Request the Header template and fill in the contents of any header divs waiting on the template.
-        this.$templateRequest(HEADER_TEMPLATE).then((response) => {
-            this.headerTemplateLoaded = true;
-            angular.forEach(this.waitingHeaderDivs,(headerDiv : HTMLElement) => {
-                this.compileHeader(headerDiv);
-            });
-            this.waitingHeaderDivs = [];
-        });
-
-        // Hide tooltip on scroll. Skip Angular change detection.
-       /*
-        window.addEventListener("scroll", () => {
-            if (this.tooltipVisible) {
-                this.hideTooltip();
-            }
-        }, {passive:true, capture:true});
-    */
-        // Create menu
-        this.menuPanel = this.$mdPanel.create({
-            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
-            attachTo: angular.element(document.body),
-            clickOutsideToClose: true,
-            escapeToClose: true,
-            focusOnOpen: true,
-            panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
-            template: require("./cell-menu.template.html")
-        });
-        this.menuPanel.attach();
-
-        // Create tooltip
-        this.tooltipPanel = this.$mdPanel.create({
-            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: "md-show", close: "md-hide"}),
-            attachTo: angular.element(document.body),
-            template: `{{value}}<ul><li ng-repeat="item in validation">{{item.rule}}: {{item.reason}}</li></ul>`,
-            focusOnOpen: false,
-            panelClass: "md-tooltip md-origin-bottom visual-query-tooltip",
-            propagateContainerEvents: true,
-            zIndex: 100
-        });
-        this.tooltipPanel.attach();
-
+    ngOnDestroy() {
+        this._appRef.detachView(this.componentRef.hostView);
+        this.componentRef.destroy();
     }
 
     /**
@@ -275,7 +213,7 @@ export class VisualQueryPainterService extends fattable.Painter {
                 .data("realValue", cell.value);
         }
 
-        cellDiv.innerHTML = cellDiv.innerHTML.replace(/\s/g,"<span class='ws-text'>·</span>");
+        $(cellDiv).html(cellDiv.textContent.replace(/\s/g, "<span class='ws-text'>·</span>"))
     }
 
     /**
@@ -285,17 +223,8 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableHeader|null} header the column header
      */
     fillHeader(headerDiv: HTMLElement, header: any) {
-
-        // Update scope in a separate thread
-        const $scope: any = angular.element(headerDiv).scope();
-
-        if (header != null && $scope.header !== header && header.delegate != undefined) {
-            $scope.header = header;
-            $scope.table = this.delegate;
-            $scope.availableCasts = header.delegate.getAvailableCasts();
-            $scope.availableDomainTypes = this.domainTypes;
-            $scope.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
-            $scope.header.unsort = this.unsort.bind(this);
+        if (header != null && header.delegate != undefined) {
+            this.compileHeader(headerDiv, header);
         }
     }
 
@@ -304,9 +233,9 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     hideTooltip() {
         this.tooltipVisible = false;
-        this.$timeout(() => {
+        setTimeout(() => {
             if (this.tooltipVisible === false) {
-                this.tooltipPanel.hide();
+                $("#cellTooltip").css({ "display": "none" });
             }
         }, 75);
     }
@@ -323,7 +252,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         angular.element(cellDiv)
             .on("contextmenu", () => false)
             .on("mousedown", () => this.setSelected(cellDiv))
-            .on("mouseenter", () => this.showTooltip(cellDiv))
+            .on("mouseenter", (event) => this.showTooltip(cellDiv, event))
             .on("mouseleave", () => this.hideTooltip())
             .on("mouseup", event => this.showMenu(cellDiv, event));
 
@@ -345,27 +274,10 @@ export class VisualQueryPainterService extends fattable.Painter {
         headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
         //if the header template is not loaded yet then fill it with Loading text.
         // the callback on the templateRequest will compile those headers waiting
-        if(!this.headerTemplateLoaded) {
-            headerDiv.textContent = "Loading...";
-            headerDiv.className = "pending";
-            this.waitingHeaderDivs.push(headerDiv)
-        }
-        else {
-            this.compileHeader(headerDiv);
-        }
+        headerDiv.textContent = "Loading...";
+        headerDiv.className = "pending";
+        this.waitingHeaderDivs.push(headerDiv)
 
-    }
-
-    /**
-     * Cleanup any events attached to the header
-     * @param headerDiv
-     */
-    cleanUpHeader(headerDiv: HTMLElement){
-        //destroy the old scope if it exists
-        let oldScope = angular.element(headerDiv).isolateScope();
-        if(angular.isDefined(oldScope)){
-            oldScope.$destroy();
-        }
     }
 
     /**
@@ -373,7 +285,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param cellDiv
      */
     cleanUpCell(cellDiv: HTMLElement) {
-       angular.element(cellDiv).unbind();
+        angular.element(cellDiv).unbind();
     }
 
     /**
@@ -381,41 +293,33 @@ export class VisualQueryPainterService extends fattable.Painter {
      * This should cleanup any events/bindings/scopes created by the prior render of the table
      * @param table
      */
-    cleanUp(table:HTMLElement){
-        //remove all header scopes
-        this.headerScopes.forEach((headerScope: IScope) => {
-            headerScope.$destroy();
-        });
-        this.headerScopes = [];
-
+    cleanUp(table: HTMLElement) {
         super.cleanUp(table);
         angular.element(table).unbind();
     }
-    private headerScopes : IScope[] = []
 
-    private compileHeader(headerDiv: HTMLElement) {
+    private compileHeader(headerDiv: HTMLElement, header: any) {
         // Load template
-        headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
 
-        let newScope = this.$scope.$new(true)
-        this.headerScopes.push(newScope);
-        this.$compile(headerDiv)(newScope);
+        const componentFactory = this.componentFactoryResolver.resolveComponentFactory(VisualQueryTableHeader);
+        this.componentRef = componentFactory.create(this.injector);
 
+        this.componentRef.instance.header = header;
+        this.componentRef.instance.table = this.delegate;
+        this.componentRef.instance.availableCasts = header.delegate.getAvailableCasts();
+        this.componentRef.instance.availableDomainTypes = this.domainTypes;
+        this.componentRef.instance.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
+        this.componentRef.instance.header.unsort = this.unsort.bind(this);
 
+        this._appRef.attachView(this.componentRef.hostView);
+
+        // outletElement should be the HTMLElement for the header
+        headerDiv.replaceChild((this.componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement, headerDiv.firstChild);
     }
-
-    /**
-     * Hides the cell menu.
-     */
-    private hideMenu() {
-        this.menuVisible = false;
-        this.$timeout(() => {
-            if (this.menuVisible === false) {
-                this.menuPanel.close();
-            }
-        }, 75);
+    hideCellMenu() {
+        this._appRef.detachView(this.componentRefMenu.hostView);
+        this.componentRefMenu.destroy();
     }
-
     /**
      * Sets the currently selected cell.
      */
@@ -429,11 +333,10 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.selectedCell = cellDiv;
         angular.element(this.selectedCell).addClass(VisualQueryPainterService.SELECTED_CLASS);
     }
-
     /**
      * Create the display string for a selection
      */
-    private niceSelection(selection:string) : string {
+    private niceSelection(selection: string): string {
         switch (selection) {
             case ' ':
                 return '(space)';
@@ -446,10 +349,6 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 
-    // Replace dots in the
-    private cleanDots(value: string) : string {
-        return value.replace(/·/g, " ");
-    }
     /**
      * Shows the cell menu on the specified cell.
      */
@@ -459,120 +358,69 @@ export class VisualQueryPainterService extends fattable.Painter {
         const column = cell.data("column");
         const header = this.delegate.columns[column];
         const isNull = cell.hasClass("null");
-        const selection = this.$window.getSelection();
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0)
 
-        if (event.button != 0 || !(selection.focusNode.nodeType == 3 || selection.toString() == "") || !(this.selectedCell == event.target || $.contains(this.selectedCell, event.target))) {
-            return;
+        if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
+            return;  // ignore dragging between elements
         }
-
-        //if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
-        //    return;  // ignore dragging between elements
-       // }
         if (angular.element(document.body).children(".CodeMirror-hints").length > 0) {
             return;  // ignore clicks when CodeMirror function list is active
         } else if (header.delegate.dataCategory === DataCategory.DATETIME || header.delegate.dataCategory === DataCategory.NUMERIC || header.delegate.dataCategory === DataCategory.STRING) {
-            this.menuVisible = true;
+            // Update Menu
+            this.componentFactoryMenu = this.componentFactoryResolver.resolveComponentFactory(CellMenuComponent);
+            this.componentRefMenu = this.componentFactoryMenu.create(this.injector);
+
+            this.componentRefMenu.instance.DataCategory = DataCategory;
+            this.componentRefMenu.instance.header = header;
+            this.componentRefMenu.instance.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString().replace("·", " ") : null;
+            this.componentRefMenu.instance.selectionDisplay = this.niceSelection(this.componentRefMenu.instance.selection)
+            this.componentRefMenu.instance.range = range;
+            this.componentRefMenu.instance.table = this.delegate;
+            this.componentRefMenu.instance.value = isNull ? null : $(cellDiv).data('realValue');
+            this.componentRefMenu.instance.displayValue = (this.componentRefMenu.instance.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? this.componentRefMenu.instance.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "..." : this.componentRefMenu.instance.value)
+
+            const left = (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+            const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
+
+            this.componentRefMenu.instance.menuTop = top + PIXELS;
+            this.componentRefMenu.instance.menuLeft = left + PIXELS;
+
+            this._appRef.attachView(this.componentRefMenu.hostView);
+            // outletElement should be the HTMLElement for the header
+            $(document.body).append((this.componentRefMenu.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement);
         } else {
             return;  // ignore clicks on columns with unsupported data types
         }
-
-        // Update content
-
-        // Calculate the actual offset considering the inner spans
-        let trueOffset = function(selection:any) {
-            let offset = selection.anchorOffset;
-            let node = ( selection.anchorNode.parentNode.className === 'ws-text' ? selection.anchorNode.parentElement : selection.anchorNode);
-            while (node.previousSibling) {
-                node = node.previousSibling;
-                offset += node.textContent.length;
-            }
-            return offset;
-        }
-
-        const $scope: IScope = (this.menuPanel.config as any).scope;
-        $scope.DataCategory = DataCategory;
-        $scope.header = header;
-        $scope.selection = this.cleanDots(selection.toString()); //(header.delegate.dataCategory === DataCategory.STRING) ? cleanDots(selection.toString()) : null;
-        let startOffset = trueOffset(selection);
-        $scope.range = (selection != null ? { startOffset: startOffset, endOffset: startOffset+$scope.selection.length } : null);
-        $scope.selectionDisplay = this.niceSelection($scope.selection)
-        $scope.table = this.delegate;
-        $scope.value = isNull ? null : $(cellDiv).data('realValue');
-        $scope.displayValue = (isNull || $scope.value == null ? "(empty)" : ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value));
-
-        // Update position
-        this.menuPanel.updatePosition(
-            this.$mdPanel.newPanelPosition()
-                .left(event.clientX + PIXELS)
-                .top(event.clientY + PIXELS)
-        );
-
-        // Show menu
-        this.menuPanel.open()
-            .then(() => {
-                // Add click listener
-                this.menuPanel.panelEl.on("click", "button", () => this.hideMenu());
-
-                // Calculate position
-                const element = angular.element(this.menuPanel.panelEl);
-                const height = element.height();
-                const offset = element.offset();
-                const width = element.width();
-
-                // Fix position if off screen
-                const left = (offset.left + width > this.$window.innerWidth) ? this.$window.innerWidth - width - 8 : event.clientX;
-                const top = (offset.top + height > this.$window.innerHeight) ? this.$window.innerHeight - height - 8 : event.clientY;
-                if (left !== event.clientX || top !== event.clientY) {
-                    this.menuPanel.updatePosition(
-                        this.$mdPanel.newPanelPosition()
-                            .left(left + PIXELS)
-                            .top(top + PIXELS)
-                    );
-                }
-            });
     }
-
-   /**
+    /**
      * Shows the tooltip on the specified cell.
      */
-    private showTooltip(cellDiv: HTMLElement) {
-        this.tooltipVisible = true;
+    private showTooltip(cellDiv: HTMLElement, event: any) {
 
-        // Update content
-        const $scope = this.tooltipPanel.panelEl.scope() as any;
-        $scope.validation = angular.element(cellDiv).data("validation");
-        $scope.value = cellDiv.innerText;
-
-        if ($scope.value && $scope.value.length > 22) {
-
-            // Update position
-            const cellOffset = angular.element(cellDiv).offset();
+        // Update position
+        if (!this.previousCellDiv || (this.previousCellDiv != cellDiv)) {
+            const cellOffset = $(cellDiv).offset();
             let offsetY;
             let yPosition;
 
-            if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > this.$window.innerHeight) {
-                offsetY = "-27" + PIXELS;
-                yPosition = this.$mdPanel.yPosition.ABOVE;
+            if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > window.innerHeight) {
+                offsetY = "-27";
             } else {
                 offsetY = "0";
-                yPosition = this.$mdPanel.yPosition.BELOW;
             }
 
-            this.tooltipPanel.updatePosition(
-                this.$mdPanel.newPanelPosition()
-                    .relativeTo(cellDiv)
-                    .addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, yPosition)
-                    .withOffsetX("28px")
-                    .withOffsetY(offsetY)
-            );
+            const left = (event.clientX > window.innerWidth) ? (window.innerWidth - event.clientX - 8) : event.clientX;
+            const top = (event.clientY > window.innerHeight) ? (window.innerHeight - event.clientY - 8) : event.clientY;
 
-            // Show tooltip
-            this.tooltipPanel.open();
-        } else {
-            this.hideTooltip();
+            if (!this.tooltipVisible) {
+                $("#cellTooltip").html(cellDiv.innerText);
+                $("#cellTooltip").css({ "top": top, "left": left, "display": "block" });
+            }
         }
-    }
 
+        this.tooltipVisible = true;
+    }
     /**
      * Turns off sorting.
      */
@@ -582,3 +430,4 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 }
+angular.module(moduleName).service('VisualQueryPainterService', downgradeInjectable(VisualQueryPainterService));

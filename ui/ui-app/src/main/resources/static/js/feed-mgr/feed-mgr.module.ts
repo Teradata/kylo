@@ -59,6 +59,7 @@ import {PolicyInputFormController} from "./shared/policy-input-form/policy-input
 import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputFormService";
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
+import { VisualQueryPainterService } from './visual-query/transform-data/visual-query-table/visual-query-painter.service';
 
 @NgModule({
     imports: [
@@ -145,6 +146,7 @@ import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
         UiComponentsService,
         UserGroupService,
         VisualQueryService,
+        VisualQueryPainterService
     ]
 })
 export class KyloFeedManagerModule {

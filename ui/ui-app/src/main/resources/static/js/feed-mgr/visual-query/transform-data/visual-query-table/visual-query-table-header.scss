@@ -1,0 +1,58 @@
+vs-table-header {
+    display: flex;
+    width: 100%;
+}
+
+.table-header {
+    display: inline-flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.table-header-data {
+    padding: 0; 
+    display: inline-flex;
+}
+
+.mat-menu-item {
+    height: auto !important;
+    line-height: 27px;
+}
+
+.dropDown-button {
+    min-width: 20px;
+    padding: 0;
+    background: none;
+    border: 0;
+}
+
+.hoverMenu { 
+    transform: rotate(270deg);
+}
+
+.mat-menu-item {
+    padding: 0 16px;
+    display: inline-flex;
+    line-height: 27px;
+    font-size: 14px;
+    display: inline-block;
+}
+
+.material-icons {
+    padding-right: 25px;
+    margin-right: 4px;
+    font-size: 20px;
+    vertical-align: sub;
+}
+
+.dropdown-icons {
+    font-size: 14px;
+}
+
+.mat-menu-content {
+    width: min-content;
+}
+
+.dropDown-button:focus, .material-icons:focus {
+    outline: none;
+}

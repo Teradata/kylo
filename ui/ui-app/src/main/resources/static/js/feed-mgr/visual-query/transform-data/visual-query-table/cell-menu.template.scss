@@ -4,3 +4,28 @@
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
+.list-items {
+  background: none !important;
+  border: 0  !important;
+  display: flex;
+  padding: 6px 16px;
+  width: 100%;
+}
+
+.list-items:hover {
+  background-color: #f1f0f0 !important;
+}
+
+.visual-query-menu {
+  background-color: white;
+  padding: 6px 0;
+  top:0;
+  left:0;
+}
+
+.mat-menu-panel {
+  max-width: 100%;
+}
+
+

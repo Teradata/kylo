@@ -18,7 +18,8 @@ import * as _ from "underscore";
 import {SchemaField} from "../../../model/schema-field";
 import {TableSchema} from "../../../model/table-schema";
 import {UserDatasource} from "../../../model/user-datasource";
-import {DatasourcesService, TableReference} from "../../../services/DatasourcesServiceIntrefaces";
+import {TableReference} from "../../../services/DatasourcesServiceIntrefaces";
+import { DatasourcesService} from "../../../services/DatasourcesService";
 import {HiveService} from "../../../services/HiveService";
 import {RestUrlService} from "../../../services/RestUrlService";
 import {SqlDialect, VisualQueryService} from "../../../services/VisualQueryService";
@@ -36,7 +37,6 @@ import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
 import {HttpBackendClient} from "../../../../services/http-backend-client";
-import { ObjectUtils } from "../../../../../lib/common/utils/object-utils";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -54,9 +54,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
     /**
      * Constructs a {@code SparkQueryEngine}.
      */
-    constructor(private $http: HttpClient, dialog: TdDialogService, @Inject(DIALOG_SERVICE) private wranglerDialog: DialogService, @Inject("HiveService") private HiveService: HiveService,
-                @Inject("RestUrlService") private RestUrlService: RestUrlService, @Inject("VisualQueryService") private VisualQueryService: VisualQueryService, private $$angularInjector: Injector,
-                @Inject("DatasourcesService") datasourcesService: any, @Inject("uiGridConstants") uiGridConstants: any, private httpBackendClient:HttpBackendClient) {
+    constructor(private $http: HttpClient, dialog: TdDialogService, @Inject(DIALOG_SERVICE) private wranglerDialog: DialogService, private hiveService: HiveService,
+                private RestUrlService: RestUrlService,private VisualQueryService: VisualQueryService, private $$angularInjector: Injector,
+                private datasourcesService: DatasourcesService, @Inject("uiGridConstants") uiGridConstants: any, private httpBackendClient:HttpBackendClient) {
         super(dialog, datasourcesService, uiGridConstants, $$angularInjector);
 
         // Ensure Kylo Spark Shell is running
@@ -341,7 +341,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     searchTableNames(query: string, datasourceId: string): TableReference[] | Promise<TableReference[]> {
         if (datasourceId === SparkConstants.HIVE_DATASOURCE) {
-            const tables = this.HiveService.queryTablesSearch(query);
+            const tables = this.hiveService.queryTablesSearch(query);
             if (tables.then) {
                 return new Promise((resolve, reject) => tables.then(resolve, reject));
             } else {

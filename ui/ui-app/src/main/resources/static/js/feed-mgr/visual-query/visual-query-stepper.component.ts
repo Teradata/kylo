@@ -6,8 +6,9 @@ import {Feed} from "../model/feed/feed.model";
 import {QueryEngine} from "./wrangler/query-engine";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
 import {MatIconRegistry} from "@angular/material/icon";
-import {FeedLoadingService} from "../feeds/define-feed-ng2/services/feed-loading-service";
 import {SparkQueryEngine} from './services/spark/spark-query-engine';
+import { SideNavService } from '../../services/SideNavService';
+import { StateService } from '../../services/StateService';
 
 @Component({
     selector: 'visual-query-stepper',
@@ -85,8 +86,7 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     /**
      * Constructs a {@code VisualQueryComponent}.
      */
-    constructor(@Inject("PreviewDatasetCollectionService") private previewDataSetCollectionService: PreviewDatasetCollectionService,
-                @Inject("SideNavService") private sideNavService: any, @Inject("StateService") private stateService: any,
+    constructor(private previewDataSetCollectionService: PreviewDatasetCollectionService, private sideNavService: SideNavService,private stateService: StateService,
                 private engineRef: SparkQueryEngine, private matIconRegistry: MatIconRegistry) {
 
         this.engine = engineRef;
