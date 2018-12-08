@@ -1124,7 +1124,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     setFormula(formula: any) {
         this.currentFormula = formula;
         this.codemirrorEditor.setValue(formula);
-        this.codemirrorEditor.focus();
+        setTimeout(() => this.codemirrorEditor.focus(), 200);  // wait for menu to close
         this.selectNextTabStop();
     };
 
