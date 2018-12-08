@@ -10,6 +10,7 @@ import {SqlEditorComponent} from "./sql-editor.component";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import {CodemirrorModule} from "ng2-codemirror";
 import {CovalentDialogsModule} from "@covalent/core/dialogs";
+import {CovalentMessageModule } from '@covalent/core/message';
 import {TranslateModule} from "@ngx-translate/core";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {KyloCodeMirrorModule} from "../../../codemirror-require/codemirror.module";
@@ -38,6 +39,7 @@ import {KyloCodeMirrorModule} from "../../../codemirror-require/codemirror.modul
         KyloCodeMirrorModule,
         CodemirrorModule,
         CovalentDialogsModule,
+        CovalentMessageModule,
         TranslateModule
     ],
     providers: [

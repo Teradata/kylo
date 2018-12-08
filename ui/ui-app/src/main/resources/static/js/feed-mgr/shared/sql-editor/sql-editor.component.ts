@@ -53,6 +53,12 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
     @Input()
         height:number = 500;
 
+    /**
+     * Indicates if query execution failed
+     */
+    @Input()
+    queryExecutionFailure:boolean;
+
     @Output()
     sqlChange = new EventEmitter<string>();
 
@@ -139,6 +145,10 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
             value = value.replace(/;$/, "");
             this.sqlChange.emit(value);
         }
+    }
+
+    overrideQueryFailureCheck() {
+        this.sqlChange.emit(this.sql);
     }
 
 

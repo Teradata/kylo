@@ -113,6 +113,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     form: FormGroup;
 
     /**
+     * Indicates if query execution failed
+     */
+    @Input()
+    queryExecutionFailure:boolean;
+
+    /**
      * Event emitted to return to the previous step
      */
     @Output()
@@ -123,6 +129,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      */
     @Output()
     next = new EventEmitter<void>();
+
+    /**
+     * Event emitted to indicate sql was changed
+     */
+    @Output()
+    sqlChange = new EventEmitter<string>();
 
     /**
      * Indicates if the UI is in advanced mode
@@ -367,6 +379,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             this.model.sql = sql;
             this.validate();
         }
+        this.sqlChange.emit(sql);
         return this.model.sql;
     }
 

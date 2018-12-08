@@ -113,6 +113,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @Output()
     next = new EventEmitter<void>();
 
+    /**
+     * Event emitted to indicate query failure
+     */
+    @Output()
+    queryFailure = new EventEmitter<void>();
+
     //Flag to determine if we can move on to the next step
     isValid: boolean = false;
 
@@ -374,7 +380,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
             // Initial load will trigger query from the table model.
             if (this.isLoaded) {
-                this.query();
+                this.query().catch((result) => {
+                    console.debug("Error executing query!");
+                });
             }
             this.isLoaded = true;
         };
@@ -708,16 +716,19 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             deferred.complete();
         };
         const errorCallback = (message: string) => {
+            console.debug("Query error!");
+            this.queryFailure.emit();
             this.setExecutingQuery(false);
             this.resetAllProgress();
-            this.showError(this.cleanError(message));
 
             // Reset state
             if (this.engine.canUndo()) {
                 this.onUndo();
             }
             this.removeExecution(promise);
+            this.hiveDataLoaded = false;
             deferred.error(message);
+            this.back.emit();
         };
         const notifyCallback = (progress: number) => {
             //self.setQueryProgress(progress * 100);
@@ -1177,7 +1188,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         let rows = this.engine.getRows();
 
         if (columns === null || rows === null) {
-            this.query();
+            this.query().catch((result) => {
+                console.debug("Error executing query!");
+            });
         } else {
             this.updateGrid();
         }
@@ -1193,7 +1206,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         });
 
         this.pushFormulaToEngine(`select(${fieldNames.join(',')})`, {});
-        this.query();
+        this.query().catch((result) => {
+            console.debug("Error executing query!");
+        });
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -1240,7 +1255,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.query().catch(reason => {
             // reverse impact
             self.engine.restoreLastKnownState();
-            this.query();
+            this.query().catch((result) => {
+                console.debug("Error executing query!");
+            });
             this.functionHistory = this.engine.getHistory();
         });
     }
@@ -1312,6 +1329,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     feedModel.table.syncTableFieldPolicyNames()
                     this.engine.save();
                     resolve(true);
+                }).catch((result) => {
+                    console.debug("Error executing query!");
                 });
             }
         });

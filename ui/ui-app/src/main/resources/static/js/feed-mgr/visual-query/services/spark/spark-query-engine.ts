@@ -506,7 +506,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
 
         // Send the request
-        self.$http.post<TransformResponse>(this.apiUrl + "/transform", JSON.stringify(body), {
+        self.httpBackendClient.post<TransformResponse>(this.apiUrl + "/transform", JSON.stringify(body), {
             headers: {"Content-Type": "application/json"},
             responseType: "json"
         }).toPromise().then(successCallback, errorCallback);

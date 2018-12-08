@@ -108,6 +108,9 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
     @Input("table-state")
     tableState: number;
 
+    @Input()
+    loadingInProgress: boolean = false;
+
     /**
      * Previous state
      */
@@ -177,6 +180,12 @@ export class VisualQueryTable implements OnDestroy, OnChanges, OnInit {
         } else if (changes.options) {
             this.painter.headerFont = this.options.headerFont;
             this.painter.rowFont = this.options.rowFont
+        }
+        if(changes.loadingInProgress) {
+            //if loading complete, refresh the screen to see the data values
+            if (changes.loadingInProgress.currentValue == false) {
+                this.refresh();
+            }
         }
     }
 

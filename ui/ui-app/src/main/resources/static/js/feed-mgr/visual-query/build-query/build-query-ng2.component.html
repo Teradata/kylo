@@ -94,7 +94,7 @@
 
           <button mat-button (click)="back.emit()" type="button" *ngIf="showCancel" style="padding-top:3px" class="text-upper">Cancel</button>
           <button mat-button [color]="form.valid ? 'accent' : ''" (click)="next.emit()" style="padding-top:3px" type="button"
-                  [disabled]="!form.valid || (chartViewModel.data.nodes.length == 0 && (model.sql == '' || model.sql == null))"
+                  [disabled]="!form.valid || (chartViewModel.data.nodes.length == 0 && (model.sql == '' || model.sql == null)) || queryExecutionFailure"
                   class="text-upper">Next
           </button>
 
@@ -110,7 +110,7 @@
 
         <!-- SQL Editor -->
         <sql-editor [sql]="this.model.sql" [datasourceId]="model.$catalogDataSourceId" [allowFullscreen]="false" [allowDatabaseBrowse]="false"
-                    [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true" (sqlChange)="advancedModeSql($event)"></sql-editor>
+                    [allowExecuteQuery]="false" [height]="400" *ngIf="advancedMode == true" (sqlChange)="advancedModeSql($event)" [queryExecutionFailure]="queryExecutionFailure"></sql-editor>
 
         <!-- nothing set and user cant change datasources mesage-->
         <ng-template *ngIf="(chartViewModel.data.nodes.length == 0 || sql == '') && !showDatasources">
