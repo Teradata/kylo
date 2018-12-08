@@ -14,6 +14,7 @@ export class RenameColumnForm extends ColumnForm{
     }
 
     buildForm(){
+        // @formatter:off
         return new DynamicFormBuilder()
             .setTitle("Rename Column")
             .setMessage("Enter a new name for the " + ColumnUtil.getColumnDisplayName(this.column) + " column:")
@@ -21,8 +22,10 @@ export class RenameColumnForm extends ColumnForm{
                 .text()
                     .setKey("columnName")
                     .setPlaceholder("Column name")
+                    .setRequired(true)
                 .done()
             .columnComplete()
+            // @formatter:on
             .onApply((values:any)=> {
 
                 let newName = values.columnName;
