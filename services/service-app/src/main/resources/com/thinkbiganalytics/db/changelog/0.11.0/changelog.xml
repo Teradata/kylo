@@ -23,15 +23,6 @@
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
-
-    <include file="0.0.0/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.8.0/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.8.1/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.8.2/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.8.3/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.8.4/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.8.4.1/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.9.1/changelog.xml" relativeToChangelogFile="true"/>
-    <include file="0.11.0/changelog.xml" relativeToChangelogFile="true"/>
+  <include file="alter_feed_acl_index_principal_collation.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
