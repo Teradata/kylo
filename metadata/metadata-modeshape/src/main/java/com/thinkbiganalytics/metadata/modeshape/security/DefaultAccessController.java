@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
+import com.thinkbiganalytics.logging.LoggingUtil;
+import com.thinkbiganalytics.logging.LoggingUtil.LogLevel;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -39,14 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import java.security.AccessControlException;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,15 +60,11 @@ public class DefaultAccessController implements AccessController {
     private static final Logger log = LoggerFactory.getLogger(DefaultAccessController.class);
 
     
-    public enum LogFields { PERM, ENTITY, RESULT, USER, GROUPS, IP_ADDRESS };
-    
-    private static final Pattern LOG_FIELD_PATTERN = Pattern.compile("\\s*\\{\\s*(\\w+)\\s*\\}\\s*", Pattern.CASE_INSENSITIVE);
+//    public enum LogFields { PERM, ENTITY, RESULT, USER, GROUPS, IP_ADDRESS };
+    public enum LogFields { PERM, ENTITY, RESULT, USER, GROUPS };
     
     @org.springframework.beans.factory.annotation.Value("${security.entity.access.controlled:false}")
     private volatile boolean entityAccessControlled;
-    
-    @org.springframework.beans.factory.annotation.Value("${security.log.auth:false}")
-    private volatile boolean logAuthentication;
     
     @org.springframework.beans.factory.annotation.Value("${security.log.access:false}")
     private volatile boolean logAccessCheck;
@@ -92,20 +87,20 @@ public class DefaultAccessController implements AccessController {
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
     
+    private LogLevel logLevel;
     private List<LogFields> formatFields;
     private Set<UsernamePrincipal> ignoreUsers;
     private Set<GroupPrincipal> ignoreGroups;
     private String logMessage;
-    private BiConsumer<String, Object[]> loggingConsumer;
 
     public DefaultAccessController() {
     }
     
     @PostConstruct
     public void init() {
-        this.formatFields = generateFormatFields();
-        this.logMessage = generateLogMessage(this.formatFields);
-        this.loggingConsumer = generateLoggingConsumer();
+        this.logLevel = LogLevel.level(this.accessLogLevel);
+        this.formatFields = LoggingUtil.extractTokens(LogFields.class, this.accessLogFormat);
+        this.logMessage = LoggingUtil.toLogMessage(this.accessLogFormat);
         
         if (StringUtils.isBlank(ignoreUsersCsv)) {
             this.ignoreUsers = Collections.emptySet();
@@ -240,30 +235,32 @@ public class DefaultAccessController implements AccessController {
             ignore |= ignoreGroups.stream().anyMatch(groups::contains);
             
             if (! ignore) {
-                String[] logArgs = getFormatFields().stream()
-                    .map(field -> {
-                        switch (field) {
-                            case PERM:
-                                return actions.stream().map(action -> action.getSystemName()).collect(Collectors.joining(", "));
-                            case ENTITY:
-                                return entity;
-                            case RESULT:
-                                return result;
-                            case USER:
-                                return user.getName();
-                            case GROUPS:
-                                return groups.stream().map(Principal::getName).collect(Collectors.joining(", "));
-                            case IP_ADDRESS:
-                                return "";
-                            default:
-                                return "";
-                        }
-                    })
-                    .toArray(String[]::new);
+                Object[] args = LoggingUtil.deriveArguments(getFormatFields(), field -> {
+                    switch (field) {
+                        case PERM:
+                            return actions.stream().map(action -> action.getSystemName()).collect(Collectors.joining(", "));
+                        case ENTITY:
+                            return entity;
+                        case RESULT:
+                            return result;
+                        case USER:
+                            return user.getName();
+                        case GROUPS:
+                            return groups.stream().map(Principal::getName).collect(Collectors.joining(", "));
+//                        case IP_ADDRESS:
+//                            return "";
+                        default:
+                            return "";
+                    }
+                });
                 
-                getLoggingConsumer().accept(this.logMessage, logArgs);
+                LoggingUtil.log(log, getLogLevel(), getLogMessage(), args);
             }
         }
+    }
+    
+    public LogLevel getLogLevel() {
+        return logLevel;
     }
     
     protected String getAccessLogFormat() {
@@ -280,37 +277,5 @@ public class DefaultAccessController implements AccessController {
     
     protected Set<UsernamePrincipal> getIgnoreUsers() {
         return ignoreUsers;
-    }
-    
-    protected BiConsumer<String, Object[]> getLoggingConsumer() {
-        return loggingConsumer;
-    }
-    
-    protected BiConsumer<String, Object[]> generateLoggingConsumer() {
-        if (this.accessLogLevel.equalsIgnoreCase("error")) return (msg, args) -> log.error(msg, args);
-        if (this.accessLogLevel.equalsIgnoreCase("warn")) return (msg, args) -> log.warn(msg, args);
-        if (this.accessLogLevel.equalsIgnoreCase("info")) return (msg, args) -> log.info(msg, args);
-        if (this.accessLogLevel.equalsIgnoreCase("trace")) return (msg, args) -> log.trace(msg, args);
-        return (msg, args) -> log.debug(msg, args);
-    }
-
-    protected List<LogFields> generateFormatFields() {
-        Matcher matcher = LOG_FIELD_PATTERN.matcher(this.accessLogFormat);
-        ArrayList<LogFields> fields = new ArrayList<>();
-        
-        while (matcher.find()) {
-            String fieldStr = matcher.group(1).toUpperCase();
-            try {
-                fields.add(LogFields.valueOf(fieldStr));
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Unsupported security logging field name: " + fieldStr);
-            }
-        }
-        
-        return fields;
-    }
-
-    protected String generateLogMessage(List<LogFields> formatFields) {
-        return getAccessLogFormat().replaceAll("\\{\\s*\\w+\\s*\\}", "{}");
     }
 }
