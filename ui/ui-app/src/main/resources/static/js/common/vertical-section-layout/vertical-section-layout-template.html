@@ -17,13 +17,13 @@
   limitations under the License.
   #L%
   -->
-<div layout="column" class="layout-padding-left" style="padding-top:10px;" >
+<div layout="column" class="layout-padding-left" style="padding-top:10px; padding-left:20px;" >
     <div >
         <div layout="row" layout-align="start stretch">
             <mat-icon class="ng-md-icon" style="color:#009933;margin-left: -9px;margin-top:0px" *ngIf="showVerticalCheck == true">check</mat-icon>
             <span class="md-subhead layout-padding-left"  >{{sectionTitle}}</span>
             <span class="flex"></span>
-            <button class="icon-btn md-icon-button md-primary md-button md-kylo-theme md-ink-ripple" (click)="edit($event)" *ngIf="allowEdit ==true && !editable">
+            <button style="margin-right: 20px;" class="icon-btn md-icon-button md-primary md-button md-kylo-theme md-ink-ripple" (click)="edit($event)" *ngIf="allowEdit ==true && !editable">
                 <mat-icon>edit</mat-icon>
             </button>
             <button md-button class="icon-btn md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)" *ngIf="allowEdit ==true && editable">
