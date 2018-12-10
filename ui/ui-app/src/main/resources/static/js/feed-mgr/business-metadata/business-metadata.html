@@ -19,10 +19,10 @@
   -->
 <div >
     <mat-progress-linear [mode]="indeterminate" color="accent" *ngIf="loading"></mat-progress-linear>
-    <mat-card *ngIf="!loading">
+    <mat-card *ngIf="!loading" style="width: 80%; margin: auto;">
         <mat-card-title>
             <div class="card-title">{{'FEEDMGR.BUSINESS_METADATA.PROPERTY_DEF' | translate}}</div>
-            <div class="card-label">{{'FEEDMGR.BUSINESS_METADATA.FEEDS_CAT_DEFINE' | translate}}</div>
+            <div class="card-label" style="font-size: 14px;">{{'FEEDMGR.BUSINESS_METADATA.FEEDS_CAT_DEFINE' | translate}}</div>
         </mat-card-title>
         <mat-card-body>
             <vertical-section-layout section-title="Category Fields" (on-save-edit)="onCategorySave()" (on-edit)="onCategoryEdit()" [editable]="isCategoryEditable" [isValid]="isCategoryValid"
