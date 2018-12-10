@@ -434,8 +434,8 @@ export class SqlBuilder {
         var aliasCount = {};
         var self = this;
 
-        _.each(this.model_.nodes, function (node: any) {
-            _.each(node.nodeAttributes.attributes, function (attr: any) {
+        _.each(this.model_.nodes, (node: any) => {
+            _.each(node.nodeAttributes.attributes, (attr: any) => {
                 if (attr.selected) {
                     _.each(this.getColumnAliases(node.name, attr.name), (alias : any) => {
                         aliasCount[alias] = (typeof (aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;

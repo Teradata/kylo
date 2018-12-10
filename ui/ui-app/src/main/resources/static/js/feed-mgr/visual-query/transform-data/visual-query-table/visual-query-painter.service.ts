@@ -430,4 +430,3 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
     }
 }
-angular.module(moduleName).service('VisualQueryPainterService', downgradeInjectable(VisualQueryPainterService));

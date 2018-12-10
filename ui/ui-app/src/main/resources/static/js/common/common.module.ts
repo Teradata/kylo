@@ -105,7 +105,9 @@ import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visua
         RouterBreadcrumbsComponent,
         UploadFileComponent,
         VerticalSectionLayoutComponent,
-        ViewTypeSelectionComponent
+        ViewTypeSelectionComponent,
+        VisualQueryTableHeader,
+        CellMenuComponent
     ],
     providers: [
         AboutKyloService,

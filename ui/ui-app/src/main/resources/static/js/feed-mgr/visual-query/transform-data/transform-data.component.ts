@@ -36,6 +36,8 @@ import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {StringUtils} from "../../../common/utils/StringUtils";
+import { RestUrlService } from '../../services/RestUrlService';
+import { SideNavService } from '../../../services/SideNavService';
 
 declare const CodeMirror: any;
 
@@ -274,10 +276,15 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor(private $mdDialog: TdDialogService, @Inject("DomainTypesService") private domainTypesService: DomainTypesService,
-                @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
-                @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
-                @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
+    constructor(private $mdDialog: TdDialogService, 
+                private domainTypesService: DomainTypesService,
+                private RestUrlService: RestUrlService, 
+                private SideNavService: SideNavService, 
+                @Inject("uiGridConstants") private uiGridConstants: any,
+                private feedService: FeedService, 
+                private broadcastService: BroadcastService,
+                @Inject("StepperService") private stepperService: StepperService, 
+                private WindowUnloadService: WindowUnloadService,
                 private wranglerDataService: WranglerDataService) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();

@@ -70,7 +70,7 @@ import {visualQueryStates} from "./visual-query-states";
 import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import "./visual-query.component.scss";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
-
+import * as angular from "angular";
 
 @NgModule({
     declarations: [
@@ -84,9 +84,7 @@ import {WranglerModule} from "./wrangler/core/wrangler.module";
         TransformDataComponent,
         UploadSampleFileComponent,
         VisualQueryControlDirective,
-
         VisualQueryProfileStatsController,
-
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
         VisualQueryTable,
@@ -162,11 +160,12 @@ import {WranglerModule} from "./wrangler/core/wrangler.module";
         WranglerModule
     ],
     providers: [
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
         VisualQueryPainterService,
         VisualQuerySaveService,
         WranglerDataService,
         WranglerTableService,
-        SparkQueryEngine,
+        SparkQueryEngine
     ]
 })
 export class VisualQueryModule {}

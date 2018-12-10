@@ -41,6 +41,7 @@ import {CreateFeedComponent} from './datasource/create-feed/create-feed.componen
 import {MatExpansionModule} from '@angular/material/expansion';
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
+import * as angular from "angular";
 
 @NgModule({
     declarations: [
@@ -95,6 +96,9 @@ import {AdminConnectorComponent} from "./connector/admin-connector.component";
         TranslateModule.forChild(),
         UIRouterModule,
         TranslateModule
+    ],
+    providers:[
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
     ]
 })
 export class CatalogModule {

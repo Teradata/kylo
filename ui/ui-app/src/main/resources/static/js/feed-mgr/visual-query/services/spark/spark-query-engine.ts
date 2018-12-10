@@ -54,9 +54,16 @@ export class SparkQueryEngine extends QueryEngine<string> {
     /**
      * Constructs a {@code SparkQueryEngine}.
      */
-    constructor(private $http: HttpClient, dialog: TdDialogService, @Inject(DIALOG_SERVICE) private wranglerDialog: DialogService, private hiveService: HiveService,
-                private RestUrlService: RestUrlService,private VisualQueryService: VisualQueryService, private $$angularInjector: Injector,
-                private datasourcesService: DatasourcesService, @Inject("uiGridConstants") uiGridConstants: any, private httpBackendClient:HttpBackendClient) {
+    constructor(private $http: HttpClient, 
+                dialog: TdDialogService, 
+                @Inject(DIALOG_SERVICE) private wranglerDialog: DialogService, 
+                private hiveService: HiveService,
+                private RestUrlService: RestUrlService,
+                private VisualQueryService: VisualQueryService, 
+                private $$angularInjector: Injector,
+                private datasourcesService: DatasourcesService, 
+                @Inject("uiGridConstants") uiGridConstants: any, 
+                private httpBackendClient:HttpBackendClient) {
         super(dialog, datasourcesService, uiGridConstants, $$angularInjector);
 
         // Ensure Kylo Spark Shell is running

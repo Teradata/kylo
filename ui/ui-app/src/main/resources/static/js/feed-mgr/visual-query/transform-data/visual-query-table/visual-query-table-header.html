@@ -53,7 +53,7 @@
           <i class="material-icons dropdown-icons" [ngClass]="{'custom-icon': (transform.icon.length === 1)}">{{ transform.icon }}</i> {{ transform.name }}
         </button>
       </ng-container>
-      <button mat-menu-item *ngIf="header.delegate.transforms.math.length !== 0"   [matMenuTriggerFor]="mathMenu">
+      <button mat-menu-item *ngIf="header.delegate.transforms.math && header.delegate.transforms.math.length !== 0"   [matMenuTriggerFor]="mathMenu">
         <i class="material-icons dropdown-icons">transform</i> {{"views.query-table-header.math" | translate}}
          
       </button>
