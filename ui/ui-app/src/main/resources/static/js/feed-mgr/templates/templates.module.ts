@@ -62,8 +62,8 @@ import { DndModule } from 'ng2-dnd';
 import { TemplateOrderController } from "./template-order/template-order.component";
 import { MatTooltipModule } from "@angular/material/tooltip";
 
-import '../../vendor/ment.io/styles.css';
-import '../../vendor/ment.io/templates.js';
+// import '../../vendor/ment.io/styles.css';
+// import '../../vendor/ment.io/templates.js';
 
 @NgModule({
     declarations: [
