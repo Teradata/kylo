@@ -29,16 +29,15 @@
             <div *ngFor="let group of jobGroups">
                 <!-- <div class="md-title layout-padding-left primary-color-1">{{group.name}}</div> -->
                 <mat-list fxFlex fxFlexFill class="list-item-table push-top">
-                    <mat-list-item *ngFor="let job of group.jobs" fxLayout="row">
+                    <mat-list-item *ngFor="let job of group.jobs; let last=last" fxLayout="row" style="height:auto !important;">
                         <div fxFlex="35" fxLayout="column" class="item-column md-list-item-text ">
                             <span class="item-title">
                                 {{job.jobName}}
                             </span>
                             <span [ngClass]="{'tc-positive': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'tc-warn':job.state == 'PAUSED', 'tc-negative':job.state == 'UNKNOWN'}"
                                 class="column-title-bottom">
-                                <mat-icon size="20" options='{"rotation": "clock"}'>
-                                    {{job.stateIcon}}
-                                </mat-icon> {{job.state}}
+                                <ng-md-icon md-icon icon="{{job.stateIcon}}" options='{"rotation": "clock"}' size="20"></ng-md-icon>
+                                {{job.state}}
                             </span>
                         </div>
                         <div fxFlex="20" fxLayout="column" class="item-column md-list-item-text ">
@@ -57,14 +56,14 @@
                             </span>
                         </div>
                         <div fxFlex="30" fxFlex.md="45" fxFlex.sm="45" fxFlex.xs="45" fxLayout="row" class="item-column md-list-item-text " *ngIf="allowAdmin">
-                            <button mat-button class="border-btn" *ngIf="job.state=='RUNNING' || job.state =='SCHEDULED'" [disabled]="job.state =='PAUSED' || job.state == 'RUNNING' || schedulerDetails.status == 'PAUSED' "
-                                (click)="pauseJob(job)">{{"OPS_MGR.view.main.pause"| translate}}</button>
-                            <button mat-button class="border-btn" *ngIf="job.state=='PAUSED'" [disabled]="job.state =='RUNNING' || schedulerDetails.status == 'PAUSED'"
-                                (click)="resumeJob(job)">{{"OPS_MGR.view.main.resume"| translate}}</button>
-                            <button mat-button class="border-btn" [disabled]="job.state !='SCHEDULED' || schedulerDetails.status == 'PAUSED'" (click)="triggerJob(job)">FIRE NOW </button>
+                            <button mat-button style="border: 1px solid #d7d7d7; margin:6px;" class="border-btn md-kylo-theme md-ink-ripple" *ngIf="job.state=='RUNNING' || job.state =='SCHEDULED'" [disabled]="job.state =='PAUSED' || job.state == 'RUNNING' || schedulerDetails.status == 'PAUSED' "
+                                (click)="pauseJob(job)">{{"view.main.pause"| translate}}</button>
+                            <button mat-button style="border: 1px solid #d7d7d7; margin:6px;" class="border-btn md-kylo-theme md-ink-ripple" *ngIf="job.state=='PAUSED'" [disabled]="job.state =='RUNNING' || schedulerDetails.status == 'PAUSED'"
+                                (click)="resumeJob(job)">{{"view.main.resume"| translate}}</button>
+                            <button mat-button style="border: 1px solid #d7d7d7; margin:6px; padding-left: 8px;" class="border-btn md-kylo-theme md-ink-ripple" [disabled]="job.state !='SCHEDULED' || schedulerDetails.status == 'PAUSED'" (click)="triggerJob(job)">FIRE NOW </button>
                         </div>
 
-                        <!-- <mat-divider *ngIf="!$last"></mat-divider> -->
+                        <mat-divider *ngIf="!last"></mat-divider>
                     </mat-list-item>
                     <mat-list-item *ngIf="group.jobs.length ==0">
                         <div fxFlex="100" fxLayout="column" class="item-column md-list-item-text ">
@@ -81,24 +80,22 @@
         <mat-card-title style="white-space:nowrap" class="card-title">
             {{"OPS_MGR.SCHEDULER.DETAILS"| translate}}
         </mat-card-title>
-        <mat-card-content flex fxLayout="column">
-            <div fxLayoutAlign="center center" style="width:100%" *ngIf="allowAdmin">
-                <button mat-button class="border-btn" style="width:150px;max-width:150px;" *ngIf="schedulerDetails.status == 'RUNNING'" (click)="pauseScheduler()">
+        <mat-card-content flex fxLayout="column" style="padding:0;">
+            <div style="place-content: flex-start !important; width:100%" *ngIf="allowAdmin">
+                <button mat-button class="border-btn" style="width:150px;max-width:150px;padding-left: 8px;margin-left: 8px;" *ngIf="schedulerDetails.status == 'RUNNING'" (click)="pauseScheduler()">
                     {{"OPS_MGR.SCHEDULER.PAUSE_SCHEDULER"| translate}}
                 </button>
-                <button mat-button class="border-btn" style="width:150px;max-width:150px;" *ngIf="schedulerDetails.status == 'PAUSED'" (click)="resumeScheduler()">
+                <button mat-button class="border-btn" style="width:150px;max-width:150px;padding-left: 8px;margin-left: 8px;" *ngIf="schedulerDetails.status == 'PAUSED'" (click)="resumeScheduler()">
                     {{"OPS_MGR.SCHEDULER.RESUME_SCHEDULER"| translate}}
                 </button>
             </div>
 
-
             <mat-list class="list-item-table" fxLayout="column">
                 <mat-list-item class="ListItemContainer">
-                    <div class="item-column md-list-item-text " fxLayoutAlign="space-between start" fxLayout="column">
+                    <div class="item-column md-list-item-text" fxLayoutAlign="space-between start" fxLayout="column">
                         <span [ngClass]="{'tc-positive': schedulerDetails.status == 'RUNNING', 'tc-warn':schedulerDetails.status == 'PAUSED'}">
-                            <mat-icon  size="20" options='{"rotation": "clock"}'>
-                                    {{schedulerDetails.statusIcon}}
-                            </mat-icon> {{schedulerDetails.status}}
+                            <ng-md-icon md-icon icon="{{schedulerDetails.statusIcon}}" options='{"rotation": "clock"}' size="20"></ng-md-icon>
+                            {{schedulerDetails.status}}
                         </span>
                         <span class="column-title column-title-bottom">
                             {{"view.main.status"| translate}}

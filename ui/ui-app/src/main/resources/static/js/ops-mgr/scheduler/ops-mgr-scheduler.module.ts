@@ -40,7 +40,7 @@ import { MatDividerModule } from "@angular/material/divider";
         MatDividerModule,
         FlexLayoutModule,
         UIRouterModule.forChild({states: schedulerStates}),
-        TranslateModule
+        TranslateModule.forChild()
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers : [{provide: "$injector", useFactory: () => angular.element(document.body).injector()}]

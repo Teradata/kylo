@@ -1598,3 +1598,7 @@ filtered-paginated-table-view td-search-box {
   max-height: 60px;
 }
 
+mat-list-item>div{
+  width:100%;
+}
+
