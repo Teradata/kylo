@@ -24,11 +24,42 @@ const staticJsVendorDir = path.join(staticJsDir, 'vendor');
 const tsConfigFile = path.join(staticDir, 'tsconfig.json');
 const mainTsFile = path.join(staticJsDir, 'main.ts');
 
+/**
+ * Depends on nesting of scripts in package.json.
+ * Looks up parameters passed like so: ./npm run start:webpack:dev -- --env.port=7000
+ * However with deeply nested scripts need to add additional "--", e.g. ./npm start -- -- --env.port=7000
+ */
+function findParam(param){
+    let found = false;
+    let result = undefined;
+    process.argv.forEach((argv)=>{
+        console.log('parsing argv ' + argv);
+        if(argv.indexOf("--env." + param) === -1) {
+            return;
+        }
+        found = true;
+        result = argv.split('=')[1];
+    });
+    console.log("found? " + found + " param " + param + ": " + result);
+    return  result;
+}
+
+let port = findParam('port');
+let host = findParam('host');
+if (port === undefined) {
+    port = 3000;
+}
+if (host === undefined) {
+    host = "localhost";
+}
+console.log("port " + port);
+console.log("host " + host);
+
 const devServer = {
     contentBase: outputDir,
     hot: true,
-    host: process.env.host || "localhost",
-    port: process.env.PORT || 3000,
+    host: host,
+    port: port,
     proxy: [{
         context: [
             '/api',
@@ -41,7 +72,7 @@ const devServer = {
         target: 'http://localhost:8400',
         secure: false,
         changeOrigin: false,
-        headers: {host: 'localhost:3000'}
+        headers: {host: 'localhost:' + port}
     }]
 };
 
