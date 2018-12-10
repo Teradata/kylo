@@ -147,7 +147,7 @@ export class IndexController implements angular.IComponentController {
          * Indicates that global searches are allowed.
          * @type {boolean}
          */
-        allowSearch: any = false;
+        allowSearch: any = true;
 
         /**
          * Check if the Side Nav is hidden or not

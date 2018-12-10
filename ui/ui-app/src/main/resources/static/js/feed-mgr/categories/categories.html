@@ -72,7 +72,7 @@
     <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
         <mat-card *ngFor="let category of filteredCategories" class="kylo-card-template cursor-pointer push-bottom push-right"
                 (click)="editCategory(category)" fxFlex="100%" fxLayout="row" style="display: flex; padding: 0 !important; border: 0 !important;">
-            <div fxLayout="column" [ngStyle]="getColorStyle(category.iconColor)" fxLayoutAlign="center center" style="min-width: 20%;">
+            <div fxLayout="column" [ngStyle]="getColorStyle(category.iconColor)" fxLayoutAlign="center center" style="min-width: 20%;z-index: 1;">
               <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon"></ng-md-icon>
             </div>
             <div fxLayout="column" fxFlex="80">
@@ -83,6 +83,7 @@
                   {{category.description || 'No description provided'}}
                 </div>
               </div>
+              <mat-divider class="md-kylo-theme"></mat-divider>
             </div>
         </mat-card>
     </div>
