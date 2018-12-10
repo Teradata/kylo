@@ -68,33 +68,22 @@
   }
 </style>
 <td-layout>
-        <mat-progress-bar color="accent" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
-<!--
-        <div layout="row" layout-align="center start" *ngIf="!loading">
-            <div layout="column" class="layout-max-width">
-                <div style="width:100%" class="" layout="row" layout-align="center start">
-                    <mat-content flex layout="row" class="md-kylo-theme" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
-                        <td-search-box style="width: 100%; background-color: white; padding-right: 5px;" [(ngModel)]="searchQuery" [showUnderline]="true" placeholder='{{"views.categories.FC" | translate}}' alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
-                    </mat-content>
-                </div>
+    <mat-progress-bar color="accent" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+    <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
+        <mat-card *ngFor="let category of filteredCategories" class="kylo-card-template cursor-pointer push-bottom push-right"
+                (click)="editCategory(category)" fxFlex="100%" fxLayout="row" style="display: flex; padding: 0 !important; border: 0 !important;">
+            <div fxLayout="column" [ngStyle]="getColorStyle(category.iconColor)" fxLayoutAlign="center center" style="min-width: 20%;">
+              <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon"></ng-md-icon>
             </div>
-        </div>
--->
-        <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
-            <mat-card *ngFor="let category of filteredCategories" class="cursor-pointer push-bottom push-right" flex="initial" flex-md="initial" flex-sm="50"
-                    (click)="editCategory(category)" fxFlex="100%" fxLayout="row">
-                <mat-card-title fxLayout="column" [style]="getColorStyle(category.iconColor)" fxLayoutAlign="center center" fxFlex="20">
-                        <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon"></ng-md-icon>
-                </mat-card-title>
-                <mat-card-content fxLayout="column" fxFlex="100%">
-                  <div flex class="kylo-content-template push-top-md push-left">
-                    <div class="kylo-card-title pad-bottom-sm">{{category.name}}</div>
-                    <div [matTooltip]="category.description"
-                         matTooltipShowDelay="1000" style="padding-right:36px" class="kylo-card-subtitle tc-grey-600 block-with-text">
-                      {{category.description || 'No description provided'}}
-                    </div>
-                  </div>
-                </mat-card-content>
-            </mat-card>
-        </div>
-    </td-layout>
+            <div fxLayout="column" fxFlex="80">
+              <div flex class="kylo-content-template push-top-md push-left">
+                <div class="kylo-card-title pad-bottom-sm">{{category.name}}</div>
+                <div [matTooltip]="category.description"
+                      matTooltipShowDelay="1000" style="padding-right:36px" class="kylo-card-subtitle tc-grey-600 block-with-text">
+                  {{category.description || 'No description provided'}}
+                </div>
+              </div>
+            </div>
+        </mat-card>
+    </div>
+</td-layout>
