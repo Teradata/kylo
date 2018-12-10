@@ -133,8 +133,8 @@ const webpackConfig = (env) => {
             app: mainTsFile,
         },
         output: {
-            filename: '[name].bundle.js',
-            chunkFilename: '[id].chunk.js',
+            filename: 'js/[name].bundle.js',
+            chunkFilename: 'js/[id].chunk.js',
             path: outputDir
         },
         module: {
@@ -359,7 +359,7 @@ const webpackConfig = (env) => {
             new webpack.HotModuleReplacementPlugin(),
             new FriendlyErrorsWebpackPlugin(),
             new ProgressPlugin(),
-            // new writeFilePlugin(),
+            new writeFilePlugin(),
         );
         if (env && env.dev) { //i.e. we dont' want SourcePlugin if env is other than dev env, e.g. if env is dev-tool-cheap
             config.plugins.push(
