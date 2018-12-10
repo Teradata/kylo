@@ -1,4 +1,3 @@
-import {KyloServicesModule} from "../../services/services.module";
 import { UIRouterModule } from "@uirouter/angular";
 import {datasourcesStates} from "./datasources.states";
 import {MatProgressBarModule} from '@angular/material/progress-bar';
@@ -39,7 +38,6 @@ import { TranslateModule } from "@ngx-translate/core";
     imports: [ 
         CommonModule,
         KyloCommonModule,
-        KyloServicesModule,
         MatProgressBarModule,
         MatButtonModule,
         MatProgressSpinnerModule,

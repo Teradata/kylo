@@ -26,7 +26,6 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {TranslateModule} from "@ngx-translate/core";
 
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
 import {KyloFeedManagerModule} from "../feed-mgr.module";
@@ -65,7 +64,6 @@ import {PropertyListModule} from "./property-list/property-list.module";
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
-        KyloServicesModule,
         KyloCommonModule,
         KyloFeedManagerModule,
         MatButtonModule,

@@ -25,7 +25,6 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {TranslateModule} from "@ngx-translate/core";
 
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
 import { UIRouterModule } from "@uirouter/angular";
@@ -77,7 +76,6 @@ import "./details/matchers/regexp-editor.component.scss";
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
-        KyloServicesModule,
         KyloCommonModule,
         KyloFeedManagerModule,
         SharedModule,

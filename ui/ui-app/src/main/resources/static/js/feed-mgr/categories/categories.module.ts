@@ -25,7 +25,6 @@ import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {TranslateModule} from "@ngx-translate/core";
 
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
 import {CategoryDefinition} from "./details/category-definition.component";
@@ -71,7 +70,6 @@ import { SharedModule } from "../shared/shared.modules";
         CovalentLoadingModule,
         CovalentMenuModule,
         CovalentNotificationsModule,
-        KyloServicesModule,
         KyloCommonModule,
         KyloFeedManagerModule,
         SharedModule,

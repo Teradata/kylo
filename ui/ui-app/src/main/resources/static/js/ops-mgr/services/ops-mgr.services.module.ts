@@ -4,7 +4,6 @@ import {MatSnackBarModule} from "@angular/material/snack-bar";
 import {KyloCommonModule} from "../../common/common.module";
 import {ChartServicesModule} from "../../services/chart-services/chart-services.module";
 import {Nvd3ChartService} from "../../services/chart-services/nvd3-chart.service";
-import {KyloServicesModule} from "../../services/services.module";
 import {TabService} from "../../services/tab.service";
 import {AlertsService} from "./AlertsService";
 import {AlertsServiceV2} from "./AlertsServiceV2";
@@ -22,7 +21,6 @@ import {ServicesStatusData} from "./ServicesStatusService";
         ChartServicesModule,
         CommonModule,
         KyloCommonModule,
-        KyloServicesModule,
         MatSnackBarModule,
     ],
     providers: [

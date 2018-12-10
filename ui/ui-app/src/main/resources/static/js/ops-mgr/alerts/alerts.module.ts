@@ -22,7 +22,6 @@ import {CovalentMenuModule} from "@covalent/core/menu";
 
 import {TranslateModule} from "@ngx-translate/core";
 
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
 import { UIRouterModule } from "@uirouter/angular";
@@ -62,7 +61,6 @@ import { OpsManagerServicesModule } from "../services/ops-mgr.services.module";
         CovalentPagingModule,
         CovalentMenuModule,
         OpsManagerServicesModule,
-        KyloServicesModule,
         KyloCommonModule,
         MatButtonModule,
         MatIconModule,

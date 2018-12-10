@@ -13,7 +13,6 @@ import { MatListModule } from "@angular/material/list";
 import {FlexLayoutModule} from "@angular/flex-layout";
 
 import { MatProgressBarModule } from "@angular/material/progress-bar";
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 
 
@@ -38,7 +37,6 @@ import { CovalentSearchModule } from '@covalent/core/search';
     ],
     imports: [
         CommonModule,
-        KyloServicesModule,
         KyloCommonModule,
         OpsManagerServicesModule,
         CovalentSearchModule,

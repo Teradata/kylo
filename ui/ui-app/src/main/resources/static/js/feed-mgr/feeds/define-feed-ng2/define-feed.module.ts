@@ -51,7 +51,6 @@ import {KyloCommonModule} from "../../../common/common.module";
 import {FeedStatsModule} from '../../../ops-mgr/feeds/feed-stats-ng2/feed-stats.module';
 import {JobsListModule} from "../../../ops-mgr/jobs/jobs-list/jobs-list.module";
 import {OpsManagerServicesModule} from "../../../ops-mgr/services/ops-mgr.services.module";
-import {KyloServicesModule} from "../../../services/services.module";
 import {CatalogDatasetPreviewModule} from "../../catalog-dataset-preview/catalog-dataset-preview.module";
 import {CatalogApiModule} from "../../catalog/api/catalog-api.module";
 import {RemoteFilesModule} from "../../catalog/datasource/files/remote-files.module";
@@ -238,7 +237,6 @@ export function createCompilerFn(c: CompilerFactory) {
         KyloCommonModule,
         KyloFeedManagerModule,
         KyloFeedModule,
-        KyloServicesModule,
         MatAutocompleteModule,
         MatButtonModule,
         MatButtonToggleModule,
