@@ -96,9 +96,6 @@ import * as angular from "angular";
         TranslateModule.forChild(),
         UIRouterModule,
         TranslateModule
-    ],
-    providers:[
-        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
     ]
 })
 export class CatalogModule {
