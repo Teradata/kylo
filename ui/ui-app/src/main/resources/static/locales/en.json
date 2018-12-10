@@ -1686,7 +1686,7 @@
                     "NIFI_REQUIRED":"This is a NiFi required field. You need to either allow the user to input data, or supply a default value.",
                     "DV":"Default Value",
                     "DVSE":"Default Value (Supports Expressions)",
-                    "NIFI_TEMPLATE_DV":"NiFi template has a different value: ",
+                    "NIFI_TEMPLATE_DV":"Template has a different value:",
                     "FROM_TO":"Accept value from NiFi template {{from}} to replace current value of {{ to }}",
                     "SET_EMPTY":"Set as empty string",
                     "ALLOW_INPUT":"Allow user input",
