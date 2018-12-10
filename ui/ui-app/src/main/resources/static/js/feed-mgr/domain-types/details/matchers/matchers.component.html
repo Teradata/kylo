@@ -4,12 +4,12 @@
     <readonly-section>
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.MATCHERS.COLUMN_NAME" | translate}}</span>
-        <regexp-editor flex name="columnNameValue" [model]="columnNameValue" ngDefaultControl readonly></regexp-editor>
+        <regexp-editor style="border: 1px solid gray;" flex name="columnNameValue" [model]="columnNameValue" ngDefaultControl readonly></regexp-editor>
       </div>
 
       <div layout="row" class="layout-padding-top-bottom">
         <span flex="25" class="property-name">{{"FEED_MGR.DOMAIN_TYPES.DETAILS.MATCHERS.SAMPLE_VALUES" | translate}}</span>
-        <regexp-editor flex name="sampleDataValue" [model]="sampleDataValue" ngDefaultControl readonly></regexp-editor>
+        <regexp-editor style="border: 1px solid gray; max-width: 650px;" flex name="sampleDataValue" [model]="sampleDataValue" ngDefaultControl readonly></regexp-editor>
       </div>
     </readonly-section>
     <editable-section>

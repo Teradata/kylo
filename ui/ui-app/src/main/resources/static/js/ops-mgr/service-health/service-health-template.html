@@ -17,34 +17,46 @@
   limitations under the License.
   #L%
   -->
+  <mat-card class="filter-header">
+    <mat-card-title style="font-size:smaller;margin:0;">
+        <mat-toolbar style="display:flex;">
+            <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter' | translate}}" [(ngModel)]="filterTable" (searchDebounce)="onSearchTable($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
+            </td-search-box>
 
-  <filtered-paginated-table-view
-    [cardTitle]="cardTitle"
-    [filteredData]="filteredData"
-    [columns]="columns"
-    [clickable]="true"
-    [sortable]="true"
-    [sortOrder]="sortOrder"
-    [sortBy]="sortBy"
-    [firstLast]="false"
-    [pageSize]="pageSize"
-    [filteredTotal]="filteredTotal"
-    [allowedPageSize]="[5,10,20,50]"
-    (rowClicked)="serviceDetails($event)"
-    (sortChanged)="sort($event)"
-    (searchDebounced)="search($event)"
-    (pageSizeChanged)="onPageSizeChange($event)"
-    >
+        </mat-toolbar>
+    </mat-card-title>
 
-    <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
-        <span >
-            <mat-icon size="20" options='{"rotation": "clock"}' >
-                    {{value.icon}}
-            </mat-icon>
-            {{value.healthText}}
-        </span>
-    </ng-template>
-    <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
-            <span>{{row.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
-    </ng-template>
-</filtered-paginated-table-view>
+    <mat-card-content style="padding-top: 0;">
+        <filtered-paginated-table-view
+            [showToolbar]="false"
+            [cardTitle]="cardTitle"
+            [filteredData]="filteredData"
+            [columns]="columns"
+            [clickable]="true"
+            [sortable]="true"
+            [sortOrder]="sortOrder"
+            [sortBy]="sortBy"
+            [firstLast]="false"
+            [pageSize]="pageSize"
+            [filteredTotal]="filteredTotal"
+            [allowedPageSize]="[5,10,20,50]"
+            (rowClicked)="serviceDetails($event)"
+            (sortChanged)="sort($event)"
+            (searchDebounced)="search($event)"
+            (pageSizeChanged)="onPageSizeChange($event)"
+            >
+
+            <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
+                <span >
+                    <mat-icon size="20" options='{"rotation": "clock"}' >
+                            {{value.icon}}
+                    </mat-icon>
+                    {{value.healthText}}
+                </span>
+            </ng-template>
+            <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
+                    <span>{{row.checkDate | date : "MM/dd/yyyy 'at' h:mm"}}</span>
+            </ng-template>
+        </filtered-paginated-table-view>
+    </mat-card-content>
+</mat-card>

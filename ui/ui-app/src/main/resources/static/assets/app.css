@@ -1577,3 +1577,24 @@ accordion-menu .mat-list-item-content {
   border: 0px;
 }
 
+td-data-table {
+  height: auto !important;
+}
+
+filtered-paginated-table-view .mat-card {
+  box-shadow: none !important;
+}
+
+filtered-paginated-table-view .mat-card-content {
+  padding-top: 0 !important;
+}
+
+filtered-paginated-table-view .mat-card-title {
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+filtered-paginated-table-view td-search-box {
+  max-height: 60px;
+}
+

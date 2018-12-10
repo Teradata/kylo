@@ -54,7 +54,6 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
     @Input() tab: any;
     @Input() cardTitle: any;
-    @Input() refreshIntervalTime: any;
     @Input() feed: any;
     @Input() feedFilter: any;
     @Input() hideFeedColumn: any = false;

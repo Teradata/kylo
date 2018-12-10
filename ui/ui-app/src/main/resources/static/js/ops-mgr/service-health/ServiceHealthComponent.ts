@@ -98,6 +98,11 @@ export class ServiceHealthComponent extends BaseFilteredPaginatedTableView imple
         }
     }
 
+    onSearchTable (searchTerm: string) {
+        this.filterTable = searchTerm;
+        this.loadAlerts(true);
+    }
+
     RefreshIntervalSet: any = this.setRefreshInterval();
     RefreshIntervalClear: any = this.clearRefreshInterval();
 }

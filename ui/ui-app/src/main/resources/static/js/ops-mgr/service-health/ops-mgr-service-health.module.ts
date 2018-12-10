@@ -23,7 +23,7 @@ import { ServiceHealthComponent } from "./ServiceHealthComponent";
 import { ServiceHealthDetailsComponent } from "./ServiceHealthDetailsComponent";
 import { MatIconModule } from "@angular/material/icon";
 import { TranslateModule } from "@ngx-translate/core";
-
+import { CovalentSearchModule } from '@covalent/core/search';
 
 @NgModule({
     declarations: [
@@ -41,6 +41,7 @@ import { TranslateModule } from "@ngx-translate/core";
         KyloServicesModule,
         KyloCommonModule,
         OpsManagerServicesModule,
+        CovalentSearchModule,
         MatProgressBarModule,
         MatCardModule,
         MatButtonModule,
