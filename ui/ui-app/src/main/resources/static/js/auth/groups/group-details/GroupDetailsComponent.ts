@@ -3,7 +3,7 @@ import {StateService as StateServices} from "../../../services/StateService";
 import {UserService} from "../../services/UserService";
 import {AccessControlService} from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
-import { Component, ViewContainerRef } from '@angular/core';
+import { Component, ViewContainerRef, Inject } from '@angular/core';
 import { StateService as UiStateService } from '@uirouter/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -92,7 +92,7 @@ export class GroupDetailsComponent {
         private _viewContainerRef: ViewContainerRef,
         private snackBar: MatSnackBar,
         private translate: TranslateService,
-        private loadingDialog:LoadingDialogService,
+        @Inject("LoadingDialogService") private loadingDialog:LoadingDialogService,
         private statesService: StateServices) {}
     /**
      * Gets the display name of the specified user. Defaults to the system name if the display name is blank.

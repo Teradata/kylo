@@ -4,7 +4,7 @@ import {UserService} from "../../services/UserService";
 import {AccessControlService} from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
 import { StateService as UiStateService } from "@uirouter/core";
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { ViewContainerRef } from '@angular/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import {FormControl, Validators, FormGroupDirective, NgForm} from '@angular/forms';
@@ -102,7 +102,7 @@ export class UserDetailsComponent implements OnInit{
         private _viewContainerRef: ViewContainerRef,
         private snackBar: MatSnackBar,
         private translate: TranslateService,
-        private loadingDialog:LoadingDialogService,
+        @Inject("LoadingDialogService") private loadingDialog:LoadingDialogService,
         private statesService: StateService
     ) {}
     /**
