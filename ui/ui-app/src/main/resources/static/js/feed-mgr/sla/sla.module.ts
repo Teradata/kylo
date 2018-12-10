@@ -37,6 +37,7 @@ import {KyloFeedManagerModule} from "../feed-mgr.module";
 import {CodemirrorModule} from "ng2-codemirror";
 import {CovalentSearchModule} from "@covalent/core/search";
 import {CovalentDataTableModule} from "@covalent/core/data-table";
+import * as angular from "angular";
 
 @NgModule({
     declarations: [
@@ -92,6 +93,7 @@ import {CovalentDataTableModule} from "@covalent/core/data-table";
         UIRouterModule.forChild()
     ],
     providers:[
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]
 
 })
@@ -100,9 +102,6 @@ export class SlaModule {
         
     }
 }
-
-
-
 
 @NgModule({
     imports: [

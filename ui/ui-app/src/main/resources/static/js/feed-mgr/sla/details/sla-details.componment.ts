@@ -30,6 +30,8 @@ import {switchMap} from "rxjs/operators/switchMap";
 import {tap} from "rxjs/operators/tap";
 import {Subject} from "rxjs/Subject";
 import {error} from "ng-packagr/lib/util/log";
+import { AccessControlService } from '../../../services/AccessControlService';
+import { PolicyInputFormService } from '../../shared/policy-input-form/PolicyInputFormService';
 
 export enum FormMode {
     ModeEdit = "EDIT",
@@ -64,8 +66,6 @@ export class SlaDetailsComponent implements OnInit {
     feedModel: Feed;
 
     private slaId: string;
-    private accessControlService: any;
-    private policyInputFormService: any;
     allowEdit = false;
     sla: Sla;
     /**
@@ -95,13 +95,17 @@ export class SlaDetailsComponent implements OnInit {
     private labelDeleted: string;
     private labelErrorDeletingSla: string;
 
-    constructor(private $$angularInjector: Injector, private state: StateService,
-                private loadingService: TdLoadingService, private snackBar: MatSnackBar, private dialogService: TdDialogService,
-                private viewContainerRef: ViewContainerRef, private translateService: TranslateService,private slaService:SlaService)
+    constructor(private state: StateService,
+                private accessControlService: AccessControlService,
+                private policyInputFormService: PolicyInputFormService,
+                private loadingService: TdLoadingService, 
+                private snackBar: MatSnackBar, 
+                private dialogService: TdDialogService,
+                private viewContainerRef: ViewContainerRef, 
+                private translateService: TranslateService,
+                private slaService:SlaService)
 {
 
-        this.accessControlService = $$angularInjector.get("AccessControlService");
-        this.policyInputFormService = $$angularInjector.get("PolicyInputFormService");
         this.createLoader(SlaDetailsComponent.feedLoader);
         this.createLoader(SlaDetailsComponent.slaLoader);
         this.createLoader(SlaDetailsComponent.saveLoader);
