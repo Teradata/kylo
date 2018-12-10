@@ -247,7 +247,7 @@ export class HiveService {
         data.queryResultColumns = queryResult.data.columns;
         return data;
     };
-    transformResultsToUiGridModel(results: any, hideColumns: any, transformFn: any) {
+    transformResultsToUiGridModel(results: any, hideColumns?: any, transformFn?: any) {
         var data: any = {};
         var rows: any = results.data;
         var columns: any = [];
@@ -269,7 +269,7 @@ export class HiveService {
                 }
             });
         }
-        if (transformFn != null) {
+        if (transformFn && transformFn != null) {
             rows.forEach((row: any, i: any) => {
                 transformFn(row, fields, displayColumns);
             });

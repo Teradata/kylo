@@ -20,7 +20,7 @@ export class SystemFeedNameComponent implements OnInit {
     layout: string = "row";
 
 
-    constructor(@Inject("FeedService") private feedService: FeedService) {
+    constructor(private feedService: FeedService) {
     }
 
     private generateSystemName(value: string) {

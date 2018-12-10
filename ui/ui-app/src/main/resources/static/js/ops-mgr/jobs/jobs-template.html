@@ -18,24 +18,18 @@
   #L%
   -->
 <mat-card class="filter-header">
-    <mat-card-title style="font-size:smaller;">
-
         <mat-toolbar style="display:flex">
-            <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
+            <div style="white-space: nowrap;margin-top:15px;margin-left:16px;" class="card-title">{{cardTitle | translate}}</div>
             <td-search-box #searchBox style="width: 100%;margin-left: 18px;margin-right: 18px;" placeholder="{{'view.main.filter'| translate}}" (searchDebounce)="search($event)" [showUnderline]="true" [alwaysVisible]="true" flex>
             </td-search-box>
             <button class="md-icon-button filter-help-button md-button md-kylo-theme md-ink-ripple"
-                    style="background-color: white; border: 0;"
+                    style="background-color: white; border: 0;padding-top:15px;"
                     aria-label="Filter Help"
                     (click)="showFilterHelpPanel($event)"
                     *ngIf="showFilterHelpPanel">
                 <mat-icon size="15" style="color:grey;">help</mat-icon>
             </button>
         </mat-toolbar>
-    </mat-card-title>
-
-    <mat-card-content>
-
         <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
                             (selectedIndexChange)="onTabSelected($event)"
                             layout-fill  dynamicHeight>
@@ -93,5 +87,5 @@
                     </div>
                 </mat-tab>
             </mat-tab-group>
-        </mat-card-content>
+        <!-- </mat-card-content> -->
     </mat-card>

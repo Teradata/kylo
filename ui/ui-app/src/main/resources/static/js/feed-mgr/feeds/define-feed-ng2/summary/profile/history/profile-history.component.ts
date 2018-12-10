@@ -5,6 +5,9 @@ import * as angular from 'angular';
 import {StateService} from "@uirouter/angular";
 import {FEED_DEFINITION_SECTION_STATE_NAME, FEED_DEFINITION_SUMMARY_STATE_NAME} from '../../../../../model/feed/feed-constants';
 import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
+import { RestUrlService } from '../../../../../services/RestUrlService';
+import { HiveService } from '../../../../../services/HiveService';
+import { Utils } from '../../../../../../services/Utils';
 
 @Component({
     selector: 'profile-history',
@@ -17,9 +20,7 @@ export class ProfileHistoryComponent implements OnInit {
 
     private feedId: string;
     private processingdttm: string;
-    private restUrlService: any;
-    private hiveService: any;
-    private utils: any;
+    
     showSummary: boolean = true;
     private profileSummary: Array<any> = [];
     public loading: boolean = false;
@@ -27,10 +28,12 @@ export class ProfileHistoryComponent implements OnInit {
 
     public kyloIcons_Links_profile = KyloIcons.Links.profile;
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient, private state: StateService) {
-        this.hiveService = $$angularInjector.get("HiveService");
-        this.utils = $$angularInjector.get("Utils");
-        this.restUrlService = $$angularInjector.get("RestUrlService");
+    constructor(
+         private http: HttpClient,
+         private state: StateService,
+         private restUrlService: RestUrlService,
+         private hiveService: HiveService,
+         private utils: Utils) {
     }
 
 

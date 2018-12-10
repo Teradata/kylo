@@ -196,11 +196,11 @@ export class RestUrlConstants {
         return RestUrlConstants.GET_FEEDS_URL + "/" + feedId + "/profile-summary";
     }
 
-    static FEED_PROFILE_VALID_RESULTS_URL(feedId:string, processingDttm:string) {
+    static FEED_PROFILE_VALID_RESULTS_URL(feedId:string) {
         return RestUrlConstants.GET_FEEDS_URL + "/" + feedId + "/profile-valid-results";
     }
 
-    static FEED_PROFILE_INVALID_RESULTS_URL(feedId:string, processingDttm:string) {
+    static FEED_PROFILE_INVALID_RESULTS_URL(feedId:string) {
         return RestUrlConstants.GET_FEEDS_URL + "/" + feedId + "/profile-invalid-results";
     }
 

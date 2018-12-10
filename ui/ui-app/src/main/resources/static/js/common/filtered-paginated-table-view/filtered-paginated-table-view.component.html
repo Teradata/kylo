@@ -2,16 +2,14 @@
   <mat-progress-bar mode="indeterminate" *ngIf="loading" class="accent"></mat-progress-bar>
   <div *ngIf="!loading">
     <mat-card fxFlex="100" *ngIf="cardView">
-      <mat-card-title *ngIf="showToolbar">
+      <ng-container *ngIf="showToolbar">
         <ng-container
             *ngTemplateOutlet="searchTemplate;context:ctx">
         </ng-container>
-       </mat-card-title>
-      <mat-card-content>
+      </ng-container>
         <ng-container
             *ngTemplateOutlet="tableContent;context:ctx">
         </ng-container>
-      </mat-card-content>
     </mat-card>
     <div *ngIf="!cardView" fxLayout="column" fxFlex>
 

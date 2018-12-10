@@ -117,8 +117,8 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             this.loadFeeds(true, true);
         }
 
-        feedDetails (event: any, feed: any) {
-            this.stateService.FeedManager().Feed().navigateToFeedDefinition(feed.feedHealth.feedId)
+        feedDetails (event: any) {
+            this.stateService.FeedManager().Feed().navigateToFeedDefinition(event.row.feedHealth.feedId)
         }
 
         /**

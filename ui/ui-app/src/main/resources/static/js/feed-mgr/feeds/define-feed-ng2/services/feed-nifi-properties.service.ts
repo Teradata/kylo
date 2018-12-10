@@ -12,13 +12,7 @@ import {NifiFeedPropertyUtil} from "../../../services/nifi-feed-property-util";
 @Injectable()
 export class FeedNifiPropertiesService {
 
-    private registerTemplatePropertyService :RegisterTemplatePropertyService;
-    private feedService:FeedService;
-
-
-    constructor(private http:HttpClient,private $$angularInjector: Injector){
-        this.registerTemplatePropertyService = $$angularInjector.get("RegisterTemplatePropertyService");
-        this.feedService = $$angularInjector.get("FeedService");
+    constructor(private http:HttpClient,private feedService: FeedService,private registerTemplatePropertyService : RegisterTemplatePropertyService){
     }
 
 

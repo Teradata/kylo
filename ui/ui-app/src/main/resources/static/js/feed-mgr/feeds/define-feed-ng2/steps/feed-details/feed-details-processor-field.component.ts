@@ -54,7 +54,7 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
     private isSystemJsSetup = false;
 
     constructor(private http: HttpClient, private injector: Injector, private moduleFactoryLoader: NgModuleFactoryLoader,
-                @Inject("UiComponentsService") private uiComponentsService: UiComponentsService, private _compiler: Compiler) {
+                private uiComponentsService: UiComponentsService, private _compiler: Compiler) {
     }
 
     ngOnInit(){
@@ -335,9 +335,9 @@ export class FeedDetailsProcessorFieldComponent implements OnInit, OnChanges, On
         SystemJS.registerDynamic('@covalent/core/dialogs', [], true, function(_require: any, _exports: any, _module: any) {
             _module.exports = require('@covalent/core/dialogs');
         });
-        SystemJS.registerDynamic('@kylo/feed', [], true, function(_require: any, _exports: any, _module: any) {
-            _module.exports = require('../../../../../../../../../../target/classes/static/lib/bundles/kylo-feed.umd.min.js');
-        });
+        // SystemJS.registerDynamic('@kylo/feed', [], true, function(_require: any, _exports: any, _module: any) {
+        //     _module.exports = require('../../../../../../../../../../target/classes/static/lib/bundles/kylo-feed.umd.min.js');
+        // });
     }
 
 }

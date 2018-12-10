@@ -11,6 +11,9 @@ import {LINEAGE_LINK} from "../../model/feed-link-constants";
 import {KyloIcons} from "../../../../../kylo-utils/kylo-icons";
 import {KyloVisNetworkComponent} from "../../../../../common/kylo-vis-network/kylo-vis-network.component";
 import {CloneUtil} from "../../../../../common/utils/clone-util";
+import { RestUrlService } from '../../../../services/RestUrlService';
+import { Utils } from '../../../../../services/Utils';
+import {StateService as KyloStateService} from "../../../../../services/StateService";
 
 @Component({
     selector: "feed-lineage",
@@ -23,14 +26,7 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
     static LINK_NAME = LINEAGE_LINK;
 
-    restUrlService: any;
-    utils: any;
-    kyloStateService: any;
-
     public kyloIcons_Links_lineage = KyloIcons.Links.lineage;
-
-
-
 
     feedLineage: any = null;
     nodes: any[];
@@ -63,12 +59,8 @@ export class FeedLineageComponment extends AbstractLoadFeedComponent implements 
 
 
     constructor(feedLoadingService: FeedLoadingService, stateService: StateService, defineFeedService: DefineFeedService, feedSideNavService: FeedSideNavService,
-                private $$angularInjector: Injector, private http: HttpClient) {
+                private $$angularInjector: Injector, private http: HttpClient,private restUrlService: RestUrlService,private kyloStateService : KyloStateService, private utils : Utils) {
         super(feedLoadingService, stateService, defineFeedService, feedSideNavService);
-        this.utils = $$angularInjector.get("Utils");
-        this.restUrlService = $$angularInjector.get("RestUrlService");
-        this.kyloStateService = $$angularInjector.get("StateService");
-
         this.options = {
             "height": "100%",
             "width": "100%",

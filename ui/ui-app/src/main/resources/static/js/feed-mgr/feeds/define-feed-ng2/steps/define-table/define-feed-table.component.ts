@@ -151,9 +151,6 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
      */
     definePartitionForm : FormGroup;
 
-    private feedService: FeedService;
-    private domainTypesService: DomainTypesService;
-
     private tableFormControls:TableFormControls;
 
     /**
@@ -205,17 +202,17 @@ export class DefineFeedTableComponent extends AbstractFeedStepComponent implemen
         return this.toolbarActionTemplate;
     }
 
-    constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,private $$angularInjector: Injector,
+    constructor(private http:HttpClient,stateService:StateService, defineFeedService:DefineFeedService,
                 dialogService: TdDialogService,
                 private _viewContainerRef: ViewContainerRef,
                 public dialog:MatDialog,
                 private feedFieldPolicyRulesDialogService:FeedFieldPolicyRulesDialogService, feedLoadingService:FeedLoadingService, feedSideNavService:FeedSideNavService,
                 private defineFeedSourceSampleService: DefineFeedSourceSampleService,
                 private catalogService: CatalogService,
-                private cd:ChangeDetectorRef) {
+                private cd:ChangeDetectorRef,
+                private feedService: FeedService,
+                private domainTypesService: DomainTypesService) {
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
-        this.domainTypesService = $$angularInjector.get("DomainTypesService");
-        this.feedService = $$angularInjector.get("FeedService");
         this.mergeStrategies = angular.copy(this.feedService.mergeStrategies);
         this.targetFormatOptions = angular.copy(this.feedService.targetFormatOptions);
         this.compressionOptions = this.feedService.allCompressionOptions();

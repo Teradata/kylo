@@ -18,6 +18,7 @@ import {DatasourcesService, JdbcDatasource, TableReference} from '../../services
 import {DataSource} from "../../catalog/api/models/datasource";
 import {CatalogService} from "../../catalog/api/services/catalog.service";
 import * as _ from "underscore";
+import { RestUrlService } from '../../services/RestUrlService';
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
@@ -126,8 +127,8 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     target: SaveRequest = {};
 
-    constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService, @Inject("RestUrlService") private RestUrlService: any,
-                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, @Inject("StateService") private stateService: StateService,
+    constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService,private RestUrlService: RestUrlService,
+                private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, private stateService: StateService,
                 private catalogService:CatalogService) {
         // Listen for notification removals
         this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {

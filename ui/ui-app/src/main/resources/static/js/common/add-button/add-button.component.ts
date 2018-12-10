@@ -19,19 +19,14 @@ import {StateService} from "../../services/StateService";
 export class AddButtonComponent {
 
     currentState: string = '';
-    private addButtonService: AddButtonService;
-    private broadcastService: BroadcastService;
-    private accessControlService: AccessControlService;
+    
 
     constructor(private elRef: ElementRef,
                 private $transitions: TransitionService,
-                @Inject("$injector") private $injector: any,
+                private addButtonService: AddButtonService,
+                private broadcastService: BroadcastService,
+                private accessControlService: AccessControlService,
                 private stateService: StateService) {
-
-        this.addButtonService = $injector.get("AddButtonService");
-        this.broadcastService = $injector.get("BroadcastService");
-        this.accessControlService = $injector.get("AccessControlService");
-
     }
 
     ngOnInit() {

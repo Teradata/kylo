@@ -11,7 +11,7 @@ export class JobsPageComponent implements ng.IComponentController{
     tab: any;
     
     constructor(private stateService: StateService){
-        this.filter = stateService.params.filter;
-        this.tab = stateService.params.tab;
+        this.filter = this.stateService.params.filter;
+        this.tab = this.stateService.params.tab;
     }
 }

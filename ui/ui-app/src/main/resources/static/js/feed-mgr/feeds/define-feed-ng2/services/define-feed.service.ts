@@ -107,14 +107,6 @@ export class DefineFeedService {
 
     private defineFeedContainerSideNavState: Subject<DefineFeedContainerSideNavEvent>;
 
-    private uiComponentsService :UiComponentsService;
-
-
-    private feedService :FeedService;
-
-    private accessControlService: AccessControlService;
-
-
     private loadingFeedCache :Common.Map<Observable<EntityVersion>> = {}
 
     private loadingFeedErrors: Common.Map<string> = {};
@@ -127,7 +119,9 @@ export class DefineFeedService {
                 private selectionService: SelectionService,
                 private snackBar: MatSnackBar,
                 private stateService:StateService,
-                private feedAccessControlService:FeedAccessControlService){
+                private uiComponentsService : UiComponentsService,
+                private feedAccessControlService:FeedAccessControlService,
+                private feedService : FeedService){
 
 
         this.currentStepSubject = new Subject<Step>();
@@ -138,11 +132,6 @@ export class DefineFeedService {
         this.feedLoadedSubject = new Subject<Feed>();
 
         this.defineFeedContainerSideNavState = new Subject<DefineFeedContainerSideNavEvent>();
-
-        this.uiComponentsService = $$angularInjector.get("UiComponentsService");
-
-
-        this.feedService = $$angularInjector.get("FeedService");
 
         this.feedEditStateChangeSubject = new Subject<FeedEditStateChangeEvent>();
 

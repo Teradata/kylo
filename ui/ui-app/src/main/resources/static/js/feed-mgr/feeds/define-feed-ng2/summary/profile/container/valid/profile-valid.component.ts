@@ -6,6 +6,10 @@ import * as $ from "jquery";
 import {ConnectorComponent} from '../../../../../../catalog/connector/connector.component';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {MatSelectChange} from '@angular/material/select';
+import { FeedService } from '../../../../../../services/FeedService';
+import { RestUrlService } from '../../../../../../services/RestUrlService';
+import { HiveService } from '../../../../../../services/HiveService';
+import { FattableService } from '../../../../../../services/fattable/FattableService';
 
 declare let d3: any;
 
@@ -38,19 +42,17 @@ export class ProfileValidComponent implements OnInit, AfterViewInit, OnChanges  
     headers: any;
     rows: any;
     queryResults: any = null;
-    private feedService: any;
-    private restUrlService: any;
-    private hiveService: any;
-    private fattableService: any;
+   
 
     private tableId = 'validProfile';
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient, private loadingService: TdLoadingService, private hostElement: ElementRef) {
-
-        this.feedService = this.$$angularInjector.get("FeedService");
-        this.restUrlService = this.$$angularInjector.get("RestUrlService");
-        this.hiveService = this.$$angularInjector.get("HiveService");
-        this.fattableService = this.$$angularInjector.get("FattableService");
+    constructor(private http: HttpClient,
+        private loadingService: TdLoadingService,
+        private hostElement: ElementRef,
+        private feedService: FeedService,
+        private restUrlService: RestUrlService,
+        private hiveService: HiveService,
+        private fattableService: FattableService) {
 
         this.loadingService.create({
             name: ProfileValidComponent.topOfPageLoader,

@@ -55,7 +55,7 @@ export class NewFeedDialogComponent implements OnInit, OnDestroy{
 
     constructor(private dialog: MatDialogRef<NewFeedDialogComponent>,
                 @Inject(MAT_DIALOG_DATA) public data: NewFeedDialogData,
-                @Inject("FeedService") feedService: FeedService) {
+                feedService: FeedService) {
         this.template = data.template;
         this.formGroup = new FormGroup({}, [], [this.validateFeedNameUniqueness.bind(this)]);
 

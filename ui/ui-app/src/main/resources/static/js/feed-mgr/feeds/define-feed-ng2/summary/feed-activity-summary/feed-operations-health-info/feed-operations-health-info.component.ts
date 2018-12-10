@@ -48,10 +48,10 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
     refreshTime: number = 10000;
 
     constructor(private http:HttpClient,private opsManagerFeedService: OpsManagerFeedService,
-                @Inject("BroadcastService") private broadcastService: BroadcastService,
+                private broadcastService: BroadcastService,
                 private _dialogService: TdDialogService,
                 private defineFeedService: DefineFeedService,
-                @Inject("RestUrlService") restUrlService: RestUrlService,
+                restUrlService: RestUrlService,
                 private snackBar:MatSnackBar) {
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
         this.restUrlService = restUrlService;

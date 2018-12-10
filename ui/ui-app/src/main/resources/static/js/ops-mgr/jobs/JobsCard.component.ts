@@ -195,8 +195,6 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
     selectedAdditionalMenuOption(item: any) {
         if (item.type == 'abandon_all') {
 
-            // this.$injector.get("$mdMenu").hide();
-
             let dialogRef = this.dialog.open(abandonAllDialogController, {
                 data: { feedName: this.feedFilter },
                 panelClass: "full-screen-dialog"
@@ -287,16 +285,30 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
             var errorFn = (err: any, canceler : Subscription) => {
                 this.finishedRequest(canceler);
             };
-            var filter = this.feedFilter ? "jobInstance.feed.name==" + this.feedFilter : this.filterJob;
-            if(!this.containsFilterOperator(filter)) {
-                filter = 'job=~%' + filter;
+            let params = new HttpParams();
+            if(start){
+                params = params.set('start', start.toString());
+            }
+            if(limit){
+                params = params.set('limit', limit);
+            }
+            if(sort && ObjectUtils.isString(sort)){
+                params = params.set('sort', sort);
+            }
+            if (this.feedFilter) {
+                if (!params.get('filter')) {
+                    params.set('filter', '');
+                }
+                if (params.get('filter') != '') {
+                    params.set('filter', params.get('filter') + '');
+                }
+                params.set('filter', params.get('filter') + "jobInstance.feed.name==" + this.feedFilter);
+            }
+            //if the filter doesnt contain an operator, then default it to look for the job name
+            if (params.get('filter') != '' && params.get('filter') != null && !this.containsFilterOperator(params.get('filter'))) {
+                params.set('filter', 'job=~%' + params.get('filter'));
             }
 
-            let params = new HttpParams();
-            params = params.append('start', start.toString());
-            params = params.append('limit', limit);
-            params = params.append('sort', sort);
-            params = params.append('filter', filter);
 
             var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
 

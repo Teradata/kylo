@@ -8,6 +8,8 @@ import {HttpClient} from '@angular/common/http';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {ProfileValidComponent} from '../valid/profile-valid.component';
 import {ProfileInvalidComponent} from '../invalid/profile-invalid.component';
+import { HiveService } from '../../../../../../services/HiveService';
+import { RestUrlService } from '../../../../../../services/RestUrlService';
 
 declare let d3: any;
 
@@ -105,8 +107,6 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
     hideColumns: any;
 
     $timeout: angular.ITimeoutService;
-    private hiveService: any;
-    private restUrlService: any;
 
     @Input()
     private feedId: string;
@@ -143,10 +143,11 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
     private labelMissing: string;
     private loading = false;
 
-    constructor(private $$angularInjector: Injector, private translateService: TranslateService, private http: HttpClient, private loadingService: TdLoadingService) {
-        this.$timeout = $$angularInjector.get("$timeout");
-        this.hiveService = $$angularInjector.get("HiveService");
-        this.restUrlService = $$angularInjector.get("RestUrlService");
+    constructor(private translateService: TranslateService, 
+        private http: HttpClient,
+        private loadingService: TdLoadingService,
+        private hiveService: HiveService,
+        private restUrlService: RestUrlService) {
 
         this.labelNulls = this.translateService.instant("Profile.Stats.Nulls");
         this.labelUnique = this.translateService.instant("Profile.Stats.Unique");
@@ -419,10 +420,10 @@ export class ProfileStatsComponent implements OnInit, OnChanges  {
 
         // // Ensure charts are the correct size
         if (this.nextChartUpdate !== null) {
-            this.$timeout.cancel(this.nextChartUpdate);
+            clearTimeout(this.nextChartUpdate);
         }
 
-        this.nextChartUpdate = this.$timeout(() => {
+        this.nextChartUpdate = setTimeout(() => {
             this.updateCharts();
             this.nextChartUpdate = null;
         }, this.chartDuration);
