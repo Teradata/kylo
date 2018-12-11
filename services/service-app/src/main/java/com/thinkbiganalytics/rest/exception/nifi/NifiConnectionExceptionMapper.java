@@ -48,7 +48,11 @@ public class NifiConnectionExceptionMapper extends BaseExceptionMapper implement
         if (e.getCause() != null) {
             builder.setDeveloperMessage(e.getCause());
         }
-        builder.message("Unable to connect to NiFi.");
+        if( e.getMessage().isEmpty() || e.getCause() instanceof java.net.ConnectException ) {
+            builder.message("Unable to connect to NiFi.");
+        } else {
+            builder.message(e.getMessage());
+        }
 
         return Response.accepted(builder.buildError()).status(Response.Status.SERVICE_UNAVAILABLE).build();
     }
