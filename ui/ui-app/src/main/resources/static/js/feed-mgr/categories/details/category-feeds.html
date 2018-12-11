@@ -21,8 +21,9 @@
                             <div>{{feed.feedName}}</div>
                         </md-input-container>
                     </div>
-                    <div flex="10" class="md-list-item-text ">
-                        <ng-md-icon icon="check"></ng-md-icon>
+                    <div flex="10" class="md-list-item-text " ng-class="{'disabled':feed.state == 'DISABLED'}">
+                        <ng-md-icon icon="check" ng-if="feed.state != 'DISABLED'"></ng-md-icon>
+                        <ng-md-icon icon="block" ng-if="feed.state == 'DISABLED'"></ng-md-icon>
                     </div>
                     <div flex="40" class="md-list-item-text ">
                         {{feed.updateDate | date : 'MM/dd/yyyy hh:mm:ss'}}
