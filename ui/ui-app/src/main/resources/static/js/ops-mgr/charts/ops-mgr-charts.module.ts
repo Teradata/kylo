@@ -15,7 +15,6 @@ import {FlexLayoutModule} from "@angular/flex-layout";
 import { chartStates } from "./ops-mgr-charts.states";
 import { MatProgressBarModule } from "@angular/material/progress-bar";
 import { ChartsComponent } from "./ChartsComponet";
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatInputModule } from "@angular/material/input";
@@ -34,7 +33,6 @@ import { TranslateModule } from "@ngx-translate/core";
     ],
     imports: [
         CommonModule,
-        KyloServicesModule,
         KyloCommonModule,
         OpsManagerServicesModule,
         MatProgressBarModule,

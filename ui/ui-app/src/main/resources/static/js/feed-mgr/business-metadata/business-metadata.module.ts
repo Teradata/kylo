@@ -6,7 +6,6 @@ import { BusinessMetadataComponent } from "./BusinessMetadataComponent";
 import { MatCardModule } from "@angular/material/card";
 import { KyloFeedManagerModule } from "../feed-mgr.module";
 import { KyloCommonModule } from "../../common/common.module";
-import { KyloServicesModule } from "../../services/services.module";
 import { CommonModule } from "@angular/common";
 import { FlexLayoutModule } from "@angular/flex-layout";
 import { SharedModule } from "../shared/shared.modules";
@@ -27,7 +26,6 @@ import {TranslateModule} from "@ngx-translate/core";
         MatCardModule,
         KyloFeedManagerModule,
         KyloCommonModule,
-        KyloServicesModule,
         TranslateModule,
         UIRouterModule.forChild({states: businessMetadataStates})],
     exports:[],

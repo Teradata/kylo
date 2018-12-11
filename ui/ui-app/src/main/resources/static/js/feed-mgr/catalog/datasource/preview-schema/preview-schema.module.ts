@@ -30,7 +30,6 @@ import {PreviewSchemaService} from "./service/preview-schema.service";
 import {PreviewRawService} from "./service/preview-raw.service";
 import {TransformResponseTableBuilder} from "./service/transform-response-table-builder";
 import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
-import {KyloServicesModule} from "../../../../services/services.module";
 import {UpgradeModule} from "@angular/upgrade/static";
 import { TranslateModule } from "@ngx-translate/core";
 //import {VisualQuery2Module} from "../../../visual-query/visual-query.ng2.module";
@@ -113,7 +112,6 @@ import {MatExpansionModule} from '@angular/material/expansion';
         ReactiveFormsModule,
         CovalentChipsModule,
         FieldPoliciesModule,
-        KyloServicesModule,
         TranslateModule,
         CovalentLayoutModule,
         UIRouterModule

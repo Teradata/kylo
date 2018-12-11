@@ -16,7 +16,6 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatSelectModule} from "@angular/material/select";
-import {KyloServicesModule} from "../../../services/services.module";
 import {UIRouterModule} from "@uirouter/angular";
 import {NgModule} from "@angular/core";
 import {slaEmailTemplateStates} from "./sla-email-template.states";
@@ -79,7 +78,6 @@ import {SlaEmailTemplateContainerComponment} from "./sla-email-template-containe
         ReactiveFormsModule,
         TranslateModule,
         KyloCommonModule,
-        KyloServicesModule,
         CodemirrorModule,
         UIRouterModule.forChild()
     ],

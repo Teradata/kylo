@@ -1,6 +1,5 @@
 import { CommonModule } from "@angular/common";
 import { KyloCommonModule } from "../common/common.module";
-import {KyloServicesModule} from "../services/services.module";
 import { UIRouterModule } from "@uirouter/angular";
 import {authStates} from "./auth.states";
 import {MatProgressBarModule} from '@angular/material/progress-bar';
@@ -41,7 +40,6 @@ import { TranslateModule } from "@ngx-translate/core";
     imports: [ 
         CommonModule, 
         KyloCommonModule, 
-        KyloServicesModule,
         MatProgressBarModule,
         MatDividerModule,
         MatListModule,

@@ -27,7 +27,6 @@ import { CovalentChipsModule } from '@covalent/core/chips';
 
 import {TranslateModule} from "@ngx-translate/core";
 
-import {KyloServicesModule} from "../../../services/services.module";
 import {KyloCommonModule} from "../../../common/common.module";
 
 import { UIRouterModule } from "@uirouter/angular";
@@ -63,7 +62,6 @@ import {OpsManagerServicesModule} from "../../services/ops-mgr.services.module";
         CovalentMenuModule,
         CovalentNotificationsModule,
         CovalentChipsModule,
-        KyloServicesModule,
         KyloCommonModule,
         MatButtonModule,
         MatIconModule,

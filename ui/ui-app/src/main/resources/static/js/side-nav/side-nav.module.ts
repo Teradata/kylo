@@ -30,8 +30,6 @@ import { CovalentDataTableModule } from '@covalent/core/data-table';
 import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
-import * as angular from "angular";
-import { KyloServicesModule } from "../services/services.module";
 import { KyloCommonModule } from "../common/common.module";
 import {SideNavComponent} from "./side-nav.component";
 
@@ -52,7 +50,6 @@ import { CovalentLayoutModule } from "@covalent/core/layout";
         CovalentSearchModule,
         CovalentPagingModule,
         CovalentMenuModule,
-        KyloServicesModule,
         KyloCommonModule,
         MatButtonModule,
         MatIconModule,

@@ -28,7 +28,6 @@ import {TranslateModule} from "@ngx-translate/core";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {RestUrlService} from "../feed-mgr/services/RestUrlService";
-import {KyloServicesModule} from "../services/services.module";
 import {AboutKyloDialogController, AboutKyloService} from "./about-kylo/AboutKyloService";
 import {AccessDeniedComponent} from "./access-denied/access-denied.component";
 import {AccordianMenuComponent} from "./accordion-menu/accordionMenuComponent";
@@ -128,7 +127,6 @@ import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visua
         FlexLayoutModule,
         FormsModule,
         HttpClientModule,
-        KyloServicesModule,
         MatButtonModule,
         MatCardModule,
         MatDialogModule,

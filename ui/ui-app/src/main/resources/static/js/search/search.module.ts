@@ -26,7 +26,6 @@ import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular
 import * as angular from "angular";
 
 import { KyloCommonModule } from "../common/common.module";
-import { KyloServicesModule } from "../services/services.module";
 
 import { SearchComponent } from "./common/SearchComponent";
 import { KyloFeedManagerModule } from "../feed-mgr/feed-mgr.module";
@@ -47,7 +46,6 @@ import { MatSelectModule } from "@angular/material/select";
         CovalentPagingModule,
         MatSelectModule,
         CovalentMenuModule,
-        KyloServicesModule,
         KyloFeedManagerModule,
         KyloCommonModule,
         MatButtonModule,

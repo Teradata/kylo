@@ -16,7 +16,6 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {MatSelectModule} from "@angular/material/select";
-import {KyloServicesModule} from "../../services/services.module";
 import {UIRouterModule} from "@uirouter/angular";
 import {NgModule} from "@angular/core";
 import {slaStates} from "./sla.states";
@@ -85,7 +84,6 @@ import * as angular from "angular";
         TranslateModule,
         KyloCommonModule,
         KyloFeedManagerModule,
-        KyloServicesModule,
         FieldPoliciesModule,
         CronExpressionPreviewModule,
         DynamicFormModule,

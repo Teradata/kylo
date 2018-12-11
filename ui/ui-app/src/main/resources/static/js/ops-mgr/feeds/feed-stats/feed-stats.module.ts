@@ -8,7 +8,6 @@ import {TranslateModule} from "@ngx-translate/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
 import { FormsModule } from '@angular/forms';
 
-import {KyloServicesModule} from "../../../services/services.module";
 import {KyloCommonModule} from "../../../common/common.module";
 
 import { NvD3Module } from 'ng2-nvd3';
@@ -45,7 +44,6 @@ import {MatListModule} from '@angular/material/list';
     imports: [
         CommonModule,
         FormsModule,
-        KyloServicesModule,
         KyloCommonModule,
         OpsManagerServicesModule,
         FlexLayoutModule,

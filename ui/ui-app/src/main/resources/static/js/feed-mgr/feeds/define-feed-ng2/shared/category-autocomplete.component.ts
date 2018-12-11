@@ -45,7 +45,7 @@ export class CategoryAutocompleteComponent implements OnInit {
     @Output()
     categorySelected: EventEmitter<Category> = new EventEmitter<Category>();
 
-    constructor(@Inject("CategoriesService") private categoriesService: CategoriesService) {
+    constructor(private categoriesService: CategoriesService) {
     }
 
     ngOnInit() {

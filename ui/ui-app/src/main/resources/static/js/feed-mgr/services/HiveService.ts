@@ -130,7 +130,7 @@ export class HiveService {
     getColumnNamesForRow(row: any) {
         var columns: any = [];
         var displayColumns: any = [];
-        row.forEach((val: any, name: any) => {
+        _.forEach(row,(val: any, name: any) => {
             var displayName = name;
             if (name.indexOf('.') >= 0) {
                 displayName = name.substring(name.indexOf('.') + 1);
