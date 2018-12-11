@@ -1598,3 +1598,13 @@ mat-list-item>div{
   width:100%;
 }
 
+.matchPatterns .CodeMirror-scroll .CodeMirror-sizer {
+  min-width: auto !important;
+}
+
+.matchPatterns .CodeMirror-scroll .CodeMirror-sizer .CodeMirror-line {
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow: hidden;
+}
+

@@ -1,13 +1,20 @@
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
-import { Component, Input } from "@angular/core";
+import { Component, Input, ViewEncapsulation } from "@angular/core";
 
 /**
  * Patterns section of the {@link DomainTypeDetailsComponent}.
  */
 @Component({
     selector: 'domain-type-matchers-details',
-    templateUrl: './matchers.component.html'
+    templateUrl: './matchers.component.html',
+    styles: [`
+        .matchPatterns {
+            border: 1px solid gray; 
+            overflow: auto;
+        }
+    `]
+    encapsulation: ViewEncapsulation.None
 })
 export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent {
 
