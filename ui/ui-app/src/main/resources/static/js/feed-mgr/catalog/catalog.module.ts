@@ -94,8 +94,7 @@ import * as angular from "angular";
         MatButtonModule,
         MatSnackBarModule,
         TranslateModule.forChild(),
-        UIRouterModule,
-        TranslateModule
+        UIRouterModule
     ]
 })
 export class CatalogModule {

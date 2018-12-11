@@ -65,9 +65,11 @@
 
         <br/><br/><br/>
 
-        <div>
+        <div style="display: flex; justify-content: space-between;">
             <button (click)="cancelStepper()" mat-button matStepperPrevious>{{'view.main.cancel' | translate}}</button>
-            <!--<button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP'" [translateParams]="{number:2}"></button>-->
+            <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">
+                {{'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP' | translate:param }}
+            </button>
         </div>
 
     </mat-card-content>

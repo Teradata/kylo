@@ -56,19 +56,13 @@ export class EntityAccessControlComponent implements OnInit {
 
     roles: any = null;
 
-    accessControlService: AccessControlService;
-    userGroupService: UserGroupService;
-    entityAccessControlService: EntityAccessControlService;
     http: HttpClient;
     selectedRoles: Observable<any>;
 
     constructor(http: HttpClient,
-                @Inject("UserGroupService") userGroupService: UserGroupService,
-                @Inject("EntityAccessControlService") entityAccessControlService: EntityAccessControlService,
-                @Inject("AccessControlService") accessControlService: AccessControlService) {
-        this.userGroupService = userGroupService;
-        this.entityAccessControlService = entityAccessControlService;
-        this.accessControlService = accessControlService;
+                private userGroupService: UserGroupService,
+                private entityAccessControlService: EntityAccessControlService,
+                private accessControlService: AccessControlService) {
         this.entityAccessControlForm = new FormGroup({});
     }
 

@@ -13,9 +13,9 @@
     <entity-access-control-ng2 [entity]="model" entityType="template" [parentForm]="templateAccessControlForm" [readOnly]="!allowEdit"></entity-access-control-ng2>
     <br/><br/><br/>
 
-    <div>
-      <!--<button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>-->
-      <!--<button mat-button matStepperNext (click)="stepper.next()">{{'views.step-buttons.Continue-btn' | translate}}  5</button>-->
+    <div style="display: flex; justify-content: space-between;">
+      <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
+      <button mat-button matStepperNext (click)="stepper.next()">{{'views.step-buttons.Continue-btn' | translate}}  5</button>
     </div>
 
   </form>

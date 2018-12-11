@@ -1642,7 +1642,7 @@
                     "DELETE_TEMP_WARN":"This template will be permanently deleted.",
                     "COUNTER": "{{before}} of {{after}}",
                     "TARGET_TABLE_OPTS":"Target Table Options",
-                    "CONTINUE_TO_STEP":"CONTINUE TO STEP {{number}}",
+                    "CONTINUE_TO_STEP":"CONTINUE TO STEP {{value}}",
                     "LOADING":"Loading Template ...",
                     "ACCESS_DENIED":"Access Denied.  You are unable to edit the template. ",
                     "ERROR_FOUND":"An Error was found loading this template.  Please ensure you have access to edit this template.",

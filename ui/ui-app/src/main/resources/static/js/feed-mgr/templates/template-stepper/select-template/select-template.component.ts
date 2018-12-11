@@ -33,13 +33,13 @@ export class RegisterSelectTemplateController implements OnInit {
 
     templates: any = [];
     model: any;
-    stepIndex: string;
+    @Input() stepIndex: number = 0;
     stepNumber: number;
     template: any = null;
     stepperController: any = null;
     isValid = false;
     isNew: boolean;
-
+    param: any = null;
     /**
      * Error message to be displayed if {@code isValid} is false
      * @type {null}
@@ -120,6 +120,7 @@ export class RegisterSelectTemplateController implements OnInit {
             });
 
         this.stepNumber = parseInt(this.stepIndex) + 1;
+        this.param = {value: parseInt(this.stepIndex) + 2};
     }
 
     constructor(private $state: StateService,
