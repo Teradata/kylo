@@ -390,7 +390,7 @@ const webpackConfig = (env) => {
             new webpack.HotModuleReplacementPlugin(),
             new FriendlyErrorsWebpackPlugin(),
             new ProgressPlugin(),
-            new writeFilePlugin(),
+            // new writeFilePlugin(),
         );
         if (env && env.dev) { //i.e. we dont' want SourcePlugin if env is other than dev env, e.g. if env is dev-tool-cheap
             config.plugins.push(
