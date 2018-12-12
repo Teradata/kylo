@@ -89,6 +89,9 @@ import * as angular from "angular";
         DynamicFormModule,
         CodemirrorModule,
         UIRouterModule.forChild()
+    ],
+    providers:[
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]
 
 })
