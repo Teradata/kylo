@@ -19,9 +19,11 @@ export class CronExpressionPreviewComponent implements OnInit {
     @Input()
     private control: FormControl;
     nextDates: any;
+    private restUrlService: any;
     private labelNotAvailable: string;
 
-    constructor(private http: HttpClient, private translateService: TranslateService,private restUrlService : RestUrlService) {
+    constructor(private $$angularInjector: Injector, private http: HttpClient, private translateService: TranslateService) {
+        this.restUrlService = $$angularInjector.get("RestUrlService");
         this.labelNotAvailable = this.translateService.instant('views.cron-expression-preview.PreviewNotAvailable');
     }
 
