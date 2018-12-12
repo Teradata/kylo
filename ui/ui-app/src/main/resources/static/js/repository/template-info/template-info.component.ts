@@ -22,8 +22,8 @@ export class TemplateInfoComponent implements OnInit {
     disabling: boolean = false;
 
     constructor(@Inject("RegisterTemplateService") private registerTemplateService: any,
-                @Inject("AccessControlService") private accessControlService: AccessControlService,
-                @Inject("StateService") private kyloStateService: KyloStateService,
+                private accessControlService: AccessControlService,
+                private kyloStateService: KyloStateService,
                 private state: StateService,
                 private dialog: MatDialog) {
         accessControlService.getUserAllowedActions()

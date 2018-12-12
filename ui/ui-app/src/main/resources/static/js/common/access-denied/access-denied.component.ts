@@ -15,7 +15,7 @@ export class AccessDeniedComponent implements OnInit{
 
     missingPermissions:string[] = [];
 
-    constructor(@Inject("AccessControlService") private accessControlService:AccessControlService) {}
+    constructor(private accessControlService:AccessControlService) {}
 
 
     ngOnInit(){

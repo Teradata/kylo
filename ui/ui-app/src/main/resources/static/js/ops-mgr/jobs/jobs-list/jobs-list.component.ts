@@ -85,14 +85,14 @@ export class JobsListComponent extends BaseFilteredPaginatedTableView {
                 private _dialogService: TdDialogService,
                 private snackBar: MatSnackBar,
                 private opsManagerJobService: OpsManagerJobService,
-               private opsManagerFeedService:OpsManagerFeedService,
+                private opsManagerFeedService:OpsManagerFeedService,
                 private paginationDataService: DefaultPaginationDataService,
-               private _dateTimeService:DateTimeService,
-                  @Inject("StateService") private kyloStateService: KyoStateService,
+                private _dateTimeService:DateTimeService,
+                private kyloStateService: KyoStateService,
               //  private IconService: IconService,
                 private tabService: TabService,
-                @Inject("AccessControlService") private accessControlService: AccessControlService,
-                @Inject("BroadcastService") private broadcastService: BroadcastService,
+                private accessControlService: AccessControlService,
+                private broadcastService: BroadcastService,
                 public _dataTableService: TdDataTableService) {
         super(_dataTableService);
     }

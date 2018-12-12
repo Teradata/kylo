@@ -103,7 +103,7 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
                 private catalogService:CatalogService,
                 private dataSourceService:DatasetPreviewStepperService,
                 private cd:ChangeDetectorRef,
-                @Inject("AccessControlService") private accessControlService:AccessControlService) {
+                private accessControlService:AccessControlService) {
 
 
         this.singleSelection = this.selectionService.isSingleSelection();

@@ -14,7 +14,7 @@ export class FeedAccessControlService {
     
 
 
-constructor(@Inject("AccessControlService") private accessControlService:AccessControlService) {}
+constructor(private accessControlService:AccessControlService) {}
 
     /**
      * check if the user has access on an entity

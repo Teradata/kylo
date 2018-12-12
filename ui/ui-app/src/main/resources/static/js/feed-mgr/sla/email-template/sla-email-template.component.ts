@@ -92,7 +92,7 @@ export class SlaEmailTemplateComponent {
                 private state: StateService,
                 private _dialogService:TdDialogService,
                 private snackBar:MatSnackBar,
-                @Inject("AccessControlService") private accessControlService: AccessControlService) {
+                private accessControlService: AccessControlService) {
 
 
     }

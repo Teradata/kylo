@@ -36,7 +36,7 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
                 feedLoadingService:FeedLoadingService,
                 dialogService: TdDialogService,
                 feedSideNavService:FeedSideNavService,
-                @Inject("AccessControlService") accessControlService: AccessControlService){
+                accessControlService: AccessControlService){
         super(defineFeedService,stateService, feedLoadingService,dialogService, feedSideNavService);
         this.accessControlService = accessControlService;
         this.formGroup = new FormGroup({})

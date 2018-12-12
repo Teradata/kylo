@@ -94,7 +94,7 @@ export class DataSourcesComponent implements OnInit {
                 private dialog: TdDialogService,
                 private loadingService: TdLoadingService,
                 private state: StateService,
-                @Inject("AccessControlService") private accessControlService: AccessControlService,
+                private accessControlService: AccessControlService,
                 private snackBarService: MatSnackBar,
                 private translateService: TranslateService) {
         this.loadingService.create({

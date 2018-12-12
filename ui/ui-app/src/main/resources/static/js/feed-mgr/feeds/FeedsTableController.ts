@@ -66,7 +66,7 @@ export class FeedsTableController implements ng.IComponentController {
     static readonly $inject = ["$scope","$http","AccessControlService","RestUrlService",
         "DefaultPaginationDataService","DefaultTableOptionsService",
         "AddButtonService","FeedService","StateService",
-        "$filter", "EntityAccessControlService"];
+        "$filter"];
 
     constructor(
         private $scope: IScope,
@@ -79,14 +79,13 @@ export class FeedsTableController implements ng.IComponentController {
         private feedService: FeedService,
         private StateService: any,
         public $filter: angular.IFilterService,
-        private entityAccessControlService: EntityAccessControlService
     ){
 
         // Register Add button
         accessControlService.getUserAllowedActions()
         .then((actionSet:any) => {
             if (accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
-                AddButtonService.registerAddButton("feeds", () => {
+                this.AddButtonService.registerAddButton("feeds", () => {
                     this.feedService.resetFeed();
                     StateService.FeedManager().Feed().navigateToNewFeed()
                 });

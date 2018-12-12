@@ -9,6 +9,7 @@ import AccessConstants from '../../../constants/AccessConstants';
 import {KyloIcons} from "../../../kylo-utils/kylo-icons";
 import {SlaService} from "../../services/sla.service";
 import {error} from "ng-packagr/lib/util/log";
+import { AccessControlService } from '../../../services/AccessControlService';
 
 @Component({
     selector: "sla-list",
@@ -26,7 +27,6 @@ export class SlaListComponent implements OnInit {
     feedModel: Feed;
 
     private feedId: string;
-    private accessControlService: any;
     loading = true;
     serviceLevelAgreements: Sla[] = [];
     allowCreate = false;
@@ -35,8 +35,7 @@ export class SlaListComponent implements OnInit {
 
     public kyloIcons_Links_sla = KyloIcons.Links.sla;
 
-    constructor(private $$angularInjector: Injector, private state: StateService, private loadingService: TdLoadingService, private slaService:SlaService) {
-        this.accessControlService = $$angularInjector.get("AccessControlService");
+    constructor(private accessControlService: AccessControlService, private state: StateService, private loadingService: TdLoadingService, private slaService:SlaService) {
         this.createLoader(SlaListComponent.feedLoader);
 
         this.accessControlService.getUserAllowedActions()

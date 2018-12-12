@@ -160,6 +160,7 @@ import * as angular from "angular";
         WranglerModule
     ],
     providers: [
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()},
         VisualQueryPainterService,
         VisualQuerySaveService,
         WranglerDataService,
