@@ -1,10 +1,14 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {DatasetPreviewStepperComponent, DatasetPreviewStepperSavedEvent} from "./dataset-preview-stepper.component";
+import {PreviewStepperStep} from "./preview-stepper-step";
 
 export class DatasetPreviewStepperDialogData {
 
+  additionalSteps:PreviewStepperStep<any>[] = []
+
 constructor(public allowMultiSelection:boolean=false,public saveLabel:string = "Save",public title:string="Browse for data")  {  }
+
 
 
 }
@@ -31,6 +35,11 @@ export class DatasetPreviewStepperDialogComponent  implements OnInit, OnDestroy{
 
 
     ngOnInit(){
+        if(this.data && this.data.additionalSteps){
+          //  this.data.additionalSteps.forEach((step:PreviewStepperStep<any>) => {
+          //      step.init()
+          //  })
+        }
 
     }
     ngOnDestroy(){
@@ -72,7 +81,16 @@ export class DatasetPreviewStepperDialogComponent  implements OnInit, OnDestroy{
         return this.datasetStepper.saveDisabled();
     }
     onSave(){
-        this.datasetStepper.onSave();
+        let saveEvent = this.datasetStepper.getPreviewSaveEvent();
+        if(this.data.additionalSteps){
+            //capture additional info
+            let lastStep = this.datasetStepper.getLastAdditionalStep();
+            if(lastStep != null){
+                let savedData = lastStep.onSave();
+                saveEvent.data = savedData;
+            }
+        }
+        this.datasetStepper.saved(saveEvent);
     }
 
     getDatasets(){

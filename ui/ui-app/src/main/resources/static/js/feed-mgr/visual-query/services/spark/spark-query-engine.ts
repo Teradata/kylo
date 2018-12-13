@@ -33,7 +33,7 @@ import {TransformResponse} from "../../wrangler/model/transform-response";
 import {PageSpec, QueryEngine} from "../../wrangler/query-engine";
 import {SparkColumnDelegate} from "./spark-column";
 import {SparkConstants} from "./spark-constants";
-import {SparkQueryParser} from "./spark-query-parser";
+import {DATASET_PROVIDER, SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
 import {HttpBackendClient} from "../../../../services/http-backend-client";
 
@@ -217,10 +217,17 @@ export class SparkQueryEngine extends QueryEngine<string> {
         } else {
             sparkScript += "var " + SparkConstants.DATA_FRAME_VARIABLE + " = parent\n";
         }
-
+        let dsProvider = DATASET_PROVIDER;
         for (let i = start; i < end; ++i) {
             if (!this.states_[i].inactive) {
-                sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
+                let state = this.states_[i];
+                if(state.joinDataSet != undefined && state.joinDataSet != null){
+                    sparkScript += "var "+SparkConstants.ADDITIONAL_DATA_FRAME_VARIABLE+state.joinDataSet.dataframeId+" = "+dsProvider+".read(\""+state.joinDataSet.datasetId+"\")\n";
+                    sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + state.joinDataSet.joinSelectFn+"\n";
+                }
+                else {
+                    sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
+                }
             }
         }
 

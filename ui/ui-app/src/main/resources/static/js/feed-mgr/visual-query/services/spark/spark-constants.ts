@@ -8,6 +8,8 @@ export class SparkConstants {
      */
     static DATA_FRAME_VARIABLE = "df";
 
+    static ADDITIONAL_DATA_FRAME_VARIABLE = "dataframe";
+
     /**
      * Identifier for the native Hive data source.
      */

@@ -36,6 +36,7 @@
           <button mat-menu-item (click)="showQuickClean()">Clean</button>
           <button mat-menu-item (click)="showSchemaLayout()">Schema</button>
           <button mat-menu-item (click)="showQuickColumnAnalysis()">Profile</button>
+          <button mat-menu-item (click)="inlineJoin()">Join</button>
         </mat-menu>
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
           <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
@@ -54,6 +55,9 @@
         </button>
         <button matTooltip="Show columns profile" mat-raised-button mat-icon-button (click)="showQuickColumnAnalysis()" fxShow.gt-md="true" fxHide="true" class="text-upper">
           <ng-md-icon icon="assessment" class="toolbar-icon"></ng-md-icon>
+        </button>
+        <button matTooltip="Join to other data" mat-raised-button mat-icon-button (click)="inlineJoin()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+          <ng-md-icon icon="link" class="toolbar-icon"></ng-md-icon>
         </button>
         <span fxFlex="1 1 auto"></span>
         <mat-menu #formulaMenu="matMenu" class="md-kylo-theme">
@@ -109,4 +113,8 @@
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+
+<dataset-join-step #joinDataSetStep>
+</dataset-join-step>
 

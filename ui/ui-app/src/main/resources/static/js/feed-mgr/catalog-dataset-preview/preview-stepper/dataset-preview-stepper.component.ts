@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, ViewChild} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {MatStepper} from "@angular/material/stepper";
 import {CatalogService} from "../../catalog/api/services/catalog.service";
@@ -13,8 +13,13 @@ import {Subject} from "rxjs/Subject";
 import {DatasetPreviewStepperService} from "./dataset-preview-stepper.service";
 import {AccessControlService} from "../../../services/AccessControlService";
 import AccessConstants from "../../../constants/AccessConstants";
+import {PreviewStepperStep} from "./preview-stepper-step";
 
 export class DatasetPreviewStepperSavedEvent{
+    /**
+     * Additional data that can be passed to a subscriber of the save event
+     */
+    data?:any;
     constructor(public previews:PreviewDataSet[], public singleSelection:boolean) {}
 }
 
@@ -96,8 +101,10 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
 
     requiredPermissions= [AccessConstants.DATASOURCE_ACCESS];
 
-    feedDefintionDatasourceState = undefined;
     stateParams = undefined;
+
+    @Input()
+    additionalSteps:PreviewStepperStep<any>[] = []
 
     constructor(private selectionService: SelectionService,
                 private catalogService:CatalogService,
@@ -113,12 +120,10 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
         this.previewForm = new FormGroup({})
 
         this.selectDataForm.statusChanges.debounceTime(10).subscribe(changes =>{
-        //    this.selectDataFormValid = changes == "VALID"
             this.cd.markForCheck()
         });
 
         this.previewForm.statusChanges.debounceTime(10).subscribe(changes =>{
-       //     this.previewFormValid = changes == "VALID"
             this.cd.markForCheck()
         });
 
@@ -168,14 +173,21 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
     showNext(){
         let idx = this.dataSourceService.stepIndex;
         //dont show next on first step.  Require them to select a data source
-        return idx != undefined && idx ==1;
+        let lastIndex = this.getLastIndex();
+        return idx != undefined && idx >0 && idx <lastIndex;
     }
 
     showSave(){
         let idx = this.dataSourceService.stepIndex;
       // show on last step
-        return idx != undefined && idx ==2;
+        let lastIndex = this.getLastIndex();
+        return idx != undefined && idx == lastIndex ;
     }
+
+    private getLastIndex(){
+        return this.additionalSteps ? this.additionalSteps.length +2 : 2;
+    }
+
 
 
     saveDisabled(){
@@ -206,11 +218,38 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
             //preview data form
             return this.previewForm.invalid;
         }
+        else if(this.additionalSteps){
+            let step = this.getAdditionalStepForIndex(idx);
+            return step != null ? step.stepControl.invalid : false;
+        }
         else {
-            false;
+            return false;
         }
     }
 
+    /**
+     * Get the additional step object for a given index
+     * Additional steps start on index 3
+     * @param idx
+     */
+    private getAdditionalStepForIndex(idx:number) {
+        if(this.additionalSteps && idx >2) {
+            let additionalIndex =  idx - 3;
+            let step = this.additionalSteps.length >= additionalIndex + 1 ? this.additionalSteps[additionalIndex] : null;
+            return step != null ? step : null;
+        }
+        return null;
+    }
+
+    public getLastAdditionalStep() {
+        if (this.additionalSteps != null && this.additionalSteps.length > 0) {
+            let idx = this.getLastIndex();
+            return this.getAdditionalStepForIndex(idx)
+        }
+        else {
+            return null;
+        }
+    }
 
     ngOnInit(){
        //clear any previous selections
@@ -257,13 +296,21 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
         return this.getDataSets().length
     }
 
+
+    getPreviewSaveEvent() {
+        let previews = this.preview.previews || [];
+        return new DatasetPreviewStepperSavedEvent(previews,this.singleSelection);
+    }
+
+    saved(saveEvent:DatasetPreviewStepperSavedEvent){
+        this.previewSaved.emit(saveEvent);
+    }
     /**
      * Callback when the user clicks the "Save/Add" button from the last step to do something with one or more datasets with previews
      */
     onSave(){
-        let previews = this.preview.previews || [];
-        let event = new DatasetPreviewStepperSavedEvent(previews,this.singleSelection);
-        this.previewSaved.emit(event);
+        let event = this.getPreviewSaveEvent()
+        this.saved(event);
     }
 
     /**

@@ -99,11 +99,13 @@ export class PreviewDatasetStepComponent extends CatalogPreviewDatasetComponent 
     protected  startLoading(){
         super.startLoading();
         this.cd.markForCheck();
+        this._datasetPreviewStepperService.savePreviews([]);
     }
 
     protected  finishedLoading(){
       super.finishedLoading();
         this.cd.markForCheck();
+      this._datasetPreviewStepperService.savePreviews(this.previews);
     }
 
 

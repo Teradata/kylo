@@ -11,6 +11,7 @@ import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {TableSchema} from "../../../visual-query/wrangler";
 import {DatasetTable} from "../models/dataset-table";
+import {map} from "rxjs/operators";
 
 @Injectable()
 export class CatalogService {
@@ -110,6 +111,32 @@ export class CatalogService {
     createDataSetWithTitle(dataSet: SparkDataSet): Observable<SparkDataSet> {
         const body = CloneUtil.deepCopy(dataSet);
         return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+    }
+
+    /**
+     * Ensure the incoming dataset has an ID and is registered with Kylo.
+     * If not it will create the relationship, register with Kylo and return the updated dataset
+     * @param dataset
+     */
+    ensureDataSetId(dataset:SparkDataSet) :Observable<SparkDataSet>{
+        if(dataset.id == undefined){
+            if(dataset.isUpload){
+                //create random title and new dataset for uploads
+                return this.createDataSet(dataset).pipe(map((ds:SparkDataSet) => {
+                    dataset.id = ds.id;
+                    return dataset;
+                }))
+            }else {
+                return this.createDataSetWithTitle(dataset).pipe(map((ds: SparkDataSet) => {
+                    dataset.id = ds.id;
+                    return dataset;
+                }));
+            }
+        }
+        else {
+            return Observable.of(dataset);
+        }
+
     }
 
 

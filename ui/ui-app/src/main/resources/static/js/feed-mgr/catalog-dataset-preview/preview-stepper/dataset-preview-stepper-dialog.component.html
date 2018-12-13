@@ -7,7 +7,7 @@
 </mat-toolbar>
 -->
 <mat-dialog-content fxFlex="100%">
-<dataset-preview-stepper #datasetStepper (previewSaved)="onSaved($event)" (previewCanceled)="cancel()" [allowMultiSelection]="data.allowMultiSelection" [saveLabel]="data.saveLabel"></dataset-preview-stepper>
+<dataset-preview-stepper #datasetStepper [additionalSteps]="data.additionalSteps" (previewSaved)="onSaved($event)" (previewCanceled)="cancel()" [allowMultiSelection]="data.allowMultiSelection" [saveLabel]="data.saveLabel"></dataset-preview-stepper>
 </mat-dialog-content>
 <mat-dialog-actions>
   <!-- Action buttons -->

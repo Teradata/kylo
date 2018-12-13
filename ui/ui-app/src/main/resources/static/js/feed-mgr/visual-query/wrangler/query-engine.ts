@@ -545,6 +545,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         state.sort = (typeof context.sort !== "undefined") ? context.sort : this.getState().sort;
         this.states_.push(state);
         this.stateChanged = true;
+        state.joinDataSet = (typeof context.joinDataSet !== "undefined") ? context.joinDataSet :null;
 
         // Clear redo states
         this.redo_ = [];
@@ -831,8 +832,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
             validationResults: null,
             actualRows: null,
             actualCols: null,
-           inactive:false, tableState: (new Date()).getTime(),
-            sort: null
+            inactive:false, tableState: (new Date()).getTime(),
+            sort: null,
+            joinDataSet:null
         };
     }
 

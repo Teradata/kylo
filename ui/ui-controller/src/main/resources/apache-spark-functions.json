@@ -347,6 +347,12 @@
         "!doc": "Define a windowing column.",
         "!spark": ".over(%o)",
         "!sparkType": "column"
+      },
+      "equal": {
+        "!type": "fn(right: Column) -> Column",
+        "!doc": "Equality test.",
+        "!spark": ".equalTo(%c)",
+        "!sparkType": "column"
       }
     },
     "ConditionChain": {

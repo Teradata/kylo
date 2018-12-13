@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
+import {AfterViewInit, Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {CodemirrorComponent} from "ng2-codemirror";
 import {Subject} from "rxjs/Subject";
@@ -36,6 +36,17 @@ import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {StringUtils} from "../../../common/utils/StringUtils";
+import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
+import {MatDialogConfig} from "@angular/material";
+import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {JoinData, JoinPreviewStepperStep} from "./dataset-join-dialog/join-preview-stepper-step";
+import {JoinPreviewStepData} from "./dataset-join-dialog/join-preview-step-data";
+import {ColumnRef, ResTarget, SqlBuilderUtil, VisualQueryService} from "../../services/VisualQueryService";
+import {DATASET_PROVIDER, SparkQueryParser} from "../services/spark/spark-query-parser";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
+import {SparkDataSet} from "../../model/spark-data-set.model";
+import {SparkConstants} from "../services/spark/spark-constants";
+import {JoinDataset} from "../wrangler/model/join-dataset.model";
 
 declare const CodeMirror: any;
 
@@ -49,8 +60,12 @@ export class WranglerColumn {
     domainTypeId: string = null;
     filters: any[] = null;
     headerTooltip: string = null;
-    longestValue: string = null;
+    longestValue: any = null;
     name: string = null;
+
+    public constructor(init?: Partial<WranglerColumn>) {
+        Object.assign(this, init);
+    }
 }
 
 /**
@@ -277,6 +292,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @ViewChild(VisualQueryTable)
     visualQueryTable: VisualQueryTable;
 
+    @ViewChild("joinDataSetStep")
+    joinDatasetPreviewStepComponent:JoinPreviewStepperStep;
+
     /**
      * Constructs a {@code TransformDataComponent}.
      */
@@ -284,7 +302,11 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
                 @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
                 @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
-                private wranglerDataService: WranglerDataService) {
+                @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
+                private wranglerDataService: WranglerDataService,
+                private catalogService:CatalogService,
+                private viewContainerRef: ViewContainerRef
+                ) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
     }
@@ -465,6 +487,74 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 // ignore cancel
             });
         }
+    }
+
+    inlineJoin(){
+        let data = new DatasetPreviewStepperDialogData(false,"Add");
+        data.additionalSteps = [];
+        let step =  this.joinDatasetPreviewStepComponent;
+        //update the data
+        step.data.cols = this.engine.getColumns();
+        data.additionalSteps.push(step);
+        step.setAdditionalStepIndex(data.additionalSteps.length-1);
+        let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
+        dialogConfig.data = data;
+        dialogConfig.viewContainerRef = this.viewContainerRef;
+        this.$mdDialog.open(DatasetPreviewStepperDialogComponent,dialogConfig)
+            .afterClosed()
+            .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {
+            let joinData = response.data as JoinData;
+               //convert to spark dataset
+            let dataset = joinData.joinDataSet.toSparkDataSet();
+               //ensure the dataset is registered
+            this.catalogService.ensureDataSetId(dataset).subscribe((ds:SparkDataSet) => {
+                //join
+                let dsProvider = DATASET_PROVIDER;
+                let dsId = ds.id;
+
+                let dfField = joinData.dataFrameField;
+                let joinField = joinData.joinField;
+                let parser = new SparkQueryParser(this.visualQueryService)
+                let joinType = parser.parseJoinType(SqlBuilderUtil.getJoinType(joinData.joinType));
+
+                let joinSelect:ResTarget[] = dataset.schema.map(field => {
+                    let fields: string[] = [];
+                    let dfId = SparkConstants.ADDITIONAL_DATA_FRAME_VARIABLE + "1"
+                    fields.push(dfId)
+                    fields.push(field.name);
+                    let name = dataset.getTableName() + "_" +field.name;
+                    name = name.replace(/[^a-zA-Z0-9_\s\)\(-]*/g,'');
+                    name = name.replace(" ","_")
+                    name = name.replace(".","_")
+                    let t: ResTarget = {description: "", val: {fields: fields}, name:name};
+                    return t;
+                });
+
+                let dfSelect = this.engine.getColumns().map(col => {
+                    let fields: string[] = [];
+                    let dfId ="parent";
+                    fields.push(dfId)
+                    fields.push(col.hiveColumnLabel);
+                    let t: ResTarget = {description: "", val: {fields: fields}, name:col.displayName};
+                    return t;
+                })
+                let targetSelect:ResTarget[] = dfSelect.concat(joinSelect);
+                let joinSelectString = parser.joinSelect(targetSelect);
+
+                let joinDataset: JoinDataset = {datasetId:dsId,dataframeId:1,joinSelectFn:joinSelectString};
+
+                let formula = `join(1, column(0,"${dfField}").equal(column(1,"${joinField}")), "${joinType}")`
+
+                if(this.model.datasets == undefined){
+                    this.model.datasets = [];
+                }
+                this.model.datasets.push(dataset);
+
+                this.pushFormula(formula, {formula: formula, icon: 'link', name: 'Join '+joinData.joinDataSet.displayKey+" on "+dfField+ "= "+joinField, joinDataSet:joinDataset}, true, true);
+
+            })
+
+        });
     }
 
     /**
@@ -778,7 +868,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
                 });
 
-                columns.push({
+                columns.push(new WranglerColumn({
                     dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
@@ -787,7 +877,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     headerTooltip: col.hiveColumnLabel,
                     longestValue: (typeof longestValue !== "undefined" && longestValue !== null) ? longestValue.metricValue : null,
                     name: this.engine.getColumnName(col)
-                });
+                }));
             });
         }
 
