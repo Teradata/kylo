@@ -619,7 +619,7 @@ public class IntegrationTestBase {
 
         response.then().statusCode(HTTP_OK);
 
-        String path = String.format("content.find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
+        String path = String.format("find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
         return JsonPath.from(response.asString()).getString(path);
     }
 
