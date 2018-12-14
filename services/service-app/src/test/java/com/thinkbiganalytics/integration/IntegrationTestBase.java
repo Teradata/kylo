@@ -599,7 +599,7 @@ public class IntegrationTestBase {
     }
 
     protected int getProfileSummary(String feedId, String profileType) {
-        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
+        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "content.find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
     }
 
     protected String getJsonPathOfProfileSummary(String feedId, String path) {
@@ -619,7 +619,7 @@ public class IntegrationTestBase {
 
         response.then().statusCode(HTTP_OK);
 
-        String path = String.format("find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
+        String path = String.format("content.find {entry ->entry.metrictype == '%s' && entry.columnname == '%s'}.metricvalue", profileType, column);
         return JsonPath.from(response.asString()).getString(path);
     }
 
