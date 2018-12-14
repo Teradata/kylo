@@ -595,7 +595,7 @@ public class IntegrationTestBase {
     }
 
     protected String getProcessingDttm(String feedId) {
-        return getJsonPathOfProfileSummary(feedId, "processing_dttm[0]");
+        return getJsonPathOfProfileSummary(feedId, "content[0].processing_dttm");
     }
 
     protected int getProfileSummary(String feedId, String profileType) {
