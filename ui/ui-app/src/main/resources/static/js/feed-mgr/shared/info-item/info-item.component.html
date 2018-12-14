@@ -11,7 +11,7 @@
   </div>
 
   <span></span>
-  <button mat-icon-button (click)="onEdit()" *ngIf="feed.canEdit() && !feed.readonly && !editing && editable">
+  <button mat-icon-button (click)="onEdit()" *ngIf="!editing && editable">
     <mat-icon ngClass="tc-grey-600">edit</mat-icon>
   </button>
 </mat-list-item>

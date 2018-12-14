@@ -1,0 +1,19 @@
+mat-card-header .mat-card-title, ::ng-deep mat-card-header .mat-card-title {
+  font-size: 20px;
+}
+
+mat-card-header .mat-card-subtitle, ::ng-deep mat-card-header .mat-card-title {
+  font-size: 14px;
+}
+
+mat-card-header .mat-card-header-text, ::ng-deep mat-card-header .mat-card-header-text {
+  margin: 0;
+}
+
+.mat-card-header {
+  align-items: center;
+}
+
+.info-card .mat-card-content {
+  padding: 0;
+}

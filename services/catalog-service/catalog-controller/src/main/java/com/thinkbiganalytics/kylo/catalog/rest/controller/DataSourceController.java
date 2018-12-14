@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.model.CatalogTableSchema;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogTableSchema;
 import com.thinkbiganalytics.exceptions.ExceptionTransformer;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;

@@ -1,0 +1,14 @@
+<info-item name="{{dataset.title || 'No title'}}" description="Title" icon="star" (cancel)="cancel()" (save)="save()"
+                [editable]="false"
+                [(editing)]="editing">
+  <form [formGroup]="formGroup">
+    <mat-form-field class="pad-top-sm" style="width:100%">
+    <textarea matInput  formControlName="title" placeholder="Title" >
+      {{dataset.title}}
+    </textarea>
+    </mat-form-field>
+  </form>
+</info-item>
+
+
+

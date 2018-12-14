@@ -6,7 +6,7 @@ import {Feed} from "../../../../../model/feed/feed.model";
 import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {DefineFeedService} from "../../../services/define-feed.service";
 import {FeedLoadingService} from "../../../services/feed-loading-service";
-import {FeedItemInfoService} from "./feed-item-info.service";
+import {InfoItemService} from '../../../../../shared/info-item/item-info.service';
 
 
 export abstract class AbstractFeedInfoItemComponent {
@@ -23,7 +23,7 @@ export abstract class AbstractFeedInfoItemComponent {
 
     formGroup: FormGroup;
 
-    protected constructor(protected defineFeedService: DefineFeedService, protected feedItemInfoService: FeedItemInfoService, private feedLoadingService: FeedLoadingService) {
+    protected constructor(protected defineFeedService: DefineFeedService, protected feedItemInfoService: InfoItemService, private feedLoadingService: FeedLoadingService) {
         this.initForm();
     }
 
@@ -69,7 +69,7 @@ export abstract class AbstractFeedInfoItemComponent {
                     this.feed = response.feed;
                     this.onSaveSuccess(response);
                     this.editing = false;
-                    this.feedItemInfoService.savedFeed(response);
+                    this.feedItemInfoService.onSaved(response);
                 } else {
                     this.onSaveFail(response);
                 }

@@ -450,8 +450,10 @@
 [tba:DataSet] > tba:entity, mix:title, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:paramsHashCode (LONG) = 0
     - tba:mimeType (STRING)
+    - tba:projects (WEAKREFERENCE) multiple
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedTargets (WEAKREFERENCE) multiple
+    - tba:notes (STRING)
 
 [tba:DataSetSparkParams] > mix:lastModified, tba:propertied
     - tba:format (STRING)

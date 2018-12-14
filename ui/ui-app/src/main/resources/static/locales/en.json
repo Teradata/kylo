@@ -897,6 +897,12 @@
     "dirPagination.tpl.All": "All",
 
     "CATALOG": {
+        "DATASET": {
+            "TITLE": "Dataset"
+        },
+        "EMPTY": {
+            "TITLE": "Not found"
+        },
         "DATA_SOURCES": {
             "CONFIRM_DELETE": {
                 "ACCEPT": "Delete",

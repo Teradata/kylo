@@ -22,6 +22,9 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.thinkbiganalytics.discovery.model.DefaultTag;
+import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import java.util.ArrayList;
@@ -41,11 +44,14 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
 
     private String id;
     private String title;
+    private String description;
     private DataSource dataSource;
     private String format;
     private Map<String, String> options;
     private List<String> paths;
-    
+    @JsonDeserialize(contentAs = DefaultTag.class)
+    private List<Tag> tags;
+
     public DataSet() {
     }
 
@@ -58,8 +64,10 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
         format = other.format;
         id = other.id;
         title = other.title;
+        description = other.description;
         options = (other.options != null) ? new HashMap<>(other.options) : null;
         paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
+        tags = (other.tags != null) ? new ArrayList<>(other.tags) : null;
     }
 
     /**
@@ -85,6 +93,14 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
      */
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -138,6 +154,14 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
     @SuppressWarnings("squid:S1161")
     public void setPaths(List<String> paths) {
         this.paths = paths;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     @Override

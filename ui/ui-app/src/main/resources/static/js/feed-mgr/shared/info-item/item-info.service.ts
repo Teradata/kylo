@@ -1,22 +1,22 @@
 import {Subject} from "rxjs/Subject";
 import {PartialObserver} from "rxjs/Observer";
-import {SaveFeedResponse} from "../../../model/save-feed-response.model";
 import {ISubscription} from "rxjs/Subscription";
 import {Injectable} from "@angular/core";
-import {FeedInfoItemComponent} from "./feed-info-item.component";
+import {InfoItemComponent} from "./info-item.component";
+import {ItemSaveResponse} from './item-save-response';
 
 @Injectable()
-export class FeedItemInfoService{
+export class InfoItemService{
 
-    itemSavedSubject :Subject<SaveFeedResponse> = new Subject<SaveFeedResponse>();
+    itemSavedSubject :Subject<ItemSaveResponse> = new Subject<ItemSaveResponse>();
 
-    activeEdit:FeedInfoItemComponent
+    activeEdit:InfoItemComponent;
 
     constructor(){
 
     }
 
-    isActiveEdit(component:FeedInfoItemComponent){
+    isActiveEdit(component:InfoItemComponent){
         return this.activeEdit && this.activeEdit == component;
     }
 
@@ -26,17 +26,17 @@ export class FeedItemInfoService{
         }
         this.activeEdit = undefined;
     }
-    setActiveEdit(activeEdit:FeedInfoItemComponent){
+    setActiveEdit(activeEdit:InfoItemComponent){
         this.clearActiveEdit();
         this.activeEdit = activeEdit;
     }
 
-    subscribe(o:PartialObserver<SaveFeedResponse>):ISubscription{
+    subscribe(o:PartialObserver<ItemSaveResponse>):ISubscription{
         return this.itemSavedSubject.subscribe(o)
     }
 
 
-    savedFeed(response:SaveFeedResponse){
+    onSaved(response:ItemSaveResponse){
         this.itemSavedSubject.next(response);
     }
 }

@@ -20,7 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.table;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.model.CatalogTableSchema;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogTableSchema;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 

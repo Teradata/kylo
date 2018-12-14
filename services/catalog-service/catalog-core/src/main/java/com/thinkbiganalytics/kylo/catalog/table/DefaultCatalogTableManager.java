@@ -26,7 +26,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.db.DataSourceProperties;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
-import com.thinkbiganalytics.discovery.model.CatalogTableSchema;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogTableSchema;
 import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
 import com.thinkbiganalytics.discovery.schema.JdbcSchema;
 import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;

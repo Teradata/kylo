@@ -1,13 +1,11 @@
-import {FormControl, FormGroup} from "@angular/forms";
 import * as _ from "underscore";
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../../../model/feed/feed.model";
+import {Component, OnInit} from "@angular/core";
 import {DefineFeedService} from "../../../../services/define-feed.service";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
-import {FeedItemInfoService} from "../feed-item-info.service";
 import {Tag} from "../../../../../../model/schema-field";
 import {SaveFeedResponse} from "../../../../model/save-feed-response.model";
 import {FeedLoadingService} from "../../../../services/feed-loading-service";
+import {InfoItemService} from '../../../../../../shared/info-item/item-info.service';
 
 
 @Component({
@@ -19,7 +17,7 @@ export class FeedInfoTagsComponent  extends AbstractFeedInfoItemComponent implem
     /**
      * The feed tag objects
      */
-    tags:Tag[]
+    tags:Tag[];
     /**
      * the new tag names
      */
@@ -35,7 +33,7 @@ export class FeedInfoTagsComponent  extends AbstractFeedInfoItemComponent implem
      */
     tagNamesString: string;
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+    constructor(defineFeedService:DefineFeedService, feedItemInfoService:InfoItemService, feedLoadingService:FeedLoadingService){
         super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
     initForm(){

@@ -11,6 +11,7 @@ import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {TableSchema} from "../../../visual-query/wrangler";
 import {DatasetTable} from "../models/dataset-table";
+import {Dataset} from '../models/dataset';
 
 @Injectable()
 export class CatalogService {
@@ -80,6 +81,17 @@ export class CatalogService {
     }
 
 
+    createDataset(dataset: Dataset):  Observable<Dataset> {
+        if (typeof dataset.id === "string") {
+            return this.http.put<Dataset>("/proxy/v1/catalog/dataset/" + encodeURIComponent(dataset.id), dataset);
+        } else {
+            return this.http.post<Dataset>("/proxy/v1/catalog/dataset/", dataset);
+        }
+    }
+
+    getDataset(id: string): Observable<DataSource> {
+        return this.http.get<DataSource>("/proxy/v1/catalog/dataset/" + id);
+    }
 
     getDataSource(datasourceId: string): Observable<DataSource> {
         return this.http.get<DataSource>("/proxy/v1/catalog/datasource/" + datasourceId);

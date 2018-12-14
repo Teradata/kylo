@@ -4,7 +4,7 @@ import {DefineFeedService} from "../../../../services/define-feed.service";
 import {FeedLoadingService} from "../../../../services/feed-loading-service";
 import {SystemFeedNameComponent} from "../../../../shared/system-feed-name.component";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
-import {FeedItemInfoService} from "../feed-item-info.service";
+import {InfoItemService} from '../../../../../../shared/info-item/item-info.service';
 
 @Component({
     selector: "feed-info-name",
@@ -15,7 +15,7 @@ export class FeedInfoNameComponent extends AbstractFeedInfoItemComponent {
     @ViewChild("systemFeedName")
     private systemFeedName: SystemFeedNameComponent;
 
-    constructor(defineFeedService: DefineFeedService, feedItemInfoService: FeedItemInfoService, feedLoadingService: FeedLoadingService) {
+    constructor(defineFeedService: DefineFeedService, feedItemInfoService: InfoItemService, feedLoadingService: FeedLoadingService) {
         super(defineFeedService, feedItemInfoService, feedLoadingService)
     }
 

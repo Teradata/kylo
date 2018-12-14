@@ -52,4 +52,9 @@ public interface Taggable {
      * @return
      */
     Set<String> removeTag(String tag);
+
+    /**
+     * @param tags the tags to set
+     */
+    void setTags(Set<String> tags);
 }

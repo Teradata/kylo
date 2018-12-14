@@ -77,12 +77,10 @@ import {ProfileValidComponent} from './summary/profile/container/valid/profile-v
 import {DefineFeedStepCustomContentComponent} from "./steps/define-feed-step-card/define-feed-step-custom-content.component";
 import {DefineFeedPermissionsComponent} from "./steps/permissions/define-feed-permissions.component";
 import {DefineFeedPropertiesComponent} from "./steps/properties/define-feed-properties.component";
-import {FeedInfoItemComponent} from "./summary/setup-guide-summary/feed-info/feed-info-item.component";
 import {FeedInfoScheduleComponent} from "./summary/setup-guide-summary/feed-info/feed-info-schedule/feed-info-schedule.component";
 import {FeedInfoDescriptionComponent} from "./summary/setup-guide-summary/feed-info/feed-info-description/feed-info-description.component";
 import {FeedInfoCategoryComponent} from "./summary/setup-guide-summary/feed-info/feed-info-category/feed-info-category.component";
 import {FeedInfoNameComponent} from "./summary/setup-guide-summary/feed-info/feed-info-name/feed-info-name.component";
-import {FeedItemInfoService} from "./summary/setup-guide-summary/feed-info/feed-item-info.service";
 import {FeedInfoTagsComponent} from "./summary/setup-guide-summary/feed-info/feed-info-tags/feed-info-tags.component";
 import {FeedSlaComponent} from './summary/sla/feed-sla.component';
 import {MatProgressBarModule} from "@angular/material/progress-bar";
@@ -162,7 +160,6 @@ export function createCompilerFn(c: CompilerFactory) {
         DefineFeedPermissionsComponent,
         DefineFeedPermissionsDialogComponent,
         DefineFeedPropertiesComponent,
-        FeedInfoItemComponent,
         FeedInfoNameComponent,
         FeedInfoScheduleComponent,
         FeedInfoDescriptionComponent,
@@ -206,7 +203,6 @@ export function createCompilerFn(c: CompilerFactory) {
     providers:[
         FilterPartitionFormulaPipe,
         FeedSideNavService,
-        FeedItemInfoService,
         FeedNifiPropertiesService,
         DefineFeedSourceSampleService,
         {provide: COMPILER_OPTIONS, useValue: {}, multi: true},
@@ -244,7 +240,6 @@ export function createCompilerFn(c: CompilerFactory) {
         MatInputModule,
         MatFormFieldModule,
         MatIconModule,
-        MatListModule,
         MatCheckboxModule,
         MatOptionModule,
         MatSelectModule,

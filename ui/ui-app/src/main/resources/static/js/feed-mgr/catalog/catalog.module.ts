@@ -41,6 +41,8 @@ import {CreateFeedComponent} from './datasource/create-feed/create-feed.componen
 import {MatExpansionModule} from '@angular/material/expansion';
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
+import {DatasetComponent} from './dataset/dataset.component';
+import {DatasetModule} from './dataset/dataset.module';
 
 @NgModule({
     declarations: [
@@ -76,6 +78,7 @@ import {AdminConnectorComponent} from "./connector/admin-connector.component";
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
+        DatasetModule,
         MatCardModule,
         FormsModule,
         MatInputModule,

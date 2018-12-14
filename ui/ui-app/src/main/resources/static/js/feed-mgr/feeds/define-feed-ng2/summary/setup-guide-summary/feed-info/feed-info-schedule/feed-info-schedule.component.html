@@ -1,9 +1,12 @@
-<feed-info-item [feed]="feed" [name]="readonlySchedule" description="Schedule" icon="access_time" (edit)="onEdit()" (cancel)="cancel()" (save)="save()" [editable]="feed.canEdit()" [editing]="editing" [readonlyList]="readonlyScheduleList" [isSaveDisabled]="!valid">
+<info-item  [name]="readonlySchedule" description="Schedule" icon="access_time" (edit)="onEdit()" (cancel)="cancel()" (save)="save()"
+                 [editable]="feed.canEdit() && !feed.readonly"
+                 [editing]="editing"
+                 [readonlyList]="readonlyScheduleList" [isSaveDisabled]="!valid">
 <form [formGroup]="formGroup">
   <feed-schedule #feedSchedule [parentForm]="formGroup"  [editable]="true" [(feed)]="feed" ></feed-schedule>
 </form>
 
-</feed-info-item>
+</info-item>
 
 
 

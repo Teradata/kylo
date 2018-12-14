@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.api.catalog;
  * #L%
  */
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -106,4 +107,8 @@ public interface DataSetBuilder {
      * @return
      */
     Optional<DataSet> find();
+
+    DataSetBuilder addTags(Iterable<String> tags);
+
+    DataSetBuilder addTag(String tag);
 }

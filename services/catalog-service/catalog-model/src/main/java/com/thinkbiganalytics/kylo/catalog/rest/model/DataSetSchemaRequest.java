@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.discovery.model;
+package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 /*-
  * #%L
@@ -20,8 +20,7 @@ package com.thinkbiganalytics.discovery.model;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.util.TableSchemaType;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 
 /**
  * Model describing a DataSet and schema paraser

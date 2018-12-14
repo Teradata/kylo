@@ -1,0 +1,15 @@
+<info-item name="{{dataset.description || 'No description'}}" description="Description" icon="description" (cancel)="cancel()" (save)="save()"
+                [editable]="true"
+                [(editing)]="editing">
+  <form [formGroup]="formGroup">
+
+    <mat-form-field class="pad-top-sm" style="width:100%">
+    <textarea matInput  formControlName="description" placeholder="Description" >
+      {{dataset.description}}
+    </textarea>
+    </mat-form-field>
+  </form>
+</info-item>
+
+
+

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.discovery.model;
+package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 /*-
  * #%L
@@ -21,9 +21,9 @@ package com.thinkbiganalytics.discovery.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 
 import javax.annotation.Nonnull;
 

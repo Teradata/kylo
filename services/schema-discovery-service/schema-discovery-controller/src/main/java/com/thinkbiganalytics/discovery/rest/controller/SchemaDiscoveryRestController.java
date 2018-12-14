@@ -21,7 +21,7 @@ package com.thinkbiganalytics.discovery.rest.controller;
  */
 
 import com.thinkbiganalytics.discovery.FileParserFactory;
-import com.thinkbiganalytics.discovery.model.DataSetSchemaRequest;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetSchemaRequest;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;

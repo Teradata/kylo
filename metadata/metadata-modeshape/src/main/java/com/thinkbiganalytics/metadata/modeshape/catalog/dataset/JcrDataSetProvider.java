@@ -170,6 +170,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         private String title;
         private String description;
         private String format;
+        private final Set<String> tags = new HashSet<>();
         private final Set<String> paths = new HashSet<>();
         private final Set<String> jars = new HashSet<>();
         private final Set<String> files = new HashSet<>();
@@ -277,6 +278,23 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             long hash = generateDataSetHash();
             return findByParamsHash(hash);
         }
+
+        @Override
+        public DataSetBuilder addTags(Iterable<String> tags) {
+            if (tags != null) {
+                tags.forEach(this::addTag);
+            }
+            return this;
+        }
+
+        @Override
+        public DataSetBuilder addTag(String tag) {
+            if (tag != null) {
+                this.tags.add(tag);
+            }
+            return this;
+        }
+
 
         /**
          * @return a hash code uniquely identifying the underlying data

@@ -37,6 +37,11 @@ import {SlaService} from "./services/sla.service";
 import {FeedLoadingService} from './feeds/define-feed-ng2/services/feed-loading-service';
 import {DefineFeedService} from './feeds/define-feed-ng2/services/define-feed.service';
 import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-access-control.service';
+import {InfoItemComponent} from './shared/info-item/info-item.component';
+import {InfoItemService} from './shared/info-item/item-info.service';
+import {MatIconModule} from '@angular/material/icon';
+import {MatListModule} from '@angular/material/list';
+import {MatDividerModule} from '@angular/material/divider';
 
 
 @NgModule({
@@ -50,6 +55,9 @@ import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-ac
         KyloCommonModule,
         MatButtonModule,
         MatDialogModule,
+        MatIconModule,
+        MatListModule,
+        MatDividerModule,
         PropertyListModule,
         ReactiveFormsModule,
         SqlEditorModule,
@@ -59,7 +67,8 @@ import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-ac
         DomainTypeConflictDialogComponent,
         ApplyDomainTypeDialogComponent,
         ApplyDomainTypesDialogComponent,
-        EntityAccessControlComponent
+        EntityAccessControlComponent,
+        InfoItemComponent,
     ],
     entryComponents: [
         DomainTypeConflictDialogComponent,
@@ -67,7 +76,8 @@ import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-ac
         ApplyDomainTypesDialogComponent
     ],
     exports: [
-        EntityAccessControlComponent
+        EntityAccessControlComponent,
+        InfoItemComponent,
     ],
     providers: [
         FeedLoadingService,
@@ -87,7 +97,8 @@ import {FeedAccessControlService} from './feeds/define-feed-ng2/services/feed-ac
         visualQueryServiceProvider,
         datasourcesServiceProvider,
         NiFiService,
-        SlaService
+        SlaService,
+        InfoItemService,
     ]
 })
 export class KyloFeedManagerModule {

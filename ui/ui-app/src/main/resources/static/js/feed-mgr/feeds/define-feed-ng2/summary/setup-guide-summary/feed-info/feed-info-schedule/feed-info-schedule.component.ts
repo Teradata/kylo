@@ -1,13 +1,11 @@
-import {FormGroup} from "@angular/forms";
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../../../model/feed/feed.model";
+import {Component, OnInit, ViewChild} from "@angular/core";
 import {DefineFeedService} from "../../../../services/define-feed.service";
 import {FeedScheduleComponent} from "../../feed-schedule/feed-schedule.component";
 import {FeedConstants} from "../../../../../../services/FeedConstants";
 import {SaveFeedResponse} from "../../../../model/save-feed-response.model";
-import {FeedItemInfoService} from "../feed-item-info.service";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
 import {FeedLoadingService} from "../../../../services/feed-loading-service";
+import {InfoItemService} from '../../../../../../shared/info-item/item-info.service';
 
 
 @Component({
@@ -26,7 +24,7 @@ export class FeedInfoScheduleComponent extends AbstractFeedInfoItemComponent imp
 
     loading:boolean = false;
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+    constructor(defineFeedService:DefineFeedService, feedItemInfoService:InfoItemService, feedLoadingService:FeedLoadingService){
         super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
 

@@ -1,10 +1,9 @@
-import {FormControl, FormGroup} from "@angular/forms";
-import {Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewContainerRef} from "@angular/core";
-import {Feed} from "../../../../../../model/feed/feed.model";
+import {FormControl} from "@angular/forms";
+import {Component, OnInit} from "@angular/core";
 import {DefineFeedService} from "../../../../services/define-feed.service";
 import {AbstractFeedInfoItemComponent} from "../abstract-feed-info-item.component";
-import {FeedItemInfoService} from "../feed-item-info.service";
 import {FeedLoadingService} from "../../../../services/feed-loading-service";
+import {InfoItemService} from '../../../../../../shared/info-item/item-info.service';
 
 
 @Component({
@@ -13,7 +12,7 @@ import {FeedLoadingService} from "../../../../services/feed-loading-service";
 })
 export class FeedInfoDescriptionComponent  extends AbstractFeedInfoItemComponent implements OnInit{
 
-    constructor( defineFeedService:DefineFeedService,  feedItemInfoService:FeedItemInfoService, feedLoadingService:FeedLoadingService){
+    constructor(defineFeedService:DefineFeedService, feedItemInfoService:InfoItemService, feedLoadingService:FeedLoadingService){
         super(defineFeedService,feedItemInfoService, feedLoadingService)
     }
 

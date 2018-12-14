@@ -228,6 +228,11 @@ public class BaseDatasource implements Datasource {
         return null;
     }
 
+    @Override
+    public void setTags(Set<String> tags) {
+        // TODO Auto-generated method stub
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.Iconable#getIcon()
      */

@@ -1,0 +1,16 @@
+<mat-card class="info-card">
+  <mat-card-header>
+    <mat-card-title fxLayout="row" fxLayoutAlign=" center">
+      Properties
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content style="margin-top: -15px">
+    <mat-list dense>
+      <dataset-info-title [dataset]="dataset"></dataset-info-title>
+      <mat-divider></mat-divider>
+      <dataset-info-description [dataset]="dataset"></dataset-info-description>
+      <mat-divider></mat-divider>
+      <dataset-info-tags [dataset]="dataset"></dataset-info-tags>
+    </mat-list>
+  </mat-card-content>
+</mat-card>

@@ -98,8 +98,8 @@
               <feed-info-description [feed]="feed"  ></feed-info-description>
               <mat-divider></mat-divider>
 
-              <feed-info-item [feed]="feed" name="{{feed.isDraft() ? 'DRAFT' : feed.state}}" description="Status" icon="stars"  [editable]="false" >
-              </feed-info-item>
+              <info-item  name="{{feed.isDraft() ? 'DRAFT' : feed.state}}" description="Status" icon="stars"  [editable]="false" >
+              </info-item>
               <mat-divider></mat-divider>
 
               <feed-info-tags [feed]="feed"></feed-info-tags>

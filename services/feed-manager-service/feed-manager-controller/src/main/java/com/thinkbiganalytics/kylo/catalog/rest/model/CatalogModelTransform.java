@@ -20,6 +20,8 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultTag;
+import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
@@ -32,8 +34,10 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -169,7 +173,8 @@ public class CatalogModelTransform {
 
     public DataSet updateDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSet domain) {
         domain.setTitle(model.getTitle());
-        domain.setDescription(generateDescription(model));
+        domain.setDescription(model.getDescription());
+        domain.setTags(model.getTags().stream().map(Tag::getName).collect(Collectors.toCollection(TreeSet::new)));
         updateSparkParameters(model.getDataSource().getConnector().getPluginId(), model, domain.getSparkParameters());
         return domain;
     }
@@ -177,11 +182,13 @@ public class CatalogModelTransform {
     public DataSet buildDataSet(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model, DataSetBuilder builder) {
         return builder
             .title(model.getTitle())
+            .description(model.getDescription())
             .format(model.getFormat())
             .addOptions(model.getOptions())
             .addPaths(model.getPaths())
             .addFiles(model.getFiles())
             .addJars(model.getJars())
+            .addTags(model.getTags().stream().map(Tag::getName).collect(Collectors.toCollection(TreeSet::new)))
             .build();
     }
 
@@ -239,7 +246,8 @@ public class CatalogModelTransform {
             model.setId(domain.getId().toString());
             model.setDataSource(dataSourceToRestModel(true,encryptedCredentials).apply(domain.getDataSource()));
             model.setTitle(domain.getTitle());
-            // TODO: add description
+            model.setDescription(domain.getDescription());
+            model.setTags(domain.getTags().stream().map(DefaultTag::new).collect(Collectors.toCollection(ArrayList::new)));
             DataSetTemplate template = sparkParamsToRestModel(domain.getDataSource().getConnector().getPluginId(), encryptedCredentials).apply(domain.getSparkParameters());
               if(!encryptedCredentials) {
                   decryptOptions(template);
@@ -281,10 +289,6 @@ public class CatalogModelTransform {
     }
 
     private String generateDescription(DataSource dataSource) {
-        return "";
-    }
-
-    private String generateDescription(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
         return "";
     }
 }

@@ -393,4 +393,9 @@ public class BaseCategory implements Category {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public void setTags(Set<String> tags) {
+        // TODO Auto-generated method stub
+    }
 }
