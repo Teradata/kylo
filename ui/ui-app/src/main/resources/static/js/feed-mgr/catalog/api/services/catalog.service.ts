@@ -1,4 +1,4 @@
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpBackend, HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {CloneUtil} from "../../../../common/utils/clone-util";
@@ -12,11 +12,12 @@ import {RestUrlConstants} from "../../../services/RestUrlConstants";
 import {TableSchema} from "../../../visual-query/wrangler";
 import {DatasetTable} from "../models/dataset-table";
 import {map} from "rxjs/operators";
+import {HttpBackendClient} from "../../../../services/http-backend-client";
 
 @Injectable()
 export class CatalogService {
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient, private http2:HttpBackendClient) {
     }
 
     /**
@@ -88,9 +89,9 @@ export class CatalogService {
 
     createDataSource(datasource: DataSource): Observable<DataSource> {
         if (typeof datasource.id === "string") {
-            return this.http.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
+            return this.http2.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
         } else {
-            return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+            return this.http2.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
         }
     }
 

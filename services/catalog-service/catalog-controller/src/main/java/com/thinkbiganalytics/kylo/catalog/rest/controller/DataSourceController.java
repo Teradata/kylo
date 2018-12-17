@@ -31,9 +31,11 @@ import com.thinkbiganalytics.kylo.catalog.ConnectorPluginManager;
 import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.datasource.PotentialControllerServiceConflictException;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.CatalogModelTransform;
 import com.thinkbiganalytics.kylo.catalog.rest.model.ConnectorTab;
+import com.thinkbiganalytics.kylo.catalog.rest.model.CreateDataSourceEntity;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
@@ -44,6 +46,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.catalog.DataSourceAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -171,22 +174,27 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createDataSource(@Nonnull final DataSource source) {
+    public Response createDataSource(@Nonnull final CreateDataSourceEntity source) {
         log.entry(source);
-
-        // TODO: Remove this check for the ID and force updates to use the PUT to updateDataSource() for a more typical REST API
         final DataSource dataSource;
-        if (StringUtils.isNotEmpty(source.getId())) {
-            return updateDataSource(source);
-        } else {
-            try {
-                dataSource = dataSourceService.createDataSource(source);
-            } catch (final CatalogException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Cannot create data source from request: " + source, e);
+        try {
+            // TODO: Remove this check for the ID and force updates to use the PUT to updateDataSource() for a more typical REST API
+            if (StringUtils.isNotEmpty(source.getId())) {
+                return updateDataSource(source);
+            } else {
+                try {
+                    dataSource = dataSourceService.createDataSource(source, source.isDetectSimilarNiFiControllerServices());
+                } catch (final CatalogException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Cannot create data source from request: " + source, e);
+                    }
+                    throw new BadRequestException(getMessage(e));
                 }
-                throw new BadRequestException(getMessage(e));
             }
+        }catch(PotentialControllerServiceConflictException e){
+            throw new WebApplicationException(Response.status(Status.CONFLICT).entity(e.getControllerServiceConflictEntity()).build());
+        }catch(DataSourceAlreadyExistsException e){
+            throw new BadRequestException(e.getMessage());
         }
 
         return Response.ok(log.exit(dataSource)).build();

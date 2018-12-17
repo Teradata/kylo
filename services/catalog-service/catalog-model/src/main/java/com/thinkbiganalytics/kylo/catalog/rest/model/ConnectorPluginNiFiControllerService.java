@@ -20,7 +20,9 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -34,6 +36,8 @@ public class ConnectorPluginNiFiControllerService {
      * Map of controller service property to value
      */
     private Map<String, String> properties;
+
+    private List<String> identityProperties;
 
 
     /**
@@ -53,6 +57,7 @@ public class ConnectorPluginNiFiControllerService {
         properties = (other.properties != null) ? new HashMap<>(other.properties) : null;
         propertyDescriptors = copyDescriptorMap(other.propertyDescriptors);
         type = other.type;
+        identityProperties = other.identityProperties != null ? new ArrayList(other.identityProperties) : null;
     }
 
     private Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor>  copyDescriptorMap(Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> map){
@@ -88,5 +93,13 @@ public class ConnectorPluginNiFiControllerService {
 
     public void setPropertyDescriptors(Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> propertyDescriptors) {
         this.propertyDescriptors = propertyDescriptors;
+    }
+
+    public List<String> getIdentityProperties() {
+        return identityProperties;
+    }
+
+    public void setIdentityProperties(List<String> identityProperties) {
+        this.identityProperties = identityProperties;
     }
 }

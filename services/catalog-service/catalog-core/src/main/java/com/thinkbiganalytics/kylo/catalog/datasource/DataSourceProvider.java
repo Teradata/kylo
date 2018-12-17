@@ -161,7 +161,7 @@ public class DataSourceProvider {
      * @throws CatalogException if the data source is not valid
      */
     @Nonnull
-    public DataSource createDataSource(@Nonnull final DataSource source) {
+    public DataSource createDataSource(@Nonnull final DataSource source, boolean checkExisting) throws PotentialControllerServiceConflictException{
         return metadataService.commit(() -> {
 
             // Find connector
@@ -175,7 +175,7 @@ public class DataSourceProvider {
             final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(connector.getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
 
             if (plugin != null && plugin.getNifiControllerService() != null) {
-                createOrUpdateNiFiControllerService(source, plugin);
+                createOrUpdateNiFiControllerService(source, plugin, checkExisting);
             }
 
             // Update catalog
@@ -280,7 +280,7 @@ public class DataSourceProvider {
             final ConnectorPluginDescriptor plugin = pluginManager.getPlugin(domain.getConnector().getPluginId()).map(ConnectorPlugin::getDescriptor).orElse(null);
 
             if (plugin != null && plugin.getNifiControllerService() != null) {
-                createOrUpdateNiFiControllerService(source, plugin);
+                createOrUpdateNiFiControllerService(source, plugin,false);
             }
 
             // Update catalog
@@ -292,10 +292,41 @@ public class DataSourceProvider {
         });
     }
 
+    private List<ControllerServiceDTO> findMatchingControllerService(@Nonnull final DataSource dataSource, @Nonnull final Map<String, String> properties, @Nonnull final ConnectorPluginDescriptor connectorPluginDescriptor) {
+
+        ConnectorPluginNiFiControllerService plugin = connectorPluginDescriptor.getNifiControllerService();
+        String type = plugin.getType();
+        Map<String,String> identityProperties = plugin.getIdentityProperties().stream().collect(Collectors.toMap(propertyKey -> propertyKey, propertyKey -> properties.get(propertyKey)));
+        //TODO hit cache first
+        String rootProcessGroupId = nifiRestClient.processGroups().findRoot().getId();
+        return nifiRestClient.processGroups().getControllerServices(rootProcessGroupId).stream().filter(controllerServiceDTO -> isMatch(controllerServiceDTO,type,dataSource.getTitle(),identityProperties) ).collect(Collectors.toList());
+    }
+
+    /**
+     * Does the controller service match either the name or the map of identity properties
+     * @param controllerServiceDTO
+     * @param name
+     * @param identityProperties
+     * @return
+     */
+    public boolean isMatch(ControllerServiceDTO controllerServiceDTO, String controllerServiceType,String name, Map<String,String> identityProperties){
+        if(controllerServiceDTO.getName().equalsIgnoreCase(name)){
+            return true;
+        }
+        else {
+            return controllerServiceDTO.getType().equalsIgnoreCase(controllerServiceType) && identityProperties.entrySet().stream().allMatch(entry -> {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                String csValue = controllerServiceDTO.getProperties().get(key);
+                return csValue != null && csValue.equalsIgnoreCase(value);
+            });
+        }
+    }
+
     /**
      * Creates or updates the NiFi controller service linked to the specified data source.
      */
-    private void createOrUpdateNiFiControllerService(@Nonnull final DataSource dataSource, @Nonnull final ConnectorPluginDescriptor connectorPluginDescriptor) {
+    private void createOrUpdateNiFiControllerService(@Nonnull final DataSource dataSource, @Nonnull final ConnectorPluginDescriptor connectorPluginDescriptor,boolean checkExisting) throws PotentialControllerServiceConflictException{
 
         ConnectorPluginNiFiControllerService plugin = connectorPluginDescriptor.getNifiControllerService();
         // Resolve properties
@@ -318,7 +349,7 @@ public class DataSourceProvider {
         // Update or create the controller service
         ControllerServiceDTO controllerService = null;
 
-        if (dataSource.getNifiControllerServiceId() != null) {
+        if (dataSource.getNifiControllerServiceId() != null && dataSource.getId() != null) {
             controllerService = new ControllerServiceDTO();
             controllerService.setId(dataSource.getNifiControllerServiceId());
             controllerService.setName(dataSource.getTitle());
@@ -331,7 +362,14 @@ public class DataSourceProvider {
                 controllerService = null;
             }
         }
-        if (controllerService == null) {
+        if (controllerService == null && StringUtils.isBlank(dataSource.getNifiControllerServiceId())) {
+            if(checkExisting) {
+                List<ControllerServiceDTO> matchingServices = findMatchingControllerService(dataSource,properties,connectorPluginDescriptor);
+                if(matchingServices != null && !matchingServices.isEmpty()){
+                    Map<String,String> identityProperties = plugin.getIdentityProperties().stream().collect(Collectors.toMap(propertyKey -> propertyKey, propertyKey -> properties.get(propertyKey)));
+                    throw new PotentialControllerServiceConflictException(new ControllerServiceConflictEntity(dataSource.getTitle(),identityProperties,matchingServices));
+                }
+            }
             controllerService = new ControllerServiceDTO();
             controllerService.setType(plugin.getType());
             controllerService.setName(dataSource.getTitle());

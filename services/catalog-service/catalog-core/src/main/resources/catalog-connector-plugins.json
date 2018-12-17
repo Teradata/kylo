@@ -163,7 +163,8 @@
         "database-driver-locations": "${jars}",
         "Database User": "${user}",
         "Password": "${password}"
-      }
+      },
+      "identityProperties": ["Database Connection URL","Database User"]
     },
     "nifiProperties": [
       {
@@ -268,7 +269,8 @@
         "Source Password File": "${sourcePasswordFile}",
         "Source Password Passphrase": "${sourcePasswordPassphrase}",
         "Source Password (Encrypted Base64/Clear Text)": "${password}"
-      }
+      },
+      "identityProperties": ["Source Connection String", "Source User Name"]
     },
     "nifiProperties": [
       {
@@ -368,7 +370,8 @@
       "properties": {
         "Access Key": "${spark.hadoop.fs.s3a.access.key}",
         "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"
-      }
+      },
+      "identityProperties": ["Access Key"]
     },
     "nifiProperties": [
       {

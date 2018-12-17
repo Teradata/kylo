@@ -14,10 +14,10 @@
     <mat-divider></mat-divider>
 
     <mat-card-content>
-      <form>
+      <form [formGroup]="form">
         <div fxLayout="column">
           <mat-form-field fxFlex="100">
-            <input
+            <input #title
                 matInput type="text"
                 placeholder="Title"
                 required
@@ -63,6 +63,23 @@
             <ng-md-icon *ngIf="testStatus && !testError" icon="check" size="30" class="test-status status-ok"></ng-md-icon>
           </span>
         </div>
+        <div *ngIf="controllerServiceConflictError != null">
+          <div class="pad-top mat-subheading-1" fxLayout="row" fxLayoutAlign="start center">
+            <mat-icon color="accent">info</mat-icon>
+            <span translate class="pad-left-sm">CATALOG.DATA_SOURCES.NIFI_CONTROLLER_SERVICE_CONFILCT_MSG</span>
+          </div>
+          <mat-selection-list formControlName="matchingControllerService" (selectionChange)="controllerServiceConflictChanged($event, service)" #matchingControllerService >
+            <mat-list-option value="">
+              <div matLine><span translate>CATALOG.DATA_SOURCES.NIFI_CONTROLLER_SERVICE_CONFLICT_CREATE_NEW</span>{{title.value}}</div>
+            </mat-list-option>
+            <mat-list-option *ngFor="let service of controllerServiceConflictError.matchingServices" [value]="service.id">
+              <div matLine>{{service.name}}</div>
+              <div matLine>State: {{service.state}}, used by: {{service.referencingComponents.length}} processors</div>
+              <div matLine class="mat-hint">{{service.identityPropertyString}}</div>
+            </mat-list-option>
+          </mat-selection-list>
+        </div>
+
         <entity-access-control-ng2 *ngIf="allowAdmin && datasource" [entity]="datasource" entityType="datasource" [parentForm]="form" [readonly]="false" class="block pad-top">
         </entity-access-control-ng2>
       </form>

@@ -1,4 +1,4 @@
-import {Component, Input} from "@angular/core";
+import {Component, Input, ViewChild} from "@angular/core";
 import {AbstractControl, FormControl, FormGroup, ValidatorFn} from '@angular/forms';
 import {ValidationErrors} from '@angular/forms/src/directives/validators';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -20,10 +20,12 @@ import {EntityAccessControlService} from "../../shared/entity-access-control/Ent
 
 import {Connector} from '../api/models/connector';
 import {ConnectorPlugin} from '../api/models/connector-plugin';
-import {DataSource} from '../api/models/datasource';
+import {CreateDataSource, DataSource} from '../api/models/datasource';
 import {DataSourceTemplate} from '../api/models/datasource-template';
 import {UiOption} from '../api/models/ui-option';
 import {CatalogService} from '../api/services/catalog.service';
+import {MatSelectionListChange, MatSelectionList} from "@angular/material/list";
+import {HttpErrorResponse} from "@angular/common/http";
 
 
 interface UiOptionsMapper {
@@ -168,6 +170,13 @@ class AzureUiOptionsMapper implements UiOptionsMapper {
     }
 }
 
+export interface ControllerServiceConflict {
+    name:string;
+    matchingServices:any;
+    identityProperties:any;
+
+}
+
 /**
  * Displays selected connector properties.
  */
@@ -203,6 +212,11 @@ export class ConnectorComponent {
     private controlToUIOption: Map<string, UiOption> = new Map();
     private testError: String;
     private testStatus: boolean = false;
+    public controllerServiceConflictError:ControllerServiceConflict = null;
+    private matchingControllerServiceCheck:boolean = true;
+    private selectedMatchingControllerService:any;
+
+    private matchingControllerServiceControl:FormControl;
 
     // noinspection JSUnusedLocalSymbols - called dynamically when validator is created
     private jars = (params: any): ValidatorFn => {
@@ -323,17 +337,37 @@ export class ConnectorComponent {
                 this.controlToUIOption.set(option.key,option);
             }
         }
+        this.matchingControllerServiceControl = new FormControl("");
+        this.form.addControl("matchingControllerService",this.matchingControllerServiceControl);
     }
 
     /**
      * Creates a new datasource or updates an existing one
      */
     saveDatasource() {
-        const ds = this.getDataSourceFromUi();
+        this.testError = undefined;
+        // attempt to detect any matching controller services only the first time.
+        //once we detect if there are matching ones the next save will not detect
+        let detectServices = this.controllerServiceConflictError == null;
+
+        this.controllerServiceConflictError = null;
+
+        const ds = this.getDataSourceFromUi() as CreateDataSource;
         if (ds === undefined) {
             return;
         }
 
+        let matchingControllerServiceId = this.matchingControllerServiceControl.value.length >0 ? this.matchingControllerServiceControl.value[0] : null;
+        if(matchingControllerServiceId != null){
+            ds.nifiControllerServiceId = matchingControllerServiceId;
+            detectServices = false;
+        }
+        else {
+            ds.nifiControllerServiceId = null;
+        }
+        ds.detectSimilarNiFiControllerServices = detectServices;
+
+        console.log("saving ",ds);
         this.isLoading = true;
         this.loadingService.register(ConnectorComponent.topOfPageLoader);
         this.catalogService.createDataSource(ds).pipe(
@@ -352,14 +386,60 @@ export class ConnectorComponent {
             })
         ).subscribe(
             source => this.state.go("catalog.datasources", {datasourceId: source.id}),
-            err => {
-                console.error(err);
-                this.showSnackBar('Failed to save. ', err.message);
+            (err:HttpErrorResponse) => {
+                let propertyString:string;
+                let errorMessage = err.error.message || err.message;
+                if(err.status == 409 && err.error.type && err.error.type == "ControllerServiceConflictEntity") {
+                    let controllerServiceConflict = (err.error as ControllerServiceConflict);
+                    let identityPropertyKeys = Object.keys(controllerServiceConflict.identityProperties);
+                    controllerServiceConflict.matchingServices.forEach((svc: any) => {
+                        svc.identityPropertyString = ''
+                        if (identityPropertyKeys) {
+                            identityPropertyKeys.forEach((key: string) => {
+                                let serviceValue = svc.properties[key];
+                                if (serviceValue) {
+                                    if (svc.identityPropertyString != "") {
+                                        svc.identityPropertyString += ", ";
+                                    }
+                                    svc.identityPropertyString += key + "=" + serviceValue;
+                                }
+                            })
+                        }
+                    });
+                    controllerServiceConflict.matchingServices = _.sortBy(controllerServiceConflict.matchingServices, (service: any) => service.state == 'ENABLED' ? 0 : 1)
+
+                    this.controllerServiceConflictError = controllerServiceConflict;
+                    this.matchingControllerServiceControl.setValue([""]);
+                    let msg = this.translateService.instant("CATALOG.DATA_SOURCES.NIFI_CONTROLLER_SERVICE_CONFILCT_SNACK_BAR")
+                    this.showSnackBar('Similar NiFi controller services were found. Review options before saving');
+                }
+                else {
+                    console.error(err);
+                    this.showSnackBar('Failed to save. ',errorMessage);
+                }
+
+
             }
         );
     }
 
-    getDataSourceFromUi(): DataSource | undefined {
+    /**
+     * ensure only 1 service is selected
+     * @param event
+     */
+    controllerServiceConflictChanged(event:MatSelectionListChange){
+        console.log('controllerServiceConflictChanged ',event)
+
+        if (event.option.selected) {
+            event.source.options.toArray().forEach(element => {
+                if (element != event.option) {
+                    element.selected = false;
+                }
+            });
+       }
+    }
+
+    getDataSourceFromUi(): DataSource | CreateDataSource | undefined {
         const optionsMapper = <UiOptionsMapper>this[this.plugin.optionsMapperId || "defaultOptionsMapper"];
         if (!optionsMapper) {
             this.showSnackBar("Unknown ui options mapper " + this.plugin.optionsMapperId
