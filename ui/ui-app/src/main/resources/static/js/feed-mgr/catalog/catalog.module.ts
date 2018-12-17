@@ -95,6 +95,9 @@ import * as angular from "angular";
         MatSnackBarModule,
         TranslateModule.forChild(),
         UIRouterModule
+    ],
+    providers:[
+        {provide: "$injector", useFactory: () => angular.element(document.body).injector()}
     ]
 })
 export class CatalogModule {
