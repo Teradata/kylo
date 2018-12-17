@@ -325,6 +325,7 @@ public class JerseyRestClient {
                 target = target.queryParam(entry.getKey(), entry.getValue());
             }
         }
+        log.info("lby uri={} path={}", uri, path);
         return target;
     }
 
