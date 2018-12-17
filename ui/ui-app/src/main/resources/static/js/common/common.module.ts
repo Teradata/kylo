@@ -142,7 +142,7 @@ import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visua
         MatToolbarModule,
         MatTooltipModule,
         TranslateModule,
-        UIRouterModule.forChild()
+        UIRouterModule
     ],
     exports: [
         AccessDeniedComponent,

@@ -25,7 +25,6 @@ import {SelectDatasetStepComponent} from "./preview-stepper/select-dataset-step.
 import {PreviewDatasetStepComponent} from "./preview-stepper/preview-dataset-step.component";
 import {DatasetPreviewStepperComponent} from "./preview-stepper/dataset-preview-stepper.component";
 import {MatCheckboxModule} from "@angular/material/checkbox";
-import {KyloServicesModule} from "../../services/services.module";
 import {KyloCommonModule} from "../../common/common.module";
 import {PreviewSchemaModule} from "../catalog/datasource/preview-schema/preview-schema.module";
 import {MatToolbarModule} from "@angular/material/toolbar";
@@ -90,7 +89,6 @@ import {UIRouterModule} from "@uirouter/angular";
         PreviewSchemaModule,
         TablesModule,
         UploadModule,
-        KyloServicesModule,
         UIRouterModule
     ],
     providers:[

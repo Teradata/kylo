@@ -3,6 +3,7 @@ import { RegisterTemplateServiceFactory } from '../../../services/RegisterTempla
 import {AccessControlService} from '../../../../services/AccessControlService';
 import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 
 @Component({
     selector: 'thinkbig-template-access-control',
@@ -16,7 +17,7 @@ export class TemplateAccessControlController implements OnInit {
     */
     // @Input() stepIndex: string;
 
-    templateAccessControlForm: any = {};
+    templateAccessControlForm: FormGroup = new FormGroup({});
     model: any;
     allowEdit: boolean = false;
 

@@ -8,7 +8,7 @@
 
   <mat-card-content class="md-padding">
 
-  <form #templateAccessControlForm=ngForm name="templateAccessControlForm">
+  <form [formGroup]="templateAccessControlForm">
 
     <entity-access-control-ng2 [entity]="model" entityType="template" [parentForm]="templateAccessControlForm" [readOnly]="!allowEdit"></entity-access-control-ng2>
     <br/><br/><br/>

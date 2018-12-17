@@ -146,7 +146,7 @@ export class RegisterProcessorPropertiesController implements OnInit {
             this.showSelected();
         }
         _.each(this.allProperties, (property) => {
-            if(property.propertyDescriptor.allowableValues !== null){
+            if(property.propertyDescriptor.allowableValues){
                 this._dataTableService.sortData(property.propertyDescriptor.allowableValues,
                     "value",TdDataTableSortingOrder.Ascending);
             }

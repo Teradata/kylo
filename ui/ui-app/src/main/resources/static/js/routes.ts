@@ -326,7 +326,7 @@ class Route {
 
 
         //initialize the access control
-        accessControlService.init();
+        // accessControlService.init();
         loginNotificationService.initNotifications();
 
         $rootScope.$state = $state;

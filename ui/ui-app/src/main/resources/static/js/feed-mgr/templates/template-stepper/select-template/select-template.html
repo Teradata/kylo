@@ -25,7 +25,7 @@
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
                 <div class="card-title" *ngIf="isNew" flex>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</div>
-        <div class="card-title" *ngIf="!isNew" flex>{{vm.model.templateName}}</div>
+        <div class="card-title" *ngIf="!isNew" flex>{{model.templateName}}</div>
                 <h2 class="card-sub-header" [translate]="'FEEDMGR.TEMPLATES.STEPPER.SELECT.COUNTER'" [translateParams]="{before:1,after:5}"></h2>
             </div>
         </mat-card-title>
