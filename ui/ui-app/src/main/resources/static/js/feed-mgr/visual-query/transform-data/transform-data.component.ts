@@ -8,7 +8,7 @@ import StepperService from '../../../common/stepper/StepperService';
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {BroadcastService} from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
-import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {DefaultFeedDataTransformation, FeedDataTransformation} from "../../model/feed-data-transformation";
 import {Feed} from "../../model/feed/feed.model";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
@@ -47,6 +47,8 @@ import {CatalogService} from "../../catalog/api/services/catalog.service";
 import {SparkDataSet} from "../../model/spark-data-set.model";
 import {SparkConstants} from "../services/spark/spark-constants";
 import {JoinDataset} from "../wrangler/model/join-dataset.model";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
+import {InlineJoinScriptBuilder} from "./dataset-join-dialog/inline-join-script-builder";
 
 declare const CodeMirror: any;
 
@@ -321,6 +323,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         }
+        //convert the model to a default model
+        this.model = ObjectUtils.getAs(this.model,DefaultFeedDataTransformation)
 
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
@@ -509,48 +513,25 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                //ensure the dataset is registered
             this.catalogService.ensureDataSetId(dataset).subscribe((ds:SparkDataSet) => {
                 //join
-                let dsProvider = DATASET_PROVIDER;
-                let dsId = ds.id;
+                joinData.ds = ds;
+                let joinScriptBuilder = new InlineJoinScriptBuilder(this.visualQueryService,this.model,this.engine.getColumns(),joinData);
+                let joinDataSet:JoinDataset = joinScriptBuilder.build();
 
-                let dfField = joinData.dataFrameField;
-                let joinField = joinData.joinField;
-                let parser = new SparkQueryParser(this.visualQueryService)
-                let joinType = parser.parseJoinType(SqlBuilderUtil.getJoinType(joinData.joinType));
-
-                let joinSelect:ResTarget[] = dataset.schema.map(field => {
-                    let fields: string[] = [];
-                    let dfId = SparkConstants.ADDITIONAL_DATA_FRAME_VARIABLE + "1"
-                    fields.push(dfId)
-                    fields.push(field.name);
-                    let name = dataset.getTableName() + "_" +field.name;
-                    name = name.replace(/[^a-zA-Z0-9_\s\)\(-]*/g,'');
-                    name = name.replace(" ","_")
-                    name = name.replace(".","_")
-                    let t: ResTarget = {description: "", val: {fields: fields}, name:name};
-                    return t;
-                });
-
-                let dfSelect = this.engine.getColumns().map(col => {
-                    let fields: string[] = [];
-                    let dfId ="parent";
-                    fields.push(dfId)
-                    fields.push(col.hiveColumnLabel);
-                    let t: ResTarget = {description: "", val: {fields: fields}, name:col.displayName};
-                    return t;
-                })
-                let targetSelect:ResTarget[] = dfSelect.concat(joinSelect);
-                let joinSelectString = parser.joinSelect(targetSelect);
-
-                let joinDataset: JoinDataset = {datasetId:dsId,dataframeId:1,joinSelectFn:joinSelectString};
-
-                let formula = `join(1, column(0,"${dfField}").equal(column(1,"${joinField}")), "${joinType}")`
-
+                let formula = "";
+                //if successful register and add it to the list
                 if(this.model.datasets == undefined){
                     this.model.datasets = [];
                 }
-                this.model.datasets.push(dataset);
+                this.model.datasets.push(ds);
 
-                this.pushFormula(formula, {formula: formula, icon: 'link', name: 'Join '+joinData.joinDataSet.displayKey+" on "+dfField+ "= "+joinField, joinDataSet:joinDataset}, true, true);
+
+                this.pushFormula(formula, {formula: formula, icon: 'link', name: 'Join '+joinData.joinDataSet.displayKey+" on "+joinDataSet.dfField+ "= "+joinDataSet.joinField, joinDataSet:joinDataSet}, true, true)
+                    .then( () => {
+
+                    }, () => {
+                        //remove it
+                        delete this.model.inlineJoinDataSets[joinDataSet.datasetId];
+                    })
 
             })
 

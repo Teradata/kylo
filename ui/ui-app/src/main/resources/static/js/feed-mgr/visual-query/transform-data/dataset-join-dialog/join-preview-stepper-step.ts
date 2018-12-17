@@ -6,6 +6,11 @@ import {AbstractDatasetPreviewStepComponent} from "../../../catalog-dataset-prev
 import {DatasetPreviewStepperService} from "../../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.service";
 import {ISubscription} from "rxjs/Subscription";
 import {PreviewDataSet} from "../../../catalog/datasource/preview-schema/model/preview-data-set";
+import {SparkDataSet} from "../../../model/spark-data-set.model";
+import * as _ from "underscore";
+import {TableColumn} from "../../../catalog/datasource/preview-schema/model/table-view-model";
+import {QueryResultColumn} from "../../wrangler";
+import {FormGroupUtil} from "../../../../services/form-group-util";
 
 export class JoinData {
 
@@ -13,6 +18,7 @@ export class JoinData {
     joinField:string;
     joinDataSet:PreviewDataSet;
     joinType:string;
+    ds:SparkDataSet
 
     constructor() {
 
@@ -24,10 +30,13 @@ export class JoinData {
 @Component({selector:"dataset-join-step",
     template:`
          <ng-template let-data="data" #stepTemplate>      
-         <form [formGroup]="stepControl">
+           <div fxLayout="column" fxLayoutAlign="start center">
+              <form [formGroup]="stepControl" fxLayout="column" fxLayoutAlign="start">
+                <div *ngIf="dataSet != undefined" class="pad-bottom-md pad-top-md"> Join <span class="bold-title">{{dataSet.displayKey}}</span> with your data             
+                </div>
          
             <mat-form-field>
-              <mat-select placeholder="Join Type"  formControlName="joinType" required>
+              <mat-select placeholder="Join type"  formControlName="joinType" required>
                 <mat-option *ngFor="let joinType of joinTypes" [value]="joinType.value">
                   {{joinType.name}}
                 </mat-option>
@@ -38,16 +47,18 @@ export class JoinData {
             <div fxLayout="row">
                   
               <mat-form-field>
-                <mat-select placeholder="Current Schema"  formControlName="currentSchemaField" required>
+                <mat-select placeholder="Current schema"  formControlName="currentSchemaField" required>
                     <mat-option *ngFor="let field of data.cols" [value]="field.field">
                     {{field.displayName}} - {{field.dataType}}
                   </mat-option>
                 </mat-select>
                 <mat-error *ngIf="currentSchemaFieldControl.hasError('required')">Required</mat-error>
               </mat-form-field>
+              
+              <div fxFlex="10" class="pad-left-sm pad-right-sm"> </div>
         
               <mat-form-field *ngIf="dataSet != undefined">
-                <mat-select placeholder="Destination"  formControlName="joinSchemaField" required>
+                <mat-select placeholder="Joining schema"  formControlName="joinSchemaField" required>
                   <mat-option *ngFor="let field of dataSet.schema" [value]="field.name">
                     {{field.label}} - {{field.dataType}}
                   </mat-option>
@@ -56,7 +67,9 @@ export class JoinData {
               </mat-form-field>
             </div>
     </form>
-          </ng-template>`})
+           </div>
+          </ng-template>`,
+    styles: ['.bold-title { font-weight: bold; }']})
 export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<JoinPreviewStepData> {
 
     stepChangedSubscription:ISubscription;
@@ -73,8 +86,6 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
 
     dataSet:PreviewDataSet;
 
-    //TODO support passing in the keys for prepopulating the join when editing
-
     constructor(protected _datasetPreviewStepperService:DatasetPreviewStepperService) {
         super(_datasetPreviewStepperService);
         this.name = "Join";
@@ -85,14 +96,48 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
         this.joinTypeControl = new FormControl('', [Validators.required]);
 
         this.stepChangedSubscription = this._datasetPreviewStepperService.subscribeToStepChanges(this.onStepChanged.bind(this))
-    }
 
-
-
-    init() {
         this.stepControl.addControl("joinType", this.joinTypeControl);
         this.stepControl.addControl("currentSchemaField", this.currentSchemaFieldControl);
         this.stepControl.addControl("joinSchemaField", this.joinSchemaFieldControl);
+    }
+
+
+    resetForm(){
+        this.currentSchemaFieldControl.setValue("");
+        this.joinSchemaFieldControl.setValue("");
+        this.joinTypeControl.setValue("")
+    }
+
+    init() {
+        this.resetForm();
+    }
+
+    private autoMatch():void {
+        //attempt to auto find matches
+        let currentNames: any = [];
+        let joinNames: any = [];
+        _.forEach(this.data.cols, function (field: QueryResultColumn) {
+            currentNames.push(field.field);
+        });
+
+        _.forEach(this.dataSet.schema, function (field: TableColumn) {
+            joinNames.push(field.name);
+        });
+
+        let matches = _.intersection(currentNames, joinNames);
+        if (matches && matches.length && matches.length > 0) {
+            let col = matches[0];
+            if (matches.length > 1) {
+                // force id fields as match if they exist
+                if (matches[0] == 'id') {
+                    col = matches[1];
+                }
+            }
+            this.currentSchemaFieldControl.setValue(<string>col);
+            this.joinSchemaFieldControl.setValue(<string>col);
+            this.joinTypeControl.setValue("INNER JOIN")
+        }
     }
 
 
@@ -101,6 +146,9 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
         if (idx == this.index) {
            if(this._datasetPreviewStepperService.previews && this._datasetPreviewStepperService.previews.length ==1){
                this.dataSet = this._datasetPreviewStepperService.previews[0];
+               if(this.joinTypeControl.value == "" || this.currentSchemaFieldControl.value == "" || this.joinSchemaFieldControl.value == "") {
+                   this.autoMatch();
+               }
            }
         }
 

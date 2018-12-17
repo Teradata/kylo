@@ -36,9 +36,9 @@ export class DatasetPreviewStepperDialogComponent  implements OnInit, OnDestroy{
 
     ngOnInit(){
         if(this.data && this.data.additionalSteps){
-          //  this.data.additionalSteps.forEach((step:PreviewStepperStep<any>) => {
-          //      step.init()
-          //  })
+            this.data.additionalSteps.forEach((step:PreviewStepperStep<any>) => {
+                step.init()
+            })
         }
 
     }

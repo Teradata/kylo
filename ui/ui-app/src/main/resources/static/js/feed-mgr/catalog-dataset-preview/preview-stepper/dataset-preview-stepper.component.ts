@@ -191,7 +191,13 @@ export class DatasetPreviewStepperComponent implements OnInit, OnDestroy{
 
 
     saveDisabled(){
-        return this.previewForm.invalid;
+        if(this.additionalSteps){
+         let lastStep = this.getAdditionalStepForIndex(this.getLastIndex());
+         return lastStep != undefined ? lastStep.stepControl.invalid : false;
+        }
+        else {
+            return this.previewForm.invalid;
+        }
     }
 
     /**

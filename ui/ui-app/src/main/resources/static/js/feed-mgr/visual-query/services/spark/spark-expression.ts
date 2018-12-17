@@ -291,7 +291,7 @@ export class SparkExpression {
                     dfVar = "parent";
                     source = "";
                 }else {
-                    dfVar = SparkConstants.ADDITIONAL_DATA_FRAME_VARIABLE;
+                    dfVar = SparkConstants.DATA_FRAME_VARIABLE;
                 }
             }
         }

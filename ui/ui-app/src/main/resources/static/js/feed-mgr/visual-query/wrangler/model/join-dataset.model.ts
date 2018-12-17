@@ -2,5 +2,7 @@ export interface JoinDataset {
 
     datasetId:string;
     dataframeId:number;
-    joinSelectFn:string;
+    joinScript:string;
+    joinField:string;
+    dfField:string
 }

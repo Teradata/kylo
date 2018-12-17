@@ -162,9 +162,9 @@ export class SparkQueryParser extends QueryParser {
         if (joinType === VisualQueryService.JoinType.JOIN_INNER) {
             join = "inner";
         } else if (joinType=== VisualQueryService.JoinType.JOIN_LEFT) {
-            join =  "left outer";
+            join =  "leftouter";
         } else if (joinType === VisualQueryService.JoinType.JOIN_RIGHT) {
-            join = "right outer"
+            join = "rightouter"
         } else if (joinType === VisualQueryService.JoinType.FULL_JOIN) {
           join = "fullouter"
         }   else {

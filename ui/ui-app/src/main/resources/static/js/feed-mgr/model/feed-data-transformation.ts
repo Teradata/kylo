@@ -114,6 +114,13 @@ export interface FeedDataTransformation {
     datasets:SparkDataSet[];
 
     reset():void;
+
+    /**
+     * Datasets joined mid wrangle
+     */
+    inlineJoinDataSets:{ [s: string]: string; };
+
+    getJoinDataFrameId(dataSetId:string):string
 }
 
 export class DefaultFeedDataTransformation implements FeedDataTransformation, KyloObject {
@@ -191,6 +198,13 @@ export class DefaultFeedDataTransformation implements FeedDataTransformation, Ky
 
     datasets:SparkDataSet[];
 
+    /**
+     * map of datasetId to dataframe id
+     */
+    inlineJoinDataSets:{ [s: string]: string; } = {}
+
+
+
     public constructor(init?: Partial<FeedDataTransformation>) {
         Object.assign(this, init);
         if (this.datasets) {
@@ -203,10 +217,23 @@ export class DefaultFeedDataTransformation implements FeedDataTransformation, Ky
         if(this.chartViewModel) {
             this.chartViewModel = ObjectUtils.getAs(this.chartViewModel, FlowChart.ChartDataModel);
         }
+        if(this.inlineJoinDataSets == null || this.inlineJoinDataSets == undefined){
+            this.inlineJoinDataSets = {};
+        }
     }
 
     reset(){
 
+    }
+
+    getJoinDataFrameId(dataSetId:string):string {
+        if(this.inlineJoinDataSets == null || this.inlineJoinDataSets == undefined){
+            this.inlineJoinDataSets = {};
+        }
+        if(this.inlineJoinDataSets[dataSetId] === undefined) {
+            this.inlineJoinDataSets[dataSetId] = "joinDf" + (Object.keys(this.inlineJoinDataSets).length + 1);
+        }
+        return this.inlineJoinDataSets[dataSetId];
     }
 
 }

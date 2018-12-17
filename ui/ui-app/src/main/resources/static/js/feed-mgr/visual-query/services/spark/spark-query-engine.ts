@@ -221,13 +221,11 @@ export class SparkQueryEngine extends QueryEngine<string> {
         for (let i = start; i < end; ++i) {
             if (!this.states_[i].inactive) {
                 let state = this.states_[i];
-                if(state.joinDataSet != undefined && state.joinDataSet != null){
-                    sparkScript += "var "+SparkConstants.ADDITIONAL_DATA_FRAME_VARIABLE+state.joinDataSet.dataframeId+" = "+dsProvider+".read(\""+state.joinDataSet.datasetId+"\")\n";
-                    sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + state.joinDataSet.joinSelectFn+"\n";
+                if(state.joinDataSet != undefined && state.joinDataSet != null) {
+                    sparkScript += state.joinDataSet.joinScript;
                 }
-                else {
-                    sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
-                }
+                sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
+
             }
         }
 

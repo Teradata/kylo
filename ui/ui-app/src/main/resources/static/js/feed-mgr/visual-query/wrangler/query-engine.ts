@@ -696,6 +696,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
             const state = this.newState();
             state.context = src.context;
             state.script = src.script;
+            state.joinDataSet = src.context != undefined ? src.context.joinDataSet : null;
             this.states_.push(state);
         });
         this.stateChanged = true;

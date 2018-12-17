@@ -30,7 +30,7 @@ export abstract class AbstractDatasetPreviewStepComponent<T> implements OnInit, 
     }
 
     ngOnInit(): void {
-        this.init();
+
     }
 
     setAdditionalStepIndex(additionalStepIndex:number){
