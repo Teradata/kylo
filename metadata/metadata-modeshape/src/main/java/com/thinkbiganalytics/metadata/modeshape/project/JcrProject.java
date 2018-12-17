@@ -20,16 +20,24 @@ package com.thinkbiganalytics.metadata.modeshape.project;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.project.Project;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.IconableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,9 +52,14 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
     public static final String NODE_TYPE = "tba:project";
 
     /**
-     * Name of the {@code containerImage} property
+     * Name of the {@code feeds} property
      */
-    private static final String CONTAINER_IMAGE = "tba:containerImage";
+    private static final String FEEDS = "tba:feeds";
+
+    /**
+     * Name of the {@code description} property
+     */
+    private static final String DESCRIPTION = "tba:description";
 
     /**
      * Constructs a {@code Project} using the specified node.
@@ -74,24 +87,48 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
 
     @Nullable
     @Override
-    public String getProjectName() {
+    public String getName() {
         return getTitle();
     }
 
     @Override
-    public void setProjectName(@Nullable String displayName) {
+    public void setName(@Nullable String displayName) {
         setTitle(displayName);
     }
 
     @Override
-    @Nullable
-    public String getContainerImage() {
-        return super.getProperty(CONTAINER_IMAGE, String.class);
+    public List<Feed> getFeeds() {
+        List<Feed> feeds = new ArrayList<>();
+        Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(getNode(), FEEDS);
+
+        feedNodes.stream().map(depNode -> new JcrFeed(depNode, (FeedOpsAccessControlProvider) null)).collect(Collectors.toCollection(() -> feeds));
+        return feeds;
     }
 
     @Override
-    public void setContainerImage(String image) {
-        super.setProperty(CONTAINER_IMAGE, image);
+    public boolean addFeed(Feed feed) {
+        JcrFeed jcrFeed = (JcrFeed) feed;
+        Node feedNode = jcrFeed.getNode();
+
+        return JcrPropertyUtil.addToSetProperty(getNode(), FEEDS, feedNode, true);
+    }
+
+    @Override
+    public boolean removeFeed(Feed feed) {
+        JcrFeed jcrFeed = (JcrFeed) feed;
+        Node feedNode = jcrFeed.getNode();
+
+        return JcrPropertyUtil.removeFromSetProperty(getNode(), FEEDS, feedNode);
+    }
+
+    @Override
+    public String getDescription() {
+        return getProperty(DESCRIPTION);
+    }
+
+    @Override
+    public void setDescription(String description) {
+        setProperty(DESCRIPTION, description);
     }
 
     @Override

@@ -32,6 +32,7 @@
     <module>upgrade-service</module>
     <module>catalog-service</module>
     <module>repository-service</module>
+    <module>project-service</module>
   </modules>
 
   <build>

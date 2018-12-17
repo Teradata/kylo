@@ -42,7 +42,7 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityPro
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.project.providers.JcrProjectProvider;
-import com.thinkbiganalytics.metadata.modeshape.project.providers.ProjectProvider;
+import com.thinkbiganalytics.metadata.api.project.ProjectProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.service.JcrIndexService;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrFeedServiceLevelAgreementProvider;

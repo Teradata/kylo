@@ -242,6 +242,12 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-project-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- metadata server -->
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>

@@ -24,26 +24,29 @@ import com.thinkbiganalytics.metadata.api.Auditable;
 import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.security.AccessControlled;
 
 import java.io.Serializable;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.List;
 
 public interface Project extends AccessControlled, Auditable, Iconable, SystemEntity, Taggable {
 
-    Project.ID getId();
+    ID getId();
 
-    @Nullable
-    String getProjectName();
+    String getName();
 
-    void setProjectName(@Nullable final String displayName);
+    void setName(String displayName);
 
-    @Nonnull
-    String getContainerImage();
+    List<Feed> getFeeds();
 
-    void setContainerImage(String image);
+    boolean addFeed(Feed feed);
+
+    boolean removeFeed(Feed feed);
+
+    String getDescription();
+
+    void setDescription(String description);
 
     interface ID extends Serializable {
 

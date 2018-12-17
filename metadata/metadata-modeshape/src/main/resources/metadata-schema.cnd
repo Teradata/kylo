@@ -425,9 +425,9 @@
 
 [tba:project] > tba:entity, tba:Iconable, mix:title, tba:accessControlled, tba:propertied
     - tba:systemName (STRING)
-    - tba:icon (STRING)
-    - tba:iconColor (STRING)
-    - tba:containerImage (STRING)
+    - tba:description (STRING)
+    - tba:feeds (WEAKREFERENCE) multiple
+ //   - tba:containerImage (STRING)
 
 
 /* -=-=-=-=-=--=-=-  Catalog types  -=-=-=-=-=-=-=-=- */

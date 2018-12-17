@@ -21,18 +21,21 @@ package com.thinkbiganalytics.metadata.modeshape.project;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.project.Project;
+import com.thinkbiganalytics.metadata.api.project.ProjectProvider;
 import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.project.providers.ProjectProvider;
+import com.thinkbiganalytics.metadata.modeshape.feed.FeedTestConfig;
+import com.thinkbiganalytics.metadata.modeshape.feed.FeedTestUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -42,22 +45,22 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import javax.annotation.Resource;
+import javax.inject.Inject;
 import java.security.AccessControlException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.annotation.Resource;
-import javax.inject.Inject;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class,
-                                 JcrProjectProviderAccessControlTest.TestProjectServiceConfig.class}, loader = AnnotationConfigContextLoader.class)
+                                 JcrProjectProviderAccessControlTest.TestProjectServiceConfig.class, FeedTestConfig.class}, loader = AnnotationConfigContextLoader.class)
 @TestPropertySource
 public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringContextTests {
 
@@ -65,6 +68,11 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
     private static final UsernamePrincipal TEST_USER1 = new UsernamePrincipal("tester1");
     private static final UsernamePrincipal TEST_USER2 = new UsernamePrincipal("tester2");
     private static final UsernamePrincipal TEST_USER3 = new UsernamePrincipal("tester3");
+
+    private static final String CATEGORY_SYSTEM_NAME = "Category1";
+    private static final String TEMPLATE_NAME = "Template1";
+    private static final String FEED_NAME = "Feed";
+
 
     @Inject
     private JcrMetadataAccess metadata;
@@ -81,6 +89,9 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
     @Inject
     private ActionsModuleBuilder builder;
 
+    @Inject
+    private FeedTestUtil feedTestUtil;
+
     @BeforeClass
     public void beforeClass() {
         metadata.commit(() -> builder
@@ -90,7 +101,15 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
             .action(ProjectAccessControl.CHANGE_PERMS)
             .action(ProjectAccessControl.DELETE_PROJECT)
             .add()
+                .module(AllowedActions.FEED)
+                .action(FeedAccessControl.ACCESS_FEED)
+                .action(FeedAccessControl.EDIT_DETAILS)
+                .action(FeedAccessControl.CHANGE_PERMS)
+                .action(FeedAccessControl.DELETE)
+                .add()
             .build(), MetadataAccess.SERVICE);
+
+
     }
 
     @Test
@@ -110,8 +129,7 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
                 */
 
             Project p3 = projProvider.ensureProject("Project3");
-            p3.setProjectName("ProjectName3");
-            p3.setContainerImage("kylo/nonExisentImage");
+            p3.setName("ProjectName3");
 
             // sets Access Control for user.
             //p3.getAllowedActions().enableAll(TEST_USER1);
@@ -121,7 +139,7 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
             p3.getRoleMembership(ProjectAccessControl.ROLE_EDITOR).ifPresent(role -> role.addMember(TEST_USER1));
             p3.getRoleMembership(ProjectAccessControl.ROLE_READER).ifPresent(role -> role.addMember(TEST_USER2));
 
-            return p3.getProjectName();
+            return p3.getName();
         }, JcrMetadataAccess.SERVICE);
 
     }
@@ -209,6 +227,46 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
                       }
             , TEST_USER1);
 
+    }
+
+    @Test(dependsOnMethods = "testCreateProject3")
+    public void projectFeedAccessAllowed() {
+        metadata.commit(() -> {
+            Optional<Project> optProj = this.projProvider.findProjectByName("Project3");
+            Project project = optProj.get();
+            Set<UsernamePrincipal> editors = this.projProvider.getProjectEditors(project);
+            Set<UsernamePrincipal> readers = this.projProvider.getProjectReaders(project);
+
+            Feed feed1 = feedTestUtil.findOrCreateFeed(CATEGORY_SYSTEM_NAME, FEED_NAME + 1, TEMPLATE_NAME);
+            feed1.getRoleMembership(ProjectAccessControl.ROLE_EDITOR).ifPresent(role -> role.addMember(TEST_USER1));
+
+            Feed feed2 = feedTestUtil.findOrCreateFeed(CATEGORY_SYSTEM_NAME, FEED_NAME + 2, TEMPLATE_NAME);
+            feed2.getRoleMembership(ProjectAccessControl.ROLE_EDITOR).ifPresent(role -> role.addMember(TEST_USER2));
+
+            project.addFeed(feed1);
+            project.addFeed(feed2);
+            projProvider.update(project);
+        }, MetadataAccess.SERVICE);
+
+        metadata.read(() -> {
+                    Optional<Project> optProj = this.projProvider.findProjectByName("Project3");
+                    Project project = optProj.get();
+
+                    assertThat(project.getFeeds()).hasSize(1);
+                }
+                , TEST_USER2);
+    }
+
+    @AfterMethod
+    public void afterMethod() {
+        metadata.commit(() -> {
+            Optional<Project> optProj = this.projProvider.findProjectByName("Project3");
+            Project project = optProj.get();
+            for (Feed feed : project.getFeeds())
+                project.removeFeed(feed);
+
+            projProvider.update(project);
+        }, MetadataAccess.SERVICE);
     }
 
     @Configuration

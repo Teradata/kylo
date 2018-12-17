@@ -57,7 +57,7 @@ import io.swagger.annotations.Tag;
 @Api(tags = "Repository - File system", produces = "application/json")
 @Component
 @Path("/v1/repository")
-@SwaggerDefinition(tags = @Tag(name = "Repository - File system", description = "templates"))
+@SwaggerDefinition(tags = @Tag(name = "Repository - File system"))
 public class RepositoryController {
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryController.class);

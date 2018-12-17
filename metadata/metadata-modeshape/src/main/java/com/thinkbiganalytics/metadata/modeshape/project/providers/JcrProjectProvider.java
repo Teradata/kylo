@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape.project.providers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.api.project.Project;
+import com.thinkbiganalytics.metadata.api.project.ProjectProvider;
 import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -46,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.security.AccessControlException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +63,6 @@ import javax.jcr.Session;
 public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> implements ProjectProvider {
 
     public static Logger logger = LoggerFactory.getLogger(JcrProjectProvider.class);
-
 
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
@@ -88,7 +87,6 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
         return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, getEntityClass()));
     }
 
-
     @Nonnull
     @Override
     public Project createProject(@Nonnull String path) {
@@ -103,7 +101,7 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
 
 
     /**
-     * Creates a new user with the specified name.
+     * Creates a new project with the specified name.
      *
      * @param name   the name of the Project
      * @param ensure {@code true} to return the Project if it already exists, or {@code false} to throw an exception

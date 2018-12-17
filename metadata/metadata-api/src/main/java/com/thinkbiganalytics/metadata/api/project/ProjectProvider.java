@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.modeshape.project.providers;
+package com.thinkbiganalytics.metadata.api.project;
 
 /*-
  * #%L
