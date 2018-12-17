@@ -13,7 +13,7 @@ import { Component, Input, ViewEncapsulation } from "@angular/core";
             border: 1px solid gray; 
             overflow: auto;
         }
-    `]
+    `],
     encapsulation: ViewEncapsulation.None
 })
 export class DomainTypeMatchersDetailsComponent extends AbstractSectionComponent {

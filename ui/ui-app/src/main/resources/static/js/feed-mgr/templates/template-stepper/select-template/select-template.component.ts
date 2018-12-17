@@ -33,7 +33,7 @@ export class RegisterSelectTemplateController implements OnInit {
 
     templates: any = [];
     model: any;
-    @Input() stepIndex: number = 0;
+    @Input() stepIndex: string = "0";
     stepNumber: number;
     template: any = null;
     stepperController: any = null;
