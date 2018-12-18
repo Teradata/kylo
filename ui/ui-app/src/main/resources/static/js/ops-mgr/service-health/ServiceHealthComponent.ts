@@ -19,6 +19,10 @@ export class ServiceHealthComponent extends BaseFilteredPaginatedTableView imple
     refreshInterval: number;
     cardTitle: string = "Service Health";
     refreshIntervalTime: number = 5000;
+
+    RefreshIntervalSet: any = this.setRefreshInterval();
+    RefreshIntervalClear: any = this.clearRefreshInterval();
+
     public columns: ITdDataTableColumn[] = [
         { name: 'name', label: 'Name', sortable: true, filter: true },
         { name: 'status', label: 'Status', sortable: true, filter: true },
@@ -50,7 +54,6 @@ export class ServiceHealthComponent extends BaseFilteredPaginatedTableView imple
 
 
     //Load Jobs
-
     loadData() {
         var successFn = (data: any) => {
             this.services = data;
@@ -78,8 +81,6 @@ export class ServiceHealthComponent extends BaseFilteredPaginatedTableView imple
 
     }
 
-
-
     serviceDetails(event: any) {
         this.stateService.OpsManager().ServiceStatus().navigateToServiceDetails(event.row.name);
     }
@@ -97,12 +98,4 @@ export class ServiceHealthComponent extends BaseFilteredPaginatedTableView imple
             this.refreshInterval = setInterval(() => {this.loadData()}, this.refreshIntervalTime);
         }
     }
-
-    onSearchTable (searchTerm: string) {
-        this.filterTable = searchTerm;
-        this.loadAlerts(true);
-    }
-
-    RefreshIntervalSet: any = this.setRefreshInterval();
-    RefreshIntervalClear: any = this.clearRefreshInterval();
 }
