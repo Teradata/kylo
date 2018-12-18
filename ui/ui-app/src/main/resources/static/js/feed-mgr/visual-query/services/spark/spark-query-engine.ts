@@ -218,10 +218,16 @@ export class SparkQueryEngine extends QueryEngine<string> {
             sparkScript += "var " + SparkConstants.DATA_FRAME_VARIABLE + " = parent\n";
         }
         let dsProvider = DATASET_PROVIDER;
+        let joinDataSetIds :string[] = [];
         for (let i = start; i < end; ++i) {
             if (!this.states_[i].inactive) {
                 let state = this.states_[i];
                 if(state.joinDataSet != undefined && state.joinDataSet != null) {
+                    if(joinDataSetIds.indexOf(state.joinDataSet.datasetId) <0){
+                        joinDataSetIds.push(state.joinDataSet.datasetId);
+                        sparkScript +=state.joinDataSet.joinDataFrameVarScript+"\n";
+                    }
+
                     sparkScript += state.joinDataSet.joinScript;
                 }
                 sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
@@ -462,7 +468,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 return (column.hiveColumnLabel.match(/[.`]/) !== null);  // Escaping backticks not supported until Spark 2.0
             });
             let reserved = _.find(response.results.columns, function (column: any) {
-                return (column.hiveColumnLabel === "processing_dttm");
+                return SparkConstants.RESERVED_COLUMN_NAMES.indexOf(column.hiveColumnLabel) >=0;
             });
 
             if (typeof invalid != "undefined") {

@@ -18,6 +18,7 @@ export class JoinData {
     joinField:string;
     joinDataSet:PreviewDataSet;
     joinType:string;
+    joinFields:string[];
     ds:SparkDataSet
 
     constructor() {
@@ -47,7 +48,7 @@ export class JoinData {
             <div fxLayout="row">
                   
               <mat-form-field>
-                <mat-select placeholder="Current schema"  formControlName="currentSchemaField" required>
+                <mat-select placeholder="Current field"  formControlName="currentSchemaField" required>
                     <mat-option *ngFor="let field of data.cols" [value]="field.field">
                     {{field.displayName}} - {{field.dataType}}
                   </mat-option>
@@ -58,12 +59,23 @@ export class JoinData {
               <div fxFlex="10" class="pad-left-sm pad-right-sm"> </div>
         
               <mat-form-field *ngIf="dataSet != undefined">
-                <mat-select placeholder="Joining schema"  formControlName="joinSchemaField" required>
+                <mat-select placeholder="Joining field"  formControlName="joinSchemaField" required>
                   <mat-option *ngFor="let field of dataSet.schema" [value]="field.name">
                     {{field.label}} - {{field.dataType}}
                   </mat-option>
                 </mat-select>
                 <mat-error *ngIf="joinSchemaFieldControl.hasError('required')">Required</mat-error>
+              </mat-form-field>
+            </div>
+            <div>
+               <mat-form-field *ngIf="dataSet != undefined">
+                <mat-select placeholder="Joining schema"  formControlName="joinSchemaFields" required multiple >
+                  <mat-option *ngFor="let field of dataSet.schema" [value]="field.name">
+                    {{field.label}} - {{field.dataType}}
+                  </mat-option>
+                </mat-select>
+                <mat-error *ngIf="joinSchemaFieldControl.hasError('required')">Required</mat-error>
+                <mat-hint>Selected {{joinSchemaFieldsControl.value.length}} fields</mat-hint>
               </mat-form-field>
             </div>
     </form>
@@ -84,6 +96,8 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
 
     joinTypeControl: FormControl;
 
+    joinSchemaFieldsControl: FormControl;
+
     dataSet:PreviewDataSet;
 
     constructor(protected _datasetPreviewStepperService:DatasetPreviewStepperService) {
@@ -94,12 +108,14 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
         this.currentSchemaFieldControl = new FormControl('', [Validators.required]);
         this.joinSchemaFieldControl = new FormControl('', [Validators.required]);
         this.joinTypeControl = new FormControl('', [Validators.required]);
+        this.joinSchemaFieldsControl = new FormControl([],[Validators.required]);
 
         this.stepChangedSubscription = this._datasetPreviewStepperService.subscribeToStepChanges(this.onStepChanged.bind(this))
 
         this.stepControl.addControl("joinType", this.joinTypeControl);
         this.stepControl.addControl("currentSchemaField", this.currentSchemaFieldControl);
         this.stepControl.addControl("joinSchemaField", this.joinSchemaFieldControl);
+        this.stepControl.addControl("joinSchemaFields",this.joinSchemaFieldsControl)
     }
 
 
@@ -107,6 +123,7 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
         this.currentSchemaFieldControl.setValue("");
         this.joinSchemaFieldControl.setValue("");
         this.joinTypeControl.setValue("")
+        this.joinSchemaFieldsControl.setValue([]);
     }
 
     init() {
@@ -140,6 +157,13 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
         }
     }
 
+    private setJoinSchemaFields(){
+        let joinNames: string[] = [];   _.forEach(this.dataSet.schema, function (field: TableColumn) {
+            joinNames.push(field.name);
+        });
+        this.joinSchemaFieldsControl.setValue(joinNames)
+    }
+
 
 
     private onStepChanged(idx:number){
@@ -149,6 +173,7 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
                if(this.joinTypeControl.value == "" || this.currentSchemaFieldControl.value == "" || this.joinSchemaFieldControl.value == "") {
                    this.autoMatch();
                }
+               this.setJoinSchemaFields();
            }
         }
 
@@ -160,6 +185,7 @@ export class JoinPreviewStepperStep extends AbstractDatasetPreviewStepComponent<
         joinData.joinField = this.joinSchemaFieldControl.value;
         joinData.joinType = this.joinTypeControl.value;
         joinData.joinDataSet = this.dataSet;
+        joinData.joinFields = this.joinSchemaFieldsControl.value;
         return joinData;
     }
 

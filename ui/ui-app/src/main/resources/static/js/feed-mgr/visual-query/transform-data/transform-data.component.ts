@@ -52,8 +52,6 @@ import {InlineJoinScriptBuilder} from "./dataset-join-dialog/inline-join-script-
 
 declare const CodeMirror: any;
 
-// import {moduleName} from "../module-name";
-
 export class WranglerColumn {
 
     dataType: string = null;
@@ -493,6 +491,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         }
     }
 
+    /**
+     * Join the dataframe to another dataset
+     */
     inlineJoin(){
         let data = new DatasetPreviewStepperDialogData(false,"Add");
         data.additionalSteps = [];
@@ -517,6 +518,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 let joinScriptBuilder = new InlineJoinScriptBuilder(this.visualQueryService,this.model,this.engine.getColumns(),joinData);
                 let joinDataSet:JoinDataset = joinScriptBuilder.build();
 
+                // the formula is empty since its crafted from the "joinData" that is passed to the context
                 let formula = "";
                 //if successful register and add it to the list
                 if(this.model.datasets == undefined){

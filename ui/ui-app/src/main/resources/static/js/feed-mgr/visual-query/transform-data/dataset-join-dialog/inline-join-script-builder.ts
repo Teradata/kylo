@@ -17,14 +17,20 @@ export class InlineJoinScriptBuilder {
 
     }
 
-    private uniqueName = (name:string,cnt?:number):string => {
+    private uniqueName = (name:string, tableName:string,cnt?:number):string => {
         if(cnt == undefined){
             cnt =0;
         }
         if(this.names[name] != undefined){
-            cnt++;
-            name+=cnt;
-            return this.uniqueName(name,cnt);
+            if(cnt ==0){
+                name = tableName+"_"+name;
+                cnt++;
+            }
+            else {
+                cnt++;
+                name += cnt;
+            }
+            return this.uniqueName(name,tableName,cnt);
         }
         this.names[name]= name;
         return name;
@@ -42,16 +48,22 @@ export class InlineJoinScriptBuilder {
        })
     }
 
+
     private getJoinSelectColumns(joinDf:string):ResTarget[] {
-       return  this.joinData.joinDataSet.schema.map(field => {
+        return  this.joinData.joinFields.map(field => {
             let fields: string[] = [];
             fields.push(joinDf)
-            fields.push(field.name);
-            let name = this.joinData.ds.getTableName() + "_" +field.name;
+            fields.push(field);
+            let name = field;
             name = name.replace(/[^a-zA-Z0-9_\s\)\(-]*/g,'');
             name = name.replace(" ","_")
             name = name.replace(".","_")
-            name = this.uniqueName(name);
+            let cnt = 0;
+            if(SparkConstants.RESERVED_COLUMN_NAMES.indexOf(name) >=0){
+                name = this.joinData.ds.getTableName()+"_"+name;
+                cnt = 1;
+            }
+            name = this.uniqueName(name, this.joinData.ds.getTableName(), cnt);
             let t: ResTarget = {description: "", val: {fields: fields}, name:name};
             return t;
         });
@@ -80,16 +92,16 @@ export class InlineJoinScriptBuilder {
 
         //get the new name in the select if we renamed it
         let joinScript = "";
-        if(isNewJoinDf) {
-            joinScript = `val ${joinDf} = ${dsProvider}.read("${dsId}").alias("${joinDf}")
-                    `
-        }
+        let joinDataFrameVarScript = "";
+       // if(isNewJoinDf) {
+        joinDataFrameVarScript = `val ${joinDf} = ${dsProvider}.read("${dsId}").alias("${joinDf}")                    `
+        //}
         joinScript += `
                     ${df} = ${df}.join(${joinDf},${df}.col("${dfField}").equalTo(${joinDf}.col("${joinField}")),"${joinType}")${joinSelectString}
                     
                 `
 
-        let joinDataset: JoinDataset = {datasetId:dsId,dataframeId:1,joinScript:joinScript, joinField:joinField, dfField:dfField};
+        let joinDataset: JoinDataset = {datasetId:dsId,dataframeId:joinDf,joinScript:joinScript, joinDataFrameVarScript:joinDataFrameVarScript,joinField:joinField, dfField:dfField};
         return joinDataset;
     }
 

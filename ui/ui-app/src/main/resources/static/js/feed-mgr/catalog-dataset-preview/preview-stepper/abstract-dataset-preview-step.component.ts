@@ -3,6 +3,8 @@ import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {DatasetPreviewStepperService} from "./dataset-preview-stepper.service";
 /*
+Example impl of this class
+
 @Component({selector:"dataset-preview-step",
 template:`<ng-template let-data #stepTemplate>
            This is my template {{data}}

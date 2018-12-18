@@ -276,27 +276,8 @@ export class SparkExpression {
      * @throws {ParseException} if the expression cannot be converted to a DataFrame
      */
     private static toDataFrame(expression: SparkExpression): string {
-        let dfVar = null;
-        let source = expression.source;
         if (SparkExpressionType.DATA_FRAME.equals(expression.type)) {
-            dfVar = SparkConstants.DATA_FRAME_VARIABLE;
-        }
-        else  if (SparkExpressionType.LITERAL.equals(expression.type)) {
-            let nLiteral: number = parseInt(expression.source as string);
-            if (!isNaN(nLiteral)) {
-                if(nLiteral == 0){
-                    dfVar = SparkConstants.DATA_FRAME_VARIABLE;
-                    source = "";
-                }else if(nLiteral == -1){
-                    dfVar = "parent";
-                    source = "";
-                }else {
-                    dfVar = SparkConstants.DATA_FRAME_VARIABLE;
-                }
-            }
-        }
-        if(dfVar != null){
-            return  dfVar+source;
+            return SparkConstants.DATA_FRAME_VARIABLE + expression.source;
         }
         throw new ParseException("Expression cannot be converted to a DataFrame: " + expression.type, expression.start);
     }

@@ -1,7 +1,8 @@
 export interface JoinDataset {
 
     datasetId:string;
-    dataframeId:number;
+    dataframeId:string;
+    joinDataFrameVarScript:string;
     joinScript:string;
     joinField:string;
     dfField:string
