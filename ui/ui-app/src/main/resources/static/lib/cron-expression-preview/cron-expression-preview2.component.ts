@@ -5,7 +5,6 @@ import {catchError, map} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {Observable} from 'rxjs/Observable';
 import {of} from 'rxjs/observable/of';
-import { RestUrlService } from '../../js/feed-mgr/services/RestUrlService';
 
 declare const CodeMirror: any;
 
