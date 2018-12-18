@@ -44,6 +44,8 @@ export class RegisterTemplateController {
     fourthFormGroup: FormGroup = new FormGroup({});
     fifthFormGroup: FormGroup = new FormGroup({});
 
+    isNew: boolean = false;
+
     constructor(private registerTemplateService: RegisterTemplateServiceFactory, 
                 private stateService: StateService, 
                 private accessControlService: AccessControlService, 
@@ -52,6 +54,7 @@ export class RegisterTemplateController {
         this.registeredTemplateId = this.stateService.params.registeredTemplateId || null;
         this.nifiTemplateId = this.stateService.params.nifiTemplateId || null;
         this.model = this.registerTemplateService.model;
+        this.isNew = this.stateService.params.isNew || null;
 
         this.registerTemplateService.loadTemplateWithProperties(this.registeredTemplateId, this.nifiTemplateId).then((response: any) => {
             this.loading = false;

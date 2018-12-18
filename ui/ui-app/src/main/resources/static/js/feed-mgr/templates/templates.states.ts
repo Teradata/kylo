@@ -26,7 +26,8 @@ export const templateStates: Ng2StateDeclaration[] = [
         url :"/register-template",
         params:{
             nifiTemplateId:null,
-            registeredTemplateId:null
+            registeredTemplateId:null,
+            isNew: false
         },
         views: {
             "content": {

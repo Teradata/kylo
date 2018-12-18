@@ -26,6 +26,8 @@ import {finalize} from 'rxjs/operators/finalize';
 import {KyloRouterService} from "../../../../services/kylo-router.service";
 import {StateRegistry} from "@uirouter/angular";
 import { ObjectUtils } from '../../../../../lib/common/utils/object-utils';
+import { SideNavService } from '../../../../services/SideNavService';
+import { MatDialog } from '@angular/material';
 
 
 @Component({
@@ -104,10 +106,14 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
 
 
 
-    constructor ( private http:HttpClient,private stateService: StateService, private defineFeedService:DefineFeedService,private dialog: TdDialogService, private localStorageService:LocalStorageService,
-                  private $$angularInjector: Injector,
-                  protected feedLoadingService:FeedLoadingService,
-                  private kyloRouterService:KyloRouterService) {
+    constructor(private http:HttpClient,
+                private stateService: StateService, 
+                private defineFeedService:DefineFeedService,
+                private dialog: MatDialog, 
+                private localStorageService:LocalStorageService,
+                private SideNavService: SideNavService,
+                protected feedLoadingService:FeedLoadingService,
+                private kyloRouterService:KyloRouterService) {
 
         this.model = new Feed();
         /**
@@ -116,7 +122,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
          */
         this.model.totalSteps = null;
 
-        let sideNavService = $$angularInjector.get("SideNavService");
+        let sideNavService = this.SideNavService;
         sideNavService.hideSideNav();
 
         //TODO change with Entity Access Control!

@@ -5,6 +5,7 @@ import {catchError, map} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {Observable} from 'rxjs/Observable';
 import {of} from 'rxjs/observable/of';
+import { RestUrlService } from '../../js/feed-mgr/services/RestUrlService';
 
 declare const CodeMirror: any;
 
@@ -18,11 +19,9 @@ export class CronExpressionPreviewComponent implements OnInit {
     @Input()
     private control: FormControl;
     nextDates: any;
-    private restUrlService: any;
     private labelNotAvailable: string;
 
-    constructor(private $$angularInjector: Injector, private http: HttpClient, private translateService: TranslateService) {
-        this.restUrlService = $$angularInjector.get("RestUrlService");
+    constructor(private restUrlService: RestUrlService, private http: HttpClient, private translateService: TranslateService) {
         this.labelNotAvailable = this.translateService.instant('views.cron-expression-preview.PreviewNotAvailable');
     }
 

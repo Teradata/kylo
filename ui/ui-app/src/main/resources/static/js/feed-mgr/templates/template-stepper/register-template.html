@@ -23,7 +23,7 @@
         <mat-step [stepControl]="firstFormGroup">
             <form [formGroup]="firstFormGroup">
                 <ng-template matStepLabel>{{'FEEDMGR.TEMPLATES.STEPPER.SELECT_TEMP' | translate}}</ng-template>
-                <thinkbig-register-select-template [(formGroup)]="firstFormGroup" [stepper]="stepper" (onCancelStepper)="cancelStepper()"></thinkbig-register-select-template>
+                <thinkbig-register-select-template [(formGroup)]="firstFormGroup" [stepper]="stepper" [isNew]="isNew" (onCancelStepper)="cancelStepper()"></thinkbig-register-select-template>
             </form>
         </mat-step>
         <mat-step [stepControl]="secondFormGroup">

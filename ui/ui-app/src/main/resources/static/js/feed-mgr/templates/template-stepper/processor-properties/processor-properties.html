@@ -256,8 +256,8 @@
             </ng-container>
 
             <div style="display: flex; justify-content: space-between;">
-                <button mat-button matStepperPrevious (click)="stepper.previous()">{{'views.step-buttons.Previous-btn' | translate}}</button>
-                <button mat-button matStepperNext (click)="stepper.next()" [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} {{stepIndex + 2}}</button>
+                <button mat-button matStepperPrevious>{{'views.step-buttons.Previous-btn' | translate}}</button>
+                <button mat-button matStepperNext [disabled]="!formGroup.valid">{{'views.step-buttons.Continue-btn' | translate}} {{stepIndex + 2}}</button>
             </div>
 
         </mat-card-content>

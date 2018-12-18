@@ -95,7 +95,7 @@ export class StateService {
         }
 
         data.navigateToRegisterNifiTemplate = () => {
-            this.state.go('register-template', {registeredTemplateId: null, nifiTemplateId: null});
+            this.state.go('register-template', {registeredTemplateId: null, nifiTemplateId: null, isNew: true});
         }
 
         data.navigateToRegisteredTemplate = (templateId: any, nifiTemplateId: any) => {

@@ -27,7 +27,6 @@ export class RegisterSelectTemplateController implements OnInit {
 
     @Input() registeredTemplateId: string;
     @Input() nifiTemplateId: string;
-    @Input() $new: any;
 
     @Output() onCancelStepper = new EventEmitter();
 
@@ -38,7 +37,7 @@ export class RegisterSelectTemplateController implements OnInit {
     template: any = null;
     stepperController: any = null;
     isValid = false;
-    isNew: boolean;
+    @Input() isNew: boolean = false;
     param: any = null;
     /**
      * Error message to be displayed if {@code isValid} is false
@@ -74,9 +73,10 @@ export class RegisterSelectTemplateController implements OnInit {
     @Input() formGroup: FormGroup;
 
     ngOnInit() {
-
-        this.formGroup.addControl("template", new FormControl(null, Validators.required));
-
+       
+        if (this.isNew) {
+            this.formGroup.addControl("template", new FormControl(null, Validators.required));
+        }
         this.model = this.registerTemplateService.model;
 
         this.registeredTemplateId = this.model.id;
