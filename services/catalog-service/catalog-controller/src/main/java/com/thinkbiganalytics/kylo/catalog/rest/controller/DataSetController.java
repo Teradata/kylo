@@ -24,6 +24,7 @@ import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
@@ -244,4 +245,20 @@ public class DataSetController extends AbstractCatalogController {
                 return new NotFoundException(getMessage("catalog.dataset.notFound"));
             });
     }
+
+    @DELETE
+    @ApiOperation("Deletes the specified dataset")
+    @ApiResponses({
+                      @ApiResponse(code = 204, message = "Dataset deleted successfully", response = DataSource.class),
+                      @ApiResponse(code = 404, message = "Dataset was not found", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
+                  })
+    @Path("{id}")
+    public Response deleteDataSource(@PathParam("id") final String datasetId) {
+        log.entry(datasetId);
+        dataSetService.delete(datasetId);
+        log.exit();
+        return Response.noContent().build();
+    }
+
 }

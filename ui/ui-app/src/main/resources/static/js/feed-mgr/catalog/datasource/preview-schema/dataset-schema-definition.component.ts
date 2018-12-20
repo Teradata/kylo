@@ -23,9 +23,10 @@ export class DatasetSchemaDefinitionComponent  implements OnInit {
     }
 
     private toDataTable(){
-        let schemaColumns :TableColumn[] = []
-        schemaColumns.push({"name":"name","label":"Column Name","dataType":"string","sortable":true})
-        schemaColumns.push({"name":"dataType","label":"Data Type","dataType":"string","sortable":true})
+        let schemaColumns :TableColumn[] = [];
+        schemaColumns.push({"name":"name","label":"Column Name","dataType":"string","sortable":true});
+        schemaColumns.push({"name":"dataType","label":"Data Type","dataType":"string","sortable":true});
+        schemaColumns.push({"name":"description","label":"Description","dataType":"string","sortable":true});
         this.schemaColumns = schemaColumns;
     }
 

@@ -1,8 +1,23 @@
-<ng-container *ngIf="displayTitle">
-  <h4>DataSource: {{dataset.dataSource.title}}<br/>
-    {{dataset.key}}
-  </h4>
-</ng-container>
+<div fxLayout="row">
+  <ng-container *ngIf="displayTitle">
+    <h4>DataSource: {{dataset.dataSource.title}}<br/>
+      {{dataset.key}}
+    </h4>
+  </ng-container>
+  <div fxFlex></div>
+  <div fxLayout="row" style="margin-top: -15px" *ngIf="false">
+    <button mat-button mat-raised-button
+            color="accent" class="text-upper" style="margin-right: 5px"
+            [disabled]="dataset.id !== undefined"
+            (click)="createDataset()">Create Dataset
+    </button>
+    <button mat-button mat-raised-button
+            color="accent" class="text-upper"
+            [disabled]="dataset.id === undefined"
+            (click)="deleteDataset()">Delete Dataset
+    </button>
+  </div>
+</div>
 <mat-tab-group (selectedTabChange)="onTabChange($event)">
   <mat-tab label="Preview">
     <div fxLayout="column">

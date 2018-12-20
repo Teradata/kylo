@@ -42,6 +42,9 @@ import {InfoItemService} from './shared/info-item/item-info.service';
 import {MatIconModule} from '@angular/material/icon';
 import {MatListModule} from '@angular/material/list';
 import {MatDividerModule} from '@angular/material/divider';
+import {PromptDialogComponent} from './shared/prompt-dialog/prompt-dialog.component';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
 
 
 @NgModule({
@@ -55,6 +58,8 @@ import {MatDividerModule} from '@angular/material/divider';
         KyloCommonModule,
         MatButtonModule,
         MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
         MatIconModule,
         MatListModule,
         MatDividerModule,
@@ -69,15 +74,18 @@ import {MatDividerModule} from '@angular/material/divider';
         ApplyDomainTypesDialogComponent,
         EntityAccessControlComponent,
         InfoItemComponent,
+        PromptDialogComponent,
     ],
     entryComponents: [
         DomainTypeConflictDialogComponent,
         ApplyDomainTypeDialogComponent,
-        ApplyDomainTypesDialogComponent
+        ApplyDomainTypesDialogComponent,
+        PromptDialogComponent,
     ],
     exports: [
         EntityAccessControlComponent,
         InfoItemComponent,
+        PromptDialogComponent,
     ],
     providers: [
         FeedLoadingService,

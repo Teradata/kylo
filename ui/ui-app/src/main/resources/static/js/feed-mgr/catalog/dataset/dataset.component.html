@@ -1,14 +1,16 @@
-<ng-container>
-  <div fxLayout="row" class="cards">
-    <div fxLayout="column" fxFlex="70">
-      <dataset-overview [dataset]="dataset"></dataset-overview>
-      <dataset-sample-content [dataset]="dataset"></dataset-sample-content>
-    </div>
+<div color="accent" *tdLoading="'processingDataset'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+  <ng-container>
+    <div fxLayout="row" class="cards">
+      <div fxLayout="column" fxFlex="70">
+        <dataset-overview [dataset]="dataset"></dataset-overview>
+        <dataset-sample-content [dataset]="dataset"></dataset-sample-content>
+      </div>
 
-    <div fxLayout="column" fxFlex="30">
-      <dataset-info [dataset]="dataset"></dataset-info>
-      <dataset-usage [dataset]="dataset"></dataset-usage>
-      <dataset-column-profile [dataset]="dataset"></dataset-column-profile>
+      <div fxLayout="column" fxFlex="30">
+        <dataset-info [dataset]="dataset"></dataset-info>
+        <dataset-usage [dataset]="dataset"></dataset-usage>
+        <dataset-column-profile [dataset]="dataset"></dataset-column-profile>
+      </div>
     </div>
-  </div>
-</ng-container>
+  </ng-container>
+</div>

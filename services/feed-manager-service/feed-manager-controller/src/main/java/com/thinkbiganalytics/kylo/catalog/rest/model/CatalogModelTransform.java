@@ -27,6 +27,10 @@ import com.thinkbiganalytics.kylo.catalog.spi.ConnectorPlugin;
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetBuilder;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
+import com.thinkbiganalytics.metadata.api.catalog.Schema;
+import com.thinkbiganalytics.metadata.api.catalog.SchemaField;
+import com.thinkbiganalytics.metadata.modeshape.catalog.schema.DefaultSchema;
+import com.thinkbiganalytics.metadata.modeshape.catalog.schema.DefaultSchemaField;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 
@@ -35,6 +39,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
@@ -175,6 +180,7 @@ public class CatalogModelTransform {
         domain.setTitle(model.getTitle());
         domain.setDescription(model.getDescription());
         domain.setTags(model.getTags().stream().map(Tag::getName).collect(Collectors.toCollection(TreeSet::new)));
+        domain.getSchema().setFields(restFieldsToDomainFields(model.getSchema()));
         updateSparkParameters(model.getDataSource().getConnector().getPluginId(), model, domain.getSparkParameters());
         return domain;
     }
@@ -189,7 +195,25 @@ public class CatalogModelTransform {
             .addFiles(model.getFiles())
             .addJars(model.getJars())
             .addTags(model.getTags().stream().map(Tag::getName).collect(Collectors.toCollection(TreeSet::new)))
+            .schema(restSchemaToDomainSchema(model.getSchema()))
             .build();
+    }
+
+    private Schema restSchemaToDomainSchema(List<DataSetSchemaField> fields) {
+        Schema model = new DefaultSchema();
+        model.setFields(restFieldsToDomainFields(fields));
+        return model;
+    }
+
+    private List<? extends SchemaField> restFieldsToDomainFields(List<DataSetSchemaField> fields) {
+        return fields.stream().map(f -> {
+            DefaultSchemaField field = new DefaultSchemaField();
+            field.setName(f.getLabel());
+            field.setSystemName(f.getName());
+            field.setDatatype(f.getDataType());
+            field.setDescription(f.getDescription());
+            return field;
+        }).collect(Collectors.toCollection(ArrayList::new));
     }
 
     public DataSetSparkParameters updateSparkParameters(String connectorPuginId, DataSetTemplate model, DataSetSparkParameters sparkParams) {
@@ -241,13 +265,14 @@ public class CatalogModelTransform {
     }
 
     public Function<DataSet, com.thinkbiganalytics.kylo.catalog.rest.model.DataSet> dataSetToRestModel(final boolean encryptedCredentials) {
-        return (domain) -> {
+        return (DataSet domain) -> {
             com.thinkbiganalytics.kylo.catalog.rest.model.DataSet model = new com.thinkbiganalytics.kylo.catalog.rest.model.DataSet();
             model.setId(domain.getId().toString());
             model.setDataSource(dataSourceToRestModel(true,encryptedCredentials).apply(domain.getDataSource()));
             model.setTitle(domain.getTitle());
             model.setDescription(domain.getDescription());
             model.setTags(domain.getTags().stream().map(DefaultTag::new).collect(Collectors.toCollection(ArrayList::new)));
+            model.setSchema(domainSchemaToRestSchema(domain.getSchema()));
             DataSetTemplate template = sparkParamsToRestModel(domain.getDataSource().getConnector().getPluginId(), encryptedCredentials).apply(domain.getSparkParameters());
               if(!encryptedCredentials) {
                   decryptOptions(template);
@@ -259,6 +284,18 @@ public class CatalogModelTransform {
             return model;
         };
     }
+
+    private List<DataSetSchemaField> domainSchemaToRestSchema(Schema schema) {
+        return schema.getFields().stream().map(f -> {
+            DataSetSchemaField field = new DataSetSchemaField();
+            field.setName(f.getSystemName());
+            field.setLabel(f.getName());
+            field.setDataType(f.getDatatype());
+            field.setDescription(f.getDescription());
+            return field;
+        }).collect(Collectors.toCollection(ArrayList::new));
+    }
+
 
     public Function<com.thinkbiganalytics.metadata.api.catalog.DataSource, DataSource> dataSourceToRestModel() {
         return dataSourceToRestModel(true, true);

@@ -1,0 +1,20 @@
+<td-data-table
+    [data]="dataset.schema"
+    [columns]="schemaColumns"
+    [selectable]="false"
+    [sortable]="true"
+    [sortBy]="sortBy"
+    [sortOrder]="sortOrder"
+    (sortChange)="sort($event)"
+    [style.height.px]="325" class="dataset-simple-table">
+  <ng-template tdDataTableTemplate="description" let-row="row" align="start">
+    <button mat-button
+            style="min-width: 0; margin-left: -20px; overflow: hidden; text-overflow: ellipsis"
+            [class.mat-accent]="!row['description']"
+            (click)="openPrompt(row, 'description')">{{row['description'] || 'Add Description'}}</button>
+  </ng-template>
+</td-data-table>
+<div *ngIf="!dataset.schema || dataset.schema.length == 0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+  <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+  <h2>Schema Unavailable</h2>
+</div>

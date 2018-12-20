@@ -8,8 +8,6 @@ import {ConnectorPlugin} from '../models/connector-plugin';
 import {DataSource} from "../models/datasource";
 import {SearchResult} from "../models/search-result";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
-import {RestUrlConstants} from "../../../services/RestUrlConstants";
-import {TableSchema} from "../../../visual-query/wrangler";
 import {DatasetTable} from "../models/dataset-table";
 import {Dataset} from '../models/dataset';
 
@@ -81,18 +79,6 @@ export class CatalogService {
     }
 
 
-    createDataset(dataset: Dataset):  Observable<Dataset> {
-        if (typeof dataset.id === "string") {
-            return this.http.put<Dataset>("/proxy/v1/catalog/dataset/" + encodeURIComponent(dataset.id), dataset);
-        } else {
-            return this.http.post<Dataset>("/proxy/v1/catalog/dataset/", dataset);
-        }
-    }
-
-    getDataset(id: string): Observable<DataSource> {
-        return this.http.get<DataSource>("/proxy/v1/catalog/dataset/" + id);
-    }
-
     getDataSource(datasourceId: string): Observable<DataSource> {
         return this.http.get<DataSource>("/proxy/v1/catalog/datasource/" + datasourceId);
     }
@@ -112,6 +98,23 @@ export class CatalogService {
     testDataSource(datasource: DataSource): Observable<any> {
         return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
     }
+
+    getDataset(id: string): Observable<Dataset> {
+        return this.http.get<Dataset>("/proxy/v1/catalog/dataset/" + id);
+    }
+
+    createDataset(dataset: Dataset):  Observable<Dataset> {
+        if (typeof dataset.id === "string") {
+            return this.http.put<Dataset>("/proxy/v1/catalog/dataset/" + encodeURIComponent(dataset.id), dataset);
+        } else {
+            return this.http.post<Dataset>("/proxy/v1/catalog/dataset/", dataset);
+        }
+    }
+
+    deleteDataset(id: string): Observable<SparkDataSet> {
+        return this.http.delete<SparkDataSet>("/proxy/v1/catalog/dataset/" + id);
+    }
+
     createDataSet(dataSet: SparkDataSet): Observable<SparkDataSet> {
         // Ensure data sets are uploaded with no title. Titles must be unique if set.
         const body = CloneUtil.deepCopy(dataSet);

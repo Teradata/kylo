@@ -1,0 +1,14 @@
+<h2 mat-dialog-title class="dialog-header">{{data.title}}</h2>
+<span class="hint">{{data.hint}}</span>
+<mat-dialog-content>
+  <mat-form-field style="width: 100%">
+    <input
+        matInput type="text"
+        placeholder="{{data.placeholder}}"
+        [formControl]="inputControl"/>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions style="float: right">
+  <button mat-button mat-dialog-close class="text-upper" (click)="onCancel()">{{data.cancelButtonLabel}}</button>
+  <button mat-button mat-dialog-close class="text-upper" (click)="onOk()" color="accent">{{data.okButtonLabel}}</button>
+</mat-dialog-actions>

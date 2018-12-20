@@ -50,7 +50,8 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
     private Map<String, String> options;
     private List<String> paths;
     @JsonDeserialize(contentAs = DefaultTag.class)
-    private List<Tag> tags;
+    private List<Tag> tags = new ArrayList<>();
+    private List<DataSetSchemaField> schema = new ArrayList<>();
 
     public DataSet() {
     }
@@ -68,6 +69,7 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
         options = (other.options != null) ? new HashMap<>(other.options) : null;
         paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
         tags = (other.tags != null) ? new ArrayList<>(other.tags) : null;
+        schema = (other.schema != null) ? new ArrayList<>(other.schema) : null;
     }
 
     /**
@@ -162,6 +164,14 @@ public class DataSet extends EntityAccessControl implements DataSetTemplate {
 
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+    public List<DataSetSchemaField> getSchema() {
+        return schema;
+    }
+
+    public void setSchema(List<DataSetSchemaField> schema) {
+        this.schema = schema;
     }
 
     @Override

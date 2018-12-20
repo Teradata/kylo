@@ -184,4 +184,16 @@ public class DataSetProvider {
                 }
             }));
     }
+
+    /**
+     * Deletes dataset
+     * @param datasetId dataset to be deleted
+     */
+    public void delete(String datasetId) {
+        metadataService.commit(() -> {
+            com.thinkbiganalytics.metadata.api.catalog.DataSet.ID id = metadataProvider.resolveId(datasetId);
+            metadataProvider.find(id).ifPresent(domain -> metadataProvider.deleteById(id));
+        });
+    }
+
 }

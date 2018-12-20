@@ -32,8 +32,6 @@ import {catalogStates} from "./catalog.states";
 import {ConnectorComponent} from './connector/connector.component';
 import {ConnectorsComponent} from './connectors/connectors.component';
 import {DatasourceComponent} from "./datasource/datasource.component";
-import {RemoteFilesRouterModule} from "./datasource/files/remote-files.module";
-import {PreviewSchemaRouterModule} from "./datasource/preview-schema/preview-schema.module";
 import {TablesRouterModule} from "./datasource/tables/tables.module";
 import {DataSourcesComponent} from "./datasources/datasources.component";
 import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
@@ -41,7 +39,6 @@ import {CreateFeedComponent} from './datasource/create-feed/create-feed.componen
 import {MatExpansionModule} from '@angular/material/expansion';
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
-import {DatasetComponent} from './dataset/dataset.component';
 import {DatasetModule} from './dataset/dataset.module';
 
 @NgModule({
@@ -106,7 +103,6 @@ export class CatalogModule {
     imports: [
         CatalogModule,
         TablesRouterModule,
-        PreviewSchemaRouterModule,
         UIRouterModule.forChild({states: catalogStates})
     ]
 })

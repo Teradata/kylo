@@ -6,25 +6,39 @@
     <mat-card-subtitle>Dataset "{{dataset.title}}"</mat-card-subtitle>
   </mat-card-header>
   <mat-card-content>
+    <!--<dataset-preview #preview [displayTitle]="false" [dataset]="dataset"></dataset-preview>-->
+
     <mat-tab-group>
       <mat-tab label="Schema">
         <div class="overview-tab">
-          Schema content
+          <dataset-overview-schema [dataset]="dataset"></dataset-overview-schema>
         </div>
       </mat-tab>
       <mat-tab label="Preview">
-        <div class="overview-tab">
+        <div *ngIf="dataset.preview">
           Preview content
+        </div>
+        <div *ngIf="!dataset.preview || dataset.preview.error == true" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+          <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+          <h2>Preview Unavailable</h2>
         </div>
       </mat-tab>
       <mat-tab label="Lineage">
-        <div class="overview-tab">
+        <div *ngIf="dataset.lineage">
           Lineage content
+        </div>
+        <div *ngIf="!dataset.lineage || dataset.lineage.error == true" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+          <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+          <h2>Lineage Unavailable</h2>
         </div>
       </mat-tab>
       <mat-tab label="Queries">
-        <div class="overview-tab">
+        <div *ngIf="dataset.queries">
           Queries content
+        </div>
+        <div *ngIf="!dataset.queries || dataset.queries.error == true" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+          <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+          <h2>No queries</h2>
         </div>
       </mat-tab>
     </mat-tab-group>

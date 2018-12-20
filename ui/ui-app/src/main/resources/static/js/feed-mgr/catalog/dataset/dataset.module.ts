@@ -39,6 +39,9 @@ import {DatasetOverviewComponent} from './dataset-overview/dataset-overview.comp
 import {DatasetUsageComponent} from './dataset-usage/dataset-usage.component';
 import {DatasetColumnProfileComponent} from './dataset-column-profile/dataset-column-profile.component';
 import {DatasetSampleContentComponent} from './dataset-sample-content/dataset-sample-content.component';
+import {PreviewSchemaModule} from '../datasource/preview-schema/preview-schema.module';
+import {MatDialogModule} from '@angular/material/dialog';
+import {DatasetOverviewSchemaComponent} from './dataset-overview/schema/dataset-overview-schema.component';
 
 @NgModule({
     declarations: [
@@ -51,6 +54,9 @@ import {DatasetSampleContentComponent} from './dataset-sample-content/dataset-sa
         DatasetUsageComponent,
         DatasetColumnProfileComponent,
         DatasetSampleContentComponent,
+        DatasetOverviewSchemaComponent,
+    ],
+    entryComponents: [
     ],
     exports: [
     ],
@@ -67,6 +73,7 @@ import {DatasetSampleContentComponent} from './dataset-sample-content/dataset-sa
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
+        PreviewSchemaModule,
         MatCardModule,
         FormsModule,
         MatInputModule,
@@ -76,6 +83,7 @@ import {DatasetSampleContentComponent} from './dataset-sample-content/dataset-sa
         ReactiveFormsModule,
         MatFormFieldModule,
         MatDividerModule,
+        MatDialogModule,
         MatExpansionModule,
         MatListModule,
         MatTabsModule,

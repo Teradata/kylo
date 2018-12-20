@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.catalog.DataSource;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource.ID;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.catalog.DataSourceProvider;
+import com.thinkbiganalytics.metadata.api.catalog.Schema;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -175,6 +176,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         private final Set<String> jars = new HashSet<>();
         private final Set<String> files = new HashSet<>();
         private final Map<String, String> options = new HashMap<>();
+        private Schema schema;
 
         public Builder(DataSource dataSource) {
             this.dataSource = (JcrDataSource) dataSource;
@@ -295,6 +297,11 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             return this;
         }
 
+        @Override
+        public DataSetBuilder schema(Schema schema) {
+            this.schema = schema;
+            return this;
+        }
 
         /**
          * @return a hash code uniquely identifying the underlying data
@@ -349,6 +356,12 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
             params.getPaths().addAll(this.paths);
             params.getFiles().addAll(this.files);
             params.getJars().addAll(this.jars);
+
+            Schema schema = ds.getSchema();
+            schema.setDescription(this.schema.getDescription());
+            schema.setCharset(this.schema.getCharset());
+            schema.setFields(this.schema.getFields());
+
             return ds;
         }
 

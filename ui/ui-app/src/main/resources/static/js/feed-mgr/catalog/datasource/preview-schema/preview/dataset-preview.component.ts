@@ -1,17 +1,13 @@
-import {ChangeDetectorRef, Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit} from "@angular/core";
 import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "../preview-dialog/dataset-preview-dialog.component";
 import {FormGroup} from "@angular/forms";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {MatDialogConfig, MatTabChangeEvent} from "@angular/material";
-import {PreviewSchemaService} from "../service/preview-schema.service";
-import {PreviewRawService} from "../service/preview-raw.service";
 import {PreviewFileDataSet} from "../model/preview-file-data-set";
 import {PreviewDataSet} from "../model/preview-data-set";
-import {SchemaParseSettingsDialog} from "../schema-parse-settings-dialog.component";
-import {SchemaParser} from "../../../../model/field-policy";
-import {PreviewDataSetRequest} from "../model/preview-data-set-request";
 import {TdLoadingService} from "@covalent/core/loading";
 import {DatasetPreviewService} from "../service/dataset-preview.service";
+import {CatalogService} from '../../../api/services/catalog.service';
 
 
 @Component({
@@ -36,13 +32,27 @@ export class DatasetPreviewComponent implements OnInit{
 
     constructor(private _dialogService: TdDialogService,
                 private _loadingService:TdLoadingService,
-                private _datasetPreviewService:DatasetPreviewService) {
+                private _datasetPreviewService:DatasetPreviewService,
+                private _catalogService: CatalogService) {
 
     }
     ngOnInit(){
+    }
 
+    createDataset() {
+        this._catalogService.createDataSetWithTitle(this.dataset.toSparkDataSet()).subscribe((value) => {
+            this.dataset.id = value.id;
+        }, error => {
+            console.error("Failed to create new dataset", error);
+        });
+    }
 
-
+    deleteDataset() {
+        this._catalogService.deleteDataset(this.dataset.id).subscribe(() => {
+            this.dataset.id = undefined;
+        }, error => {
+            console.error("Failed to delete new dataset", error);
+        });
     }
 
     onTabChange($event:MatTabChangeEvent){

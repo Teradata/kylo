@@ -26,11 +26,13 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
 import com.thinkbiganalytics.metadata.api.catalog.DataSet;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
+import com.thinkbiganalytics.metadata.api.catalog.Schema;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSupplierMixin;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
+import com.thinkbiganalytics.metadata.modeshape.catalog.schema.JcrSchema;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.AuditableMixin;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.SystemEntityMixin;
@@ -59,7 +61,8 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
     public static final String FEED_SOURCES = "tba:feedSources";
     public static final String FEED_TARGETS = "tba:feedTargets";
     public static final String PARAMS_HASH = "tba:paramsHashCode";
-    
+    public static final String SCHEMA = "tba:schema";
+
 
     public JcrDataSet(Node node) {
         super(node);
@@ -123,6 +126,12 @@ public class JcrDataSet extends JcrEntity<JcrDataSet.DataSetId> implements DataS
         return JcrPropertyUtil.<Node>getPropertyValuesSet(getNode(), FEED_TARGETS).stream()
                 .map(node -> JcrUtil.getJcrObject(node, JcrFeedDestination.class))
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Schema getSchema() {
+        Node schemaNode = JcrUtil.getOrCreateNode(getNode(), SCHEMA, JcrSchema.NODE_TYPE);
+        return JcrUtil.createJcrObject(schemaNode, JcrSchema.class);
     }
 
     /* (non-Javadoc)

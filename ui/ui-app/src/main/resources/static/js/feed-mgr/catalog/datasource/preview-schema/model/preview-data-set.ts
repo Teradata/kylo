@@ -18,6 +18,8 @@ export class PreviewDataSet {
 
     static EMPTY = new PreviewDataSet();
 
+    public id: string;
+
     /**
      * items in the dataset
      */
@@ -122,7 +124,7 @@ export class PreviewDataSet {
      */
     public toSparkDataSet(): SparkDataSet {
         let sparkDataSet = new SparkDataSet();
-        //sparkDataSet.id = this.displayKey;
+        sparkDataSet.id = this.id;
         sparkDataSet.title = this.displayKey;
         sparkDataSet.dataSource = this.dataSource;
         sparkDataSet.options = this.sparkOptions;

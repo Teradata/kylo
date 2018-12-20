@@ -48,4 +48,5 @@ public interface DataSet extends SystemEntity, Auditable, DataSetSparkParamsSupp
 
     Set<FeedDestination> getFeedTargets();
 
+    Schema getSchema();
 }

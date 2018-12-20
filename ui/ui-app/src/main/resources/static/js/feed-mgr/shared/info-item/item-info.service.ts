@@ -10,7 +10,7 @@ export class InfoItemService{
 
     itemSavedSubject :Subject<ItemSaveResponse> = new Subject<ItemSaveResponse>();
 
-    activeEdit:InfoItemComponent;
+    activeEdit: InfoItemComponent;
 
     constructor(){
 

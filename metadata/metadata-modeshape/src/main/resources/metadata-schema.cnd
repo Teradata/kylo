@@ -443,7 +443,13 @@
 [tba:DataSource] > tba:entity, mix:title, tba:DataSetSparkParamsSupplier, tba:accessControlled, mix:referenceable
     - tba:nifiControllerServiceId (STRING)
     + dataSets (tba:DataSets) = tba:DataSets autocreated mandatory
-    
+
+[tba:DataSetSparkParams] > mix:lastModified, tba:propertied
+	- tba:format (STRING)
+	- tba:paths (STRING) multiple
+	- tba:files (STRING) multiple
+	- tba:jars (STRING) multiple
+
 [tba:DataSets]
     + * (tba:DataSet) 
 
@@ -453,13 +459,17 @@
     - tba:projects (WEAKREFERENCE) multiple
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedTargets (WEAKREFERENCE) multiple
-    - tba:notes (STRING)
+	+ tba:schema (tba:Schema)
 
-[tba:DataSetSparkParams] > mix:lastModified, tba:propertied
-    - tba:format (STRING)
-    - tba:paths (STRING) multiple
-    - tba:files (STRING) multiple
-    - tba:jars (STRING) multiple
+[tba:Schema] > mix:lastModified, mix:referenceable, tba:propertied
+	- tba:charset (STRING)
+ 	+ fields (tba:SchemaFields) = tba:SchemaFields autocreated mandatory
 
-[tba:DataSetSchema]
+[tba:SchemaFields]
+ + * (tba:SchemaField)
 
+[tba:SchemaField] > mix:lastModified, tba:taggable
+	- tba:name (STRING)
+	- tba:systemName (STRING) mandatory
+	- tba:description (STRING)
+	- tba:datatype (STRING) mandatory
