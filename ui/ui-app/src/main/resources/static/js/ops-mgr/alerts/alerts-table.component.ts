@@ -7,7 +7,7 @@ import {Transition, StateService} from "@uirouter/core";
 import { Component, Input, Inject, SimpleChanges } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import {StateService as StateServices} from "../../services/StateService";
-import { ITdDataTableColumn, TdDataTableService } from "@covalent/core/data-table";
+import { ITdDataTableColumn, TdDataTableService, TdDataTableSortingOrder } from "@covalent/core/data-table";
 import { BaseFilteredPaginatedTableView } from "../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
 import { Subject } from "rxjs/Subject";
 import { ObjectUtils } from "../../../lib/common/utils/object-utils";
@@ -82,6 +82,9 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
     promise: any;
     total: number = 0;
     page: number = 1;
+
+    sortBy: string = "startTime";
+    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Descending;
 
     columns: ITdDataTableColumn[] = [
         { name: 'level',  label: 'Level', sortable: true, filter: true },
@@ -295,7 +298,8 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
             this.TabService.addContent(this.pageName, tabTitle, transformedAlert);
         });
 
-        super.setSortBy('level');
+        super.setSortBy(this.sortBy);
+        super.setSortOrder(this.sortOrder);
         super.setDataAndColumnSchema(this.TabService.getActiveTab(this.pageName).data.content,this.columns);
         super.filter();
     }

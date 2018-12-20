@@ -61,6 +61,9 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
     @Output() onJobAction: EventEmitter<any> = new EventEmitter<any>();
 
+    sortBy: string = "startTime";
+    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Descending;
+
     constructor(private http: HttpClient,
         private dialog: MatDialog,
         private snackBar: MatSnackBar,
@@ -407,7 +410,8 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
             this.TabService.addContent(this.pageName, tabTitle, transformedJob);
         });
 
-        super.setSortBy('jobName');
+        super.setSortBy(this.sortBy);
+        super.setSortOrder(this.sortOrder);
         super.setDataAndColumnSchema(this.TabService.getActiveTab(this.pageName).data.content, this.columns);
         super.filter();
 

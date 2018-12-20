@@ -52,8 +52,8 @@
             </div>
           </div>
 
-          <div *ngIf="!vm.jobData.running" class="item-title">{{'views.job-details-template.ED' | translate}}</div>
-          <div *ngIf="!vm.jobData.running" class="accent-color-3" style="white-space:pre-wrap;">
+          <div *ngIf="!jobData.running" class="item-title">{{'views.job-details-template.ED' | translate}}</div>
+          <div *ngIf="!jobData.running" class="accent-color-3" style="white-space:pre-wrap;">
             {{jobData.exitDescription | truncate: 150}}
           </div>
         </div>

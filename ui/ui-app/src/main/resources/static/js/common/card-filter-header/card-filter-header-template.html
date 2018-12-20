@@ -6,8 +6,9 @@
 <span class="flex-5" *ngIf="customFilterTemplate != ''"></span>
 
 <div class="md-input-container flex md-kylo-theme" style="margin-top:0px;margin-bottom:0px;" *ngIf="renderFilter">
-  <label>{{"views.card-filter-header-template.Filter" | translate}}</label>
-  <input [(ngModel)]="filterModel" [ngModelOptions]="filterModelOptions" (change)="changeFilter(filterModel)" class="ng-pristine ng-untouched ng-valid md-input ng-empty"/>
+  <label></label>
+  <input [(ngModel)]="filterModel" [ngModelOptions]="filterModelOptions" (change)="changeFilter(filterModel)" 
+          class="ng-pristine ng-untouched ng-valid md-input ng-empty" placeholder='{{"views.card-filter-header-template.Filter" | translate}}'/>
 </div>
 <div layout="row" layout-align="space-between center" class="layout-align-space-between-center layout-row" *ngIf="renderFilter">
   <button md-butto aria-label="Filter Help" class="md-icon-button filter-help-button" (click)="showFilterHelpPanel($event)" *ngIf="renderHelp">

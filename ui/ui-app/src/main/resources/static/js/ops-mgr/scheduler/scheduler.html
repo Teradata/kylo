@@ -60,7 +60,7 @@
                                 (click)="pauseJob(job)">{{"view.main.pause"| translate}}</button>
                             <button mat-button style="border: 1px solid #d7d7d7; margin:6px;" class="border-btn md-kylo-theme md-ink-ripple" *ngIf="job.state=='PAUSED'" [disabled]="job.state =='RUNNING' || schedulerDetails.status == 'PAUSED'"
                                 (click)="resumeJob(job)">{{"view.main.resume"| translate}}</button>
-                            <button mat-button style="border: 1px solid #d7d7d7; margin:6px; padding-left: 8px;" class="border-btn md-kylo-theme md-ink-ripple" [disabled]="job.state !='SCHEDULED' || schedulerDetails.status == 'PAUSED'" (click)="triggerJob(job)">FIRE NOW </button>
+                            <button mat-button style="border: 1px solid #d7d7d7; margin:6px;" class="border-btn md-kylo-theme md-ink-ripple" [disabled]="job.state !='SCHEDULED' || schedulerDetails.status == 'PAUSED'" (click)="triggerJob(job)">FIRE NOW </button>
                         </div>
 
                         <mat-divider *ngIf="!last"></mat-divider>

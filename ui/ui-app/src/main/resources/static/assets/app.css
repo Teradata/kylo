@@ -1608,3 +1608,7 @@ mat-list-item>div{
   overflow: hidden;
 }
 
+filtered-paginated-table-view td {
+  cursor: pointer !important;
+}
+

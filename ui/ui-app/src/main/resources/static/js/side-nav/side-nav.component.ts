@@ -327,6 +327,7 @@ export class SideNavComponent {
         links.push({sref: "users",type:'link', icon: "account_box", text: this.translate.instant('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS});
         links.push({sref: "groups",type:'link', icon: "group", text: this.translate.instant('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
         links.push({sref: "sla-email-template",type:'link', icon: "email", text: this.translate.instant('views.main.sla-email'), defaultActive: false, permission: AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE});
+        links.push({sref: "repository",type:'link', icon: "local_grocery_store", text: this.translate.instant('views.main.repository'), defaultActive: false, permission: AccessConstants.UI_STATES.REPOSITORY.permissions});
         this.addExtensionLinks(this.MENU_KEY.ADMIN, links);
         let menu = ({type:'toggle',
                     text: this.translate.instant('views.main.admin'),
