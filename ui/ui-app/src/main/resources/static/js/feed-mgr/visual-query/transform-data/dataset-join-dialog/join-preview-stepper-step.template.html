@@ -1,0 +1,86 @@
+<ng-template let-data="data" #stepTemplate>
+  <div fxLayout="column" fxLayoutAlign="start start" fxFlex >
+
+    <div fxLayout="row" class="pad-bottom">
+    <mat-button-toggle-group #joinOrUnion="matButtonToggleGroup"  value="JOIN" (change)="onJoinOrUnionChange($event)" >
+      <mat-button-toggle value="JOIN">
+        <mat-icon>link</mat-icon>
+        Join
+      </mat-button-toggle>
+      <mat-button-toggle value="UNION">
+        <mat-icon>group_work</mat-icon>
+        Union
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+
+      <div *ngIf="dataSet != undefined && joinOrUnion.value == 'JOIN'" class="pad-left">Join <span class="bold-title">{{dataSet.displayKey}}</span> with your data
+      </div>
+
+      <div *ngIf="dataSet != undefined && joinOrUnion.value == 'UNION' "  class="pad-left">
+        Union <span class="bold-title">{{dataSet.displayKey}}</span> with your data
+      </div>
+
+    </div>
+
+    <form [formGroup]="stepControl" style="width:100%">
+
+      <ng-container *ngIf="joinOrUnion.value == 'JOIN'">
+        <div fxLayout="row" fxFlex="100">
+          <div fxFlex="33">
+            <mat-form-field>
+              <mat-select placeholder="Join type"  formControlName="joinType" required>
+                <mat-option *ngFor="let joinType of joinTypes" [value]="joinType.value">
+                  {{joinType.name}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="joinTypeControl.hasError('required')">Required</mat-error>
+            </mat-form-field>
+          </div>
+          <div fxFlex="33">
+            <mat-form-field>
+              <mat-select placeholder="Current field"  formControlName="currentSchemaField" required>
+                <mat-option *ngFor="let field of data.cols" [value]="field.field">
+                  {{field.displayName}} - {{field.dataType}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="currentSchemaFieldControl.hasError('required')">Required</mat-error>
+            </mat-form-field>
+          </div>
+          <div fxFlex="33">
+            <mat-form-field *ngIf="dataSet != undefined">
+              <mat-select placeholder="Joining field"  formControlName="joinSchemaField" required>
+                <mat-option *ngFor="let field of dataSet.schema" [value]="field.name">
+                  {{field.label}} - {{field.dataType}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="joinSchemaFieldControl.hasError('required')">Required</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+        <dataset-schema-definition [smallView]="false" (selectionChange)="selectionChange($event)" [options]="{selectable:true,sortable:true, initiallySelected:true}" [(columns)]="dataSet.schema" *ngIf="dataSet != undefined"></dataset-schema-definition>
+        <input type="hidden" formControlName="joinSchemaFields">
+      </ng-container>
+
+      <ng-container *ngIf="joinOrUnion.value == 'UNION'">
+        <dataset-simple-table [calcColumnWidth]="false"  [options]="{selectable:true,sortable:true, initiallySelected:true}"
+                              [rows]="unionTableModel.rows" [columns]="unionTableModel.columns" (selectionChange)="unionSelectionChange($event)"
+                              (selectAll)="unionSelectAll($event)" (rowSelect)="unionRowSelect($event)">
+
+          <ng-template tdDataTableTemplate="dataFrameField" let-value="value" let-column="column" let-row="row">
+            <mat-form-field *ngIf="dataSet != undefined">
+              <mat-select placeholder="Matching field"   [(ngModel)]="row.dataFrameField" [ngModelOptions]="{standalone: true}">
+                <mat-option value="">No match</mat-option>
+                <mat-option *ngFor="let field of data.cols" [value]="field.field">
+                  {{field.displayName}} - {{field.dataType}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </ng-template>
+
+        </dataset-simple-table>
+
+        <input type="hidden" formControlName="unionSchemaFields">
+      </ng-container>
+    </form>
+  </div>
+</ng-template>

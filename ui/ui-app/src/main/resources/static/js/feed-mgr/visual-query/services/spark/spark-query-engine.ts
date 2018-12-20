@@ -187,7 +187,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         end = (end !== null) ? end + 1 : this.states_.length;
 
         // Build script
-        let sparkScript = "import org.apache.spark.sql._\n";
+        let sparkScript = "import org.apache.spark.sql._\nimport org.apache.spark.sql.functions.{lit}\n";
 
         if (start === 0) {
 
@@ -409,7 +409,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
             // Add script to body
             if (!this.hasStateChanged()) {
-                body["script"] = "import org.apache.spark.sql._\nvar df = parent\ndf";
+                body["script"] = "import org.apache.spark.sql._\nimport org.apache.spark.sql.functions.{lit}\nvar df = parent\ndf";
                 last = index;
             } else {
                 body["script"] = this.getScript(last + 1, index);

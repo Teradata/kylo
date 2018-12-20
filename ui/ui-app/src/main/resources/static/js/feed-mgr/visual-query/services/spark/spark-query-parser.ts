@@ -135,7 +135,7 @@ export class SparkQueryParser extends QueryParser {
         return script;
     }
 
-    public joinSelect(targetList:ResTarget[]){
+    public joinSelect(targetList:ResTarget[], endWithNewLine:boolean = true){
         let firstTarget = true;
         let script = ".select(";
         targetList.forEach(function (target: ResTarget) {
@@ -144,7 +144,12 @@ export class SparkQueryParser extends QueryParser {
             } else {
                 script += ", ";
             }
-            script += target.val.fields[0] + ".col(\"" + StringUtils.escapeScala(target.val.fields[1]) + "\")";
+            if(target.val.fields.length == 0){
+             script +=`lit(null)`
+            }
+            else {
+                script += target.val.fields[0] + ".col(\"" + StringUtils.escapeScala(target.val.fields[1]) + "\")";
+            }
             if (target.name !== null || target.description !== null) {
                 script += ".as(\"" + StringUtils.escapeScala((target.name !== null) ? target.name : target.val.fields[1]) + "\"";
                 if (target.description !== null && target.description != undefined) {
@@ -153,7 +158,10 @@ export class SparkQueryParser extends QueryParser {
                 script += ")"
             }
         });
-        script += ")\n";
+        script += ")";
+        if(endWithNewLine){
+            script += "\n";
+        }
         return script;
     }
 

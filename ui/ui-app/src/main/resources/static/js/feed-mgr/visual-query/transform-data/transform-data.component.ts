@@ -39,7 +39,7 @@ import {StringUtils} from "../../../common/utils/StringUtils";
 import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
 import {MatDialogConfig} from "@angular/material";
 import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
-import {JoinData, JoinPreviewStepperStep} from "./dataset-join-dialog/join-preview-stepper-step";
+import {JoinData, JoinMode, JoinPreviewStepperStep} from "./dataset-join-dialog/join-preview-stepper-step";
 import {JoinPreviewStepData} from "./dataset-join-dialog/join-preview-step-data";
 import {ColumnRef, ResTarget, SqlBuilderUtil, VisualQueryService} from "../../services/VisualQueryService";
 import {DATASET_PROVIDER, SparkQueryParser} from "../services/spark/spark-query-parser";
@@ -526,8 +526,14 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 }
                 this.model.datasets.push(ds);
 
-
-                this.pushFormula(formula, {formula: formula, icon: 'link', name: 'Join '+joinData.joinDataSet.displayKey+" on "+joinDataSet.dfField+ "= "+joinDataSet.joinField, joinDataSet:joinDataSet}, true, true)
+                let historyName = '';
+                if(joinData.joinOrUnion == JoinMode.JOIN){
+                    historyName = "Join "+joinData.joinDataSet.displayKey+" on "+joinDataSet.dfField+ "= "+joinDataSet.joinField
+                }
+                else {
+                    historyName = "Union "+joinData.joinDataSet.displayKey;
+                }
+                this.pushFormula(formula, {formula: formula, icon: 'link', name:historyName, joinDataSet:joinDataSet}, true, true)
                     .then( () => {
 
                     }, () => {

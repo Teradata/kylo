@@ -5,6 +5,34 @@ import * as _ from "underscore"
 @Injectable()
 export class FormGroupUtil {
 
+    static updateValidity(formGroup:FormGroup) {
+        if (formGroup.controls) {
+            (<any>Object).values(formGroup.controls).forEach((control: AbstractControl) => {
+
+                control.updateValueAndValidity();
+                if (control instanceof FormGroup) {
+                    FormGroupUtil.updateValidity(control as FormGroup);
+                }
+                if (control instanceof FormArray) {
+                    FormGroupUtil.updateFormArrayValidity(control as FormArray);
+                }
+            });
+        }
+    }
+
+    static updateFormArrayValidity(formArray:FormArray) {
+        if (formArray.controls) {
+            formArray.controls.forEach((control: AbstractControl) => {
+                control.updateValueAndValidity();
+                if (control instanceof FormGroup) {
+                    FormGroupUtil.updateValidity(control as FormGroup);
+                }
+                if (control instanceof FormArray) {
+                    FormGroupUtil.updateFormArrayValidity(control as FormArray);
+                }
+            });
+        }
+    }
 
     static disableFormControls(formGroup:FormGroup) {
         formGroup.disable()

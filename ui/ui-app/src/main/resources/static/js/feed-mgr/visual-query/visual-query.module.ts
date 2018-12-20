@@ -71,6 +71,8 @@ import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import "./visual-query.component.scss";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
 import {JoinPreviewStepperStep} from "./transform-data/dataset-join-dialog/join-preview-stepper-step";
+import {MatButtonToggleModule} from "@angular/material/button-toggle";
+import {PreviewSchemaModule} from "../catalog/datasource/preview-schema/preview-schema.module";
 
 
 @NgModule({
@@ -118,6 +120,7 @@ import {JoinPreviewStepperStep} from "./transform-data/dataset-join-dialog/join-
     ],
     imports: [
         CatalogDatasetPreviewModule,
+        PreviewSchemaModule,
         CodemirrorModule,
         CommonModule,
         CovalentDataTableModule,
@@ -138,6 +141,7 @@ import {JoinPreviewStepperStep} from "./transform-data/dataset-join-dialog/join-
         KyloFeedManagerModule,
         MatAutocompleteModule,
         MatButtonModule,
+        MatButtonToggleModule,
         MatCardModule,
         MatCheckboxModule,
         MatDividerModule,
