@@ -67,9 +67,10 @@ export class UnionField {
 export class UnionTableModel {
     columns:TableColumn[] = [];
     constructor(public rows:UnionField[], dataSetName:string) {
+        this.columns.push({"name":"dataFrameField","label":"Current Schema","dataType":"string","sortable":false})
         this.columns.push({name:"tableModelJoinFieldName","label":"Data Set Field","dataType":"string","sortable":true})
         this.columns.push({name:"tableModelJoinFieldDataType","label":"Data Type","dataType":"string","sortable":true})
-        this.columns.push({"name":"dataFrameField","label":"Current Schema","dataType":"string","sortable":false})
+
     }
 
     update(rows:UnionField[], dataSetName:string){
