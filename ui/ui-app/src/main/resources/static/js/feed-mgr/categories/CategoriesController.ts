@@ -41,8 +41,7 @@ export class CategoriesController {
         this.$scope.$watchCollection(
             () => { return CategoriesService.categories },
             (newVal: any) => {
-                this.categories = [];
-                //this.categories = newVal
+              this.categories = newVal
             }
         );
 
