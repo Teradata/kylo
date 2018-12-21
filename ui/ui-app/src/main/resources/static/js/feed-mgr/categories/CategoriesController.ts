@@ -23,6 +23,8 @@ export class CategoriesController {
 
     static readonly $inject = ["$scope", "AccessControlService", "AddButtonService", "CategoriesService", "StateService"];
 
+
+    canAdd:boolean = false;
     /**
      * Displays a list of categories.
      *
@@ -38,7 +40,10 @@ export class CategoriesController {
 
         this.$scope.$watchCollection(
             () => { return CategoriesService.categories },
-            (newVal: any) => { this.categories = newVal }
+            (newVal: any) => {
+                this.categories = [];
+                //this.categories = newVal
+            }
         );
 
         $scope.getIconColorStyle = (color: any) => {
@@ -55,8 +60,9 @@ export class CategoriesController {
         this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) =>{
                 if (accessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
+                    this.canAdd = true;
                     AddButtonService.registerAddButton('categories', ()=> {
-                        StateService.FeedManager().Category().navigateToCategoryDetails(null);
+                        this.StateService.FeedManager().Category().navigateToCategoryDetails(null);
                     });
                 }
             });
@@ -67,6 +73,12 @@ export class CategoriesController {
                 this.loading = false;
             });
     };
+
+    addCategory(){
+        if(this.canAdd){
+            this.StateService.FeedManager().Category().navigateToCategoryDetails(null);
+        }
+    }
     /**
     * Navigates to the details page for the specified category.
     *

@@ -105,6 +105,15 @@
         </md-card-actions>
       </div>
     </div>
+
+
+  </div>
+
+  <div  flex ng-if="!vm.loading && vm.categories.length ==0" layout-align="center center" layout="column" class="tc-grey-500 mat-typography pad">
+
+    <div class="pull-left-lg"><ng-md-icon icon="find_in_page" size="60" class="push-bottom-lg"></ng-md-icon></div>
+    <h2 >No categories exist</h2>
+    <md-button class="md-raised md-primary" ng-click="vm.addCategory()" ng-if="vm.canAdd">Create</md-button>
   </div>
 
 </div>
