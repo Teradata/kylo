@@ -1,13 +1,15 @@
-import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output} from "@angular/core";
+import {Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, ViewChild} from "@angular/core";
 
 import {PreviewDatasetCollectionService} from "../catalog/api/services/preview-dataset-collection.service";
-import {FeedDataTransformation} from "../model/feed-data-transformation";
+import {DefaultFeedDataTransformation, FeedDataTransformation} from "../model/feed-data-transformation";
 import {Feed} from "../model/feed/feed.model";
 import {QueryEngine} from "./wrangler/query-engine";
 import {StepperSelectionEvent} from "@angular/cdk/stepper";
 import {MatIconRegistry} from "@angular/material/icon";
 import {FeedLoadingService} from "../feeds/define-feed-ng2/services/feed-loading-service";
 import {SparkQueryEngine} from './services/spark/spark-query-engine';
+import {ObjectUtils} from "../../../lib/common/utils/object-utils";
+import {MatHorizontalStepper} from "@angular/material";
 
 @Component({
     selector: 'visual-query-stepper',
@@ -61,6 +63,9 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     @Output()
     save = new EventEmitter<void>();
 
+    @ViewChild("stepper")
+    stepper:MatHorizontalStepper;
+
     /**
      * Query engine and data transformation model
      */
@@ -111,7 +116,7 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.dataModel = {engine: this.engine, model: {} as FeedDataTransformation};
+        this.dataModel = {engine: this.engine, model: new DefaultFeedDataTransformation()};
         let collection = this.previewDataSetCollectionService.getSparkDataSets();
         this.dataModel.model.datasets = collection;
 
@@ -145,9 +150,9 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
             this.feed = feed;
 
             if (typeof feed.dataTransformation !== "object" || feed.dataTransformation === null) {
-                feed.dataTransformation = this.dataModel.model;
+                feed.dataTransformation = ObjectUtils.getAs(this.dataModel.model,DefaultFeedDataTransformation);
             } else {
-                this.dataModel.model = feed.dataTransformation;
+                this.dataModel.model = ObjectUtils.getAs(feed.dataTransformation,DefaultFeedDataTransformation);
             }
         }
     }
@@ -173,4 +178,7 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
         //reset flag to allow new query's execution
         this.queryExecutionFailure = false;
     }
+
+
+
 }

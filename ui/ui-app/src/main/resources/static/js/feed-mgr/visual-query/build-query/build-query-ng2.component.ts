@@ -624,6 +624,8 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
         // Create view model
         this.chartViewModel = new FlowChart.ChartViewModel(chartDataModel);
 
+
+
         this.onCreateConnectionSubscription = this.chartViewModel.onCreateConnection$.subscribe(this.onCreateConnectionCallback.bind(this));
         this.onEditConnectionSubscription = this.chartViewModel.onEditConnection$.subscribe(this.onEditConnectionCallback.bind(this));
         this.onDeleteConnectionSubscription = this.chartViewModel.onDeleteSelected$.subscribe(this.onDeleteSelectedCallback.bind(this))
@@ -684,6 +686,9 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      * TODO enhance to check if there are any tables without connections
      */
     private validate() {
+        //always reset the queryExecution flag when validating.
+        //Validate will be called when things change
+        this.queryExecutionFailure = false;
         if (this.advancedMode) {
             let sql = this.advancedModeSql();
             this.isValid = (typeof(sql) !== "undefined" && sql.length > 0);
@@ -789,6 +794,9 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                     width: '500px', //OPTIONAL, defaults to 400px
                 }).afterClosed().subscribe((accept: boolean) => {
                     if (accept) {
+                        if(this.model.sql == "") {
+                            this.model.sql = this.getSQLModel();
+                        }
                         goAdvanced();
                     } else {
                         //nada
@@ -1189,6 +1197,11 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                 // Display Catalog for templates only using a sample file
                 if (typeof this.model.dataTransformScript === "string" && this.model.dataTransformScript.length > 0 && this.model.sql === "") {
                     this.openCatalogBrowser();
+                }
+
+                if(_.isArray(this.model.states) && (this.model.states as Array<any>).length >0){
+                    //jump to next state
+                    this.next.emit();
                 }
             });
 

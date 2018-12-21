@@ -110,11 +110,23 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     nextButton: string;
 
     /**
+     * Label for the "BACK" button
+     */
+    @Input()
+    backButton: string;
+
+    /**
      * Should NEXT button be disabled?
      * (true if feed is being saved)
      */
     @Input()
     disableNextButton: boolean;
+
+    /**
+     * Should the back button be shown
+     */
+    @Input()
+    showBackButton ?:boolean = true;
 
     /**
      * Event emitted to return to the previous step
@@ -127,6 +139,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      */
     @Output()
     next = new EventEmitter<void>();
+
+    @Output()
+    cancel = new EventEmitter<void>();
 
     /**
      * Event emitted to indicate query failure
@@ -295,6 +310,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @ViewChild("joinDataSetStep")
     joinDatasetPreviewStepComponent:JoinPreviewStepperStep;
 
+
+
     /**
      * Constructs a {@code TransformDataComponent}.
      */
@@ -315,6 +332,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.codemirrorLoaded(this.codeMirrorView.instance);
     }
 
+
+
     ngOnInit(): void {
         if (this.warnWhenLeaving) {
             // Display prompt on window unload
@@ -322,7 +341,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         }
         //convert the model to a default model
-        this.model = ObjectUtils.getAs(this.model,DefaultFeedDataTransformation)
+        //this.model = ObjectUtils.getAs(this.model,DefaultFeedDataTransformation)
 
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
@@ -758,6 +777,15 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         return deferred.toPromise();
     }
 
+    private updateGoBackState(){
+        if(this.engine.canUndo()){
+            this.showBackButton = false;
+        }
+        else {
+            this.showBackButton = true;
+        }
+    }
+
     /**
      * Query Hive using the query from the previous step. Set the Grids rows and columns.
      *
@@ -792,6 +820,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 this.updateGrid();
             }
             this.removeExecution(promise);
+            this.updateGoBackState();
             deferred.complete();
         };
         const errorCallback = (message: string) => {
@@ -799,7 +828,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.queryFailure.emit();
             this.setExecutingQuery(false);
             this.resetAllProgress();
-
+            let historySize = this.functionHistory.length;
             // Reset state
             if (this.engine.canUndo()) {
                 this.onUndo();
@@ -807,7 +836,10 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.removeExecution(promise);
             this.hiveDataLoaded = false;
             deferred.error(message);
-            this.back.emit();
+            this.updateGoBackState();
+            if(historySize ==0) {
+                this.back.emit();
+            }
         };
         const notifyCallback = (progress: number) => {
             //self.setQueryProgress(progress * 100);
@@ -1295,6 +1327,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.engine.undo();
         this.functionHistory.pop();
         this.refreshGrid();
+        this.updateGoBackState();
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -1302,6 +1335,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         let func = this.engine.redo();
         this.functionHistory.push(func);
         this.refreshGrid();
+        this.updateGoBackState();
     };
 
     canUndo() {
@@ -1491,4 +1525,17 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     goForward() {
         this.saveToFeedModel().then(() => this.next.emit());
     }
+
+    onCancel(){
+        this.$mdDialog.openConfirm({
+            message: 'Are you sure you want to leave?  Any changes you have made will be lost.',
+            disableClose: true,
+            title: 'Abandon Changes',
+        }).afterClosed().subscribe((accept: boolean) => {
+            if (accept) {
+               this.cancel.emit();
+            }
+        });
+    }
+
 }

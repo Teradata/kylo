@@ -70,7 +70,8 @@
         <button mat-raised-button class="text-upper mat-accent kylo-add" (click)="onAddFunction()" [disabled]="!currentFormula">Add</button>
         <span fxFlex="1 1 auto"></span>
         <div fxLayout="row">
-          <button mat-button (click)="back.emit()" type="button" class="text-upper">Back</button>
+          <button mat-button (click)="back.emit()" type="button" class="text-upper" *ngIf="showBackButton" matTooltip="Go back and edit the query">Back</button>
+          <button mat-button (click)="onCancel()" type="button" class="text-upper" *ngIf="!showBackButton" matTooltip="Leave without applying changes">Cancel</button>
           <button mat-button [color]="isValid ? 'primary' : ''" (click)="goForward()" type="button" [disabled]="!isValid || disableNextButton" class="text-upper">{{nextButton}}</button>
         </div>
       </div>
