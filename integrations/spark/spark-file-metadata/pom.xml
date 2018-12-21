@@ -22,4 +22,5 @@
     <module>spark-file-metadata-spark-v2</module>
     <module>spark-file-metadata-core</module>
   </modules>
+
 </project>
