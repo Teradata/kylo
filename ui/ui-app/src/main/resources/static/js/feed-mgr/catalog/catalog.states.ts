@@ -11,7 +11,6 @@ import {ConnectorComponent} from './connector/connector.component';
 import {DataSourcesComponent} from './datasources/datasources.component';
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
-import {DatasetComponent} from './dataset/dataset.component';
 
 export function resolveConnectors(catalog: CatalogService, state: StateService, loading: TdLoadingService) {
     loading.register(ConnectorsComponent.LOADER);
@@ -72,17 +71,6 @@ export function resolveDatasource(catalog: CatalogService, state: StateService, 
     let datasourceId = state.transition.params().datasourceId;
     return catalog.getDataSource(datasourceId)
         .pipe(finalize(() => loading.resolve(DatasourceComponent.LOADER)))
-        .pipe(catchError(() => {
-            return state.go("catalog")
-        }))
-        .toPromise();
-}
-
-export function resolveDataset(catalog: CatalogService, state: StateService, loading: TdLoadingService) {
-    loading.register(DatasetComponent.LOADER);
-    let id = state.transition.params().datasetId;
-    return catalog.getDataset(id)
-        .pipe(finalize(() => loading.resolve(DatasetComponent.LOADER)))
         .pipe(catchError(() => {
             return state.go("catalog")
         }))

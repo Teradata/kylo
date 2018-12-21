@@ -1,4 +1,9 @@
+<div *ngIf="!dataset.schema || dataset.schema.length == 0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
+  <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
+  <h2>Schema Unavailable</h2>
+</div>
 <td-data-table
+    *ngIf="dataset.schema && dataset.schema.length != 0"
     [data]="dataset.schema"
     [columns]="schemaColumns"
     [selectable]="false"
@@ -14,7 +19,3 @@
             (click)="openPrompt(row, 'description')">{{row['description'] || 'Add Description'}}</button>
   </ng-template>
 </td-data-table>
-<div *ngIf="!dataset.schema || dataset.schema.length == 0" fxLayout="column" fxFlex fxLayoutAlign="center center" class="tc-grey-500 mat-typography pad">
-  <ng-md-icon icon="find_in_page" size="60" class="push-bottom-sm"></ng-md-icon>
-  <h2>Schema Unavailable</h2>
-</div>

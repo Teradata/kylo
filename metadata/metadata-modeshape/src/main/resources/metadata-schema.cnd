@@ -26,6 +26,9 @@
  *                          tba:DataSource*
  *                              "dataSets"
  *                                  tba:DataSet*
+ *                                  	tba:Schema
+ *                                  		"fields"
+ *                                  			tba:SchemaField
  *          "sla"
  *              sla*
  *          "extensions"
@@ -461,7 +464,7 @@
     - tba:feedTargets (WEAKREFERENCE) multiple
 	+ tba:schema (tba:Schema)
 
-[tba:Schema] > mix:lastModified, mix:referenceable, tba:propertied
+[tba:Schema] > mix:title, mix:lastModified, mix:referenceable, tba:propertied
 	- tba:charset (STRING)
  	+ fields (tba:SchemaFields) = tba:SchemaFields autocreated mandatory
 

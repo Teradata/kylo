@@ -8,4 +8,7 @@ export class Dataset {
     id: string;
     datasource: DataSource;
     schema: TableColumn[];
+    preview: any;
+    lineage: any;
+    queries: any;
 }

@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
+import com.thinkbiganalytics.metadata.modeshape.catalog.schema.DefaultSchema;
 
 import org.assertj.core.groups.Tuple;
 import org.mockito.Mockito;
@@ -197,9 +198,13 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
 
     
     protected DataSet createDataSet(DataSource.ID srcId, int tag) {
+        DefaultSchema schema = new DefaultSchema();
+        schema.setDescription("test schema description");
+        schema.setCharset("UTF-8");
         return this.dataSetProvider.build(srcId)
             .title("Test " + tag + " Data Set")
             .description("Test description " + tag)
+            .schema(schema)
             .build();
     }
     

@@ -12,6 +12,8 @@ import {Dataset} from '../api/models/dataset';
 })
 export class DatasetComponent implements OnInit {
 
+    public static LOADER = "DatasetComponent.LOADER";
+
     @Input("dataset")
     public dataset: Dataset;
 
