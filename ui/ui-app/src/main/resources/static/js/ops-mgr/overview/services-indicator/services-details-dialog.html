@@ -32,7 +32,7 @@
     <mat-list class="md-dense" flex>
       <mat-list-item style="height: auto; margin: 16px -16px;" class="md-3-line" *ngFor="let item of services">
         <div style="margin-bottom: 16px;" class="md-list-item-text" layout="column">
-          <a href (click)="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span *ngIf="item.componentName">, {{item.componentName}}</span> <span *ngIf="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} {{"views.main.alerts"| translate}}</span></a>
+          <a class="link-css" (click)="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span *ngIf="item.componentName">, {{item.componentName}}</span> <span *ngIf="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} {{"views.main.alerts"| translate}}</span></a>
           <div style="line-height: 1.05; font-size: 13px;" *ngIf="item.componentMessage != null">{{item.componentMessage}}</div>
           <div style="line-height: 1.05; font-size: 12px;">{{"OPS_MGR.OVERVIEW.SERVICE_DETAILS_DIALOG.LAST_CHECKED"| translate}} {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</div>
         </div>

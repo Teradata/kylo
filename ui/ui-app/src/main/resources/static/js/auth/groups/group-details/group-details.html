@@ -20,7 +20,7 @@
 <div class="flex-container" fxLayoutAlign="center center">
     <mat-progress-bar flex="90" mode="indeterminate" *ngIf="loading" color="accent"></mat-progress-bar>
     <mat-card flex="70">
-        <mat-card-title>
+        <mat-card-title style="padding-top:0 !important;">
             <mat-toolbar style="background: none;">
                 <div class="card-title push-top-sm">Group Details</div>
                 <span flex></span>
@@ -29,7 +29,7 @@
         </mat-card-title>
         <mat-card-body>
             <form #groupForm="ngForm">
-                <vertical-section-layout section-title="'Details'" (on-delete)="onDelete()" [allowDelete]="canDelete" (on-save-edit)="onSave()" (on-edit)="onEdit()"
+                <vertical-section-layout section-title="Details" [showVerticalCheck]="false" (on-delete)="onDelete()" [allowDelete]="canDelete" (on-save-edit)="onSave()" (on-edit)="onEdit()"
                     (on-cancel-edit)="onCancel()" [editable]="isEditable" [isValid]="isFormValid()" [allowEdit]="allowAdmin">
                     <readonly-section>
                         <div layout="row" class="layout-padding-bottom">
@@ -79,7 +79,7 @@
                     </editable-section>
                 </vertical-section-layout>
             </form>
-            <vertical-section-layout section-title="Permissions" (on-save-edit)="onSavePermissions()" (on-edit)="onEditPermissions()"
+            <vertical-section-layout section-title="Permissions" [showVerticalCheck]="false" (on-save-edit)="onSavePermissions()" (on-edit)="onEditPermissions()"
              (on-cancel-edit)="onCancelEditPermissions()" [editable]="isPermissionsEditable" [allowEdit]="!loading && model.systemName !== null && allowAdmin" *ngIf="groupId">
                 <readonly-section class="pull-top">
                     <thinkbig-permissions-table [model]="actions" [readOnly]="true"></thinkbig-permissions-table>
@@ -89,7 +89,7 @@
                 </editable-section>
             </vertical-section-layout>
 
-            <vertical-section-layout [allowEdit]="false" [showVerticalCheck]="true" section-title="'Related Users'" *ngIf="groupId && allowUsers">
+            <vertical-section-layout [allowEdit]="false" [showVerticalCheck]="false" section-title="'Related Users'" *ngIf="groupId && allowUsers">
                 <readonly-section>
                     <mat-list layout-fill class="list-item-table list-condensed" id="policy-list" *ngIf="!loading && model.systemName !== null && model.memberCount > 0">
                         <mat-list-item>

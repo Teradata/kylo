@@ -2,7 +2,7 @@ import * as _ from "underscore";
 import {AccessControlService} from '../../../services/AccessControlService';
 import {BroadcastService} from '../../../services/broadcast-service';
 import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
-import { Component, Inject, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild, ViewEncapsulation } from '@angular/core';
 import { StateService } from '@uirouter/core';
 import { RegisterCompleteRegistrationController } from './register-template/register-template-step.component';
 import { FormGroup, AbstractControl, FormControl, ValidatorFn } from '@angular/forms';
@@ -10,7 +10,13 @@ import '../../../../assets/images/75_arrow.svg'
 
 @Component({
     selector:'register-template-controller',
-    templateUrl: './register-template.html'
+    templateUrl: './register-template.html',
+    styles: [`
+        .mat-stepper-horizontal .mat-horizontal-content-container {
+            background-color: #e0e0e0 !important;
+        }
+    `],
+    encapsulation: ViewEncapsulation.None
 })
 export class RegisterTemplateController {
 

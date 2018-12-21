@@ -32,7 +32,12 @@ export function invalidConnection(connectionMap: any, connection: any): Validato
 
 @Component({
     selector: 'thinkbig-register-complete-registration',
-    templateUrl: './register-template-step.html'
+    templateUrl: './register-template-step.html',
+    styles: [`
+        textarea:focus {
+            outline: none !important;
+        }
+    `]
 })
 export class RegisterCompleteRegistrationController {
 

@@ -169,7 +169,8 @@ export class ServiceIndicatorComponent {
                 private ServicesStatusData: ServicesStatusData,
                 private OpsManagerDashboardService: OpsManagerDashboardService,
                 private BroadcastService: BroadcastService,
-                private translate: TranslateService) {
+                private translate: TranslateService,
+                private stateService: StateService) {
 
     }// end of constructor
 
@@ -191,10 +192,15 @@ export class ServiceIndicatorComponent {
 
 
     openDetailsDialog(key: any) {
-        let dialogRef = this.dialog.open(ServiceDetailsDialogComponent, {
+        
+        this.dialog.open(ServiceDetailsDialogComponent, {
             data: { status: key,
                     selectedStatusData: this.indicator.grouped[key] },
             panelClass: "full-screen-dialog"
+        }).afterClosed().subscribe((serviceName: any) => {
+            if (serviceName) {
+                this.stateService.OpsManager().ServiceStatus().navigateToServiceDetails(serviceName);
+            }
         });
 
     }
@@ -317,8 +323,7 @@ export class ServiceDetailsDialogComponent {
     }
 
     gotoServiceDetails(serviceName: any) {
-        this.dialogRef.close();
-        this.stateService.OpsManager().ServiceStatus().navigateToServiceDetails(serviceName);
+        this.dialogRef.close(serviceName);
     }
 
 }

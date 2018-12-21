@@ -17,7 +17,7 @@
   limitations under the License.
   #L%
   -->
-  <mat-card>
+  <mat-card style="padding: 16px;">
 
     <mat-card-title>
         <div layout="row" layout-align="space-between-center" flex>
@@ -162,10 +162,10 @@
             <div flex="100" layout="column">
                 <md-subheader class="md-subhead left-aligned">Comment</md-subheader>
                 <div layout="column">
-                    <md-input-container class="md-block" flex="100">
+                    <div class="md-block" flex="100">
                         <label>Give short description of changes made.</label>
-                        <textarea name="changeComment" ng-model="vm.model.changeComment"></textarea>
-                    </md-input-container>
+                        <textarea style="width: 100%; border-width: 0 0 1px 0;" name="changeComment" [(ngModel)]="model.changeComment"></textarea>
+                    </div>
                 </div>
             </div>
 

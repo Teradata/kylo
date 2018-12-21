@@ -801,6 +801,12 @@ card-layout.card-full-width section:first-child {
   letter-spacing: .005em;
 }
 
+.link-css {
+  color: rgb(85, 26, 139);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 /* List View Titles */
 
 .list-item-table md-list-item {
