@@ -541,24 +541,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     ensureDataSetId(dataset:SparkDataSet) :Observable<SparkDataSet>{
-        if(dataset.id == undefined){
-            if(dataset.isUpload){
-                //create random title and new dataset for uploads
-                return this.catalogService.createDataSet(dataset).pipe(map((ds:SparkDataSet) => {
-                    dataset.id = ds.id;
-                    return dataset;
-                }))
-            }else {
-                return this.catalogService.createDataSetWithTitle(dataset).pipe(map((ds: SparkDataSet) => {
-                    dataset.id = ds.id;
-                    return dataset;
-                }));
-            }
-        }
-        else {
-            return Observable.of(dataset);
-        }
-
+        return this.catalogService.ensureDataSetId(dataset);
     }
     ensureDataSetIds(datasets:SparkDataSet[]) :Observable<SparkDataSet>[]{
         return datasets.filter(dataset => typeof dataset.preview !== "undefined")

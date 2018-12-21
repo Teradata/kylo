@@ -916,7 +916,10 @@
                 "TITLE": "No data sources"
             },
             "CREATE": "Create",
-            "TITLE": "Data Sources"
+            "TITLE": "Data Sources",
+            "NIFI_CONTROLLER_SERVICE_CONFILCT_MSG": "Similar NiFi controller services were found.  Review options below to create a new service or link to an existing service",
+            "NIFI_CONTROLLER_SERVICE_CONFLICT_SNACK_BAR": "Similar NiFi services were found. Review options before saving",
+            "NIFI_CONTROLLER_SERVICE_CONFLICT_CREATE_NEW": "Create a new controller service for "
         }
     },
 

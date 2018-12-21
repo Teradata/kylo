@@ -1,4 +1,4 @@
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpBackend, HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {CloneUtil} from "../../../../common/utils/clone-util";
@@ -10,11 +10,13 @@ import {SearchResult} from "../models/search-result";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {DatasetTable} from "../models/dataset-table";
 import {Dataset} from '../models/dataset';
+import {map} from "rxjs/operators";
+import {HttpBackendClient} from "../../../../services/http-backend-client";
 
 @Injectable()
 export class CatalogService {
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient, private http2:HttpBackendClient) {
     }
 
     /**
@@ -85,9 +87,9 @@ export class CatalogService {
 
     createDataSource(datasource: DataSource): Observable<DataSource> {
         if (typeof datasource.id === "string") {
-            return this.http.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
+            return this.http2.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
         } else {
-            return this.http.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+            return this.http2.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
         }
     }
 
@@ -125,6 +127,32 @@ export class CatalogService {
     createDataSetWithTitle(dataSet: SparkDataSet): Observable<SparkDataSet> {
         const body = CloneUtil.deepCopy(dataSet);
         return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+    }
+
+    /**
+     * Ensure the incoming dataset has an ID and is registered with Kylo.
+     * If not it will create the relationship, register with Kylo and return the updated dataset
+     * @param dataset
+     */
+    ensureDataSetId(dataset:SparkDataSet) :Observable<SparkDataSet>{
+        if(dataset.id == undefined){
+            if(dataset.isUpload){
+                //create random title and new dataset for uploads
+                return this.createDataSet(dataset).pipe(map((ds:SparkDataSet) => {
+                    dataset.id = ds.id;
+                    return dataset;
+                }))
+            }else {
+                return this.createDataSetWithTitle(dataset).pipe(map((ds: SparkDataSet) => {
+                    dataset.id = ds.id;
+                    return dataset;
+                }));
+            }
+        }
+        else {
+            return Observable.of(dataset);
+        }
+
     }
 
 

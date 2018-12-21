@@ -6,6 +6,7 @@ import {FormGroup} from "@angular/forms";
 import {DatasetPreviewService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "../../catalog/datasource/preview-schema/service/dataset-preview.service";
 import {Observable} from "rxjs/Observable";
 import {Node} from "../../catalog/api/models/node";
+import {PreviewDataSet} from "../../catalog/datasource/preview-schema/model/preview-data-set";
 
 
 @Injectable()
@@ -13,6 +14,10 @@ export class DatasetPreviewStepperService {
     public stepIndex: number;
 
     public stepChanged$ = new Subject<number>();
+
+    public previews: PreviewDataSet[] = [];
+
+
 
 
     constructor(private _datasetPreviewService: DatasetPreviewService) {
@@ -43,6 +48,10 @@ export class DatasetPreviewStepperService {
         }
     }
 
+    public savePreviews(previews:PreviewDataSet[]){
+        this.previews = previews;
+    }
+
 
     markFormAsInvalid(formGroup: FormGroup) {
         if (formGroup.contains("hiddenValidFormCheck")) {
@@ -57,6 +66,7 @@ export class DatasetPreviewStepperService {
             this._datasetPreviewService.notifyToUpdateView();
         }
     }
+
 
     public prepareAndPopulatePreview(node: Node, datasource: DataSource): Observable<PreviewDataSetResultEvent> {
         return this._datasetPreviewService.prepareAndPopulatePreview(node,datasource);

@@ -1,7 +1,7 @@
 import * as _ from "underscore";
 
 import {UserDatasource} from "../../../model/user-datasource";
-import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, SqlDialect, VisualQueryModel, VisualQueryService} from "../../../services/VisualQueryService";
+import {A_Expr, BoolExpr, JoinExpr, JoinType, RangeVar, ResTarget, SqlDialect, VisualQueryModel, VisualQueryService} from "../../../services/VisualQueryService";
 import {QueryParser} from "../../wrangler/query-parser";
 import {SparkConstants} from "./spark-constants";
 import {StringUtils} from "../../../../common/utils/StringUtils";
@@ -9,9 +9,9 @@ import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {DataSource} from "../../../catalog/api/models/datasource";
 
 /** Name of the DatasourceProvider variable */
-const DATASOURCE_PROVIDER = "datasourceProvider";
+export const DATASOURCE_PROVIDER = "datasourceProvider";
 
-const DATASET_PROVIDER = "catalogDataSetProvider";
+export const DATASET_PROVIDER = "catalogDataSetProvider";
 
 /**
  * Handles transformations from a visual query model to Spark.
@@ -128,9 +128,17 @@ export class SparkQueryParser extends QueryParser {
             script += ".alias(\"" + alias + "\")\n";
         });
 
+
+        script += joinScript+this.joinSelect(tree.targetList);
+
+
+        return script;
+    }
+
+    public joinSelect(targetList:ResTarget[]){
         let firstTarget = true;
-        script += joinScript + ".select(";
-        tree.targetList.forEach(function (target: ResTarget) {
+        let script = ".select(";
+        targetList.forEach(function (target: ResTarget) {
             if (firstTarget) {
                 firstTarget = false;
             } else {
@@ -146,10 +154,24 @@ export class SparkQueryParser extends QueryParser {
             }
         });
         script += ")\n";
-
         return script;
     }
 
+    public parseJoinType(joinType:JoinType) {
+        let join = "";
+        if (joinType === VisualQueryService.JoinType.JOIN_INNER) {
+            join = "inner";
+        } else if (joinType=== VisualQueryService.JoinType.JOIN_LEFT) {
+            join =  "leftouter";
+        } else if (joinType === VisualQueryService.JoinType.JOIN_RIGHT) {
+            join = "rightouter"
+        } else if (joinType === VisualQueryService.JoinType.FULL_JOIN) {
+          join = "fullouter"
+        }   else {
+            throw new Error("Not a supported join type: " + joinType);
+        }
+        return join;
+    }
     /**
      * Generates a Spark script for the specified join expression.
      *
@@ -185,17 +207,7 @@ export class SparkQueryParser extends QueryParser {
                 }
 
                 script += ", ";
-                if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_INNER) {
-                    script += "\"inner\"";
-                } else if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_LEFT) {
-                    script += "\"left_outer\"";
-                } else if (joinExpr.jointype === VisualQueryService.JoinType.JOIN_RIGHT) {
-                    script += "\"right_outer\"";
-                } else if (joinExpr.jointype === VisualQueryService.JoinType.FULL_JOIN) {
-                    script += "\"fullouter\"";
-                  }   else {
-                    throw new Error("Not a supported join type: " + joinExpr.jointype);
-                }
+                script +="\""+this.parseJoinType(joinExpr.jointype)+"\"";
             }
 
             script += ")";

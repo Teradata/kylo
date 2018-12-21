@@ -30,13 +30,12 @@ export abstract class ScriptBuilder<E extends ScriptExpression, T> {
         if (program.type !== "Program") {
             throw new Error("Cannot convert non-program");
         }
-        if (program.body.length !== 1) {
+        if (program.body.length > 1) {
             throw new Error("Program is too long");
         }
-
-        // Convert to a script
-        const expression = this.parseStatement(program.body[0] as Statement);
-        return this.prepareScript(expression);
+            // Convert to a script
+            const expression = program.body.length == 0 ? null : this.parseStatement(program.body[0] as Statement);
+            return this.prepareScript(expression);
     }
 
     /**
