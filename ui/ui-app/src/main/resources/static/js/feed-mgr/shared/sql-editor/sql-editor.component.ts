@@ -148,6 +148,7 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
     }
 
     overrideQueryFailureCheck() {
+        this.sql+=" ";
         this.sqlChange.emit(this.sql);
     }
 
