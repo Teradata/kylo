@@ -26,7 +26,7 @@
         </mat-card-title>
         <mat-card-body>
             <vertical-section-layout section-title="Category Fields" (on-save-edit)="onCategorySave()" (on-edit)="onCategoryEdit()" [editable]="isCategoryEditable" [isValid]="isCategoryValid"
-                                     [allow-edit]="allowCategoryEdit">
+                                     [allow-edit]="allowCategoryEdit" [isDeleteVisible]="false">
                 <readonly-section>
                     <thinkbig-properties-admin [(model)]="model.categoryFields"></thinkbig-properties-admin>
                 </readonly-section>
@@ -35,7 +35,7 @@
                 </editable-section>
             </vertical-section-layout>
             <vertical-section-layout section-title="Feed Fields" (on-save-edit)="onFeedSave()" (on-edit)="onFeedEdit()" [editable]="isFeedEditable" [isValid]="isFeedValid"
-                                     [allow-edit]="allowFeedEdit">
+                                     [allow-edit]="allowFeedEdit" [isDeleteVisible]="false">
                 <readonly-section>
                     <thinkbig-properties-admin [(model)]="model.feedFields"></thinkbig-properties-admin>
                 </readonly-section>

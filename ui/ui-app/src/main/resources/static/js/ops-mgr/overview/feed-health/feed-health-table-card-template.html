@@ -19,7 +19,7 @@
   -->
 
   <mat-card class="filter-header">
-    <mat-card-title style="font-size:smaller;">
+    <mat-card-title style="font-size:smaller;margin-bottom:0;">
 
       <mat-toolbar style="display:flex">
           <div style="white-space: nowrap;margin-top:6px;" class="card-title">{{cardTitle | translate}}</div>
@@ -28,8 +28,6 @@
       </mat-toolbar>
 
     </mat-card-title>
-
-      <mat-card-content>
 
           <mat-tab-group flex [selectedIndex]="tabMetadata.selectedIndex"
                               (selectedIndexChange)="onTabSelected($event)"
@@ -62,7 +60,7 @@
                     >
                   <!-- [ngStyle]="job.iconstyle" -->
                         <ng-template tdDataTableTemplate="healthText" let-value="value" let-row="row" let-column="column">
-                          <span ng-class="{'tc-positive':row.healthText == 'HEALTHY','tc-negative':row.healthText == 'UNHEALTHY'}">
+                          <span [ngClass]="{'tc-positive':row.healthText == 'HEALTHY','tc-negative':row.healthText == 'UNHEALTHY'}">
                               <ng-md-icon icon="{{row.icon}}" size="20">
                               </ng-md-icon>
                               <span>{{row.healthText | translate}}</span>
@@ -92,5 +90,4 @@
                 </div>
             </mat-tab>
         </mat-tab-group>
-    </mat-card-content>
 </mat-card>
