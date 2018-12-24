@@ -45,6 +45,7 @@ import { NvD3Module } from 'ng2-nvd3';
 import { ServiceIndicatorComponent, ServiceDetailsDialogComponent } from "./services-indicator/ServiceIndicatorComponent";
 import { FeedHealthTableCardComponent } from "./feed-health/FeedHealthTableCardComponent";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { MatTooltipModule } from '@angular/material';
 
 @NgModule({
     declarations: [
@@ -98,6 +99,7 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         MatSnackBarModule,
         CovalentDialogsModule,
         MatTabsModule,
+        MatTooltipModule,
         UIRouterModule.forChild({states: overviewStates})
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],

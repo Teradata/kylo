@@ -58,7 +58,13 @@
                         (rowClicked)="feedDetails($event)"
                         [allowedPageSize]="[5,10,20,50]"
                     >
-                  <!-- [ngStyle]="job.iconstyle" -->
+
+                        <ng-template tdDataTableTemplate="feed" let-value="value" let-row="row" let-column="column">
+                            <span matTooltip="{{row.feed}}" style="text-overflow: ellipsis; overflow: hidden;">
+                            {{row.feed}}
+                            </span>
+                        </ng-template>
+
                         <ng-template tdDataTableTemplate="healthText" let-value="value" let-row="row" let-column="column">
                           <span [ngClass]="{'tc-positive':row.healthText == 'HEALTHY','tc-negative':row.healthText == 'UNHEALTHY'}">
                               <ng-md-icon icon="{{row.icon}}" size="20">
