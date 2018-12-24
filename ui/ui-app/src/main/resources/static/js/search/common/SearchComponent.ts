@@ -5,7 +5,7 @@ import {StateService as StateServices} from "../../services/StateService";
 import {FeedService} from "../../feed-mgr/services/FeedService";
 import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 import { DatasourcesService } from "../../feed-mgr/services/DatasourcesService";
-import { Component, Inject, ViewContainerRef, OnInit } from '@angular/core';
+import { Component, Inject, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
 import { StateService } from '@uirouter/core';
 import { TdDialogService } from '@covalent/core/dialogs';
 import { SLIDE_TOGGLE_INPUT_CONTROL_VALUE_ACCESSOR } from '@covalent/dynamic-forms';
@@ -14,7 +14,7 @@ import { Subscription } from 'rxjs/Subscription';
 @Component({
     templateUrl: './search.html',
 })
-export class SearchComponent implements OnInit {
+export class SearchComponent implements OnInit, OnDestroy {
     /**
      * The result object of what is returned from the search query
      * @type {null}

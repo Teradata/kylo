@@ -843,8 +843,7 @@ export class FeedService {
         return new Promise((resolve, reject) => {
             this.http.get(this.RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName)).toPromise()
                 .then((response: any) => {
-                    var feedResponse = response.data;
-                    return resolve(feedResponse);
+                    return resolve(response);
                 });
         });
     }
