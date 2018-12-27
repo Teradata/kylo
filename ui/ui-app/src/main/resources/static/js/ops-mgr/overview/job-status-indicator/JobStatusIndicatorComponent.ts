@@ -4,9 +4,10 @@ import {BroadcastService} from "../../../services/broadcast-service";
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
 import {StateService} from "../../../services/StateService";
-import { Component } from "@angular/core";
+import { Component, ViewChild } from "@angular/core";
 import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
 import {OpsManagerChartJobService} from "../../services/ops-manager-chart-job.service";
+import { NvD3Component } from 'ng2-nvd3';
 declare const d3: any;
 
 @Component({
@@ -26,6 +27,9 @@ export class JobStatusIndicatorComponent {
     maxDatapoints: number = 20;
     chartOptions: any;
     refreshIntervalTime: number=1000;
+
+    @ViewChild("nvd3") 
+    private nvd3: NvD3Component;
 
     ngOnInit() {
 
@@ -107,7 +111,7 @@ if(this.refreshIntervalTime == undefined) {
         getRunningFailedCounts() {
                 var successFn = (response: any)=> {
                     if(response){
-                     this.updateCounts(response.data);
+                     this.updateCounts(response);
                         if(this.runningCounts.length >= this.maxDatapoints){
                             this.runningCounts.shift();
                             this.chartData[0].values.shift();
@@ -222,6 +226,9 @@ if(this.refreshIntervalTime == undefined) {
                 }
                 this.chartOptions.chart.yAxis.ticks = ticks;
             }
+            if(this.nvd3 && this.nvd3.chart) {
+                this.nvd3.updateWithOptions(this.chartOptions);
+            }
         }
         createChartData (responseData: any) {
             this.chartData = this.opsManagerChartJobService.toChartData(responseData);
@@ -238,7 +245,9 @@ if(this.refreshIntervalTime == undefined) {
             this.chartOptions.chart.color = (d: any)=>{
                 return "#00B2B1";
             };
-          //  this.chartApi.update();
+
+            
+        //    this.chartApi.update();
         }
 
 

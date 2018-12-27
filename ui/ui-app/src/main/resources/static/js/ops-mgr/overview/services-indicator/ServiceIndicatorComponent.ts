@@ -1,13 +1,14 @@
 import "pascalprecht.translate";
 import * as _ from 'underscore';
 import * as moment from "moment";
-import { Component, Inject, ElementRef } from "@angular/core";
+import { Component, Inject, ElementRef, ViewChild } from "@angular/core";
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {StateService} from "../../../services/StateService";
 import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
 import {BroadcastService} from "../../../services/broadcast-service";
 import {ServicesStatusData} from "../../services/ServicesStatusService";
 import { TranslateService } from "@ngx-translate/core";
+import { NvD3Component } from 'ng2-nvd3';
 
 class Indicator {
 
@@ -164,6 +165,9 @@ export class ServiceIndicatorComponent {
      */
     validateTitleTimeout: any;
 
+    @ViewChild("nvd3") 
+    private nvd3: NvD3Component;
+
     constructor(private dialog: MatDialog,
                 private element: ElementRef,
                 private ServicesStatusData: ServicesStatusData,
@@ -207,9 +211,9 @@ export class ServiceIndicatorComponent {
 
     updateChart() {
         var title = (this.indicator.counts.allCount) + " " + this.translate.instant('Total');
-        this.chartOptions.chart.title = title
-        if (this.chartApi.update) {
-            this.chartApi.update();
+        this.chartOptions.chart.title = title;
+        if(this.nvd3 && this.nvd3.chart) {
+            this.nvd3.updateWithOptions(this.chartOptions);
         }
     }
 

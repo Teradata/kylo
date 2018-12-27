@@ -123,6 +123,7 @@ import {FeedSetupGuideComponent} from "./summary/setup-guide-summary/feed-setup-
 import {SetupGuideSummaryComponent} from "./summary/setup-guide-summary/setup-guide-summary.component";
 import {FeedSlaComponent} from './summary/sla/feed-sla.component';
 import {FeedVersionsComponent} from "./summary/versions/feed-versions.component";
+import { DefaultImportService } from '../../services/ImportService';
 
 export function createCompilerFn(c: CompilerFactory) {
     return c.createCompiler([{useJit: true}]);
@@ -205,6 +206,7 @@ export function createCompilerFn(c: CompilerFactory) {
         FeedNifiPropertiesService,
         FeedSideNavService,
         FilterPartitionFormulaPipe,
+        DefaultImportService,
         {provide: COMPILER_OPTIONS, useValue: {}, multi: true},
         {provide: CompilerFactory, useClass: JitCompilerFactory, deps: [COMPILER_OPTIONS]},
         {provide: Compiler, useFactory: createCompilerFn, deps: [CompilerFactory]},

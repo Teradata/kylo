@@ -29,8 +29,8 @@
         <mat-divider></mat-divider>
         <mat-list  layout-fill layout="column" class="list-item-table">
             <mat-list-item *ngFor="let alert of alerts; let last=last;" (click)="navigateToAlerts(alert)" style="height: auto;">
-              <md-icon class="push-left-md error">warning</md-icon>
-                <div class="pad pull-left-md" fxFlex="100%">
+              <mat-icon class="error">warning</mat-icon>
+                <div fxFlex="100%">
                     <div fxLayout="row" fxFlex="100" fxLayoutAlign="start spark-between">
                       <div fxLayout="column" fxFlex="50" fxLayoutAlign="start">
                         <span class="item-title" >{{alert.groupDisplayName}}</span>

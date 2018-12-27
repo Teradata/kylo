@@ -20,6 +20,7 @@ import {DatasourcesService} from "../../../services/DatasourcesService";
 import {KyloRouterService} from "../../../../services/kylo-router.service";
 import {StringUtils} from "../../../../common/utils/StringUtils";
 import {DataSource} from "../../../catalog/api/models/datasource";
+import { DefaultImportService } from '../../../services/ImportService';
 
 @Component({
     selector: "import-feed",
@@ -184,12 +185,13 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
     templateOverwriteFormControl:FormControl;
     reusableTemplateOverwriteFormControl:FormControl;
 
-
-
-    constructor(private http:HttpClient,private snackBar:MatSnackBar,private _dialogService:TdDialogService, private catalogService:CatalogService,
-                @Inject("ImportService") private importService:ImportService,
+    constructor(private http:HttpClient,
+                private snackBar:MatSnackBar,
+                private _dialogService:TdDialogService, 
+                private catalogService:CatalogService,
+                private importService: DefaultImportService,
                 @Inject("FileUpload")private fileUploadService:FileUpload,
-                @Inject("DatasourcesService") private datasourcesService: DatasourcesService,
+                private datasourcesService: DatasourcesService,
                 private kyloRouterService:KyloRouterService) {
 
         this.formGroup = new FormGroup({});

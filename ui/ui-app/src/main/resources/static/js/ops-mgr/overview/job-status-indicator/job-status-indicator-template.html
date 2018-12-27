@@ -24,7 +24,7 @@
     </mat-card-title>
     <mat-card-content layout="column" layout-align="center center" class="kpi-content" style="width:100%; padding:0;">
         <div *ngIf="dataLoaded">
-            <nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" ></nvd3>
+            <nvd3 #nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" ></nvd3>
             <div layout="row" layout-align="center center" flex  style="width:100%" >
                <span layout="column" (click)="chartClick()" style="cursor: pointer;">
                 <span class="md-title" [ngClass]="{'tc-positive':running >0}">{{running}}</span>

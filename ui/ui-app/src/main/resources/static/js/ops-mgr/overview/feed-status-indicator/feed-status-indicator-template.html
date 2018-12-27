@@ -24,7 +24,7 @@
     </mat-card-title>
     <mat-card-content  layout="column"  layout-align="center center" class="kpi-content" style="width:100%; padding:0;">
         <div *ngIf="dataLoaded">
-            <nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" config="chartConfig"></nvd3>
+            <nvd3 #nvd3 flex [options]="chartOptions" [data]="chartData" api="chartApi" config="chartConfig"></nvd3>
             <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
             <span layout="column" (click)="onHealthyClick()" style="cursor: pointer;">
                 <span class="kpi-health-count" [ngClass]="{'tc-positive':dataMap.Healthy.count >0}">{{dataMap.Healthy.count}}</span>

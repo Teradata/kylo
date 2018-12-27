@@ -1,6 +1,7 @@
 import {Component, Injector, Input, OnInit} from '@angular/core';
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {KyloIcons} from "../../../../../../kylo-utils/kylo-icons";
+import { HiveService } from '../../../../../services/HiveService';
 
 @Component({
     selector: 'profile-container',
@@ -14,7 +15,6 @@ export class ProfileContainerComponent implements OnInit {
     feedId: string;
     processingdttm: string;
     private type: string;
-    private hiveService: any;
     timeInMillis: number | Date;
 
     private tabs = ['stats', 'valid', 'invalid'];
@@ -24,9 +24,7 @@ export class ProfileContainerComponent implements OnInit {
 
     public reference: any; //just to make timeAgo:reference, which appears in template, compile with AOT
 
-    constructor(private $$angularInjector: Injector) {
-        this.hiveService = $$angularInjector.get("HiveService");
-    }
+    constructor(private hiveService: HiveService) {}
 
     public ngOnInit(): void {
         this.feedId = this.stateParams ? this.stateParams.feedId : undefined;

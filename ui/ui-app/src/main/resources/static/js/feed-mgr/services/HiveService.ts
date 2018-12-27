@@ -318,7 +318,7 @@ export class HiveService {
         var pivotedData = [];
         rows.forEach((row: any, i: any) => {
             if (columns.length == 0) {
-                rows.forEach((val: any, name: any) => {
+                _.forEach(row,(val: any, name: any) => {
                     var displayName = name;
                     if (name.indexOf('.') >= 0) {
                         displayName = name.substring(name.indexOf('.') + 1);

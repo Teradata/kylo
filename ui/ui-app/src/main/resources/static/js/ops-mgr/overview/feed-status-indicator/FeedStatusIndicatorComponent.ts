@@ -1,5 +1,5 @@
 import "pascalprecht.translate";
-import { Component, Input } from "@angular/core";
+import { Component, Input, ViewChild } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import {BroadcastService} from "../../../services/broadcast-service";
 import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
@@ -8,6 +8,7 @@ import { TranslateService } from "@ngx-translate/core";
 
 import 'd3';
 import 'nvd3';
+import { NvD3Component } from 'ng2-nvd3';
 
 @Component({
     selector: 'tba-feed-status-indicator',
@@ -22,6 +23,9 @@ export class FeedStatusIndicatorComponent {
     dataMap: any = {'Healthy':{count:0, color:'#388e3c'},'Unhealthy':{count:0,color:'#b71c1c'}};
     chartOptions: any;
     @Input() panelTitle: string;
+
+    @ViewChild("nvd3") 
+    private nvd3: NvD3Component;
 
     ngOnInit() {
 
@@ -108,8 +112,8 @@ export class FeedStatusIndicatorComponent {
             var title = (this.dataMap.Healthy.count+this.dataMap.Unhealthy.count)+" "+ this.translate.instant('Total');
             this.chartOptions.chart.title=title
             this.dataLoaded = true;
-            if(this.chartApi.update) {
-                this.chartApi.update();
+            if (this.nvd3 && this.nvd3.chart) {
+                this.nvd3.updateWithOptions(this.chartOptions);
             }
         }
 

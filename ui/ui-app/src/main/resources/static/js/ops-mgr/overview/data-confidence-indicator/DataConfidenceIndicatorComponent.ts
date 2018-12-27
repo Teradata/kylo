@@ -1,6 +1,6 @@
 import "pascalprecht.translate";
 import * as _ from 'underscore';
-import { Component, Inject } from "@angular/core";
+import { Component, Inject, ViewChild } from "@angular/core";
 import {OpsManagerDashboardService} from "../../services/OpsManagerDashboardService";
 import {OpsManagerJobService} from "../../services/ops-manager-jobs.service";
 import {BroadcastService} from "../../../services/broadcast-service";
@@ -8,6 +8,7 @@ import { TranslateService } from "@ngx-translate/core";
 import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {StateService} from "../../../services/StateService";
 import { ObjectUtils } from "../../../../lib/common/utils/object-utils";
+import { NvD3Component } from 'ng2-nvd3';
 
 @Component({
     selector: 'tba-data-confidence-indicator',
@@ -21,6 +22,9 @@ export class DataConfidenceIndicatorComponent {
     chartApi: any = {};
     chartOptions: any;
     chartData: any[];
+
+    @ViewChild("nvd3") 
+    private nvd3: NvD3Component;
 
     ngOnInit() {
 
@@ -104,8 +108,9 @@ export class DataConfidenceIndicatorComponent {
             var title = (this.dataMap.Healthy.count+this.dataMap.Unhealthy.count)+" " + this.translate.instant('Total');
             this.chartOptions.chart.title=title
             this.dataLoaded = true;
-            if(this.chartApi.update) {
-                this.chartApi.update();
+            if (this.nvd3 && this.nvd3.chart) {
+                // this.nvd3.chart.update();
+                this.nvd3.updateWithOptions(this.chartOptions);
             }
         }
 
