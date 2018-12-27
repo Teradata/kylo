@@ -129,7 +129,7 @@ export class SqlEditorComponent implements OnInit, OnDestroy{
     queryPreview: FattableComponent;
 
 
-    constructor(private _dialogService: TdDialogService, private _translateService:TranslateService,   private viewContainerRef: ViewContainerRef,  @Inject("HiveService") private hiveService: HiveService,@Inject("DatasourcesService") private datasourcesService: DatasourcesService) {
+    constructor(private _dialogService: TdDialogService, private _translateService:TranslateService,   private viewContainerRef: ViewContainerRef,  private hiveService: HiveService, private datasourcesService: DatasourcesService) {
 
 
     }

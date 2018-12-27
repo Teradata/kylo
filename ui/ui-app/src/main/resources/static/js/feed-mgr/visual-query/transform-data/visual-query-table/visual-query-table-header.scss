@@ -56,3 +56,20 @@ vs-table-header {
 .dropDown-button:focus, .material-icons:focus {
     outline: none;
 }
+button.mat-menu-item {
+    min-height: 27px;
+    line-height: 27px;
+    text-align: left;
+    display: inline-block;
+    border-radius: 0;
+    margin: auto 0;
+    font-size: 15px;
+    text-transform: none;
+    font-weight: 400;
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+    letter-spacing: .01em;
+    font: 400 13.3333px Arial;
+    height: 36px !important;
+}
