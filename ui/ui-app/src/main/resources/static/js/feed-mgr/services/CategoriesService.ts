@@ -230,7 +230,8 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
         newCategory () {
             let data:any = {
                 id: null,
-                name: null,
+                name: '',
+                systemName : '',
                 description: null,
                 icon: null, iconColor: null,
                 userFields: [],

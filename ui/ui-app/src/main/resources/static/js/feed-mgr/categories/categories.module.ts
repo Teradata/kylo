@@ -86,6 +86,7 @@ import { SharedModule } from "../shared/shared.modules";
         CovalentSearchModule,
         CovalentDataTableModule,
         FormsModule,
+        ReactiveFormsModule,
         TranslateModule.forChild(),
         MatFormFieldModule,
         MatCardModule,

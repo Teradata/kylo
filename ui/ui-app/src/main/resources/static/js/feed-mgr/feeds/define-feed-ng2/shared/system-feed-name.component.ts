@@ -25,7 +25,7 @@ export class SystemFeedNameComponent implements OnInit {
 
     private generateSystemName(value: string) {
         this.feedService.getSystemName(value).then((response: any) => {
-            this.formGroup.get("systemFeedName").setValue(response.data);
+            this.formGroup.get("systemFeedName").setValue(response);
         });
     }
 

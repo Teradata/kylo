@@ -122,8 +122,8 @@ export class NewFeedDialogComponent implements OnInit, OnDestroy{
             this.populatingExistingFeedNames = true;
             return fromPromise(this.feedService.getFeedNamesFromJcr())
                 .pipe(map((response: any) => {
-                    if (response.data != null) {
-                        _.each(response.data, (value: any, key: any, list: any) => {
+                    if (response != null) {
+                        _.each(response, (value: any, key: any, list: any) => {
                             this.existingFeedNames[this.existingFeedNameKey(value.systemCategoryName, value.systemFeedName)] = value.systemFeedName;
                         });
                     }

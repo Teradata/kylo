@@ -51,36 +51,31 @@
     </div>
   </readonly-section>
   <editable-section>
-    <form name="categoryForm">
+    <form [formGroup]="categoryForm">
       <div layout="row" flex="100">
         <mat-form-field class="md-block" flex="40">
-          <input matInput #categoryDefinition="ngModel" name="categoryName" [(ngModel)]="editModel.name" placeholder='{{"views.category-definition.Name" | translate}}' required/>
-          <mat-hint align="start">
-              <span [hidden]="!categoryDefinition.errors?.required || categoryDefinition.pristine" class="tc-red-600">{{"views.category-definition.Acnir" | translate}}</span>
-              <span [hidden]="!categoryDefinition.errors?.duplicateName || categoryDefinition.pristine" class="tc-red-600">{{"views.category-definition.Tiaecwtn" | translate}}</span>
-              <span [hidden]="!categoryDefinition.errors?.reservedCategoryName || categoryDefinition.pristine" class="tc-red-600">{{"views.category-definition.TcirPcac" | translate}}</span>
-          </mat-hint>
+          <input matInput [formControl]="categoryNameControl" (change)="changeSystemNameAndCheckValidity()" [(ngModel)]="editModel.name" placeholder='{{"views.category-definition.Name" | translate}}' required/>
+          <mat-error *ngIf="categoryNameControl.hasError('required')" class="tc-red-600">{{"views.category-definition.Acnir" | translate}}</mat-error>
+          <mat-error *ngIf="isNameDuplicate" class="tc-red-600">{{"views.category-definition.Tiaecwtn" | translate}}</mat-error>
+          <mat-error *ngIf="isReservedCategoryName" class="tc-red-600">{{"views.category-definition.TcirPcac" | translate}}</mat-error>
         </mat-form-field>
-        <div flex="10"></div>
+        <div flex="10"></div> 
         <mat-form-field flex="40">
-          <input matInput id="systemName" name="systemName" readonly="!isSystemNameEditable() || hasFeeds()" [(ngModel)]="editModel.systemName" placeholder='{{"views.category-definition.SN" | translate}}' required/>
+          <input matInput [formControl]="systemNameControl" [readonly]="!isSystemNameEditable() || hasFeeds()" (change)="validateSystemName()" [(ngModel)]="editModel.systemName" placeholder='{{"views.category-definition.SN" | translate}}' required/>
           <div class="hint">
             <span>{{getSystemNameDescription()}}</span>
             <br>
-            <a href="" *ngIf="!isSystemNameEditable() && hasNoFeeds()" (click)="allowEditSystemName()">{{"FEED_MGR.CATEGORIES.DETAILS.CHANGE_SYSTEM_NAME"| translate}}</a>
+            <a *ngIf="!isSystemNameEditable() && hasNoFeeds()" class="link-css" (click)="allowEditSystemName()">{{"FEED_MGR.CATEGORIES.DETAILS.CHANGE_SYSTEM_NAME"| translate}}</a>
           </div>
-          <mat-hint align="start">
-              <span [hidden]="!categoryDefinition.errors?.required || categoryDefinition.pristine" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.SYSTEM_NAME_REQUIRED"| translate}}</span>
-              <span [hidden]="!categoryDefinition.errors?.invalidName || categoryDefinition.pristine" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.INVALID"| translate}}</span>
-              <span [hidden]="!categoryDefinition.errors?.duplicateSystemName || categoryDefinition.pristine" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.EXISTING_CATEGORY"| translate}}</span>
-              <span [hidden]="!categoryDefinition.errors?.reservedCategoryName || categoryDefinition.pristine" >{{"FEED_MGR.CATEGORIES.DETAILS.RESERVED_CATEGORY"| translate}}</span>
-          </mat-hint>
+          <mat-error *ngIf="systemNameControl.hasError('required')" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.SYSTEM_NAME_REQUIRED"| translate}}</mat-error>
+          <mat-error *ngIf="isSystemNameDuplicate" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.EXISTING_CATEGORY"| translate}}</mat-error>
+          <mat-error *ngIf="isReservedCategoryName" >{{"FEED_MGR.CATEGORIES.DETAILS.RESERVED_CATEGORY"| translate}}</mat-error>
         </mat-form-field>
 
       </div>
 
-      <mat-form-field class="md-block">
-        <textarea matInput name="categoryDefinition" [(ngModel)]="editModel.description" placeholder='{{"views.category-definition.Description2" | translate}}'></textarea>
+      <mat-form-field style="display: block;" flex="100">
+        <textarea matInput [ngModelOptions]="{standalone: true}" [(ngModel)]="editModel.description" placeholder='{{"views.category-definition.Description2" | translate}}'></textarea>
       </mat-form-field>
 
       <mat-form-field class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" *ngIf="securityGroupsEnabled == true">
@@ -116,7 +111,12 @@
         </div>
       </div>
 
+      <div layout="row" layout-align="start stretch" style="padding-bottom: 20px; padding-top:10px;">
+        <span class="md-subhead layout-padding-left"  >{{"views.main.properties" | translate}}</span>
+        <span class="flex"></span>
+      </div>
       <thinkbig-property-list-editor properties="editModel.userProperties" is-valid="isValid" *ngIf="model.id == null"></thinkbig-property-list-editor>
+      
     </form>
   </editable-section>
 </vertical-section-layout>
