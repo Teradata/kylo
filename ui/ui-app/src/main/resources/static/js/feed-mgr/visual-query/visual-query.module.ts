@@ -44,7 +44,6 @@ import {FieldPoliciesModule} from "../shared/field-policies-angular2/field-polic
 import {PropertyListModule} from "../shared/property-list/property-list.module";
 import {SqlEditorModule} from "../shared/sql-editor/sql-editor.module";
 import {BuildQueryComponent} from "./build-query/build-query-ng2.component";
-import {ConnectionDialog} from "./build-query/connection-dialog/connection-dialog.component";
 import {FlowChartModule} from "./build-query/flow-chart/flow-chart.module";
 import {UploadSampleFileComponent} from "./build-query/upload-sample-file.component";
 import {VisualQuerySaveService} from "./services/save.service";
@@ -54,11 +53,6 @@ import {SaveOptionsComponent} from "./store/save-options.component";
 import {VisualQueryStoreComponent} from "./store/store.component";
 import {AnalyzeColumnDialog} from "./transform-data/main-dialogs/analyze-column-dialog";
 import {ColumnAnalysisController, HistogramController} from "./transform-data/main-dialogs/column-analysis";
-import {QuickCleanDialog} from "./transform-data/main-dialogs/quick-clean-dialog";
-import {MiniCategoricalComponent, MiniHistogramComponent} from "./transform-data/main-dialogs/quick-column-components";
-import {QuickColumnsDialog} from "./transform-data/main-dialogs/quick-columns-dialog";
-import {SampleDialog} from "./transform-data/main-dialogs/sample-dialog";
-import {SchemaLayoutDialog} from "./transform-data/main-dialogs/schema-layout-dialog";
 import {VisualQueryProfileStatsController} from "./transform-data/main-dialogs/VisualQueryProfileStats";
 import {WranglerDataService} from "./transform-data/services/wrangler-data.service";
 import {WranglerTableService} from "./transform-data/services/wrangler-table.service";
@@ -77,7 +71,6 @@ import * as angular from "angular";
         AnalyzeColumnDialog,
         BuildQueryComponent,
         ColumnAnalysisController,
-        ConnectionDialog,
         ConnectionErrorValidatorDirective,
         HistogramController,
         SaveOptionsComponent,
@@ -91,13 +84,11 @@ import * as angular from "angular";
     ],
     entryComponents: [
         AnalyzeColumnDialog,
-        ConnectionDialog,
         SaveOptionsComponent,
         VisualQueryProfileStatsController
     ],
     exports: [
         BuildQueryComponent,
-        ConnectionDialog,
         UploadSampleFileComponent,
         VisualQueryControlDirective,
         VisualQueryStepperComponent
