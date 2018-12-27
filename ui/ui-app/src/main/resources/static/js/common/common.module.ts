@@ -57,6 +57,14 @@ import {ViewTypeSelectionComponent} from "./view-type-selection/view-type-select
 import { menuLinkComponent } from "./accordion-menu/menuLinkComponent";
 import { VisualQueryTableHeader } from "../feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.component";
 import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.component";
+import { SampleDialog } from '../feed-mgr/visual-query/transform-data/main-dialogs/sample-dialog';
+import { QuickCleanDialog } from '../feed-mgr/visual-query/transform-data/main-dialogs/quick-clean-dialog';
+import { MatCheckboxModule, MatRadioModule } from '@angular/material';
+import { SchemaLayoutDialog } from '../feed-mgr/visual-query/transform-data/main-dialogs/schema-layout-dialog';
+import { DndListModule } from 'ngx-drag-and-drop-lists';
+import { QuickColumnsDialog } from '../feed-mgr/visual-query/transform-data/main-dialogs/quick-columns-dialog';
+import { MiniCategoricalComponent, MiniHistogramComponent } from '../feed-mgr/visual-query/transform-data/main-dialogs/quick-column-components';
+import { NvD3Module } from 'ng2-nvd3';
 
 @NgModule({
     declarations: [
@@ -86,7 +94,13 @@ import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visua
         ViewTypeSelectionComponent,
         menuLinkComponent,
         VisualQueryTableHeader,
-        CellMenuComponent
+        CellMenuComponent,
+        SampleDialog,
+        QuickCleanDialog,
+        SchemaLayoutDialog,
+        QuickColumnsDialog,
+        MiniCategoricalComponent,
+        MiniHistogramComponent
     ],
     entryComponents: [
         AboutKyloDialogController,
@@ -106,7 +120,11 @@ import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visua
         VerticalSectionLayoutComponent,
         ViewTypeSelectionComponent,
         VisualQueryTableHeader,
-        CellMenuComponent
+        CellMenuComponent,
+        SampleDialog,
+        QuickCleanDialog,
+        SchemaLayoutDialog,
+        QuickColumnsDialog
     ],
     providers: [
         AboutKyloService,
@@ -140,9 +158,13 @@ import { CellMenuComponent } from "../feed-mgr/visual-query/transform-data/visua
         MatProgressSpinnerModule,
         MatSelectModule,
         MatToolbarModule,
+        MatCheckboxModule,
         MatTooltipModule,
+        MatRadioModule,
         TranslateModule,
-        UIRouterModule
+        DndListModule,
+        UIRouterModule,
+        NvD3Module
     ],
     exports: [
         AccessDeniedComponent,

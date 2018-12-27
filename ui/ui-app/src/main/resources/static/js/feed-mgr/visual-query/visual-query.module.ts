@@ -87,23 +87,13 @@ import * as angular from "angular";
         VisualQueryProfileStatsController,
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
-        VisualQueryTable,
-        MiniCategoricalComponent,
-        MiniHistogramComponent,
-        QuickCleanDialog,
-        QuickColumnsDialog,
-        SampleDialog,
-        SchemaLayoutDialog
+        VisualQueryTable
     ],
     entryComponents: [
         AnalyzeColumnDialog,
         ConnectionDialog,
         SaveOptionsComponent,
-        VisualQueryProfileStatsController,
-        QuickCleanDialog,
-        QuickColumnsDialog,
-        SampleDialog,
-        SchemaLayoutDialog
+        VisualQueryProfileStatsController
     ],
     exports: [
         BuildQueryComponent,
@@ -157,6 +147,7 @@ import * as angular from "angular";
         ReactiveFormsModule,
         SqlEditorModule,
         TranslateModule.forChild(),
+        // DndListModule,
         WranglerModule
     ],
     providers: [
