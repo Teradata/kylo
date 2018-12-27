@@ -36,6 +36,15 @@ public class NiFiAllowableValue {
     private String value;
     private String description;
 
+    public NiFiAllowableValue(){
+
+    }
+
+    public NiFiAllowableValue(String displayName, String value) {
+        this.displayName = displayName;
+        this.value = value;
+    }
+
     /**
      * @return the human-readable value that is allowed for this PropertyDescriptor
      */

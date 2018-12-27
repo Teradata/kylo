@@ -860,6 +860,26 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         });
     }
 
+    private void updateFeedControllerServiceProperties(NifiFeed feed, List<NifiProperty>originalFeedProperties)
+    {
+        FeedMetadata feedMetadata = feed.getFeedMetadata();
+        Map<String,NifiProperty> controllerServiceProperties = feedMetadata.getProperties().stream()
+            .filter(prop -> prop.getPropertyDescriptor() != null && StringUtils.isNotBlank(prop.getPropertyDescriptor().getIdentifiesControllerService()))
+            .collect(Collectors.toMap(prop -> prop.getProcessorNameTypeKey(),prop->prop));
+
+        //update any controller service properties that got remapped
+        originalFeedProperties.stream().filter(prop -> prop.getPropertyDescriptor() != null && StringUtils.isNotBlank(prop.getPropertyDescriptor().getIdentifiesControllerService() ))
+            .forEach(prop -> {
+                NifiProperty serviceProperty = controllerServiceProperties.get(prop.getProcessorNameTypeKey());
+                if(serviceProperty != null){
+                    prop.setValue(serviceProperty.getValue());
+                    if(serviceProperty.getPropertyDescriptor() != null){
+                        prop.setPropertyDescriptor(serviceProperty.getPropertyDescriptor());
+                    }
+                }
+            });
+    }
+
     /**
      * Create/Update a Feed in NiFi. Save the metadata to Kylo meta store.
      *
@@ -1018,8 +1038,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         log.debug("Time to save feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
         feed = new NifiFeed(feedToSave, entity);
+
+        updateFeedControllerServiceProperties(feed,originalFeedProperties);
+
         //set the original feedProperties back to the feed
         feedToSave.setProperties(originalFeedProperties);
+
         //encrypt the metadata properties
         feedModelTransform.encryptSensitivePropertyValues(feedToSave);
 
@@ -1331,6 +1355,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         log.debug("Time to save feed in NiFi: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
         NifiFeed feed = new NifiFeed(feedMetadata, entity);
+
+        updateFeedControllerServiceProperties(feed,originalFeedProperties);
 
         // Set the original feedProperties back to the feed
         feedMetadata.setProperties(originalFeedProperties);

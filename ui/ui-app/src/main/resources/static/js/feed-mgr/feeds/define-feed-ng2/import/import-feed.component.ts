@@ -129,6 +129,11 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
     categoryUserFieldsImportOption: ImportComponentOption;
 
     /**
+     * remap controller services used in this feed
+     */
+    controllerServiceImportOption: ImportComponentOption;
+
+    /**
      * List of available data sources.
      * @type {Array.<JdbcDatasource>}
      */
@@ -185,6 +190,13 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
     reusableTemplateOverwriteFormControl:FormControl;
 
 
+    /** Array of all available ControllerServiceDTO's  **/
+    controllerServices:any[]= [];
+
+    /** map of the cs type and array of corresponding services **/
+    controllerServicesByType:any= {};
+
+
 
     constructor(private http:HttpClient,private snackBar:MatSnackBar,private _dialogService:TdDialogService, private catalogService:CatalogService,
                 @Inject("ImportService") private importService:ImportService,
@@ -212,6 +224,72 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
             });
 
         this.fetchCatalogDataSources();
+        this.fetchControllerServices();
+    }
+
+    private fetchControllerServices(){
+         this.http.get(RestUrlConstants.CONTROLLER_SERVICES_BASE_URL)
+            .subscribe(csMap => {
+                this.controllerServices = <any[]> csMap['controllerServices'];
+                if(this.controllerServices){
+                    this.controllerServices.forEach(service => {
+                        if(this.controllerServicesByType[service.type] == undefined){
+                            this.controllerServicesByType[service.type] = [];
+                        }
+                        this.controllerServicesByType[service.type].push(service)
+                    })
+                }
+            });
+    }
+
+
+    public getServicesForImportProperty(prop:ImportProperty){
+        let type = prop.additionalProperties['controllerServiceType']
+        let arr = this.controllerServicesByType[type];
+
+        let templateServiceExists = prop.additionalProperties['templateServicePropertyExists'];
+        if(templateServiceExists == false || templateServiceExists == "false") {
+            //add in the template property
+            let templateServiceName = prop.additionalProperties['templateServiceName']
+            if(arr == undefined){
+                arr = []
+            }
+            arr.unshift({"name":templateServiceName,"id":"NEW","state":"NEW"});
+        }
+
+        if(type.indexOf("DBCPService") >=0) {
+            let arr2 = this.controllerServicesByType['org.apache.nifi.dbcp.DBCPConnectionPool'];
+            if(arr && arr2){
+                return arr.concat(arr2);
+            }
+            else if(arr2){
+                arr = arr2;
+            }
+
+        }
+        if(arr != undefined){
+            return arr;
+        }
+        else { return []}
+    }
+
+    //prop.additionalProperties['controllerServiceType']
+    public getServicesForType(type:string){
+        let arr = this.controllerServicesByType[type];
+        if(type.indexOf("DBCPService") >=0) {
+            let arr2 = this.controllerServicesByType['org.apache.nifi.dbcp.DBCPConnectionPool'];
+            if(arr && arr2){
+                return arr.concat(arr2);
+            }
+            else if(arr2){
+                arr = arr2;
+            }
+
+        }
+        if(arr != undefined){
+            return arr;
+        }
+        else { return []}
     }
 
     public findDatasetPropertiesFilter(importOption:ImportComponentOption): ImportProperty[]{
@@ -296,6 +374,8 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
         this.feedUserFieldsImportOption = this.importService.newFeedUserFieldsImportOption();
 
         this.categoryUserFieldsImportOption = this.importService.newFeedCategoryUserFieldsImportOption();
+
+        this.controllerServiceImportOption= this.importService.newFeedControllerServiceImportOption();
     }
 
     ngOnInit(): void {
@@ -415,6 +495,12 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
             //map the options back to the object map
             this.updateImportOptions(importComponentOptions);
             //find the number of options that have properties that require user input
+            // add additional options to the properties if necessary
+
+            this.controllerServiceImportOption.properties.forEach((prop:any) => {
+               prop.additionalProperties["serviceList"] = this.getServicesForImportProperty(prop);
+            })
+
 
             if (!responseData.valid) {
                 //Validation Error.  Additional Input is needed by the end user
@@ -605,6 +691,14 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
                 this.categoryUserFieldsImportOption = option;
             } else if (option.importComponent === ImportComponentType.FEED_USER_FIELDS) {
                 this.feedUserFieldsImportOption = option;
+            }else if (option.importComponent === ImportComponentType.NIFI_CONTROLLER_SERVICE) {
+                this.controllerServiceImportOption = option;
+                if(option.additionalProperties == undefined) {
+                    option.additionalProperties = {}
+                }
+                if(option.additionalProperties["serviceList"] == undefined) {
+                    option.additionalProperties["serviceList"] = [];
+                }
             }
             this.importComponentOptions[option.importComponent] = option;
 
@@ -700,7 +794,7 @@ export class ImportFeedComponent  implements OnInit, OnDestroy{
     }
 
     private indexImportOptions(): void {
-        var arr = [this.feedDataImportOption, this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.categoryUserFieldsImportOption, this.feedUserFieldsImportOption, this.userDataSetsOption];
+        var arr = [this.feedDataImportOption, this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.categoryUserFieldsImportOption, this.feedUserFieldsImportOption, this.userDataSetsOption, this.controllerServiceImportOption];
         this.importComponentOptions = _.indexBy(arr, 'importComponent')
     }
 

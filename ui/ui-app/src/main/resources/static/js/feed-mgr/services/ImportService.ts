@@ -79,6 +79,9 @@ export class DefaultImportService implements ImportService{
     newFeedUserFieldsImportOption(): ImportComponentOption {
         return this.newImportComponentOption( ImportComponentType.FEED_USER_FIELDS);
     }
+    newFeedControllerServiceImportOption():ImportComponentOption {
+        return this.newImportComponentOption( ImportComponentType.NIFI_CONTROLLER_SERVICE);
+    }
 
     newUploadKey(): string {
         return _.uniqueId("upload_") + new Date().getTime() + this.guid();
@@ -113,6 +116,13 @@ export class DefaultImportService implements ImportService{
             let option = importOptionsMap[key];
             //set defaults for options
             option.errorMessages = [];
+            if(key == ImportComponentType.NIFI_CONTROLLER_SERVICE ){
+                option.properties.forEach(prop => {
+                    if(prop.additionalProperties) {
+                        delete prop.additionalProperties.serviceList
+                    }
+                });
+            }
 
             if (option.overwrite) {
                 option.userAcknowledged = true;

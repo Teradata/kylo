@@ -129,7 +129,13 @@
             <!-- category user fields properties -->
 
             <ng-container [ngTemplateOutlet]="importOptionPropertiesInputTemplate"
-                          [ngTemplateOutletContext]="{$implicit:categoryUserFieldsImportOption,displayCompnentName:false}">
+                          [ngTemplateOutletContext]="{$implicit:categoryUserFieldsImportOption,displayComponentName:false}">
+            </ng-container>
+
+
+            <!-- controller service properties -->
+            <ng-container [ngTemplateOutlet]="importOptionControllerServicesTemplate"
+                          [ngTemplateOutletContext]="{$implicit:controllerServiceImportOption,displayComponentName:true}">
             </ng-container>
 
             <div fxLayout="row" class="pad-top">
@@ -218,7 +224,7 @@
         <mat-list-item *ngFor="let prop of importOption.properties">
           <div matLine *ngIf="displayComponentName">{{prop.componentName}}</div>
           <div matLine>
-            <mat-form-field>
+            <mat-form-field *ngIf="prop">
               <input required matInput [placeholder]="prop.displayName" autocomplete="new-password" [formControlName]="prop.propertyKey">
             </mat-form-field>
           </div>
@@ -228,6 +234,34 @@
   </div>
 
 </ng-template>
+
+
+
+<ng-template #importOptionControllerServicesTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">
+
+  <div *ngIf="importOption.properties && importOption.properties.length >0"  fxFlex="">
+    <form [formGroup]="getNestedFormGroup(importOption)">
+      <div class="mat-title">{{"views.import_feed.padding_bottom" | translate}}</div>
+
+      <mat-list class="pull-left" fxFlex="100" style="width:100%">
+        <mat-list-item *ngFor="let prop of importOption.properties">
+          <div matLine *ngIf="displayComponentName">{{prop.componentName}}</div>
+          <div matLine>
+            <mat-form-field class="pad-left" fxFlex="50" style="width:100%">
+              <mat-select placeholder="Select a service" [formControlName]="prop.propertyKey" required>
+                <mat-option [value]="cs.id" *ngFor="let cs of prop.additionalProperties['serviceList']">{{cs.name}}; {{cs.state}}</mat-option>
+              </mat-select>
+              <mat-hint [matTooltip]="prop.description" class="text-truncate">{{prop.description}}</mat-hint>
+            </mat-form-field>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </form>
+  </div>
+
+</ng-template>
+
+
 
 <!--
 <ng-template #importDataSourcesOptionPropertiesInputTemplate let-importOption let-displayComponentName="displayComponentName" let-message="message">

@@ -12,7 +12,8 @@ import {Common} from '../../../lib/common/CommonTypes';
         USER_DATA_SETS = "USER_DATA_SETS",
         TEMPLATE_CONNECTION_INFORMATION = "TEMPLATE_CONNECTION_INFORMATION",
         FEED_CATEGORY_USER_FIELDS = "FEED_CATEGORY_USER_FIELDS",
-        FEED_USER_FIELDS = "FEED_USER_FIELDS" 
+        FEED_USER_FIELDS = "FEED_USER_FIELDS" ,
+        NIFI_CONTROLLER_SERVICE = "NIFI_CONTROLLER_SERVICE"
     }
 
 
@@ -80,7 +81,6 @@ import {Common} from '../../../lib/common/CommonTypes';
          * information about what ports should be created as 'remote input ports'
          */
         remoteProcessGroupInputPorts?:RemoteProcessInputPort[];
-
     }
 
 
@@ -112,6 +112,8 @@ import {Common} from '../../../lib/common/CommonTypes';
         newFeedUserFieldsImportOption(): ImportComponentOption;
         
         newFeedCategoryUserFieldsImportOption():ImportComponentOption;
+
+        newFeedControllerServiceImportOption():ImportComponentOption;
 
         newUploadKey(): string;
 

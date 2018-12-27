@@ -578,6 +578,15 @@ public class NifiPropertyUtil {
         }
     }
 
+    public static NifiProperty findFirstPropertyMatchingNameTypeKey(Collection<NifiProperty> properties, final String propertyKey) {
+        if (properties != null) {
+            return properties.stream().filter(property -> property.getProcessorNameTypeKey().equalsIgnoreCase(propertyKey))
+                .findFirst().orElse(null);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * find properties in the supplied list, using the supplied predicate
      *
