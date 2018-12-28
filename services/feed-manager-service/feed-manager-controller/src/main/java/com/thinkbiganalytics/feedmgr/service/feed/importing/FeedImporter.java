@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.feed.importing;
 
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
+import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportSection;
 import com.thinkbiganalytics.feedmgr.rest.ImportType;
@@ -89,6 +90,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -694,38 +696,60 @@ public class FeedImporter {
         if (!controllerServiceNiFiProperties.isEmpty()) {
             //create a temp instance of this template to get the properties and services in the template
             TemplateCreationHelper templateCreationHelper = new TemplateCreationHelper(this.nifiRestClient, niFiObjectCache);
-            ProcessGroupDTO flow = templateCreationHelper.createTemporaryTemplateFlow(importFeed.getTemplate().getNifiTemplateId());
-            List<NifiProperty> flowProperties = NifiPropertyUtil.getProperties(flow, propertyDescriptorTransform);
-            //loop over those properties that are controller service bound and attempt to match up the template value to the property.
-            // if the template value doesnt match the current property value it will be presented to the user to select if they want.
-            controllerServiceNiFiProperties.stream().forEach(nifiProperty -> {
-                NifiProperty match = flowProperties.stream().filter(prop -> prop.getProcessorNameTypeKey().equalsIgnoreCase(nifiProperty.getProcessorNameTypeKey())).findFirst().orElse(null);
-                if (match != null) {
-                    templateControllerServiceProperties.add(match);
-                    //find the service name for the property by looking at the allowableValues
-                    NiFiAllowableValue matchingValue = match.getPropertyDescriptor().getAllowableValues().stream()
-                        .filter(value -> value.getValue().equalsIgnoreCase(match.getValue()))
-                        .findFirst().orElse(null);
-                    if (matchingValue != null) {
-                        //check to see if the value is an existing controller service matching the same id or same name.  If so use it.
-                        String validId = controllerServiceUtil.getValidControllerServiceId(matchingValue.getValue(), matchingValue.getDisplayName());
-                        if (StringUtils.isBlank(validId)) {
-                            //cant match it.  Present the user the option to have Nifi create the New template bound controller service
-                            allowableValueMap.computeIfAbsent(nifiProperty.getProcessorNameTypeKey(), key -> new NifiControllerServiceAllowableValue(matchingValue.getDisplayName(), "NEW"))
-                                .setTemplateServiceName(matchingValue.getDisplayName());
-                        } else {
-                            ControllerServiceDTO service = controllerServiceUtil.getControllerServiceForId(validId);
-                            String name = service != null ? service.getName() : matchingValue.getDisplayName();
-                            NifiControllerServiceAllowableValue newValue = new NifiControllerServiceAllowableValue(matchingValue.getDisplayName(), validId);
-                            allowableValueMap.put(nifiProperty.getProcessorNameTypeKey(), newValue);
-                            newValue.setTemplatePropertyValue(match);
-                            newValue.setTemplateServiceName(name);
-                            newValue.setTemplateServiceAlreadyExists(true);
+            String nifiTemplateId = importFeed.getTemplate().getNifiTemplateId();
+            TemplateDTO tempTemplate = null;
+            if(StringUtils.isBlank(nifiTemplateId)) {
+                String tempName = "temp_"+importFeed.getTemplate().getTemplateName()+"_"+System.currentTimeMillis();
+                String template = importFeed.getTemplate().getNifiTemplateXml();
+                try {
+                    template = NifiTemplateParser.updateTemplateName(template, tempName);
+                    tempTemplate = nifiRestClient.importTemplate(tempName,template);
+                    nifiTemplateId = tempTemplate.getId();
+                    log.info("Created a temp template and flow for {} ", tempName);
+                }catch (Exception e) {
+                    log.error("Unable to create a temp template for {} ",importFeed.getTemplate().getTemplateName());
+                }
+            }
+
+            try {
+                ProcessGroupDTO flow = templateCreationHelper.createTemporaryTemplateFlow(nifiTemplateId);
+
+                List<NifiProperty> flowProperties = NifiPropertyUtil.getProperties(flow, propertyDescriptorTransform);
+                //loop over those properties that are controller service bound and attempt to match up the template value to the property.
+                // if the template value doesnt match the current property value it will be presented to the user to select if they want.
+                controllerServiceNiFiProperties.stream().forEach(nifiProperty -> {
+                    NifiProperty match = flowProperties.stream().filter(prop -> prop.getProcessorNameTypeKey().equalsIgnoreCase(nifiProperty.getProcessorNameTypeKey())).findFirst().orElse(null);
+                    if (match != null) {
+                        templateControllerServiceProperties.add(match);
+                        //find the service name for the property by looking at the allowableValues
+                        NiFiAllowableValue matchingValue = match.getPropertyDescriptor().getAllowableValues().stream()
+                            .filter(value -> value.getValue().equalsIgnoreCase(match.getValue()))
+                            .findFirst().orElse(null);
+                        if (matchingValue != null) {
+                            //check to see if the value is an existing controller service matching the same id or same name.  If so use it.
+                            String validId = controllerServiceUtil.getValidControllerServiceId(matchingValue.getValue(), matchingValue.getDisplayName());
+                            if (StringUtils.isBlank(validId)) {
+                                //cant match it.  Present the user the option to have Nifi create the New template bound controller service
+                                allowableValueMap.computeIfAbsent(nifiProperty.getProcessorNameTypeKey(), key -> new NifiControllerServiceAllowableValue(matchingValue.getDisplayName(), "NEW"))
+                                    .setTemplateServiceName(matchingValue.getDisplayName());
+                            } else {
+                                ControllerServiceDTO service = controllerServiceUtil.getControllerServiceForId(validId);
+                                String name = service != null ? service.getName() : matchingValue.getDisplayName();
+                                NifiControllerServiceAllowableValue newValue = new NifiControllerServiceAllowableValue(matchingValue.getDisplayName(), validId);
+                                allowableValueMap.put(nifiProperty.getProcessorNameTypeKey(), newValue);
+                                newValue.setTemplatePropertyValue(match);
+                                newValue.setTemplateServiceName(name);
+                                newValue.setTemplateServiceAlreadyExists(true);
+                            }
                         }
                     }
-                }
-            });
+                });
 
+            }finally {
+                if(tempTemplate != null) {
+                    nifiRestClient.getNiFiRestClient().templates().delete(tempTemplate.getId());
+                }
+            }
         }
         boolean valid = true;
         List<ImportProperty> controllerServiceProperties = new ArrayList<>();
