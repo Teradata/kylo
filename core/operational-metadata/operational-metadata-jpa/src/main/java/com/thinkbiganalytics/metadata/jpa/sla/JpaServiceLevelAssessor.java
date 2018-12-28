@@ -12,9 +12,9 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataCommitAwareCommand;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
@@ -88,12 +89,12 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
 
     /*
-    * (non-Javadoc)
-    *
-    * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor#
-    * registerObligationAssessor(com.thinkbiganalytics.metadata.sla.spi.
-    * ObligationAssessor)
-    */
+     * (non-Javadoc)
+     *
+     * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor#
+     * registerObligationAssessor(com.thinkbiganalytics.metadata.sla.spi.
+     * ObligationAssessor)
+     */
     @Override
     public ObligationAssessor<? extends Obligation> registerObligationAssessor(ObligationAssessor<? extends Obligation> assessor) {
         this.obligationAssessors.add(assessor);
@@ -167,56 +168,82 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
         ServiceLevelAssessment assessment = null;
 
         ServiceLevelAgreement serviceLevelAgreement = sla;
-        assessment = this.metadataAccess.commit(() -> {
-            AssessmentResult combinedResult = AssessmentResult.SUCCESS;
-            try {
+        assessment = this.metadataAccess.commit(
+            new MetadataCommitAwareCommand<ServiceLevelAssessment>() {
 
-                //create the new Assessment
-                JpaServiceLevelAssessment slaAssessment = new JpaServiceLevelAssessment();
-                slaAssessment.setId(JpaServiceLevelAssessment.SlaAssessmentId.create());
-                slaAssessment.setAgreement(serviceLevelAgreement);
-                List<ObligationGroup> groups = sla.getObligationGroups();
+                private boolean commit = false;
 
-                for (ObligationGroup group : groups) {
-                    Condition condition = group.getCondition();
-                    AssessmentResult groupResult = AssessmentResult.SUCCESS;
-                    Set<ObligationAssessment> obligationAssessments = new HashSet<>();
-                    log.debug("Assessing obligation group {} with {} obligations", group, group.getObligations().size());
-                    for (Obligation ob : group.getObligations()) {
-                        ObligationAssessment obAssessment = assess(ob, slaAssessment);
-                        obligationAssessments.add(obAssessment);
-                        // slaAssessment.add(obAssessment);
-                        groupResult = groupResult.max(obAssessment.getResult());
-                    }
-                    slaAssessment.setObligationAssessments(obligationAssessments);
-
-                    // Short-circuit required or sufficient if necessary.
-                    switch (condition) {
-                        case REQUIRED:
-                            if (groupResult == AssessmentResult.FAILURE) {
-                                return completeAssessment(slaAssessment, groupResult);
-                            }
-                            break;
-                        case SUFFICIENT:
-                            if (groupResult != AssessmentResult.FAILURE) {
-                                return completeAssessment(slaAssessment, groupResult);
-                            }
-                            break;
-                        default:
-                    }
-
-                    // Required condition but non-failure, sufficient condition but non-success, or optional condition:
-                    // continue assessing groups and retain the best of the group results.
-                    combinedResult = combinedResult.max(groupResult);
+                @Override
+                public boolean isCommit() {
+                    return commit;
                 }
 
-                return completeAssessment(slaAssessment, combinedResult);
+                @Override
+                public ServiceLevelAssessment execute() throws Exception {
+                    ServiceLevelAssessment previous = assessmentProvider.findLatestAssessment(serviceLevelAgreement.getId());
 
-            } finally {
-                log.debug("Completed assessment of SLA {}: {}", sla.getName(), combinedResult);
-            }
-        }, MetadataAccess.SERVICE);
+                    AssessmentResult combinedResult = AssessmentResult.SUCCESS;
+                    try {
+
+                        //create the new Assessment
+                        JpaServiceLevelAssessment slaAssessment = new JpaServiceLevelAssessment();
+                        slaAssessment.setId(JpaServiceLevelAssessment.SlaAssessmentId.create());
+                        slaAssessment.setAgreement(serviceLevelAgreement);
+                        List<ObligationGroup> groups = sla.getObligationGroups();
+
+                        for (ObligationGroup group : groups) {
+                            Condition condition = group.getCondition();
+                            AssessmentResult groupResult = AssessmentResult.SUCCESS;
+                            Set<ObligationAssessment> obligationAssessments = new HashSet<>();
+                            log.debug("Assessing obligation group {} with {} obligations", group, group.getObligations().size());
+                            for (Obligation ob : group.getObligations()) {
+                                ObligationAssessment obAssessment = assess(ob, slaAssessment);
+                                obligationAssessments.add(obAssessment);
+                                // slaAssessment.add(obAssessment);
+                                groupResult = groupResult.max(obAssessment.getResult());
+                            }
+                            slaAssessment.setObligationAssessments(obligationAssessments);
+
+                            // Short-circuit required or sufficient if necessary.
+                            switch (condition) {
+                                case REQUIRED:
+                                    if (groupResult == AssessmentResult.FAILURE) {
+                                        return completeAssessment(slaAssessment, groupResult);
+                                    }
+                                    break;
+                                case SUFFICIENT:
+                                    if (groupResult != AssessmentResult.FAILURE) {
+                                        return completeAssessment(slaAssessment, groupResult);
+                                    }
+                                    break;
+                                default:
+                            }
+
+                            // Required condition but non-failure, sufficient condition but non-success, or optional condition:
+                            // continue assessing groups and retain the best of the group results.
+                            combinedResult = combinedResult.max(groupResult);
+                        }
+
+                        ServiceLevelAssessment assessment = completeAssessment(slaAssessment, combinedResult);
+                        this.commit = isCommitAssessment(assessment,previous);
+                        return assessment;
+
+                    } finally {
+                        log.debug("Completed assessment of SLA {}: {}", sla.getName(), combinedResult);
+                    }
+                }
+            }, MetadataAccess.SERVICE);
         return assessment;
+    }
+
+    public boolean isCommitAssessment(ServiceLevelAssessment assessment, ServiceLevelAssessment previousAssessment){
+        //always commit if its the first, or not success, or if status is different
+        //should we check if the compareTo is different or only if the assessment results differ: && assessment.getResult() != previousAssessment.getResult()
+        if (previousAssessment == null || (previousAssessment != null && assessment.compareTo(previousAssessment) != 0 )) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private ObligationAssessment assess(Obligation ob, JpaServiceLevelAssessment serviceLevelAssessment) {
@@ -318,8 +345,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
         @Override
         @SuppressWarnings("unchecked")
         public ObligationAssessmentBuilder compareWith(final Comparable<? extends Serializable> value,
-                                                       @SuppressWarnings("unchecked")
-                                                       final Comparable<? extends Serializable>... otherValues) {
+                                                       @SuppressWarnings("unchecked") final Comparable<? extends Serializable>... otherValues) {
 
             this.comparables = new ArrayList<Comparable<? extends Serializable>>(Arrays.asList(sanitizeComparable(value)));
             this.comparables.addAll(sanitizeComparablesArray(otherValues));
@@ -433,8 +459,8 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
             assessment.setMetricDescription(this.metric.getDescription());
             try {
                 assessment.setData(this.data);
-            }catch (Exception e){
-                log.info("Unable to set data for Metric: {} ",e.getMessage());
+            } catch (Exception e) {
+                log.info("Unable to set data for Metric: {} ", e.getMessage());
             }
 
             if (this.comparator != null) {

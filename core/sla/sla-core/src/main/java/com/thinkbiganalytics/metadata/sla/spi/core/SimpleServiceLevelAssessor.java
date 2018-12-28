@@ -74,6 +74,11 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         this.defaultObligationAssessor = createDefaultObligationAssessor();
     }
 
+    @Override
+    public boolean isCommitAssessment(ServiceLevelAssessment assessment, ServiceLevelAssessment previousAssessment) {
+        return true;
+    }
+
     /*
      * (non-Javadoc)
      * 

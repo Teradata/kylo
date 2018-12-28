@@ -284,25 +284,8 @@ public class ServiceLevelAgreementRestController {
         }
     }
 
-    @GET
-    @Path("{id}/assessment")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the specified assessment.")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAgreement.class),
-                      @ApiResponse(code = 400, message = "The assessment could not be found.", response = RestResponseStatus.class)
-                  })
-    public ServiceLevelAssessment assessAgreement(@PathParam("id") String idValue) {
-        log.debug("GET SLA by ID: {}", idValue);
 
-        return this.metadataAccess.read(() -> {
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID id = this.provider.resolve(idValue);
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = this.provider.getAgreement(id);
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment assessment = this.assessor.assess(sla);
 
-            return ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA_ASSMT.apply(assessment);
-        });
-    }
 
     @GET
     @Path("/email-template")

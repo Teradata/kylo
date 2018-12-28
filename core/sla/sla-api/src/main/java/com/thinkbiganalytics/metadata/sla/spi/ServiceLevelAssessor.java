@@ -44,6 +44,8 @@ public interface ServiceLevelAssessor {
      */
     ServiceLevelAssessment assess(ServiceLevelAgreement sla);
 
+    boolean isCommitAssessment(ServiceLevelAssessment assessment, ServiceLevelAssessment previousAssessment);
+
     ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement sla);
 
     /**

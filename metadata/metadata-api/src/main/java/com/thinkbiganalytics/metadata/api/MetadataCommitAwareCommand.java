@@ -1,17 +1,20 @@
-package com.thinkbiganalytics.metadata.sla.spi;
+/**
+ *
+ */
+package com.thinkbiganalytics.metadata.api;
 
 /*-
  * #%L
- * thinkbig-sla-api
+ * thinkbig-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,19 +23,13 @@ package com.thinkbiganalytics.metadata.sla.spi;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
 /**
+ * A command to execute in the context of a transaction.
+ * The class implementing this can decide if the transaction should be committed or not based upon the results
+ * during the call of "execute" by returning the appropriate boolean value from the "isCommit()" method
+ *
  */
-public interface ServiceLevelAgreementChecker {
+public interface MetadataCommitAwareCommand<R> extends MetadataCommand<R> {
 
-    void checkAgreements();
-
-    /**
-     *
-     * @param agreement the agreement to check
-     * @return true if the assessment is new and should be committed, false if read only
-     */
-    boolean checkAgreement(ServiceLevelAgreement agreement);
-
+    boolean isCommit();
 }
