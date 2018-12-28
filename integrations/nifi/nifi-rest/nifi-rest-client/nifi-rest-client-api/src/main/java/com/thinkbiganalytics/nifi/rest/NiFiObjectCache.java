@@ -148,7 +148,7 @@ public class NiFiObjectCache {
     }
 
     /**
-     * returns the 'reusable_templates' process group
+     * returns the 'kylo_temporary_template_inspection' process group
      */
     public ProcessGroupDTO getOrCreateTemporaryTemplateInspectionGroup() {
         if (temporaryTemplateInspectionGroup == null) {

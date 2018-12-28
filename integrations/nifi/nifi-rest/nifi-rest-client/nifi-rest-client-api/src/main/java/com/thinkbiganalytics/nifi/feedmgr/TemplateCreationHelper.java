@@ -162,6 +162,7 @@ public class TemplateCreationHelper {
             tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
         } catch (NifiComponentNotFoundException e) {
             nifiObjectCache.resetTemporaryTemplateInspectionGroup();
+            temporaryTemplateInspectionGroup = nifiObjectCache.getOrCreateTemporaryTemplateInspectionGroup();
             tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
         }
         TemplateInstance instance = instantiateFlowFromTemplate(tempGroup.getId(), templateId);
