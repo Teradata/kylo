@@ -238,8 +238,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     public boolean isCommitAssessment(ServiceLevelAssessment assessment, ServiceLevelAssessment previousAssessment){
         //always commit if its the first, or not success, or if status is different
-        //should we check if the compareTo is different or only if the assessment results differ: && assessment.getResult() != previousAssessment.getResult()
-        if (previousAssessment == null || (previousAssessment != null && assessment.compareTo(previousAssessment) != 0 )) {
+        if (previousAssessment == null || (previousAssessment != null && assessment.compareTo(previousAssessment) != 0  && (assessment.getResult() != AssessmentResult.SUCCESS || assessment.getResult() != previousAssessment.getResult()))) {
             return true;
         } else {
             return false;
