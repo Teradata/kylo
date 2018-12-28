@@ -164,6 +164,16 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
     }
 
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("JpaServiceLevelAssessment{");
+        sb.append("id=").append(id);
+        sb.append(", serviceLevelAgreementDescription=").append(serviceLevelAgreementDescription);
+        sb.append(", slaId=").append(slaId);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    @Override
     public int compareTo(ServiceLevelAssessment sla) {
 
         ComparisonChain chain = ComparisonChain

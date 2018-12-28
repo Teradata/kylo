@@ -94,14 +94,23 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
     /**
      * Check the Agreement. Caller needs to wrap this in MetadataAccesss transcation
      */
-    public void checkAgreement(ServiceLevelAgreement agreement) {
+    public boolean checkAgreement(ServiceLevelAgreement agreement) {
+        Alert newAlert = null;
+        boolean commit = false;
         if (agreement != null) {
-            Alert newAlert = null;
             if (isAssessable(agreement)) {
                 LOG.info("Assessing SLA  : " + agreement.getName());
 
                 try {
+                    ServiceLevelAssessment previous = assessmentProvider.findLatestAssessment(agreement.getId());
                     ServiceLevelAssessment assessment = assessor.assess(agreement);
+                    commit = assessor.isCommitAssessment(assessment,previous);
+                    if(commit){
+                        LOG.debug("SLA Assessment {} will commit", assessment);
+                    }
+                    else {
+                        LOG.debug("SLA Assessment {} will NOT commit.  It is the same as the previous assessment", assessment);
+                    }
 
                     if (shouldAlert(agreement, assessment)) {
                         newAlert = alertManager.createEntityAlert(AssessmentAlerts.VIOLATION_ALERT_TYPE,
@@ -121,6 +130,8 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
                 LOG.info("SLA assessment failed: {} - generated alert: {}", agreement.getName(), newAlert.getId());
             }
         }
+
+        return commit;
 
 
     }

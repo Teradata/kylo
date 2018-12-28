@@ -12,9 +12,9 @@ package com.thinkbiganalytics.metadata.persistence;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,9 +23,11 @@ package com.thinkbiganalytics.metadata.persistence;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.AbstractMetadataCommitAwareCommand;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataCommitAwareCommand;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataTransactionTemplateMetadataAccess;
@@ -123,9 +125,32 @@ public class AggregateMetadataAccess implements MetadataAccess {
                 if (readOnly) {
                     return jpaMetadataAccess.read(() -> cmd.execute());
                 } else {
-                    return jpaMetadataAccess.commit(() -> cmd.execute());
+                    return (R) jpaMetadataAccess.commit(new MetadataCommitAwareCommandWrapper(cmd));
                 }
             };
+        }
+    }
+
+    private class MetadataCommitAwareCommandWrapper<R> extends AbstractMetadataCommitAwareCommand {
+
+        /**
+         * The command to execute
+         */
+        MetadataCommand<R> command;
+
+        public MetadataCommitAwareCommandWrapper(MetadataCommand<R> command) {
+            this.command = command;
+        }
+
+        @Override
+        public R execute() throws Exception {
+            R result = command.execute();
+            if (command instanceof com.thinkbiganalytics.metadata.api.MetadataCommitAwareCommand) {
+                this.setCommit(((com.thinkbiganalytics.metadata.api.MetadataCommitAwareCommand<R>) command).isCommit());
+            } else {
+                this.setCommit(true);
+            }
+            return result;
         }
     }
 }

@@ -27,6 +27,7 @@ package com.thinkbiganalytics.metadata.config;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataCommitAwareCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
@@ -184,7 +185,13 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
                 }
 
                 try {
-                    return cmd.execute();
+                    R result = cmd.execute();
+                    if(cmd instanceof MetadataCommitAwareCommand){
+                        if(!((MetadataCommitAwareCommand)cmd).isCommit()) {
+                            status.setRollbackOnly();
+                        }
+                    }
+                    return result;
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Exception e) {

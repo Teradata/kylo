@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.AbstractMetadataCommitAwareCommand;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
@@ -38,7 +39,8 @@ import javax.inject.Inject;
 /**
  * Quartz Scheduled Job Bean that will run the SLA code
  */
-public class SlaQuartzJobBean extends QuartzJobBean{
+public class SlaQuartzJobBean extends QuartzJobBean {
+
     public static final String SLA_ID_PARAM = "SLA_ID";
     private static final Logger log = LoggerFactory.getLogger(SlaQuartzJobBean.class);
     @Inject
@@ -52,22 +54,39 @@ public class SlaQuartzJobBean extends QuartzJobBean{
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         //query for this SLA
-        final Map<String,   Object> jobDataMap = context.getMergedJobDataMap();
+        final Map<String, Object> jobDataMap = context.getMergedJobDataMap();
 
-        metadataAccess.commit(() -> {
-            ServiceLevelAgreement.ID slaId = (ServiceLevelAgreement.ID)jobDataMap.get(SLA_ID_PARAM);
+        metadataAccess.commit(new SlaCheckCommand(jobDataMap), MetadataAccess.SERVICE);
+    }
+
+
+    /**
+     * Commit aware action that will set the commit flag only if things have changed
+     */
+    private class SlaCheckCommand extends AbstractMetadataCommitAwareCommand {
+
+        final Map<String, Object> jobDataMap;
+
+        public SlaCheckCommand(final Map<String, Object> jobDataMap) {
+            this.jobDataMap = jobDataMap;
+        }
+
+        @Override
+        public Object execute() throws Exception {
+            ServiceLevelAgreement.ID slaId = (ServiceLevelAgreement.ID) jobDataMap.get(SLA_ID_PARAM);
             ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
             if (sla != null) {
-                ///Unable to find the SLA... Remove the SLA from teh schedule
-                //   unscheduleServiceLevelAgreement(slaId);
                 if (sla.isEnabled()) {
-                    slaChecker.checkAgreement(sla);
+                    boolean commit = slaChecker.checkAgreement(sla);
+                    setCommit(commit);
                 } else {
                     log.info("SLA {} will not fire since it is disabled ", sla.getName());
                 }
-            }else {
-                log.error("UNABLE TO FIND SLA for {} ",slaId);
+            } else {
+                log.error("UNABLE TO FIND SLA for {} ", slaId);
             }
-        }, MetadataAccess.SERVICE);
+
+            return null;
+        }
     }
 }
