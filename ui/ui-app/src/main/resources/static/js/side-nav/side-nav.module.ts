@@ -31,17 +31,17 @@ import { CovalentSearchModule } from '@covalent/core/search';
 import { CovalentPagingModule } from '@covalent/core/paging';
 import { FormsModule, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import { KyloCommonModule } from "../common/common.module";
-import {SideNavComponent} from "./side-nav.component";
+// import {SideNavComponent} from "./side-nav.component";
 
 import {moduleName} from "./module-name";
 import { CovalentLayoutModule } from "@covalent/core/layout";
 
 @NgModule({
     declarations: [
-        SideNavComponent
+        // SideNavComponent
     ],
     entryComponents: [
-        SideNavComponent
+        // SideNavComponent
     ],
     imports: [
         CovalentCommonModule,
@@ -73,7 +73,7 @@ import { CovalentLayoutModule } from "@covalent/core/layout";
         
     ],
     exports: [
-        SideNavComponent
+        // SideNavComponent
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [ 

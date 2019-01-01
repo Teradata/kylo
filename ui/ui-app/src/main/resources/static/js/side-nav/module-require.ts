@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
-import "./angular1";
+// import "./side-nav";
+require("./side-nav");
 import "../../assets/images/kylo-logo-rev.png";
 import "../../assets/images/k_logo.png";
 

@@ -1,10 +1,10 @@
 <div class="mat-sidenav" style="width:200px;background-color: white;box-shadow: 5px 0 5px -2px rgba(158,158,158,0.2); z-index: 1;">
     <div td-sidenav-content class="sidenav-content" style="height: 100%;">
-      <mat-toolbar class="layout-column bgc-grey-200 md-whiteframe-z1" layout="column"
+      <mat-toolbar class="md-hue-2 layout-column" layout="column" 
           style="background-color: rgb(43,108,154); color: rgba(255,255,255,0.87);min-height: 64px;">
-        <div layout="column" layout-align="center center" class="kylo-logo">
+        <div layout="row" layout-align="center center" class="kylo-logo">
           <a href="/index.html" title="{{'views.main.Kylo' | translate}}">
-          <img src="assets/images/kylo-logo-orange-200.png" height="50px" *ngIf="!collapsed">
+          <img src="assets/images/kylo-logo-rev.png" height="50px" *ngIf="!collapsed">
           <img src="assets/images/k_logo.png"  width="20px" *ngIf="collapsed" style="padding-top: 5px;">
           </a>
         </div>
@@ -15,7 +15,7 @@
         </div>
         <div>
           <mat-divider></mat-divider>
-          <div class="collapse-btn" style="height: 44px;" (click)="expandCollapseSideNavList()" layout-align="start start" layout="row" role="button">
+          <div class="collapse-btn" style="height: 44px;" (click)="expandCollapseSideNavList($event)" layout-align="start start" layout="row" role="button">
             <span flex></span>
             <mat-icon class="nav-btn" *ngIf="!collapsed">chevron_left</mat-icon>
             <mat-icon class="nav-btn" *ngIf="collapsed">chevron_right</mat-icon>
@@ -23,4 +23,4 @@
         </div>
       </mat-content>
     </div>
-  </div>
+</div>

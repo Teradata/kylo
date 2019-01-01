@@ -64,7 +64,7 @@ constructor() {
         this.module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider',
                             'ngMdIconServiceProvider','$qProvider', '$translateProvider',
                             'tmhDynamicLocaleProvider','__env',this.configFn.bind(this)]);
-         this.module.run(['$ocLazyLoad', '$translate', this.runFn.bind(this)]);
+         this.module.run(['$ocLazyLoad', ($ocLazyLoad : any) => this.runFn($ocLazyLoad)]);
     }
 
     configFn($mdAriaProvider: any,$mdThemingProvider: any, $mdIconProvider: any, $urlService: any,
@@ -395,7 +395,7 @@ constructor() {
             .addViewBox("teradata","0 0 696 133");
     }
 
-    runFn($ocLazyLoad: any, $translate: any){
+    runFn($ocLazyLoad: any){
         $ocLazyLoad.load({name:'kylo'});
     }
 }
