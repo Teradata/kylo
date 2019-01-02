@@ -71,7 +71,8 @@
     <mat-progress-bar color="accent" mode="indeterminate" *ngIf="loading"></mat-progress-bar>
     <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
         <mat-card *ngFor="let category of filteredCategories" class="kylo-card-template cursor-pointer push-bottom push-right"
-                (click)="editCategory(category)" fxFlex="100%" fxLayout="row" style="display: flex; padding: 0 !important; border: 0 !important;">
+                (click)="editCategory(category)" fxFlex="100%" fxLayout="row" 
+                style="display: flex; padding: 0 !important; border: 0 !important; box-shadow: 0 1px 5px 0 rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.12); margin: 0 16px 16px 0;">
             <div fxLayout="column" [ngStyle]="getColorStyle(category.iconColor)" fxLayoutAlign="center center" style="min-width: 20%;z-index: 1;">
               <ng-md-icon icon="{{category.icon}}" size="40" class="kylo-card-icon"></ng-md-icon>
             </div>

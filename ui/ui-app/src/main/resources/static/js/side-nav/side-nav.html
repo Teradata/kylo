@@ -15,10 +15,10 @@
         </div>
         <div>
           <mat-divider></mat-divider>
-          <div class="collapse-btn" style="height: 44px;" (click)="expandCollapseSideNavList()" layout-align="start start" layout="row" role="button">
+          <div class="collapse-btn" style="height: 44px; padding:10px; color: #616d73; background-color: #f9f9f9;" (click)="expandCollapseSideNavList()" layout-align="start start" layout="row" role="button">
             <span flex></span>
-            <mat-icon class="nav-btn" *ngIf="!collapsed">chevron_left</mat-icon>
-            <mat-icon class="nav-btn" *ngIf="collapsed">chevron_right</mat-icon>
+            <mat-icon class="nav-btn" style="margin: auto;" *ngIf="!collapsed">chevron_left</mat-icon>
+            <mat-icon class="nav-btn" style="margin: auto;" *ngIf="collapsed">chevron_right</mat-icon>
           </div>
         </div>
       </mat-content>

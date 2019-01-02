@@ -123,11 +123,11 @@ md-list-item .md-no-style, md-list-item:not(.with-padding).md-no-proxy {
 
 
 .nav-btn.selected span {
-  color:#3483BA !important;
+  color:#00b2b1  !important;
 }
 
 .nav-btn.selected {
-  fill: #3483BA !important;
+  fill: #00b2b1  !important;
 }
 
 .mat-sidenav md-list {

@@ -13,7 +13,7 @@ import { Component, Input, Output, EventEmitter, SimpleChanges, ElementRef } fro
                 <ng-md-icon md-icon icon="{{section.expandIcon}}" *ngIf="!isCollapsed"></ng-md-icon>
             </div>
             <div class="accordion-body">
-                <mat-list id="menu-{{section.text}}" class="accordion-list">
+                <mat-list id="menu-{{section.text}}" class="accordion-list" style="padding: 0;">
                     <div>
                         <mat-list-item *ngFor="let item of section.links" style="height:auto;">
                             <div>   
