@@ -29,27 +29,27 @@
         <mat-divider></mat-divider>
         <mat-list  layout-fill layout="column" class="list-item-table">
             <mat-list-item *ngFor="let alert of alerts; let last=last;" (click)="navigateToAlerts(alert)" style="height: auto;">
-              <mat-icon class="error">warning</mat-icon>
-                <div fxFlex="100%">
-                    <div fxLayout="row" fxFlex="100" fxLayoutAlign="start spark-between">
-                      <div fxLayout="column" fxFlex="50" fxLayoutAlign="start">
-                        <span class="item-title" >{{alert.groupDisplayName}}</span>
-                        <span class="item-title" style="float:right;">{{vDN | translate}}</span>
-                      </div>
+              <mat-icon class="error" style="margin: 16px;">warning</mat-icon>
+                <div class="md-list-item-text pad pull-left-md flex" style="width:100%">
+                    <div class="layout-align-start-stretch layout-row flex-100">
+                        <div class="layout-align-start-stretch layout-column flex-50">
+                            <span class="item-title" >{{alert.groupDisplayName}}</span>
+                            <span class="item-title" style="float:right;">{{vDN | translate}}</span>
+                        </div>
+                        <div class="layout-align-end-end layout-column flex">
+                            <span class="error column-title-bottom" *ngIf="alert.count ==1">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
+                            <span class="error column-title-bottom" *ngIf="alert.count > 1 && alert.count < 5">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
+                            <span class="error column-title-bottom" *ngIf="alert.count > 4">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
+                            <span class="md-caption column-title-bottom" style="float:right;">{{alert.since}}</span>
+                        </div>
                     </div>
-                    <div fxLayout="column" fxLayoutAlign="end end">
-                        <span class="error column-title-bottom" *ngIf="alert.count ==1">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
-                        <span class="error column-title-bottom" *ngIf="alert.count > 1 && alert.count < 5">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
-                        <span class="error column-title-bottom" *ngIf="alert.count > 4">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
-                        <span class="md-caption column-title-bottom" style="float:right;">{{alert.since}}</span>
-                    </div>
-                    </div>
+                </div>
                 <mat-divider *ngIf="!last"></mat-divider>
             </mat-list-item>
             <mat-list-item *ngIf="alerts && alerts.length == 0">
                 <div style="width:100%" class="item-column" >
-                    <span class="item-title" >{{"views.alerts-template.Na" | translate}}</span>
-                    </div>
+                    <span class="item-title">{{"views.alerts-template.Na" | translate}}</span>
+                </div>
             </mat-list-item>
         </mat-list>
     </mat-card-content>
