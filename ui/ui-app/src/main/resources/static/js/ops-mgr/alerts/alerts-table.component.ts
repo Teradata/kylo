@@ -50,7 +50,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
     alertTypes: any;
     filterAlertState: any;
     alertStates: any;
-    showCleared: boolean = true;
+    showCleared: boolean = false;
     menuLabel: string = "Show Cleared";
     @Input() query: any;
     @Input() cardTitle: string;
@@ -160,7 +160,7 @@ export class AlertsTableComponent extends BaseFilteredPaginatedTableView {
     }
     
     selectedAdditionalMenuOption() {
-        if(this.showCleared) {
+        if(!this.showCleared) {
             this.menuLabel = "Hide Cleared";
             this.columns.splice(3, 0, { name: 'cleared', label: 'Cleared', sortable: false, filter: false});
         }
