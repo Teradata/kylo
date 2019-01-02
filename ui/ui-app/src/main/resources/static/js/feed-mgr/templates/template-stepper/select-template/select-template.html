@@ -20,7 +20,7 @@
   <mat-progress-bar mode="indeterminate" *ngIf="model.loading"></mat-progress-bar>
   <div layout="row" layout-align="center start">
 
-    <mat-card style="max-width:980px;width:980px;padding:16px;" flex="initial">
+    <mat-card style="max-width:980px;width:980px;" flex="initial">
 
         <mat-card-title>
             <div layout="row" layout-align="space-between-center" flex>
@@ -50,14 +50,17 @@
         </div>
 
         <div layout="column" *ngIf="!model.reusableTemplate">
-            <div class="md-subhead left-aligned">{{'FEEDMGR.TEMPLATES.STEPPER.SELECT.TARGET_TABLE_OPTS' | translate}}</div>
+            <div class="md-subhead left-aligned" style="color: rgba(0,0,0,0.54); background-color: rgb(250,250,250); padding:16px;">{{'FEEDMGR.TEMPLATES.STEPPER.SELECT.TARGET_TABLE_OPTS' | translate}}</div>
 
-            <div class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
-                <div [(ngModel)]="model.templateTableOption" flex layout="row" (change)="onTableOptionChange()" required="true" ngDefaultControl>
-                    <mat-radio-group *ngFor="let tableOption of templateTableOptions" flex="30">
-                        <input type="radio" id="tableOptions" name="contact" value="{{tableOption.type}}" [checked]="model.templateTableOption == tableOption.type">
-                        <label for="tableOptions">{{tableOption.displayName}}</label>
-                        <mat-hint>{{tableOption.description}}</mat-hint>
+            <div class="md-block layout-padding-top-bottom flex-gt-sm condensed">
+                <div [(ngModel)]="model.templateTableOption" flex layout="row" (change)="onTableOptionChange()" style="display: inline-flex; justify-content: space-between;" required="true" ngDefaultControl>
+                    <mat-radio-group *ngFor="let tableOption of templateTableOptions" style="display: inline-flex;" flex="30">
+                        <mat-radio-button [checked]="model.templateTableOption == tableOption.type" [value]="tableOption.type">
+                        </mat-radio-button>
+                        <div>
+                            <label>{{tableOption.displayName}}</label>
+                            <mat-hint style="display: block;">{{tableOption.description}}</mat-hint>
+                        </div>
                     </mat-radio-group>
                 </div>
             </div>
@@ -65,9 +68,9 @@
 
         <br/><br/><br/>
 
-        <div style="display: flex; justify-content: space-between;">
-            <button (click)="cancelStepper()" mat-button matStepperPrevious>{{'view.main.cancel' | translate}}</button>
-            <button mat-button matStepperNext [disabled]="!formGroup.valid">
+        <div style="display: flex; justify-content:flex-end;">
+            <button (click)="cancelStepper()" mat-button matStepperPrevious style="margin-right:10px;">{{'view.main.cancel' | translate}}</button>
+            <button mat-button matStepperNext [disabled]="!formGroup.valid" style="background-color: rgb(97,109,115); color: rgba(255,255,255,0.87);">
                 {{'FEEDMGR.TEMPLATES.STEPPER.SELECT.CONTINUE_TO_STEP' | translate:param }}
             </button>
         </div>
@@ -78,19 +81,19 @@
 
     <mat-card offsetleftfromprevious top="8" class="layout-fill"
                  style="max-width:250px;width:250px;min-width:250px;" flex="initial">
-        <mat-card-title>
+        <mat-card-title style="margin-bottom:0;">
             <div class="card-title">
                 {{'FEEDMGR.TEMPLATES.STEPPER.TEMPLATE_STRING' | translate}}
                 <mat-menu #mdMenu="matMenu">
-                    <div *ngIf="!model.loading">
+                    <div *ngIf="!model.loading" style="min-width:192px;">
                         <div *ngIf="allowAdmin">
-                            <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" (click)="disableTemplate()">{{'view.main.disable' | translate}}</button>
-                            <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" (click)="enableTemplate()">{{'view.main.enable' | translate}}</button>
-                            <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item (click)="confirmDeleteTemplate()">{{'view.main.delete' | translate}}</button>
+                            <button *ngIf="model.state == 'ENABLED'" mat-menu-item [disabled]="disabling" style="height:36px;" (click)="disableTemplate()">{{'view.main.disable' | translate}}</button>
+                            <button *ngIf="model.state == 'DISABLED'" mat-menu-item [disabled]="enabling" style="height:36px;" (click)="enableTemplate()">{{'view.main.enable' | translate}}</button>
+                            <button *ngIf="model.state == 'DISABLED' && model.feedsCount == 0" mat-menu-item style="height:36px;" (click)="confirmDeleteTemplate()">{{'view.main.delete' | translate}}</button>
                         </div>
                         <div *ngIf="allowExport && model.id != null && registeredTemplateId != null">
-                            <button *ngFor="let item of templateNavigationLinks" style="text-align:left" (click)="templateNavigationLink(item)" class="mat-primary mat-link">{{item.linkText}}</button>
-                            <a mat-menu-item href="{{model.exportUrl}}">{{'view.main.export' | translate}}</a>
+                            <button *ngFor="let item of templateNavigationLinks" style="text-align:left; height:36px;" (click)="templateNavigationLink(item)" class="mat-primary mat-link">{{item.linkText}}</button>
+                            <a mat-menu-item style="height:36px; font-size: 14px;" href="{{model.exportUrl}}">{{'view.main.export' | translate}}</a>
                         </div>
                     </div>
                 </mat-menu>
@@ -106,7 +109,7 @@
             </div>
         </mat-card-title>
 
-        <mat-card-content class="card-layout-body mat-padding">
+        <mat-card-content class="card-layout-body mat-padding" style="padding-top:0;">
             <div layout="column" class="layout-padding-top" *ngIf="model.loading">
                 {{'FEEDMGR.TEMPLATES.STEPPER.SELECT.LOADING' | translate}}
             </div>

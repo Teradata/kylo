@@ -1,5 +1,5 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, EventEmitter, Input, OnInit, Output, ViewContainerRef} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, ViewContainerRef, ViewEncapsulation} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -21,7 +21,15 @@ import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'thinkbig-register-select-template',
-    templateUrl: './select-template.html'
+    templateUrl: './select-template.html',
+    encapsulation: ViewEncapsulation.None,
+    styles: [
+        `
+        .mat-radio-button.mat-accent .mat-radio-inner-circle, .mat-radio-outer-circle {
+            top: 50% !important;
+        }
+        `
+    ]
 })
 export class RegisterSelectTemplateController implements OnInit {
 

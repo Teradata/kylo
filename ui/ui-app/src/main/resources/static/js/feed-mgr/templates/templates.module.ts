@@ -60,6 +60,7 @@ import { TemplateDeleteDialog } from "./template-stepper/select-template/templat
 import { DndModule } from 'ng2-dnd';
 import { TemplateOrderController } from "./template-order/template-order.component";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatRadioModule } from '@angular/material';
 
 // import '../../vendor/ment.io/styles.css';
 // import '../../vendor/ment.io/templates.js';
@@ -129,6 +130,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
         MatSnackBarModule,
         CovalentDialogsModule,
         MatTooltipModule,
+        MatRadioModule,
         DndModule.forRoot(),
         UIRouterModule.forChild({states: templateStates})
     ],

@@ -173,9 +173,9 @@
 
         </ng-container>
 
-        <div style="float:right;">
-            <button class="md-button md-kylo-theme" mat-button matStepperPrevious>{{'views.step-buttons.Previous-btn' | translate}}</button>
-            <button class="md-raised md-primary md-button md-kylo-theme" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</button>
+        <div style="float:right; padding-top: 10px;">
+            <button class="md-button md-kylo-theme" style="margin-right:10px;" mat-button matStepperPrevious>{{'views.step-buttons.Previous-btn' | translate}}</button>
+            <button class="md-raised md-primary md-button md-kylo-theme" style="background-color: rgb(97,109,115);color: rgba(255,255,255,0.87);" [disabled]="!formGroup.valid" mat-button (click)="registerTemplate()">{{'FEEDMGR.TEMPLATES.STEPPER.REGISTER' | translate}}</button>
         </div>
 
     </mat-card-content>

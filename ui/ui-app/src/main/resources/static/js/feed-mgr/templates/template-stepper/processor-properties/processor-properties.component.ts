@@ -3,7 +3,7 @@ import * as $ from "jquery";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { UiComponentsService } from '../../../services/UiComponentsService';
 import { FeedService } from '../../../services/FeedService';
-import { Component, Input, Inject, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, Inject, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { RestUrlService } from '../../../services/RestUrlService';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
@@ -12,7 +12,19 @@ import { ObjectUtils } from '../../../../../lib/common/utils/object-utils';
 
 @Component({
     selector: 'thinkbig-register-processor-properties',
-    templateUrl:'./processor-properties.html'
+    templateUrl:'./processor-properties.html',
+    encapsulation: ViewEncapsulation.None,
+    styles: [
+        `
+            mat-hint {
+                font-size: 12px;
+            }
+            thinkbig-register-processor-properties .mat-select-value {
+                min-width: 64px !important;
+                width: auto !important;
+            }
+        `
+    ]
 })
 export class RegisterProcessorPropertiesController implements OnInit {
 
