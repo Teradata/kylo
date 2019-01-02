@@ -2,7 +2,7 @@ import {CommonModule} from "@angular/common";
 import {HttpClientModule} from '@angular/common/http';
 import {NgModule} from "@angular/core";
 import {FlexLayoutModule} from "@angular/flex-layout";
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from "@angular/material/button";
 import {MatCardModule} from '@angular/material/card';
 import {MatDialogModule} from '@angular/material/dialog';
@@ -65,6 +65,7 @@ import { DndListModule } from 'ngx-drag-and-drop-lists';
 import { QuickColumnsDialog } from '../feed-mgr/visual-query/transform-data/main-dialogs/quick-columns-dialog';
 import { MiniCategoricalComponent, MiniHistogramComponent } from '../feed-mgr/visual-query/transform-data/main-dialogs/quick-column-components';
 import { NvD3Module } from 'ng2-nvd3';
+import { ConnectionDialog } from '../feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component';
 
 @NgModule({
     declarations: [
@@ -100,7 +101,8 @@ import { NvD3Module } from 'ng2-nvd3';
         SchemaLayoutDialog,
         QuickColumnsDialog,
         MiniCategoricalComponent,
-        MiniHistogramComponent
+        MiniHistogramComponent,
+        ConnectionDialog
     ],
     entryComponents: [
         AboutKyloDialogController,
@@ -124,7 +126,8 @@ import { NvD3Module } from 'ng2-nvd3';
         SampleDialog,
         QuickCleanDialog,
         SchemaLayoutDialog,
-        QuickColumnsDialog
+        QuickColumnsDialog,
+        ConnectionDialog
     ],
     providers: [
         AboutKyloService,
@@ -144,6 +147,7 @@ import { NvD3Module } from 'ng2-nvd3';
         CovalentSearchModule,
         FlexLayoutModule,
         FormsModule,
+        ReactiveFormsModule,
         HttpClientModule,
         MatButtonModule,
         MatCardModule,

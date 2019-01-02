@@ -14,11 +14,12 @@ import {VisualQuerySaveService} from "../services/save.service";
 import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
 import {SaveOptionsComponent} from "./save-options.component";
-import {DatasourcesService, JdbcDatasource, TableReference} from '../../services/DatasourcesServiceIntrefaces';
+import {JdbcDatasource, TableReference} from '../../services/DatasourcesServiceIntrefaces';
 import {DataSource} from "../../catalog/api/models/datasource";
 import {CatalogService} from "../../catalog/api/services/catalog.service";
 import * as _ from "underscore";
 import { RestUrlService } from '../../services/RestUrlService';
+import { DatasourcesService } from '../../services/DatasourcesService';
 
 export enum SaveMode { INITIAL, SAVING, SAVED}
 
@@ -127,7 +128,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     target: SaveRequest = {};
 
-    constructor(private $http: HttpClient, @Inject("DatasourcesService") private DatasourcesService: DatasourcesService,private RestUrlService: RestUrlService,
+    constructor(private $http: HttpClient, private datasourcesService: DatasourcesService,private RestUrlService: RestUrlService,
                 private VisualQuerySaveService: VisualQuerySaveService, private $mdDialog: TdDialogService, private stateService: StateService,
                 private catalogService:CatalogService) {
         // Listen for notification removals
@@ -165,7 +166,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
         // Get list of Kylo data sources
         this.target.jdbc;
         this.target.catalogDatasource = new DataSource();
-        const kyloSourcesPromise = Promise.all([this.engine.getNativeDataSources(), this.DatasourcesService.findAll()])
+        const kyloSourcesPromise = Promise.all([this.engine.getNativeDataSources(), this.datasourcesService.findAll()])
             .then(resultList => {
                 this.kyloDataSources = resultList[0].concat(resultList[1]);
                 if (this.model.$selectedDatasourceId) {

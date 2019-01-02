@@ -6,21 +6,21 @@
     </mat-toolbar>
     <div fxFlex="0 0 auto" fxLayout="row" fxLayoutAlign="center center">
       <button mat-icon-button (click)="onUndo()" [disabled]="!canUndo()" class="visual-query-function-history-button">
-        <ng-md-icon icon="undo"></ng-md-icon>
+        <mat-icon>undo</mat-icon>
       </button>
       <button mat-icon-button (click)="onRedo()" [disabled]="!canRedo()" class="visual-query-function-history-button">
-        <ng-md-icon icon="redo"></ng-md-icon>
+        <mat-icon>redo</mat-icon>
       </button>
     </div>
     <mat-list fxFlex="1 1 auto">
       <ng-template ngFor let-item let-i="index" [ngForOf]="functionHistory">
         <mat-list-item>
-          <ng-md-icon *ngIf="item && item.icon && !item.icon.startsWith('mdi')" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
+          <mat-icon *ngIf="item && item.icon && !item.icon.startsWith('mdi')" class="function-icon">{{item.icon}}</mat-icon>
           <i *ngIf="item && item.icon && item.icon.startsWith('mdi')" [class]="item.icon + ' function-icon material-icons'"></i>
           <p [matTooltip]="item.name" fxFlex="1 1 auto">{{item.name}}</p>
-          <ng-md-icon (click)="toggleItem(i)" class="grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
-          <ng-md-icon (click)="removeItem(i)" class="accent-color" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>
-          <ng-md-icon (click)="toggleItem(i)" class="accent-color" *ngIf="!item.inactive" icon="visibility" class="function-action"></ng-md-icon>
+          <mat-icon (click)="toggleItem(i)" class="grey" *ngIf="item.inactive" class="function-action">visibility</mat-icon>
+          <mat-icon (click)="removeItem(i)" class="accent-color" *ngIf="item.inactive" class="function-action">remove_circle</mat-icon>
+          <mat-icon (click)="toggleItem(i)" class="accent-color" *ngIf="!item.inactive" class="function-action">visibility</mat-icon>
         </mat-list-item>
         <mat-divider></mat-divider>
       </ng-template>
@@ -38,29 +38,29 @@
           <button mat-menu-item (click)="showQuickColumnAnalysis()">Profile</button>
         </mat-menu>
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
-          <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
+          <mat-icon  class="tc-black">history</mat-icon>
         </button>
         <button matTooltip="History" mat-raised-button mat-icon-button (click)="toggleFunctionHistory()" fxShow.gt-md="true" fxHide="true" class="text-upper">
-          <ng-md-icon icon="history" class="toolbar-icon"></ng-md-icon>
+          <mat-icon  class="toolbar-icon alignCenter">history</mat-icon>
         </button>
         <button matTooltip="Configure sampling" mat-raised-button mat-icon-button (click)="showSampleDialog()" fxShow.gt-md="true" fxHide="true" class="text-upper">
-          <ng-md-icon icon="filter_list" class="toolbar-icon"></ng-md-icon>
+          <mat-icon  class="toolbar-icon alignCenter">filter_list</mat-icon>
         </button>
         <button matTooltip="Apply global cleansing operations" mat-raised-button mat-icon-button (click)="showQuickClean()" fxShow.gt-md="true" fxHide="true">
           <i class="toolbar-icon mdi mdi-broom"></i>
         </button>
         <button matTooltip="Show schema view" mat-raised-button mat-icon-button (click)="showSchemaLayout()" fxShow.gt-md="true" fxHide="true">
-          <ng-md-icon icon="grid_on" class="toolbar-icon"></ng-md-icon>
+          <mat-icon  class="toolbar-icon alignCenter">grid_on</mat-icon>
         </button>
         <button matTooltip="Show columns profile" mat-raised-button mat-icon-button (click)="showQuickColumnAnalysis()" fxShow.gt-md="true" fxHide="true" class="text-upper">
-          <ng-md-icon icon="assessment" class="toolbar-icon"></ng-md-icon>
+          <mat-icon class="toolbar-icon alignCenter">assessment</mat-icon>
         </button>
         <span fxFlex="1 1 auto"></span>
         <mat-menu #formulaMenu="matMenu" class="md-kylo-theme">
           <button *ngFor="let item of sampleFormulas" mat-menu-item (click)="setFormula(item.formula)">{{item.name}}</button>
         </mat-menu>
         <button mat-icon-button aria-label="Open formula templates" [matMenuTriggerFor]="formulaMenu">
-          <ng-md-icon icon="functions" class="tc-primary"></ng-md-icon>
+          <mat-icon class="tc-primary">functions</mat-icon>
         </button>
         <codemirror class="formula-editor" [config]="codemirrorOptions" [(ngModel)]="currentFormula" style="height:25px;margin-top: 8px"></codemirror>
         <button mat-raised-button class="text-upper mat-accent kylo-add" (click)="onAddFunction()" [disabled]="!currentFormula">Add</button>
@@ -78,7 +78,7 @@
           <h3>Sampling</h3>
           <span fxFlex="1 1 auto"></span>
           <button mat-icon-button (click)="toggleSampleMenu()">
-            <ng-md-icon icon="close"></ng-md-icon>
+            <mat-icon>close</mat-icon>
           </button>
         </div>
         <mat-radio-group fxLayout="row" fxLayoutGap="20px" *ngIf="!engine.allowLimitWithSample" (change)="onSampleMethodChange()" [(ngModel)]="sampleMethod">
