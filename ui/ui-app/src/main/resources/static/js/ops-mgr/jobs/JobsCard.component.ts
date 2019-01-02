@@ -266,7 +266,6 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
 
             var start = (limit * activeTab.currentPage) - limit; //this.query.page(this.selectedTab));
 
-            var sort = this.PaginationDataService.sort(this.pageName);
             var transformJobs = (response: any,canceler: Subscription) => {
                 //transform the data for UI
                 this.transformJobData(tabTitle, response);
@@ -289,14 +288,14 @@ export class JobsCardComponent extends BaseFilteredPaginatedTableView {
                 this.finishedRequest(canceler);
             };
             let params = new HttpParams();
-            if(start){
-                params = params.set('start', start.toString());
-            }
             if(limit){
                 params = params.set('limit', limit);
             }
-            if(sort && ObjectUtils.isString(sort)){
-                params = params.set('sort', sort);
+            if(this.sortBy && ObjectUtils.isString(this.sortBy)){
+                params = params.set('sort', this.sortBy);
+            }
+            if(start){
+                params = params.set('start', start.toString());
             }
             if (this.feedFilter) {
                 if (!params.get('filter')) {
