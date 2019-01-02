@@ -1554,6 +1554,26 @@ table.pvtTable tr td {
 
 .pvtRendererArea { padding: 5px;}
 
+#charts_tab_pivot_chart .c3 svg {
+  width: 100% !important;
+}
+
+.ListItemContainer .mat-input-placeholder-wrapper {
+  font-size: 14px !important;
+}
+
+.ListItemContainer{
+  padding: 0px !important;
+  line-height: inherit !important;
+  -webkit-box-pack: start !important;
+  justify-content: flex-start !important;
+  -webkit-box-align: center !important;
+  align-items: center !important;
+  min-height: 48px !important;
+  height: auto !important;
+  flex: 1 1 auto !important;
+}
+
 /** Pivot table - Charts UI - End **/
 
 accordion-menu .mat-list-item-content {

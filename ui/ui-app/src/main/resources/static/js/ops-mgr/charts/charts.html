@@ -33,18 +33,18 @@
         </mat-card-content>
     </mat-card>
     <mat-card fxFlex="20" style="height: 100%;" class="filter-chart">
-        <mat-card-title style="white-space:nowrap" class="card-title">
+        <mat-card-title style="white-space:nowrap;font-size: 20px;letter-spacing: .005em;" class="card-title">
             {{"OPS_MGR.CHARTS.FILTER_TITLE"| translate}}
         </mat-card-title>
-        <mat-card-content>
+        <mat-card-content style="padding:0">
             <div *ngIf="message != ''" [ngClass]="{'tc-negative':isWarning}" style="padding-left:25px;">
                 {{message}}
             </div>
             <mat-list flex class="layout-padding-top-bottom" fxLayout="column" class="list-item-table">
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
-                        <mat-form-field>
-                            <label>{{"views.main.feed-manage-narrow"| translate}}</label>
+                        <mat-form-field style="width:50%;">
+                            <label style="color: rgba(0,0,0,0.54);font-size:14px;">{{"views.main.feed-manage-narrow"| translate}}</label>
                             <mat-select multiple [(ngModel)]="selectedFeedNames" (change)="feedsSelected($event)">
                                 <mat-option *ngFor="let feedName of feedNames" [value]="feedName">
                                     {{feedName}}
@@ -53,10 +53,10 @@
                         </mat-form-field>
                     </div>
                 </mat-list-item>
-                <mat-divider></mat-divider>
+                <mat-divider style="position:relative !important;"></mat-divider>
                 <mat-list-item class="ListItemContainer">
-                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
-                        <mat-form-field>
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text" style="padding-bottom:0">
+                        <mat-form-field style="width:50%; ">
                             <input matInput [matDatepicker]="startPicker" placeholder="{{'OPS_MGR.CHARTS.START_DATE_PLACEHOLDER'| translate}}">
                             <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
                             <mat-datepicker #startPicker></mat-datepicker>
@@ -64,19 +64,19 @@
                     </div>
                 </mat-list-item>
                 <mat-list-item class="ListItemContainer">
-                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
-                        <mat-form-field>
+                    <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text" style="padding-top:0">
+                        <mat-form-field style="width:50%;">
                             <input matInput [matDatepicker]="endPicker" placeholder="{{'OPS_MGR.CHARTS.END_DATE_PLACEHOLDER'| translate}}">
                             <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
                             <mat-datepicker #endPicker></mat-datepicker>
                         </mat-form-field>
                     </div>
                 </mat-list-item>
-                <mat-divider></mat-divider>
+                <mat-divider style="position:relative !important;"></mat-divider>
                 <mat-list-item class="ListItemContainer">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
-                        <mat-form-field>
-                            <label>Limit</label>
+                        <mat-form-field style="width:50%;">
+                            <label style="color: rgba(0,0,0,0.54);font-size:14px;">Limit</label>
                             <mat-select [(ngModel)]="limitRows" (change)="limitOptionChanged($event)">
                                 <mat-option *ngFor="let limit of limitOptions" [value]="limit">
                                     {{limit}}
@@ -85,10 +85,10 @@
                         </mat-form-field>
                     </div>
                 </mat-list-item>
-                <mat-divider></mat-divider>
+                <mat-divider style="position:relative !important;"></mat-divider>
                 <mat-list-item class="ListItemContainer" layout-align="space-between start" fxLayout="column">
                     <div layout-align="space-between start" fxLayout="column" class="item-column md-list-item-text ">
-                        <button mat-button class="border-btn" color="primary" (click)="refreshPivotTable()">{{"view.main.update"| translate}}</button>
+                        <button style="border: 1px solid #d7d7d7;" mat-button class="border-btn" color="primary" (click)="refreshPivotTable()">{{"view.main.update"| translate}}</button>
                     </div>
                 </mat-list-item>
             </mat-list>

@@ -16,17 +16,6 @@ import '../../../bower_components/c3/c3.css';
     selector: 'ops-mgr-charts',
     templateUrl: './charts.html',
     encapsulation: ViewEncapsulation.None,
-    styles: [`.ListItemContainer{
-        padding: 0px !important;
-        line-height: inherit !important;
-        -webkit-box-pack: start !important;
-        justify-content: flex-start !important;
-        -webkit-box-align: center !important;
-        align-items: center !important;
-        min-height: 48px !important;
-        height: auto !important;
-        flex: 1 1 auto !important;
-    }`],
     styleUrls:['../../../bower_components/c3/c3.css']
 })
 export class ChartsComponent implements OnInit, OnDestroy {
