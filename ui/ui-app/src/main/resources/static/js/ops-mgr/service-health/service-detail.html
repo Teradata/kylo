@@ -38,10 +38,10 @@
         >
             <ng-template tdDataTableTemplate="status" let-value="value" let-row="row" let-column="column">
                 <span >
-                    <mat-icon class="{{value.iconstyle}}" size="20" options='{"rotation": "clock"}'>
-                            {{value.icon}}
+                    <mat-icon style="color: #388e3c!important; fill: #388e3c!important;">
+                        {{value.icon}}
                     </mat-icon>
-                    {{value.healthText}}
+                    <span>{{value.healthText}}</span>
                 </span>
             </ng-template>
             <ng-template  tdDataTableTemplate="checkDate" let-value="value" let-row="row" let-column="column">
@@ -49,7 +49,7 @@
             </ng-template>
         </filtered-paginated-table-view>
     </div>
-    <mat-card fxFlex="20">
+    <mat-card fxFlex="20" style="box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12) !important;">
         <mat-card-title>
                 <div class="card-title">{{"OPS_MGR.SERVICE_HEALTH.SERVICE_DETAILS"| translate}}</div>
         </mat-card-title>

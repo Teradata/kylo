@@ -3,23 +3,29 @@ import { TransitionService, StateService } from "@uirouter/core";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 import {ServicesStatusData} from "../services/ServicesStatusService";
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewEncapsulation } from "@angular/core";
 import { BaseFilteredPaginatedTableView } from '../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView';
 import { ITdDataTableColumn, TdDataTableService } from '@covalent/core/data-table';
 @Component({
     selector: "service-Health-Details-Controller",
     templateUrl: "./service-detail.html",
-    styles: [`.ListItemContainer{
-        padding: 0px !important;
-        line-height: inherit;
-        -webkit-box-pack: start;
-        justify-content: flex-start;
-        -webkit-box-align: center;
-        align-items: center;
-        min-height: 48px;
-        height: auto;
-        flex: 1 1 auto;
-    }`]
+    encapsulation: ViewEncapsulation.None,
+    styles: [`
+        .ListItemContainer{
+            padding: 0px !important;
+            line-height: inherit;
+            -webkit-box-pack: start;
+            justify-content: flex-start;
+            -webkit-box-align: center;
+            align-items: center;
+            min-height: 48px;
+            height: auto;
+            flex: 1 1 auto;
+        }
+        service-health-details-controller .mat-card {
+            box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12) !important;
+        }
+    `]
 })
 export class ServiceHealthDetailsComponent extends BaseFilteredPaginatedTableView implements OnInit {
     cardTitle: string = 'Service Components';
@@ -31,7 +37,7 @@ export class ServiceHealthDetailsComponent extends BaseFilteredPaginatedTableVie
     public columns: ITdDataTableColumn[] = [
         { name: 'name', label: 'Name', sortable: true, filter: true },
         { name: 'status', label: 'Status', sortable: true, filter: true },
-        { name: 'message', label: 'Message', sortable: true, filter: true },
+        { name: 'message', label: 'Message', sortable: true, filter: true, width: 173 },
         { name: 'alerts', label: 'Alerts', sortable: true, filter: true },
         { name: 'checkDate', label: 'Last Checked', sortable: true, filter: true },
     ];

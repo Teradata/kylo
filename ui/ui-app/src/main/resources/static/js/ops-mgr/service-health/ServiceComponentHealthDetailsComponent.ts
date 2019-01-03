@@ -1,7 +1,7 @@
 import { StateService } from "@uirouter/core";
 import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 import { DefaultPaginationDataService } from "../../services/PaginationDataService";
-import { Component, OnInit, ViewContainerRef } from "@angular/core";
+import { Component, OnInit, ViewContainerRef, ViewEncapsulation } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import {ServicesStatusData} from "../services/ServicesStatusService";
 import { BaseFilteredPaginatedTableView } from "../../common/filtered-paginated-table-view/BaseFilteredPaginatedTableView";
@@ -10,17 +10,23 @@ import { TdDataTableService, ITdDataTableColumn } from "@covalent/core/data-tabl
 @Component({
     selector: "service-Component-Health-Details-Controller",
     templateUrl: "./service-component-detail.html",
-    styles: [`.ListItemContainer{
-        padding: 0px !important;
-        line-height: inherit;
-        -webkit-box-pack: start;
-        justify-content: flex-start;
-        -webkit-box-align: center;
-        align-items: center;
-        min-height: 48px;
-        height: auto;
-        flex: 1 1 auto;
-    }`]
+    encapsulation: ViewEncapsulation.None,
+    styles: [`
+        .ListItemContainer{
+            padding: 0px !important;
+            line-height: inherit;
+            -webkit-box-pack: start;
+            justify-content: flex-start;
+            -webkit-box-align: center;
+            align-items: center;
+            min-height: 48px;
+            height: auto;
+            flex: 1 1 auto;
+        }
+        service-component-health-details-controller .mat-card {
+            box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12) !important;
+        }
+    `]
 })
 export class ServiceComponentHealthDetailsComponent extends BaseFilteredPaginatedTableView implements OnInit {
 
