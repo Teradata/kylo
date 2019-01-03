@@ -35,6 +35,8 @@ export class DomainTypesComponent {
     */
     searchQuery: string = "";
 
+    filteredDomains: any[] = [];
+
     ngOnInit() {
         // Register Add button
         this.addButtonService.registerAddButton(PAGE_NAME, () => {
@@ -45,6 +47,7 @@ export class DomainTypesComponent {
         this.domainTypesService.findAll()
             .then((domainTypes: any) => {
                 this.domainTypes = domainTypes;
+                this.filteredDomains = domainTypes;
                 this.loading = false;
             }, () => {
                 this.snackBar.open('Unable to load domain types.','OK',{duration : 3000});
@@ -77,6 +80,13 @@ export class DomainTypesComponent {
         var rules = this.FeedFieldPolicyRuleService.getAllPolicyRules(domainType.fieldPolicy);
         return (rules.length > 0) ? rules.map(_.property("name")).join(", ") : "No rules";
     };
+
+    filter() {
+        this.filteredDomains = this.domainTypes.filter((domain : any) => {
+            let title : string = domain.title;
+            return domain.title.toLocaleLowerCase().indexOf(this.searchQuery.toLocaleLowerCase()) > -1;
+        })
+    }
 
     /**
      * Indicates if the specified domain type has any field policies.

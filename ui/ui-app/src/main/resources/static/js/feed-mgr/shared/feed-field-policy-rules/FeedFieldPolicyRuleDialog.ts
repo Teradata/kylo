@@ -1,21 +1,27 @@
 import * as _ from "underscore";
-import * as angular from "angular";
-import { FeedService } from '../../services/FeedService';
 import { PolicyInputFormService } from '../policy-input-form/PolicyInputFormService';
-import { Injectable, Component, Inject } from '@angular/core';
-import {MatDialog, MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import { Component, Inject, ViewEncapsulation } from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import { CloneUtil } from "../../../common/utils/clone-util";
-import {StateService} from "../../../services/StateService";
-import { RestUrlService } from "../../services/RestUrlService";
-import { HttpClient } from "@angular/common/http";
-import {moduleName} from "../../module-name";
-import { downgradeInjectable } from "@angular/upgrade/static";
-import { FieldPolicyRuleOptionsFactory } from "./services/FieldPolicyRuleOptionsFactory";
 import { FeedFieldPolicyRuleService } from "./services/FeedFieldPolicyRuleService";
 import { FieldPolicyOptionsService } from "../field-policies-angular2/field-policy-options.service";
+import { FormGroup, FormControl } from '@angular/forms';
 
 @Component({
-    templateUrl: './define-feed-data-processing-field-policy-dialog.html'
+    templateUrl: './define-feed-data-processing-field-policy-dialog.html',
+    encapsulation : ViewEncapsulation.None,
+    styles : [`
+        .selectValueBorderBottom .mat-select-value {
+            border-bottom: 1px solid rgba(0,0,0,0.12);
+        }
+        .mat-dialog-container{
+            max-height: 500px;
+            overflow: auto !important;
+        }
+        .grey-icon{
+            color: grey;
+        }
+    `]
 })
 export class FeedFieldPolicyRuleDialogComponent {
 
@@ -23,7 +29,7 @@ export class FeedFieldPolicyRuleDialogComponent {
     field: any;
     options: any = [];
     ruleMode: string = 'NEW';
-    policyForm: any = {};
+    policyForm: FormGroup;
     loadingPolicies: boolean = true;
     policyRules: any = null;
     optionTypes: any = [{ type: 'standardization', name: 'Standardization' }, { type: 'validation', name: 'Validation' }];
@@ -45,9 +51,7 @@ export class FeedFieldPolicyRuleDialogComponent {
     addText: string = 'ADD RULE';
     cancelText: string = 'CANCEL ADD';
 
-    constructor(private StateService: StateService,
-                private FeedService: FeedService,
-                private PolicyInputFormService: PolicyInputFormService, 
+    constructor(private PolicyInputFormService: PolicyInputFormService, 
                 private dialogRef: MatDialogRef<FeedFieldPolicyRuleDialogComponent>,
                 @Inject(MAT_DIALOG_DATA) private data: any,
                 private fieldPolicyRuleOptionsFactory: FieldPolicyOptionsService, 
@@ -56,6 +60,9 @@ export class FeedFieldPolicyRuleDialogComponent {
     ngOnInit() {
         this.feed = this.data.feed;
         this.field = this.data.field;
+        this.policyForm = new FormGroup({});
+        this.policyForm.addControl("optionType", new FormControl());
+        this.policyForm.addControl("ruleTypeControl", new FormControl());
 
 
         this.fieldPolicyRuleOptionsFactory.getStandardizersAndValidators().subscribe((response: any[]) => {
@@ -159,7 +166,7 @@ export class FeedFieldPolicyRuleDialogComponent {
 
     }
 
-    onMovedPolicyRule = ($index: any) => {
+    onMovedPolicyRule ($index: any) {
         this.policyRules.splice($index, 1);
         this.moved = true;
         this.pendingEdits = true;
@@ -171,12 +178,12 @@ export class FeedFieldPolicyRuleDialogComponent {
      * when canceling a pending edit
      * @param $event
      */
-    cancelEdit = ($event: any) => {
+    cancelEdit ($event: any) {
         this._cancelEdit();
 
     }
 
-    onRuleTypeChange = () => {
+    onRuleTypeChange () {
         if (this.ruleType != null) {
             var rule = CloneUtil.deepCopy(this.ruleType);
             rule.groups = this.PolicyInputFormService.groupProperties(rule);
@@ -195,7 +202,7 @@ export class FeedFieldPolicyRuleDialogComponent {
         return validForm;
     }
 
-    deletePolicyByIndex = ($index: any) => {
+    deletePolicyByIndex ($index: any) {
         if (this.policyRules != null) {
             this.policyRules.splice($index, 1);
         }
@@ -203,7 +210,7 @@ export class FeedFieldPolicyRuleDialogComponent {
         this._cancelEdit();
     }
 
-    deletePolicy = ($index: any) => {
+    deletePolicy ($index: any) {
         var index: any = this.editIndex;
         if (this.policyRules != null && index != null) {
             this.policyRules.splice($index, 1);
@@ -213,7 +220,7 @@ export class FeedFieldPolicyRuleDialogComponent {
         //  $mdDialog.hide('done');
     }
 
-    editPolicy = ($event: any, index: any, rule: any) => {
+    editPolicy (index: any, rule: any) {
         if (this.editMode == 'EDIT') {
            this._cancelEdit();
         }
@@ -256,7 +263,7 @@ export class FeedFieldPolicyRuleDialogComponent {
 
     }
 
-    done = ($event: any) => {
+    done () {
         var validators: any = [];
         var standardizers: any = [];
         _.each(this.policyRules, (rule: any, i: any) => {
@@ -273,7 +280,7 @@ export class FeedFieldPolicyRuleDialogComponent {
         this.dialogRef.close('done');
     }
 
-    addPolicy = ($event: any) => {
+    addPolicy () {
 
         var validForm = this.validateForm();
         if (validForm == true) {
@@ -296,12 +303,12 @@ export class FeedFieldPolicyRuleDialogComponent {
         }
     }
 
-    hide = ($event: any) => {
+    hide () {
         this._cancelEdit();
         this.dialogRef.close();
     };
 
-    cancel = ($event: any) => {
+    cancel () {
         this._cancelEdit();
         this.dialogRef.close();
     };

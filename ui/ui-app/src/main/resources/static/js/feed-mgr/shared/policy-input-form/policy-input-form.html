@@ -20,19 +20,19 @@
   <!--layout="{{group.layout}}"-->
   <div *ngFor="let group of rule.groups" class="layout-padding-left-right">
       <div *ngFor="let property of group.properties">
-        <ng-container *ngIf="property.hidden == false" [formGroup]="formGroup">
+        <form *ngIf="property.hidden == false" [formGroup]="formGroup">
           <ng-container *ngIf="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'emails' || property.type == 'currentFeed'  || property.type =='velocityTemplate' ">
             <mat-form-field style="width: 100%;">
               <mat-label>{{property.displayName}}</mat-label>
-              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" string-to-number type="number" *ngIf="property.type == 'number'" [(ngModel)]="property.value" md-placeholder="property.placeholder"
-                    pattern="property.patternRegExp"
+              <input matInput [(ngModel)]="property.value" name="{{property.formKey}}" [formControlName]="property.formKey" string-to-number type="number" *ngIf="property.type == 'number'"  placeholder="{{property.placeholder}}"
+                    pattern="{{property.pattern}}"
                     [required]="property.required" [disabled]="!rule.editable" (change)="onPropertyChanged(property)"/>
-              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'email'" [(ngModel)]="property.value" md-placeholder="property.placeholder" pattern="property.patternRegExp"
+              <input matInput [(ngModel)]="property.value" name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'email'"  placeholder="{{property.placeholder}}" pattern="{{property.pattern}}"
                     [required]="property.required" [disabled]="!rule.editable" type="email" (change)="onPropertyChanged(property)"/>
-              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'emails'" [(ngModel)]="property.value" md-placeholder="property.placeholder" pattern="property.patternRegExp"
+              <input matInput [(ngModel)]="property.value" name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'emails'"  placeholder="{{property.placeholder}}" pattern="{{property.pattern}}"
                     [required]="property.required" [disabled]="!rule.editable" multiple-email-validator (change)="onPropertyChanged(property)" />
-              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'string' || property.type =='regex'" [(ngModel)]="property.value" md-placeholder="property.placeholder"
-                    pattern="property.patternRegExp"
+              <input matInput [(ngModel)]="property.value" name="{{property.formKey}}" [formControlName]="property.formKey" *ngIf="property.type == 'string' || property.type =='regex'"  placeholder="{{property.placeholder}}"
+                    pattern="{{property.pattern}}"
                     [required]="property.required" [disabled]="!rule.editable" type="text" (change)="onPropertyChanged(property)"/>
               <mat-select [(ngModel)]="property.value" *ngIf="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" [required]="property.required"
                         [formControlName]="property.formKey"
@@ -46,7 +46,7 @@
               <mat-hint *ngIf="property.errorMessage">
                 {{property.errorMessage}}
               </mat-hint>
-              <mat-error *ngIf="formGroup.controls[property.formKey].errors?.multipleEmails">
+              <mat-error *ngIf="formGroup.controls[property.formKey]?.errors?.multipleEmails">
                 {{'SHARED.NIFI_PROPERTY_INPUT.EMAILS_NOT_VALID' | translate}}
               </mat-error>
             
@@ -65,8 +65,8 @@
                 {{property.errorMessage}}
               </mat-hint>
       
-              <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
-                {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
+              <mat-error *ngIf="formGroup.controls[property.formKey]?.errors?.required" >
+                {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}} 
               </mat-error>
     
               <div *ngIf="!formGroup.controls[property.formKey].valid">
@@ -80,7 +80,7 @@
           </div>
           
           <mat-form-field *ngIf="property.type == 'date' ">
-            <input matInput matInput [matDatepicker]="picker" [formControlName]="property.formKey" name="{{property.formKey}}" [formControlName]="property.formKey" [required]="property.required" *ngIf="property.type == 'date' " [(value)]="property.value" [placeholder]="property.placeholder"
+            <input matInput [matDatepicker]="picker" name="{{property.formKey}}" [formControlName]="property.formKey" [required]="property.required" *ngIf="property.type == 'date' " [(value)]="property.value" [placeholder]="property.placeholder"
                     (change)="onPropertyChanged(property)">
             <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
@@ -89,7 +89,7 @@
             <mat-hint *ngIf="property.errorMessage">
               {{property.errorMessage}}
             </mat-hint>
-            <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+            <mat-error *ngIf="formGroup.controls[property.formKey]?.errors?.required" >
               {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
             </mat-error>
     
@@ -99,9 +99,9 @@
             <span>{{'SHARED.NIFI_PROPERTY_INPUT.TEST_REGEX' | translate}}</span>
             <mat-form-field class="md-block condensed-medium ">
               <mat-label>Sample String</mat-label>
-              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" [(ngModel)]="property.regexSampleString" md-placeholder="Sample String" [required]="property.required" [disabled]="!rule.editable"/>
+              <input matInput name="{{property.formKey}}" [formControlName]="property.formKey" [(ngModel)]="property.regexSampleString" placeholder="Sample String" [required]="property.required" [disabled]="!rule.editable"/>
     
-              <mat-error *ngIf="formGroup.controls[property.formKey].errors?.required" >
+              <mat-error *ngIf="formGroup.controls[property.formKey]?.errors?.required" >
                 {{'SHARED.NIFI_PROPERTY_INPUT.FIELD_REQUIRED' | translate}}
                 </mat-error>
             </mat-form-field>
@@ -131,6 +131,6 @@
 
           </ng-container>
     
-        </ng-container>
+        </form>
       </div>
     </div>

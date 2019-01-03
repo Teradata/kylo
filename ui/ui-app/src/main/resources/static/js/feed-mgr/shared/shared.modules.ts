@@ -45,13 +45,15 @@ import { FeedFieldPolicyRuleDialogComponent } from "./feed-field-policy-rules/Fe
 import {FieldPoliciesModule} from "./field-policies-angular2/field-policies.module";
 import { FieldPolicyOptionsService } from "./field-policies-angular2/field-policy-options.service";
 import {PropertyListModule} from "./property-list/property-list.module";
+import { MatRadioModule, MatProgressBarModule } from '@angular/material';
 
 @NgModule({
     declarations: [
         PropertiesAdminEditorController,
         PropertiesAdminController,
         PropertyListEditorComponent,
-        FeedFieldPolicyRuleDialogComponent
+        FeedFieldPolicyRuleDialogComponent,
+        
     ],
     entryComponents: [
         PropertiesAdminEditorController,
@@ -72,7 +74,9 @@ import {PropertyListModule} from "./property-list/property-list.module";
         MatMenuModule,
         MatInputModule,
         MatSelectModule,
+        MatRadioModule,
         MatProgressSpinnerModule,
+        MatProgressBarModule,
         MatGridListModule,
         CovalentDialogsModule,
         MatSnackBarModule,
@@ -85,7 +89,8 @@ import {PropertyListModule} from "./property-list/property-list.module";
         MatCheckboxModule,
         ReactiveFormsModule,
         PropertyListModule,
-        FieldPoliciesModule
+        FieldPoliciesModule,
+        KyloFeedManagerModule
     ],
     exports: [PropertiesAdminEditorController, PropertiesAdminController, FeedFieldPolicyRuleDialogComponent,
                 PropertyListComponent, PropertyListEditorComponent, FeedFieldPolicyRulesDialogComponent],

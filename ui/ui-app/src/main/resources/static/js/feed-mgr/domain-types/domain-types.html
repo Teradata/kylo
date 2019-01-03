@@ -3,10 +3,10 @@
   <div layout="row" layout-align="center start" *ngIf="!loading">
     <div layout="column" class="layout-max-width">
       <div style="width:100%" class="" layout="row" layout-align="center start">
-        <mat-content flex layout="row" class="" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
+        <mat-content flex layout="row" class="" layout-align="center start" style="background-color: #fff!important;border:2px solid #EEEEEE;overflow:hidden">
           <span style="width:40px;max-width:40px;"></span>
           <mat-form-field class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;margin-bottom:-10px;">
-            <input matInput [(ngModel)]="searchQuery" placeholder="{{'FEED_MGR.DOMAIN_TYPES.FILTER_TYPES_PLACEHOLDER' | translate}}">
+            <input matInput [(ngModel)]="searchQuery" (keyup)="filter()" placeholder="{{'FEED_MGR.DOMAIN_TYPES.FILTER_TYPES_PLACEHOLDER' | translate}}">
           </mat-form-field>
           <div style="padding:5px 5px 5px 40px;margin-top:12px;">
             <ng-md-icon icon="more_vert" style="fill:#676767"></ng-md-icon>
@@ -16,7 +16,7 @@
     </div>
   </div>
   <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap *ngIf="!loading">
-    <mat-card style="width:400px;max-width:400px;max-height:121px;height:121px" *ngFor="let type of domainTypes" flex="initial"
+    <mat-card style="width:400px;max-width:400px;max-height:121px;height:121px" *ngFor="let type of filteredDomains" flex="initial"
              flex-md="initial" flex-sm="50" (click)="editDomainType(type)">
       <mat-card-title style="display: flex; justify-content: space-between; padding-top: 0;">
         <mat-card-title-text>

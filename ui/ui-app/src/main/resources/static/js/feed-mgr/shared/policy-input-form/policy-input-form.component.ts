@@ -1,5 +1,5 @@
 import * as _ from "underscore";
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges,  SimpleChanges } from '@angular/core';
 import { PolicyInputFormService } from '../policy-input-form/PolicyInputFormService';
 import {FormControl, Validators, FormGroupDirective, NgForm, FormGroup} from '@angular/forms';
 
@@ -17,7 +17,7 @@ export function MultipleEmail(control: FormControl) {
     selector: 'thinkbig-policy-input-form',
     templateUrl: './policy-input-form.html'
 })
-export class PolicyInputFormController {
+export class PolicyInputFormController implements OnChanges {
 
     editChips:any={};
     queryChipSearch:any;
@@ -40,7 +40,10 @@ export class PolicyInputFormController {
     constructor(private PolicyInputFormService:PolicyInputFormService) {}
     
     ngOnInit(): void {
+        this.initializeForm();
+    }
 
+    initializeForm() {
         this.formGroup = new FormGroup({});
 
         this.editChips.selectedItem = null;
@@ -58,7 +61,12 @@ export class PolicyInputFormController {
             });
         }
         _.each(this.rule.properties,(property) => this.createFormControls(property));
+    }
 
+    public ngOnChanges(changes: SimpleChanges) : void {
+        if(changes.rule && !changes.rule.firstChange){
+            this.initializeForm();
+        }
     }
 
     private createFormControls(property:any) {
