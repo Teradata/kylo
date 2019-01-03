@@ -46,7 +46,7 @@
                     <span class="flex"></span>
                     <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)">{{"views.vertical-section-layout-template.Cancel"  | translate}}</button>
                     <button class="md-accent md-raised md-button md-kylo-theme md-ink-ripple" (click)="save($event)"
-                               [disabled]="isValid == false || (theForm != undefined && theForm.$invalid != undefined && theForm.$invalid == true)">{{"views.vertical-section-layout-template.Save"  | translate}}
+                               [disabled]="isValid == false || (theForm != undefined && theForm.invalid != undefined && theForm.invalid == true )">{{"views.vertical-section-layout-template.Save"  | translate}}
                     </button>
                 </div>
                 </form>
