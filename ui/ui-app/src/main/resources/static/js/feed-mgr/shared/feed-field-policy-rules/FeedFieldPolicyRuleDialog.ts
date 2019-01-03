@@ -313,4 +313,7 @@ export class FeedFieldPolicyRuleDialogComponent {
         this.dialogRef.close();
     };
 
+    compareRules(a: any, b: any): boolean {
+        return a.name == b.name;
+    }
 }
