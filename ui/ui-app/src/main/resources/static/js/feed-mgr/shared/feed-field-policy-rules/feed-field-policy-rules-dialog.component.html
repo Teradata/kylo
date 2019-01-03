@@ -56,14 +56,14 @@
             <div class="mat-title">{{viewText.titleText}}</div>
 
             <mat-radio-group [(ngModel)]="selectedOptionType" (change)="onChangedOptionType($event)" *ngIf="optionTypes != null" [ngModelOptions]="{standalone: true}">
-                <ng-template ngFor let-optionType let-index="index" let-last="last" [ngForOf]="optionTypes">
-                    <mat-radio-button ngClass="push-right-md" [value]="optionType.type">{{optionType.name}}</mat-radio-button>
-                </ng-template>
+                <!-- <ng-template ngFor let-optionType [ngForOf]="optionTypes"> -->
+                <mat-radio-button *ngFor="let optionType of optionTypes" ngClass="push-right-md" [value]="optionType.type">{{optionType.name}}</mat-radio-button>
+                <!-- </ng-template> -->
             </mat-radio-group>
 
             <mat-form-field  class="pad-top-sm">
                 <mat-select [(ngModel)]="selectedRuleTypeName" placeholder="Select a policy" (change)="onRuleTypeChange($event)" [ngModelOptions]="{standalone: true}">
-                    <mat-option *ngFor="let opt of options" [value]="opt.name">
+                    <mat-option *ngFor="let opt of options" [value]="opt.name" style="margin-right:16px;">
                         {{opt.name}}
                     </mat-option>
                 </mat-select>

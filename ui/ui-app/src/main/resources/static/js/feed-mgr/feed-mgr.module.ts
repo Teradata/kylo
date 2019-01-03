@@ -60,6 +60,7 @@ import {PolicyInputFormService} from "./shared/policy-input-form/PolicyInputForm
 import {PropertyListModule} from "./shared/property-list/property-list.module";
 import {SqlEditorModule} from "./shared/sql-editor/sql-editor.module";
 import { VisualQueryPainterService } from './visual-query/transform-data/visual-query-table/visual-query-painter.service';
+import { MatInputModule } from '@angular/material';
 
 @NgModule({
     imports: [
@@ -80,6 +81,7 @@ import { VisualQueryPainterService } from './visual-query/transform-data/visual-
         MatSnackBarModule,
         MatToolbarModule,
         PropertyListModule,
+        MatInputModule,
         ReactiveFormsModule,
         SqlEditorModule,
         TranslateModule.forChild(),
@@ -112,6 +114,7 @@ import { VisualQueryPainterService } from './visual-query/transform-data/visual-
     exports: [
         CronExpressionPreview,
         EntityAccessControlComponent,
+        PolicyInputFormController
     ],
     providers: [
         AccessControlService,

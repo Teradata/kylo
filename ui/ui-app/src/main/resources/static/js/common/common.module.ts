@@ -102,7 +102,7 @@ import { ConnectionDialog } from '../feed-mgr/visual-query/build-query/connectio
         QuickColumnsDialog,
         MiniCategoricalComponent,
         MiniHistogramComponent,
-        ConnectionDialog
+        ConnectionDialog,
     ],
     entryComponents: [
         AboutKyloDialogController,
@@ -127,7 +127,7 @@ import { ConnectionDialog } from '../feed-mgr/visual-query/build-query/connectio
         QuickCleanDialog,
         SchemaLayoutDialog,
         QuickColumnsDialog,
-        ConnectionDialog
+        ConnectionDialog,
     ],
     providers: [
         AboutKyloService,
@@ -190,7 +190,7 @@ import { ConnectionDialog } from '../feed-mgr/visual-query/build-query/connectio
         RouterBreadcrumbsComponent,
         SafeHtmlPipe,
         UploadFileComponent,
-        VerticalSectionLayoutComponent
+        VerticalSectionLayoutComponent,
     ]
 })
 export class KyloCommonModule {

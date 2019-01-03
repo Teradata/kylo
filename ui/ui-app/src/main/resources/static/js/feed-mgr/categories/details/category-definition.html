@@ -18,7 +18,7 @@
   #L%
   -->
 <vertical-section-layout section-title='{{"views.category-definition.CD" | translate}}' (on-delete)="onDelete()" [allowDelete]="canDelete" [isDeleteVisible]="model.id != null" (on-save-edit)="onSave()"
-  (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm">
+  (on-edit)="onEdit()" (on-cancel-edit)="onCancel()" [isValid]="isValid" [editable]="isEditable" [allowEdit]="allowEdit" [theForm]="categoryForm">
   <readonly-section>
     <div layout="row" class="layout-padding-top-bottom" flex>
       <span flex="25" class="property-name">{{"views.main.category-name" | translate}}</span>
@@ -54,22 +54,22 @@
     <form [formGroup]="categoryForm">
       <div layout="row" flex="100">
         <mat-form-field class="md-block" flex="40">
-          <input matInput [formControl]="categoryNameControl" (change)="changeSystemNameAndCheckValidity()" [(ngModel)]="editModel.name" placeholder='{{"views.category-definition.Name" | translate}}' required/>
-          <mat-error *ngIf="categoryNameControl.hasError('required')" class="tc-red-600">{{"views.category-definition.Acnir" | translate}}</mat-error>
+          <input matInput formControlName="categoryNameControl" (change)="changeSystemNameAndCheckValidity()" [(ngModel)]="editModel.name" placeholder='{{"views.category-definition.Name" | translate}}' required/>
+          <mat-error *ngIf="categoryNameControl.value == ''" class="tc-red-600">{{"views.category-definition.Acnir" | translate}}</mat-error>
           <mat-error *ngIf="isNameDuplicate" class="tc-red-600">{{"views.category-definition.Tiaecwtn" | translate}}</mat-error>
           <mat-error *ngIf="isReservedCategoryName" class="tc-red-600">{{"views.category-definition.TcirPcac" | translate}}</mat-error>
         </mat-form-field>
         <div flex="10"></div> 
         <mat-form-field flex="40">
-          <input matInput [formControl]="systemNameControl" [readonly]="!isSystemNameEditable() || hasFeeds()" (change)="validateSystemName()" [(ngModel)]="editModel.systemName" placeholder='{{"views.category-definition.SN" | translate}}' required/>
+          <input matInput formControlName="systemNameControl" [ngClass]="systemNameControl.dirty ? 'tc-red-600' : ''" [readonly]="!isSystemNameEditable() || hasFeeds()" (change)="validateSystemName()" [(ngModel)]="editModel.systemName" placeholder='{{"views.category-definition.SN" | translate}}' required/>
           <div class="hint">
             <span>{{getSystemNameDescription()}}</span>
             <br>
             <a *ngIf="!isSystemNameEditable() && hasNoFeeds()" class="link-css" (click)="allowEditSystemName()">{{"FEED_MGR.CATEGORIES.DETAILS.CHANGE_SYSTEM_NAME"| translate}}</a>
           </div>
-          <mat-error *ngIf="systemNameControl.hasError('required')" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.SYSTEM_NAME_REQUIRED"| translate}}</mat-error>
-          <mat-error *ngIf="isSystemNameDuplicate" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.EXISTING_CATEGORY"| translate}}</mat-error>
-          <mat-error *ngIf="isReservedCategoryName" >{{"FEED_MGR.CATEGORIES.DETAILS.RESERVED_CATEGORY"| translate}}</mat-error>
+          <mat-hint *ngIf="systemNameControl.value == ''" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.SYSTEM_NAME_REQUIRED"| translate}}</mat-hint>
+          <mat-hint *ngIf="isSystemNameDuplicate" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.EXISTING_CATEGORY"| translate}}</mat-hint>
+          <mat-hint *ngIf="isReservedCategoryName" class="tc-red-600">{{"FEED_MGR.CATEGORIES.DETAILS.RESERVED_CATEGORY"| translate}}</mat-hint>
         </mat-form-field>
 
       </div>

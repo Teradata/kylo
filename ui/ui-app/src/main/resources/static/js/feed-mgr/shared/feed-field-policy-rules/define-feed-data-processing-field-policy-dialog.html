@@ -18,7 +18,7 @@
   #L%
   -->
 <div mat-dialog aria-label="Validation Results">
-    <ng-form name="policyForm">
+    <form [formGroup]="policyForm">
         <div class="md-toolbar-tools">
             <h4 class="md-title"><span>{{title}} {{"views.define-feed-data-processing-field-policy-dialog.ff" | translate}} {{field.name}}</span></h4>
             <span flex></span>
@@ -39,11 +39,11 @@
                                 <span class="md-list-item-text hint">{{rule.type}}</span>
                             </div>
                             <div layout="row">
-                                <button class="md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="editPolicy($event,index,rule)">
-                                    <ng-md-icon icon="edit" style="fill:grey"></ng-md-icon>
+                                <button class="md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="editPolicy(index,rule)">
+                                    <mat-icon class="grey-icon">edit</mat-icon>
                                 </button>
                                   <button class="md-icon-button md-button md-kylo-theme md-ink-ripple" (click)="deletePolicyByIndex(index)">
-                                      <ng-md-icon icon="delete" style="fill:grey" ></ng-md-icon>
+                                      <mat-icon class="grey-icon" >delete</mat-icon>
                                   </button>
                             </div>
                         </div>
@@ -55,42 +55,42 @@
 
                 <div class="md-title">{{titleText}}</div>
 
-                <mat-radio-group name="optionType" [(ngModel)]="selectedOptionType" layout="row" *ngIf="optionTypes != null" class="layout-padding-top">
+                <mat-radio-group name="optionType" formControlName="optionType" [(ngModel)]="selectedOptionType" style="margin-bottom: 15px;" layout="row" *ngIf="optionTypes != null" class="layout-padding-top">
                     <mat-radio-button aria-label="Select option type" *ngFor="let optionType of optionTypes"
-                                    value="optionType.type"
+                                    [value]="optionType.type"
                                     attr.aria-label="{{optionType.name}}"
+                                    style="margin-right: 16px;"
                                     (click)="onChangedOptionType(optionType.type)">
                         {{optionType.name}}
                     </mat-radio-button>
                 </mat-radio-group>
 
 
-                <div class="md-block layout-padding-top-bottom" style="margin-top:0px;">
+                <div class="md-block layout-padding-top-bottom selectValueBorderBottom" style="margin-top:0px;margin-bottom: 18px; position: relative;padding-bottom: 10px;vertical-align: middle;padding: 10px 2px;">
                     <mat-label class="md-container-ignore label-small layout-padding-top">{{"views.define-feed-data-processing-field-policy-dialog.SRT" | translate}}</mat-label>
-                    <mat-select [(ngModel)]="ruleType" (change)="onRuleTypeChange()" aria-label="Rule Type">
-                        <mat-option value="opt" *ngFor="let opt of options">{{ opt.name }}</mat-option>
+                    <mat-select formControlName="ruleTypeControl" [(ngModel)]="ruleType" ng-model-options="{trackBy: '$value.name'}" (selectionChange)="onRuleTypeChange()" aria-label="Rule Type">
+                        <mat-option [value]="opt" *ngFor="let opt of options">{{ opt.name }}</mat-option>
                     </mat-select>
                     <span *ngIf="editRule" class="hint">{{editRule.description}}</span>
                 </div>
-                <thinkbig-policy-input-form the-form="policyForm" rule="editRule" mode="ruleMode" feed="feed"></thinkbig-policy-input-form>
+                <thinkbig-policy-input-form *ngIf="editRule !== null" [theForm]="policyForm" [rule]="editRule" [mode]="ruleMode" [feed]="feed"></thinkbig-policy-input-form>
 
                 <div layout="row" layout-align="start stretch" flex>
-                    <button style="md-button md-kylo-theme md-ink-ripple" *ngIf="editRule != null" (click)="cancelEdit($event)">{{cancelText}}</button>
+                    <button mat-button style="md-button md-kylo-theme md-ink-ripple" *ngIf="editRule != null" (click)="cancelEdit()">{{cancelText}}</button>
                     <span flex></span>
-                    <button style="md-primary md-button md-kylo-theme md-ink-ripple" class="md-primary" *ngIf="editRule != null" (click)="addPolicy($event)" [disabled]="policyForm.$invalid">{{addText}}</button>
+                    <button mat-button style="md-primary md-button md-kylo-theme md-ink-ripple" class="md-primary" *ngIf="editRule != null" (click)="addPolicy()" [disabled]="policyForm.$invalid">{{addText}}</button>
                 </div>
             </div>
 
         </mat-dialog-content>
         <mat-dialog-actions layout="row" layout-align="start stretch" flex>
             <span flex></span>
-            <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel($event)">
+            <button class="md-button md-kylo-theme md-ink-ripple" (click)="cancel()">
                 {{"views.define-feed-data-processing-field-policy-dialog.Cancel" | translate}}
             </button>
-            <button class="md-raised md-primary md-button md-kylo-theme md-ink-ripple" (click)="done($event)" [disabled]="!pendingEdits || editRule != null || policyForm.$invalid">
+            <button class="md-raised md-primary md-button md-kylo-theme md-ink-ripple" (click)="done()" [disabled]="!pendingEdits || editRule != null || policyForm.$invalid">
                 {{"views.define-feed-data-processing-field-policy-dialog.Done" | translate}}
             </button>
         </mat-dialog-actions>
-    </ng-form>
+    </form>
 </div>
-

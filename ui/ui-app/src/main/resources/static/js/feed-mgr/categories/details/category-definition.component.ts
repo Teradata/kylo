@@ -63,6 +63,8 @@ export class CategoryDefinition implements OnInit {
      */
     isEditable: any;
 
+    isValid : boolean = true;
+
     /**
      * Category data used in "normal" mode.
      * @type {CategoryModel}
@@ -127,6 +129,8 @@ export class CategoryDefinition implements OnInit {
 
         this.categoryNameControl = new FormControl(null, [Validators.required]);
         this.systemNameControl = new FormControl(null, [Validators.required]);
+        this.categoryForm.addControl('systemNameControl',this.systemNameControl);
+        this.categoryForm.addControl('categoryNameControl',this.categoryNameControl)
 
     }
 
@@ -294,14 +298,16 @@ export class CategoryDefinition implements OnInit {
             }
         });
         this.isNameDuplicate = _.some(this.CategoriesService.categories, (category: any) => {
-            return (this.editModel.id == null || (this.editModel.id != null && category.id != this.editModel.id)) && category.name === this.editModel.name;
+            return (this.editModel.id == null || (this.editModel.id != null && category.id != this.editModel.id)) && category.name.toLowerCase() === this.editModel.name.toLowerCase();
         });
         this.isReservedCategoryName = this.editModel.name && _.indexOf(this.reservedCategoryNames, this.editModel.name.toLowerCase()) >= 0;
         
-        if(!this.isNameDuplicate && !this.isReservedCategoryName){
+        if(!this.isNameDuplicate && !this.isReservedCategoryName && this.editModel.name !== ''){
             this.categoryNameControl.setErrors(null);
+            this.isValid = true;
         }else{
             this.categoryNameControl.setErrors({ "errors": true });
+            this.isValid = false;
         }
         this.categoryNameControl.markAsTouched();
 
@@ -309,16 +315,19 @@ export class CategoryDefinition implements OnInit {
     }
     validateSystemName() {
         this.isSystemNameDuplicate = _.some(this.CategoriesService.categories, (category: any) => {
-            return (this.editModel.id == null || (this.editModel.id != null && category.id != this.editModel.id)) && category.systemName === this.editModel.systemName;
+            return (this.editModel.id == null || (this.editModel.id != null && category.id != this.editModel.id)) && category.systemName.toLowerCase() === this.editModel.systemName.toLowerCase();
         });
 
-        if(!this.isSystemNameDuplicate && !this.isReservedCategoryName){
-            this.systemNameControl.setErrors(null);
+        if(!this.isSystemNameDuplicate && !this.isReservedCategoryName && this.editModel.systemName !== ''){
+            this.systemNameControl.markAsPristine();
+            this.isValid = true;
         }else{
-            this.systemNameControl.setErrors({ "errors": true });
+            this.systemNameControl.markAsDirty();
+            this.isValid = false;
         }
-
         this.systemNameControl.markAsTouched();
+        
+        this.categoryForm.markAsTouched();
     }
 
 
