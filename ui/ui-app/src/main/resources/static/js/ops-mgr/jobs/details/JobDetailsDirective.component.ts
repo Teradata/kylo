@@ -427,6 +427,8 @@ export class JobDetailsDirectiveController {
                             this.loadJobData();
                         }, 1000);
                     }
+                    ObjectUtils.sortByStringProperty(this.jobData["jobParametersArray"], "key");
+                    ObjectUtils.sortByStringProperty(this.jobData["executionContextArray"], "key");
                     this.pageState.finishedLoading();
                 }
                 else {

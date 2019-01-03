@@ -22,7 +22,7 @@
     <mat-card-title flex layout>
       <div style="white-space:nowrap" class="card-title" flex>{{cardTitle}}</div>
     </mat-card-title>
-    <mat-card-content>
+    <mat-card-content style="padding:0;">
       <ng-container *ngIf="unableToFindJob == false">
         <div layout="column" class="layout-padding">
           <div layout="row">
@@ -52,12 +52,12 @@
             </div>
           </div>
 
-          <div *ngIf="!jobData.running" class="item-title">{{'views.job-details-template.ED' | translate}}</div>
-          <div *ngIf="!jobData.running" class="accent-color-3" style="white-space:pre-wrap;">
+          <div *ngIf="!jobData.running" class="item-title" style="padding-bottom:0;">{{'views.job-details-template.ED' | translate}}</div>
+          <div *ngIf="!jobData.running" class="accent-color-3" style="white-space:pre-wrap; margin-left: -37px; padding:0;">
             {{jobData.exitDescription | truncate: 150}}
           </div>
         </div>
-        <mat-tab-group [selectedIndex]="tabMetadata.selectedIndex" class="job-details-tabs" flex
+        <mat-tab-group [selectedIndex]="tabMetadata.selectedIndex" class="job-details-tabs" style="border-top: 1px solid rgba(0,0,0,.12);" flex
                  layout-fill dynamicHeight>
 
           <mat-tab flex>
@@ -98,7 +98,7 @@
                   </mat-list-item>
                   <!--  | orderBy:'key' -->
                   <div *ngIf="showJobParameters == true">
-                    <mat-list-item *ngFor="let item of jobData.jobParametersArray; let last = last;">
+                    <mat-list-item *ngFor="let item of jobData.jobParametersArray; let last = last;" style="font-size: 14px;">
                       <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
                         {{item.key}}
                       </div>
@@ -119,7 +119,7 @@
                   </mat-list-item>
                   <!--  | orderBy:'key' -->
                   <div *ngIf="showJobParameters == false">
-                    <mat-list-item *ngFor="let item of jobData.executionContextArray; let last = last;">
+                    <mat-list-item *ngFor="let item of jobData.executionContextArray; let last = last;" style="font-size: 14px;">
                       <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
                         {{item.key}}
                       </div>
