@@ -5,6 +5,7 @@ import {AccessControlService} from '../../services/AccessControlService';
 import {AddButtonService} from '../../services/AddButtonService';
 import {StateService} from '../../services/StateService';
 import { TdDataTableService } from '@covalent/core/data-table';
+import { ObjectUtils } from '../../../lib/common/utils/object-utils';
 
 @Component({
     selector: 'categories-controller',
@@ -118,7 +119,7 @@ export class CategoriesComponent{
             return;
             
         let filteredCategoryTypes = this.dataTable.filterData(this.categories, this.searchQuery, true);
-        filteredCategoryTypes = this.dataTable.sortData(filteredCategoryTypes, "name");
+        filteredCategoryTypes = ObjectUtils.sortByStringProperty(filteredCategoryTypes, "name");
         this.filteredCategories = filteredCategoryTypes;
     }
 
