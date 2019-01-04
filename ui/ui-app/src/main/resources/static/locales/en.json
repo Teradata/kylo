@@ -6,6 +6,7 @@
     "views.main.feed-manage-narrow": "Feed",
     "views.main.categories": "Categories",
     "views.main.tables": "Catalog",
+    "views.main.projects": "Projects",
     "views.main.catalogConnectors":"Connectors",
     "views.main.sla": "SLA",
     "views.main.visual-query": "Wrangler",

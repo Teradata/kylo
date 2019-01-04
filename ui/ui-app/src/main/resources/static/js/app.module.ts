@@ -114,6 +114,11 @@ const translateConfig: TranslateModuleConfig = {
                     name: 'cluster.**',
                     url: '/admin/cluster',
                     loadChildren: './admin/admin.module#AdminModule'
+                },
+                {
+                    name: 'projects.**',
+                    url: '/projects',
+                    loadChildren: './projects/projects.module#ProjectsModule'
                 }
             ]
         }),

@@ -483,7 +483,7 @@ class Route {
                 import(/* webpackChunkName: "ops-mgr.module-require" */ "./ops-mgr/module-require").then(Lazy.onModuleImport($ocLazyLoad)).then(onModuleLoad);
             }
         });
-
+/*
         $stateProvider.state({
             name: 'projects.**',
             url: '/projects',
@@ -513,7 +513,7 @@ class Route {
                 });
             }
         });
-
+*/
 
         $stateProvider
             .state('access-denied', {

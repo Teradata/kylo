@@ -1,7 +1,5 @@
 import {Component, Input} from "@angular/core";
 
-import {TemplateMetadata} from "./services/model";
-
 @Component({
     template: `
       <td-layout>

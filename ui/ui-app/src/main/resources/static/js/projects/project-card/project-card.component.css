@@ -1,0 +1,45 @@
+block-with-text {
+    /* hide text if it more than N lines  */
+    overflow: hidden;
+    /* for set '...' in absolute position */
+    position: relative;
+    /* use this value to count block height */
+    line-height: 1.2em;
+    /* max-height = line-height (1.2) * lines max number (3) */
+    max-height: 3.6em;
+    /* fix problem when last visible word doesn't adjoin right side  */
+    text-align: justify;
+    /* place for '...' */
+    margin-right: -1em;
+    padding-right: 1em;
+}
+
+.kylo-card-title {
+    font-size:18px;
+    font-weight:300;
+}
+
+.kylo-card-subtitle {
+    font-size:13px;
+}
+
+.kylo-card-icon {
+    fill:white;
+    margin-left:14px;
+    margin-top:55px;
+}
+
+.kylo-card-template {
+    width:360px;
+    height:153px;
+    background-color:white;
+}
+
+.kylo-icon-button mat-icon {
+    font-size:22px;
+}
+.kylo-content-template {
+    max-height:98px;
+    min-height:98px;
+    height:98px;
+}

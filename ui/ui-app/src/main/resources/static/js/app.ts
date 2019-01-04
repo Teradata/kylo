@@ -343,6 +343,8 @@ constructor() {
         // "Font Awesome" icons by Fonticons, Inc (https://fontawesome.com/) are licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
         // "Font Mfizz" icons by Fizzed, Inc (http://fizzed.com/) are licensed under MIT (https://github.com/fizzed/font-mfizz/blob/master/src/LICENSE.txt)
         ngMdIconServiceProvider
+            .addShape('folder-open', '<path fill="#000000" d="M19,20H4C2.89,20 2,19.1 2,18V6C2,4.89 2.89,4 4,4H10L12,6H19A2,2 0 0,1 21,8H21L4,8V18L6.14,10H23.21L20.93,18.5C20.7,19.37 19.92,20 19,20Z" />')
+            .addViewBox('folder-open', '0 0 24 24')
             .addShape('file-import', '<path d="M6,2C4.89,2 4,2.9 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13,3.5L18.5,9H13M10.05,11.22L12.88,14.05L15,11.93V19H7.93L10.05,16.88L7.22,14.05" />')
             .addViewBox('file-import', '0 0 24 24')
         // https://fontawesome.com/icons/database?style=solid

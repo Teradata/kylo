@@ -205,6 +205,7 @@ export default class SideNav implements ng.IComponentController {
         links.push({sref: "sla",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
         links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
         links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.CATALOG.permissions});
+        links.push({sref: "projects",type:'link', icon: "folder-open", text: this.$filter('translate')('views.main.projects'), permission: AccessConstants.UI_STATES.CATALOG.permissions});
         this.addExtensionLinks(this.MENU_KEY.FEED_MGR, links);
         var menu = ({type:'toggle', 
                 text: this.$filter('translate')('views.main.feed-manage'),
@@ -350,7 +351,7 @@ export default class SideNav implements ng.IComponentController {
         links.push({sref: "users",type:'link', icon: "account_box", text: this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS});
         links.push({sref: "groups",type:'link', icon: "group", text: this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
         links.push({sref: "sla-email-template",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE});
-        links.push({sref: "repository", type: "link", icon: "local_grocery_store", text: this.$filter('translate')('views.main.repository'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
+        links.push({sref: "repository", type: "link", icon: "local_grocery_store", text: this.$filter('translate')('views.main.repository'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
         this.addExtensionLinks(this.MENU_KEY.ADMIN, links);
             let menu = ({type:'toggle', 
                     text: this.$filter('translate')('views.main.admin'),
