@@ -80,7 +80,8 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE LOCALNAME() = $systemName ";
         query = applyFindAllFilter(query,EntityUtil.pathForUsers());
         final Map<String, String> bindParams = Collections.singletonMap("systemName", encodeUserName(systemName));
-        return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, getEntityClass()));
+        
+        return Optional.ofNullable(findFirst(query, bindParams, JcrUser.class));
     }
 
     @Override
@@ -183,7 +184,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
             Node node = getSession().getNodeByIdentifier(id.toString());
 
             if (node.isNodeType(JcrUserGroup.NODE_TYPE)) {
-                return Optional.of(new JcrUserGroup(node));
+                return Optional.of(constructEntity(node, JcrUserGroup.class));
             } else {
                 // TODO: should we thrown an exception if the ID is not for a group?
                 return Optional.empty();
@@ -204,7 +205,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE LOCALNAME() = $groupName ";
         query = applyFindAllFilter(query,EntityUtil.pathForGroups());
         final Map<String, String> bindParams = Collections.singletonMap("groupName", encodeGroupName(groupName));
-        return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrUserGroup.class));
+        return Optional.ofNullable(findFirst(query, bindParams, JcrUserGroup.class));
     }
 
     /* (non-Javadoc)
@@ -256,12 +257,14 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
 
             if (session.getRootNode().hasNode(groupPath)) {
                 if (ensure) {
-                    return JcrUtil.getJcrObject(groupsNode, safeGroupName, JcrUserGroup.class);
+                    final Node groupNode = JcrUtil.getNode(groupsNode, safeGroupName);
+                    return constructEntity(groupNode, JcrUserGroup.class);
                 } else {
                     throw new GroupAlreadyExistsException(groupName);
                 }
             } else {
-                return JcrUtil.getOrCreateNode(groupsNode, safeGroupName, JcrUserGroup.NODE_TYPE, JcrUserGroup.class);
+                final Node groupNode = JcrUtil.getOrCreateNode(groupsNode, safeGroupName, JcrUserGroup.NODE_TYPE);
+                return constructEntity(groupNode, JcrUserGroup.class);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to create a new group with name: " + groupName, e);

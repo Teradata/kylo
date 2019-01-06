@@ -56,7 +56,6 @@ public class JcrQueryUtil {
     }
 
     public static <T extends Object> List<T> find(Session session, String query, Map<String, String> bindParams, Class<T> type, Object... args) {
-        JcrTools tools = new JcrTools();
         try {
             QueryResult result = query(session, query, bindParams);
             return queryResultToList(result, null, type, args);
@@ -134,7 +133,6 @@ public class JcrQueryUtil {
 
     public static <T extends Object> T findFirst(Session session, String query, Map<String, String> bindParams, Class<T> type) {
 
-        JcrTools tools = new JcrTools();
         try {
             QueryResult result = query(session, query, bindParams);
             List<T> list = queryResultToList(result, 1, type);

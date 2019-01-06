@@ -203,7 +203,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             // The versionable node argument is the summary node.
             Node feedNode = versionable.getSession().getNodeByIdentifier(id.toString());
-            return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable, null);
+            return constructEntity(feedNode, versionable);
         } catch (RepositoryException e) {
             throw new FeedNotFoundException(id);
         }
@@ -292,37 +292,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         FeedSummary summary = new FeedSummary(versionable, null);
         
         return summary.getVersionComment();
-    }
-
-    /* (non-Javadoc)
-         * @see com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider#create(java.lang.Object)
-         */
-    @Override
-    public Feed create(Feed t) {
-        JcrFeed feed = (JcrFeed) super.create(t);
-        feed.setOpsAccessProvider(this.opsAccessProvider);
-        return feed;
-    }
-
-    @Override
-    public List<Feed> findAll() {
-        List<Feed> feeds = super.findAll();
-        return feeds.stream()
-            .map(JcrFeed.class::cast)
-            .map(feed -> {
-                feed.setOpsAccessProvider(opsAccessProvider);
-                return feed;
-            })
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public Feed findById(ID id) {
-        final JcrFeed feed = (JcrFeed) super.findById(id);
-        if (feed != null) {
-            feed.setOpsAccessProvider(this.opsAccessProvider);
-        }
-        return feed;
     }
 
     @Override
@@ -639,17 +608,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                        + "        JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e)\n"
                        + "        JOIN [tba:historyReindexing] AS fh ON ISCHILDNODE(fh, fd)\n"
                        + "        WHERE fh.[tba:reindexingStatus] = 'DIRTY'";
-        try {
-            QueryResult result = JcrQueryUtil.query(getSession(), query);
-            List<JcrFeed> jcrFeeds = JcrQueryUtil.queryResultToList(result, JcrFeed.class);
-            List<Feed> feeds = new ArrayList<>();
-            if (jcrFeeds !=null) {
-                feeds.addAll(jcrFeeds);
-            }
-            return feeds;
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get feeds for data history reindexing ", e);
-        }
+        return find(query);
     }
 
     @Override
@@ -747,7 +706,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(FeedDetails.TEMPLATE) + " = $id";
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", templateId.toString());
-        return JcrQueryUtil.find(getSession(), query, JcrFeed.class);
+        return find(query, bindParams);
     }
 
     @Override
@@ -761,18 +720,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", categoryId.toString());
 
-        try {
-            QueryResult result = JcrQueryUtil.query(getSession(), query, bindParams);
-            // For some reason the above query does not honor the ModeShape ACL for the feed nodes.  It appears to be
-            // only checking at the category level; which might be accessible to the current user even though some feeds are 
-            // not accessible.  For now filter the result based on the feed summary access.
-             return JcrQueryUtil.queryResultStream(result, JcrFeed.class)
-                            .filter(feed -> feed.getFeedSummary().isPresent())
-                            .collect(Collectors.toList());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
-        }
-
+        // For some reason the above query does not honor the ModeShape ACL for the feed nodes.  It appears to be
+        // only checking at the category level; which might be accessible to the current user even though some feeds are 
+        // not accessible.  For now filter the result based on the feed summary access.
+        return find(query).stream()
+            .map(JcrFeed.class::cast)
+            .filter(feed -> feed.getFeedSummary().isPresent())
+            .collect(Collectors.toList());
     }
     
     /* (non-Javadoc)
@@ -784,12 +738,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                         .append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ")
                         .append("JOIN [tba:feedDetails] AS fdetail ON ISCHILDNODE(fdetail, fs) ")
                         .append("JOIN [tba:feedPrecondition] AS precond ON ISCHILDNODE(precond, fdetail) ");
-        try {
-            QueryResult result = JcrQueryUtil.query(getSession(), query.toString());
-            return JcrQueryUtil.queryResultToList(result, JcrFeed.class);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
-        }
+        return find(query.toString());
     }
 
     @Override
@@ -1036,7 +985,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
     }
 
-    private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
+    private class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
 
         private String name;
         private Set<Datasource.ID> sourceIds = new HashSet<>();
@@ -1079,7 +1028,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                         Node feedNode = (Node) feedItr.next();
 
                         if (feedNode.getPrimaryNodeType().getName().equals("tba:feed")) {
-                            list.add(JcrUtil.createJcrObject(feedNode, JcrFeed.class));
+                            list.add(constructEntity(feedNode));
                         }
                     }
                 }

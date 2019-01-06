@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 
+import com.google.common.collect.ImmutableMap;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -86,7 +88,7 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
             throw ConnectorAlreadyExistsException.fromSystemName(systemName);
         } else {
             Node connNode = JcrUtil.createNode(getSession(), connPath, JcrConnector.NODE_TYPE);
-            JcrConnector conn = JcrUtil.createJcrObject(connNode, JcrConnector.class, pluginId);
+            JcrConnector conn = constructEntity(connNode, JcrConnector.class, pluginId);
             conn.setTitle(title);
             conn.setActive(true);
 
@@ -141,8 +143,8 @@ public class JcrConnectorProvider extends BaseJcrProvider<Connector, Connector.I
      */
     @Override
     public Optional<Connector> findByPlugin(String pluginId) {
-        String query = startBaseQuery().append(" WHERE [").append(JcrConnector.PLUGIN_ID).append("] = '").append(pluginId).append("'").toString();
-        return Optional.ofNullable(findFirst(query));
+        String query = startBaseQuery().append(" WHERE [").append(JcrConnector.PLUGIN_ID).append("] = '$id'").toString();
+        return Optional.ofNullable(findFirst(query, ImmutableMap.of("id", pluginId)));
     }
 
     /* (non-Javadoc)

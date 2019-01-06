@@ -36,11 +36,13 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
@@ -60,6 +62,9 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
      * Name of the {@code description} property
      */
     private static final String DESCRIPTION = "tba:description";
+    
+    @Inject
+    private Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
 
     /**
      * Constructs a {@code Project} using the specified node.
@@ -101,7 +106,7 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
         List<Feed> feeds = new ArrayList<>();
         Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(getNode(), FEEDS);
 
-        feedNodes.stream().map(depNode -> new JcrFeed(depNode, (FeedOpsAccessControlProvider) null)).collect(Collectors.toCollection(() -> feeds));
+        feedNodes.stream().map(depNode -> new JcrFeed(depNode, this.opsAccessProvider.orElse(null))).collect(Collectors.toCollection(() -> feeds));
         return feeds;
     }
 

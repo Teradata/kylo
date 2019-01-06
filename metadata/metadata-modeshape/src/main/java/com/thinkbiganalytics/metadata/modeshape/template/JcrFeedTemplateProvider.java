@@ -127,7 +127,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
             query = applyFindAllFilter(query,EntityUtil.pathForTemplates());
             Map<String, String> bindParams = new HashMap<>();
             bindParams.put("title", sanitizedTitle);
-            return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
+            return findFirst(query, bindParams, JcrFeedTemplate.class);
         } else {
             return null;
         }
@@ -141,8 +141,8 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         query = applyFindAllFilter(query,EntityUtil.pathForTemplates());
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("nifiTemplateId", nifiTemplateId);
-        return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
-
+        
+        return findFirst(query, bindParams, JcrFeedTemplate.class);
     }
 
     public FeedManagerTemplate.ID resolveId(Serializable fid) {

@@ -74,19 +74,11 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Inject
     private AccessController accessController;
 
-    @Inject
-    private FeedOpsAccessControlProvider opsAccessProvider;
-
     /**
      * Transaction support
      */
     @Inject
     MetadataAccess metadataAccess;
-
-    @Override
-    protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass) {
-        return JcrUtil.createJcrObject(node, entityClass, this.opsAccessProvider);
-    }
 
 
     @Override
@@ -104,7 +96,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     public Category findBySystemName(String systemName) {
         String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + SystemEntityMixin.SYSTEM_NAME + "] = $systemName ";
         query = applyFindAllFilter(query, EntityUtil.pathForCategory());
-        return JcrQueryUtil.findFirst(getSession(), query, ImmutableMap.of("systemName", systemName), getEntityClass());
+        return findFirst(query, ImmutableMap.of("systemName", systemName));
     }
 
     @Override

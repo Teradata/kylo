@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.catalog.dataset;
 
+import com.google.common.collect.ImmutableMap;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -106,9 +108,9 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
         String query = startBaseQuery()
             .append(" JOIN [").append(JcrDataSource.DATA_SETS_NODE_TYPE).append("] AS dsn ON ISCHILDNODE(e, dsn) ")
             .append(" JOIN [").append(JcrDataSource.NODE_TYPE).append("] AS ds ON ISCHILDNODE(dsn, ds) ")
-            .append(" WHERE ds.[mode:id] = '").append(dataSourceId.toString()).append("' ")
-            .append(" AND e.[jcr:title] = '").append(title).append("'").toString();
-        return findFirst(query);
+            .append(" WHERE ds.[mode:id] = '$dsId' ")
+            .append(" AND e.[jcr:title] = '$title").toString();
+        return findFirst(query, ImmutableMap.of("dsId", dataSourceId.toString(), "title", title));
     }
 
     @Override
@@ -341,7 +343,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
                 dataSetNode = JcrUtil.createNode(getSession(), dataSetPath, JcrDataSet.NODE_TYPE);
             }
 
-            JcrDataSet ds = JcrUtil.createJcrObject(dataSetNode, JcrDataSet.class);
+            JcrDataSet ds = constructEntity(dataSetNode, JcrDataSet.class);
             DataSetSparkParameters params = ds.getSparkParameters();
 
             ds.setTitle(ensuredTitle);

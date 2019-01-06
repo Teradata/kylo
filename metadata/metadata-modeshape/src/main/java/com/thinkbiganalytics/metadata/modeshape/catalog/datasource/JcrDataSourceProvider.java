@@ -93,7 +93,7 @@ public class JcrDataSourceProvider extends BaseJcrProvider<DataSource, DataSourc
                         throw DataSourceAlreadyExistsException.fromSystemName(title);
                     } else {
                         Node connNode = JcrUtil.createNode(getSession(), dsPath, JcrDataSource.NODE_TYPE);
-                        JcrDataSource dsrc = JcrUtil.createJcrObject(connNode, JcrDataSource.class);
+                        JcrDataSource dsrc = constructEntity(connNode, JcrDataSource.class);
                         dsrc.setTitle(title);
                         
                         if (this.accessController.isEntityAccessControlled()) {

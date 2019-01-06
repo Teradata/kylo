@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
@@ -66,7 +67,8 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
 
     // TODO: Referencing the ops access provider is kind of ugly but is needed so that 
     // a it can be passed to each feed entity when they are constructed.
-    private volatile Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
+    @Inject
+    private Optional<FeedOpsAccessControlProvider> opsAccessProvider;
     
     
     /**
@@ -94,14 +96,10 @@ public class JcrCategory extends JcrEntity<Category.ID> implements Category, Aud
     public JcrCategory(Node node) {
         super(node);
     }
-
-    public JcrCategory(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
-        super(node);
-        this.opsAccessProvider = Optional.ofNullable(opsAccessProvider);
-    }
     
-    public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
-        return this.opsAccessProvider;
+    public JcrCategory(Node node, FeedOpsAccessControlProvider provider) {
+        super(node);
+        this.opsAccessProvider = Optional.ofNullable(provider);
     }
 
     public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> catRoles, List<SecurityRole> feedRoles) {

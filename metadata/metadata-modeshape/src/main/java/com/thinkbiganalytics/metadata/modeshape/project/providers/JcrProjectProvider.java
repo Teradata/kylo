@@ -84,7 +84,8 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
         String query = "SELECT * FROM [tba:project] AS Projects WHERE LOCALNAME() = $name ";
         query = applyFindAllFilter(query, "/" + ProjectPaths.PROJECTS.toString());
         final Map<String, String> bindParams = Collections.singletonMap("name", name);
-        return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, getEntityClass()));
+
+        return Optional.ofNullable(findFirst(query, bindParams));
     }
 
     @Nonnull
@@ -120,15 +121,16 @@ public class JcrProjectProvider extends BaseJcrProvider<Project, Project.ID> imp
 
             if (session.getRootNode().hasNode(projPath)) {
                 if (ensure) {
-                    return JcrUtil.getJcrObject(projNode, name, JcrProject.class);
+                    return constructEntity(JcrUtil.getNode(projNode, name), JcrProject.class);
                 } else {
                     // TODO specialize me..
                     throw new RuntimeException(projPath);
                 }
             } else {
                 // project does not yet exist
-                JcrProject newProject = JcrUtil.getOrCreateNode(projNode, name, JcrProject.NODE_TYPE, JcrProject.class);
-
+                Node newNode = JcrUtil.getOrCreateNode(projNode, name, JcrProject.NODE_TYPE);
+                JcrProject newProject = constructEntity(newNode, JcrProject.class);
+                
                 // grant (or deny) current user access to the project he is creating
                 if (this.accessController.isEntityAccessControlled()) {
                     List<SecurityRole> roles = this.roleProvider.getEntityRoles(SecurityRole.PROJECT);

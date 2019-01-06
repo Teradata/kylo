@@ -70,6 +70,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
@@ -92,10 +93,15 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
 
     // TODO: Referencing the ops access provider is kind of ugly but is needed so that 
     // a change to the feed's allowed accessions for ops access get's propagated to the JPA table.
-    private volatile Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
+    @Inject
+    private Optional<FeedOpsAccessControlProvider> opsAccessProvider = Optional.empty();
 
     public JcrFeed(Node node) {
         super(node);
+    }
+    
+    public JcrFeed(Node feedNode, Node summaryNode) {
+        this(feedNode, summaryNode, null);
     }
     
     public JcrFeed(Node feedNode, Node summaryNode, FeedOpsAccessControlProvider opsAccessProvider) {
@@ -107,7 +113,7 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
 
     public JcrFeed(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
         super(node);
-        setOpsAccessProvider(opsAccessProvider);
+        this.opsAccessProvider = Optional.ofNullable(opsAccessProvider);
     }
 
     public JcrFeed(Node node, JcrCategory category) {
@@ -124,20 +130,6 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
     
     public void setDeployedVersion(Version version) {
         JcrPropertyUtil.setProperty(getNode(), DEPLOYED_VERSION, version);
-    }
-    
-    /**
-     * This should be set after an instance of this type is created to allow the change
-     * of a feed's operations access control.
-     *
-     * @param opsAccessProvider the opsAccessProvider to set
-     */
-    public void setOpsAccessProvider(FeedOpsAccessControlProvider opsAccessProvider) {
-        this.opsAccessProvider = Optional.ofNullable(opsAccessProvider);
-    }
-
-    public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
-        return this.opsAccessProvider;
     }
     
     /* (non-Javadoc)
@@ -299,16 +291,11 @@ public class JcrFeed extends JcrEntity<JcrFeed.FeedId> implements Feed, Properti
         getFeedSummary().ifPresent(s -> s.setTitle(title));
     }
 
-//    
-//    public Category getCategory() {
-//        return getFeedSummary().map(s -> s.getCategory(JcrCategory.class)).orElse(null);
-//    }
-
     public Category getCategory() {
         Node catNode = JcrUtil.getParent(getNode());
         
         if (catNode != null) {
-            return JcrCategory.createCategory(catNode, getOpsAccessProvider());
+            return JcrCategory.createCategory(catNode, this.opsAccessProvider);
         } else {
             return null;
         }

@@ -29,11 +29,16 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -62,11 +67,13 @@ import javax.jcr.query.RowIterator;
 
 /**
  */
-public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
+public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK>, ApplicationContextAware {
 
     private static final Logger log = LoggerFactory.getLogger(BaseJcrProvider.class);
 
     private static final Pattern INVALID_SYSTEM_NAME_PATTERN = Pattern.compile("[^(A-Z)(a-z)(0-9)_-]");
+    
+    private AutowireCapableBeanFactory beanFactory;
     protected Class<T> entityClass;
     protected Class<? extends JcrEntity<?>> jcrEntityClass;
 
@@ -77,6 +84,16 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public BaseJcrProvider() {
         this.entityClass = (Class<T>) getEntityClass();
         this.jcrEntityClass = getJcrEntityClass();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if (applicationContext instanceof AutowireCapableBeanFactory) {
+            this.beanFactory = (AutowireCapableBeanFactory) applicationContext;
+        }
     }
 
     protected Session getSession() {
@@ -180,8 +197,8 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         Session session = getSession();
         Node entNode = findOrCreateEntityNode(path, relPath, entClass);
         entNode = JcrPropertyUtil.setProperties(session, entNode, props);
-        Class<? extends JcrEntity<?>> actualClass = getJcrEntityClass(entNode); // Handle subtypes
-        return (T) JcrUtil.createJcrObject(entNode, entClass, constructorArgs);
+        
+        return constructEntity(entNode, constructorArgs);
     }
 
     public Node getNodeByIdentifier(PK id) {
@@ -221,14 +238,15 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         }
     }
 
-    protected T constructEntity(Node node) {
+    protected T constructEntity(Node node, Object... constructorArgs) {
         @SuppressWarnings("unchecked")
-        T entity = (T) constructEntity(node, getJcrEntityClass(node));
+        T entity = (T) constructEntity(node, getJcrEntityClass(node), constructorArgs);
+        injectDependencies(entity);
         return entity;
     }
 
-    protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass) {
-        return JcrUtil.createJcrObject(node, entityClass);
+    protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass, Object... constructorArgs) {
+        return JcrUtil.createJcrObject(node, entityClass, constructorArgs);
     }
 
     public List<T> findWithExplainPlan(String queryExpression) {
@@ -250,23 +268,9 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     public List<T> find(String query) {
-        List<T> entities = new ArrayList<>();
-        try {
-            QueryResult result = JcrQueryUtil.query(getSession(), query);
-            if (result != null) {
-                NodeIterator nodeIterator = result.getNodes();
-                while (nodeIterator.hasNext()) {
-                    Node node = nodeIterator.nextNode();
-                    T entity = constructEntity(node);
-                    entities.add(entity);
-                }
-            }
-            return entities;
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
-        }
+        return find(query, null);
     }
-
+    
     public int findCount() {
         return findCount(null);
     }
@@ -303,17 +307,22 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 .map(node -> {
                     try {
                         @SuppressWarnings("unchecked")
-                        D entity = (D) ConstructorUtils.invokeConstructor(resultClass, node);
+                        D entity = (D) constructEntity(node, resultClass);
                         return entity;
                     } catch (Exception e) {
                         throw new MetadataRepositoryException("Failed to create entity: " + resultClass, e);
                     }
                 })
+                .map(this::injectDependencies)
                 .iterator();
         };
     }
-
+    
     public T findFirst(String query) {
+        return findFirst(query, (Map<String, String>) null);
+    }
+
+    public T findFirst(String query, Map<String, String> bindParams) {
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
@@ -329,15 +338,19 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Unable to findFirst for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
+    
+    public <D extends JcrObject> D findFirst(String query, Class<D> resultClass) {
+        return findFirst(query, null, resultClass);
+    }
 
-    public <T extends JcrObject> T findFirst(String query, Class<T> resultClass) {
+    public <D extends JcrObject> D findFirst(String query, Map<String, String> bindParams, Class<D> resultClass) {
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
                 if (nodeIterator.hasNext()) {
                     Node node = nodeIterator.nextNode();
-                    T entity = constructEntity(node, resultClass);
+                    D entity = constructEntity(node, resultClass);
                     return entity;
                 }
             }
@@ -345,6 +358,33 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to findFirst for Type : " + getNodeType(getJcrEntityClass()), e);
         }
+    }
+    
+    protected List<T> find(String query, Map<String, String> bindParams) {
+        List<T> entities = new ArrayList<>();
+        try {
+            QueryResult result = MapUtils.isEmpty(bindParams)
+                ? JcrQueryUtil.query(getSession(), query)
+                : JcrQueryUtil.query(getSession(), query, bindParams);
+            if (result != null) {
+                NodeIterator nodeIterator = result.getNodes();
+                while (nodeIterator.hasNext()) {
+                    Node node = nodeIterator.nextNode();
+                    T entity = constructEntity(node);
+                    entities.add(entity);
+                }
+            }
+            return entities;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
+        }
+    }
+
+    protected <D> D injectDependencies(D entity) {
+        if (this.beanFactory != null) {
+            this.beanFactory.autowireBean(entity);
+        }
+        return entity;
     }
 
     protected String getFindAllFilter() {
@@ -396,7 +436,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public List<T> findAll() {
         return find(getFindAllQuery().toString());
     }
-
+    
     @Override
     public Page<T> findPage(Pageable pageable, String filter) {
         int count = findCount(filter);
@@ -419,6 +459,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     @Override
     public T create(T t) {
         try {
+            injectDependencies(t);
             getSession().save();
             return t;
         } catch (RepositoryException e) {

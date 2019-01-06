@@ -99,7 +99,7 @@ public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceD
 
             String path = EntityUtil.pathForDatasourceDefinition();
             Node node = findOrCreateEntityNode(path, processorType, getJcrEntityClass());
-            JcrDatasourceDefinition def = new JcrDatasourceDefinition(node);
+            DatasourceDefinition def = constructEntity(node);
             dsDef = def;
         }
         return dsDef;
@@ -118,7 +118,7 @@ public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceD
         query = applyFindAllFilter(query,EntityUtil.pathForDatasourceDefinition());
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("processorType", processorType);
-        return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrDatasourceDefinition.class);
+        return findFirst(query, bindParams, JcrDatasourceDefinition.class);
     }
 
 

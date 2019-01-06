@@ -148,21 +148,12 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      * Return All SLAs that are not Precondition SLAs
      */
     public List<ServiceLevelAgreement> getNonPreconditionAgreements() {
-        try {
-
-            //query for the SLAs
-            String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla "
-                           + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
-                           + " WHERE precondition.[jcr:uuid] is NULL ";
-
-            QueryResult result = JcrQueryUtil.query(getSession(), query, null);
-
-            return JcrQueryUtil.queryRowItrNodeResultToList(result, ServiceLevelAgreement.class, "sla");
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the obligation nodes", e);
-        }
-
+        //query for the SLAs
+        String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla "
+                        + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
+                        + " WHERE precondition.[jcr:uuid] is NULL ";
+        
+        return find(query);
     }
 
 
@@ -174,7 +165,9 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         try {
             Session session = getSession();
             SlaId slaId = (SlaId) id;
-            return new JcrServiceLevelAgreement(session.getNodeByIdentifier(slaId.getIdValue()));
+            Node slaNode = session.getNodeByIdentifier(slaId.getIdValue());
+            
+            return constructEntity(slaNode);
         } catch (ItemNotFoundException e) {
             return null;
         } catch (RepositoryException e) {
@@ -188,7 +181,8 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     @Override
     public ServiceLevelAgreement findAgreementByName(String slaName) {
         String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla WHERE sla.[" + JcrPropertyConstants.TITLE + "] = $slaName";
-        return JcrQueryUtil.findFirst(getSession(), query, ImmutableMap.of("slaName", slaName), getEntityClass());
+        
+        return findFirst(query, ImmutableMap.of("slaName", slaName));
     }
 
 
@@ -557,7 +551,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public ServiceLevelAgreement build() {
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
-            JcrServiceLevelAgreement agreement = new JcrServiceLevelAgreement(this.slaNode);
+            JcrServiceLevelAgreement agreement = constructEntity(this.slaNode, JcrServiceLevelAgreement.class);
             //always make it enabled by default
             agreement.setEnabled(true);
             return agreement;
