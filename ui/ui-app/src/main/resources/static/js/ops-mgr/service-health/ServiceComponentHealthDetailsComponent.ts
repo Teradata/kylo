@@ -40,7 +40,7 @@ export class ServiceComponentHealthDetailsComponent extends BaseFilteredPaginate
     public columns: ITdDataTableColumn[] = [
         { name: 'name', label: 'Name', sortable: true, filter: true },
         { name: 'status', label: 'Status', sortable: true, filter: true },
-        { name: 'message', label: 'message', sortable: true, filter: true },
+        { name: 'message', label: 'Message', sortable: true, filter: true, width: 173 },
         { name: 'latestTimestamp', label: 'Time', sortable: true, filter: true },
     ];
     service: any;

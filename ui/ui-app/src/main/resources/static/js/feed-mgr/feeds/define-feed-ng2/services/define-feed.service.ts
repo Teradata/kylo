@@ -44,6 +44,7 @@ import {FeedStepConstants} from "../../../model/feed/feed-step-constants";
 import {DeployEntityVersionResponse} from "../../../model/deploy-entity-response.model";
 import {FeedNifiErrorUtil} from "../../../services/feed-nifi-error-util";
 import {Common} from '../../../../../lib/common/CommonTypes';
+import { MatDialog } from '@angular/material';
 
 export class FeedEditStateChangeEvent{
 
@@ -115,6 +116,7 @@ export class DefineFeedService {
 
     constructor(private http:HttpClient,    private _translateService: TranslateService,private $$angularInjector: Injector,
                 private _dialogService: TdDialogService,
+                private _dialog: MatDialog,
                 private _loadingService:TdLoadingService,
                 private selectionService: SelectionService,
                 private snackBar: MatSnackBar,
@@ -170,7 +172,7 @@ export class DefineFeedService {
 
             let template = feedToClone.registeredTemplate;
             let config:NewFeedDialogData = new NewFeedDialogData(template," Clone "+feedToClone.getFullName());
-            this._dialogService.open(NewFeedDialogComponent, {data: config, width:'800px'})
+            this._dialog.open(NewFeedDialogComponent, {data: config, width:'800px'})
                 .afterClosed()
                 .filter(value => typeof value !== "undefined").subscribe((newFeedData:NewFeedDialogResponse) => {
                     this._loadingService.register("processingFeed")

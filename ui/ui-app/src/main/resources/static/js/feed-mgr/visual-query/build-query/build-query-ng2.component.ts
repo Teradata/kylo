@@ -1,7 +1,7 @@
 import {HttpClient} from "@angular/common/http";
 import {Component, EventEmitter, Inject, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
-import {MatDialogConfig} from "@angular/material/dialog";
+import {MatDialogConfig, MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {MatStepper} from "@angular/material/stepper";
 import {TdDialogService} from "@covalent/core/dialogs";
@@ -260,6 +260,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
      private visualQueryService: VisualQueryService, private datasourcesService: DatasourcesService,
      */
     constructor(private _dialogService: TdDialogService,
+                private _dialog: MatDialog,
                 private viewContainerRef: ViewContainerRef,
                 private _loadingService: TdLoadingService,
                 private hiveService: HiveService,
@@ -1091,7 +1092,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
             dest: dest
         };
 
-        return this._dialogService.open(ConnectionDialog, {data: config})
+        return this._dialog.open(ConnectionDialog, {data: config})
             .afterClosed().subscribe((response: ConnectionDialogResponse) => {
                 if(response) {
                     if (response.status == ConnectionDialogResponseStatus.DELETE || isNew && response.status == ConnectionDialogResponseStatus.CANCEL) {

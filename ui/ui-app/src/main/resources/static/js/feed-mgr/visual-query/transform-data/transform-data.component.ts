@@ -38,6 +38,7 @@ import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {StringUtils} from "../../../common/utils/StringUtils";
 import { RestUrlService } from '../../services/RestUrlService';
 import { SideNavService } from '../../../services/SideNavService';
+import { MatDialog } from '@angular/material';
 
 declare const CodeMirror: any;
 
@@ -277,6 +278,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Constructs a {@code TransformDataComponent}.
      */
     constructor(private dialog: TdDialogService, 
+                private _matDialog: MatDialog,
                 private domainTypesService: DomainTypesService,
                 private RestUrlService: RestUrlService, 
                 private SideNavService: SideNavService, 
@@ -445,7 +447,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         // Get user confirmation for domain type changes to field data types
         if (fields.length > 0) {
-            this.dialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog", disableClose:true, width:"80%"})
+            this._matDialog.open(ApplyDomainTypesDialogComponent, {data: {domainTypes: domainTypes, fields: fields}, panelClass: "full-screen-dialog", disableClose:true, width:"80%"})
                 .afterClosed().subscribe((response: ApplyDomainTypesResponse) => {
                     if(response.status ==ApplyDomainTypesResponseStatus.APPLY ) {
                         let selected = response.appliedRows;
@@ -484,7 +486,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      * Displays the column statistics dialog.
      */
     showProfileDialog() {
-        this.dialog.open(VisualQueryProfileStatsController, {data: CloneUtil.deepCopy(this.engine.getProfile()), panelClass: "full-screen-dialog"});
+        this._matDialog.open(VisualQueryProfileStatsController, {data: CloneUtil.deepCopy(this.engine.getProfile()), panelClass: "full-screen-dialog"});
     };
 
     //Callback when Codemirror has been loaded (reference is in the html page at:
@@ -1024,7 +1026,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.query(false, PageSpec.emptyPage(), true, true).then(() => {
             let profileStats = new ColumnProfile(fieldName, this.engine.getProfile());
             this.engine.pop();
-            this.dialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}, width: "800px"});
+            this._matDialog.open(AnalyzeColumnDialog, {data: {profileStats: profileStats, fieldName: fieldName}, width: "800px"});
         });
     };
 
@@ -1046,7 +1048,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             let profiles : ColumnProfile[] = ColumnProfileHelper.createColumnProfiles(profileRows);
             this.engine.pop();
             let dialogData = new QuickColumnsDialogData(profiles);
-            return  this.dialog.open(QuickColumnsDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}});
+            return  this._matDialog.open(QuickColumnsDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}});
         });
     };
 
@@ -1057,7 +1059,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         let dialogData = new QuickCleanDialogData(this.engine.getColumns());
 
-        this.dialog.open(QuickCleanDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}}).afterClosed()
+        this._matDialog.open(QuickCleanDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}}).afterClosed()
             .subscribe((script: String) => {
                 if (script != null) {
                     this.pushFormula(script, {formula: script, icon: 'blur_linear', name: 'Quick clean'}, true);
@@ -1072,7 +1074,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
          let dialogData = new SchemaLayoutDialogData(this.engine.getColumns());
 
-         this.dialog.open(SchemaLayoutDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}}).afterClosed()
+         this._matDialog.open(SchemaLayoutDialog,{data:dialogData, panelClass: "full-screen-dialog",height:'100%',width:'350px',position:{top:'0',right:'0'}}).afterClosed()
              .subscribe((columns: ColumnItem[]) => {
                     if (columns != null) {
                         let formulaFields : string[] = [];
@@ -1096,7 +1098,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
         let dialogData = new SampleDialogData(this.engine.method, this.engine.reqLimit, this.engine.sample);
         let self = this;
-        this.dialog.open(SampleDialog, {data: dialogData, panelClass: "full-screen-dialog", height: '100%', width: '350px', position: {top: '0', right: '0'}}).afterClosed()
+        this._matDialog.open(SampleDialog, {data: dialogData, panelClass: "full-screen-dialog", height: '100%', width: '350px', position: {top: '0', right: '0'}}).afterClosed()
             .subscribe((result: SampleDialogData) => {
                 if (result != null) {
                     this.engine.method = result.method;

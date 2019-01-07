@@ -65,6 +65,12 @@ import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import "./visual-query.component.scss";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
 import * as angular from "angular";
+import { QuickColumnsDialog } from './transform-data/main-dialogs/quick-columns-dialog';
+import { SampleDialog } from './transform-data/main-dialogs/sample-dialog';
+import { QuickCleanDialog } from './transform-data/main-dialogs/quick-clean-dialog';
+import { SchemaLayoutDialog } from './transform-data/main-dialogs/schema-layout-dialog';
+import { ConnectionDialog } from './build-query/connection-dialog/connection-dialog.component';
+import { MiniCategoricalComponent, MiniHistogramComponent } from './transform-data/main-dialogs/quick-column-components';
 
 @NgModule({
     declarations: [
@@ -80,12 +86,24 @@ import * as angular from "angular";
         VisualQueryProfileStatsController,
         VisualQueryStepperComponent,
         VisualQueryStoreComponent,
-        VisualQueryTable
+        VisualQueryTable,
+        SampleDialog,
+        QuickColumnsDialog,
+        QuickCleanDialog,
+        SchemaLayoutDialog,
+        ConnectionDialog,
+        MiniCategoricalComponent,
+        MiniHistogramComponent
     ],
     entryComponents: [
         AnalyzeColumnDialog,
         SaveOptionsComponent,
-        VisualQueryProfileStatsController
+        VisualQueryProfileStatsController,
+        SampleDialog,
+        QuickColumnsDialog,
+        QuickCleanDialog,
+        SchemaLayoutDialog,
+        ConnectionDialog
     ],
     exports: [
         BuildQueryComponent,

@@ -95,14 +95,7 @@ import { ConnectionDialog } from '../feed-mgr/visual-query/build-query/connectio
         ViewTypeSelectionComponent,
         menuLinkComponent,
         VisualQueryTableHeader,
-        CellMenuComponent,
-        SampleDialog,
-        QuickCleanDialog,
-        SchemaLayoutDialog,
-        QuickColumnsDialog,
-        MiniCategoricalComponent,
-        MiniHistogramComponent,
-        ConnectionDialog,
+        CellMenuComponent
     ],
     entryComponents: [
         AboutKyloDialogController,
@@ -123,11 +116,6 @@ import { ConnectionDialog } from '../feed-mgr/visual-query/build-query/connectio
         ViewTypeSelectionComponent,
         VisualQueryTableHeader,
         CellMenuComponent,
-        SampleDialog,
-        QuickCleanDialog,
-        SchemaLayoutDialog,
-        QuickColumnsDialog,
-        ConnectionDialog,
     ],
     providers: [
         AboutKyloService,
