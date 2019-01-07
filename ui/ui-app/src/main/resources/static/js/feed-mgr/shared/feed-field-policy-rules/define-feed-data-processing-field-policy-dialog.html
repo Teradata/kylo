@@ -68,7 +68,7 @@
 
                 <div class="md-block layout-padding-top-bottom selectValueBorderBottom" style="margin-top:0px;margin-bottom: 18px; position: relative;padding-bottom: 10px;vertical-align: middle;padding: 10px 2px;">
                     <mat-label class="md-container-ignore label-small layout-padding-top">{{"views.define-feed-data-processing-field-policy-dialog.SRT" | translate}}</mat-label>
-                    <mat-select formControlName="ruleTypeControl" [(ngModel)]="ruleType" ng-model-options="{trackBy: '$value.name'}" (selectionChange)="onRuleTypeChange()" aria-label="Rule Type">
+                    <mat-select formControlName="ruleTypeControl" [(ngModel)]="ruleType" [compareWith]="compareRules" (selectionChange)="onRuleTypeChange()" aria-label="Rule Type">
                         <mat-option [value]="opt" *ngFor="let opt of options">{{ opt.name }}</mat-option>
                     </mat-select>
                     <span *ngIf="editRule" class="hint">{{editRule.description}}</span>
