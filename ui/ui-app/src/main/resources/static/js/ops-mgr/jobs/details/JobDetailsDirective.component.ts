@@ -158,6 +158,9 @@ class TabAnimationControl {
         .selected {
             background-color: #EEEEEE !important;
         }
+        button {
+            min-width: 88px;
+        }
     `]
 
 })
