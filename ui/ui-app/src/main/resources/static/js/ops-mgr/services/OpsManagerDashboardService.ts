@@ -58,30 +58,39 @@ export class OpsManagerDashboardService {
         if (this.activeDashboardRequest != null && ObjectUtils.isDefined(this.activeDashboardRequest)) {
             this.skipDashboardFeedHealth = true;
         }
-        var initDashboard = (responseData: any) => {
+        var initDashboard = (responseData: any, resolver : any) => {
             this.feedsSearchResult = responseData;
             if (responseData) {
-                this.setupFeedHealth(responseData);
+                this.setupFeedHealth(responseData.data);
+                console.log("updated:");
+                console.log(responseData);
                 //reset this.dashboard.feeds.data ?
                 this.totalFeeds = responseData.recordsFiltered;
             }
             this.activeFeedRequest = null;
             this.skipDashboardFeedHealth = false;
             this.broadcastService.notify(this.DASHBOARD_UPDATED, this.dashboard);
+            resolver(responseData);
         }
-        return new Promise((resolve: any, reject: any) => {
-            var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
-            var observable = this.http.get(this.opsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL, { params: params })/*.timeout(this.activeFeedRequest)*/;
-            this.activeFeedRequest = observable.subscribe((response: any) => {
-                resolve(response);
-            }, (err: any) => {
-                reject();
-                this.activeFeedRequest = null;
-                this.skipDashboardFeedHealth = false;
+        return new Promise((fetchFeedResolve :any, fetchFeedReject : any) => {
+            new Promise((resolve: any, reject: any) => {
+                var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
+                var observable = this.http.get(this.opsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL, { params: params }).timeout(3000);
+                this.activeFeedRequest = observable.subscribe((response: any) => {
+                    resolve(response);
+                }, (err: any) => {
+                    reject();
+                    this.activeFeedRequest = null;
+                    this.skipDashboardFeedHealth = false;
+                });
+            }).then((response: any) => { 
+                this.fetchPageableFeedNames(response).then((response: any) => 
+                { 
+                    initDashboard(response,fetchFeedResolve); 
+                }); 
             });
+                
         })
-            .then((response: any) => { this.fetchPageableFeedNames(response) })
-            .then((response: any) => { initDashboard(response) });
     }
     updateFeedHealthQueryParams(tab: any, filter: any, start: any, limit: any, sort: any) {
         var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
@@ -95,7 +104,7 @@ export class OpsManagerDashboardService {
         return new Promise((resolve: any, reject: any) => {
             var params = this.feedHealthQueryParams;
             this.activeDashboardRequest = this.http.get(this.opsManagerRestUrlService.DASHBOARD_URL, { params: params })
-                /*.timeout(this.activeDashboardRequest)*/.subscribe((response: any) => {
+                .subscribe((response: any) => {
                     this.fetchFeedNames(response, response.feeds.data)
                         .then((dashboard: any) => {
                             this.initDashboard(dashboard);
@@ -187,7 +196,9 @@ export class OpsManagerDashboardService {
     };
     fetchPageableFeedNames(resolveObj: any) {
         var feeds = resolveObj;
-        return this.fetchFeedNames(resolveObj, feeds);
+        return new Promise((resolve, reject) =>{ this.fetchFeedNames(resolveObj, feeds).then((response : any) => {
+            resolve(response);
+        })});
     };
 
     fetchFeedNames(resolveObj: any, feeds: any) {

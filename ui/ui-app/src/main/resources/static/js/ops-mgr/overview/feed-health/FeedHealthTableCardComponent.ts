@@ -68,7 +68,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
          * @type {null}
          */
         this.watchDashboard();
-        this.loadFeeds(true, true);
+        this.loadFeeds(true);
 
     }
 
@@ -86,8 +86,11 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
         onTabSelected (tab: any) {
             this.tabs[tab].clearContent();
             this.tabService.selectedTab(this.pageName, this.tabs[tab]);
+            this.opsManagerDashboardService.feedsArray = [];
+            this.populateFeedData();
+            this.showProgress = true;
             if(this.loaded || (!this.loaded && !this.opsManagerDashboardService.isFetchingDashboard())) {
-                return this.loadFeeds(true, true);
+                return this.loadFeeds(true);
             }
         };        
 
@@ -102,11 +105,11 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             var activeTab= this.tabService.getActiveTab(this.pageName);
             if(activeTab.currentPage != pagingEvent.page) {
                 activeTab.currentPage = pagingEvent.page;
-                this.loadFeeds(true, true);
+                this.loadFeeds(true);
             }
             else {
                 this.paginationData.rowsPerPage = pagingEvent.pageSize;
-                this.loadFeeds(true, true);
+                this.loadFeeds(true);
                 this.onPageSizeChange(pagingEvent);
             }
     
@@ -114,7 +117,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
     
         onSearchTable (searchTerm: string) {
             this.filterFeed = searchTerm;
-            this.loadFeeds(true, true);
+            this.loadFeeds(true);
         }
 
         feedDetails (event: any) {
@@ -188,12 +191,9 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
          * @param force (true to alwasy refresh, false or undefined to only refresh if not refreshing
          * @return {*|null}
          */
-        loadFeeds(force: any, showProgress: any) {
+        loadFeeds(force: any) {
             if((ObjectUtils.isDefined(force) && force == true) || !this.opsManagerDashboardService.isFetchingFeedHealth()) {
                 this.opsManagerDashboardService.setSkipDashboardFeedHealth(true);
-                if(showProgress){
-                    this.showProgress = true;
-                }
                 var queryParams = this.getFeedHealthQueryParams();
                 var limit = queryParams.limit;
                 var tab =queryParams.fixedFilter;
@@ -203,6 +203,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
                 this.opsManagerDashboardService.updateFeedHealthQueryParams(tab,filter,start , limit, sort);
                 this.fetchFeedHealthPromise =  this.opsManagerDashboardService.fetchFeeds(tab,filter,start , limit, sort)
                 .then( (response: any)=> {
+                    this.showProgress = false;
                 },
                 (err: any)=>{
                     this.loaded = true;
@@ -224,7 +225,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             });
             this.tabService.setTotal(this.pageName, activeTab.title, this.opsManagerDashboardService.totalFeeds)
             this.loaded = true;
-            this.showProgress = false;
+            // this.showProgress = false;
 
             super.setSortBy(this.sortFeed.sortBy);
             super.setSortOrder(this.sortFeed.sortOrder);
@@ -236,7 +237,9 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
             this.BroadcastService.subscribe(null,
                                             this.opsManagerDashboardService.DASHBOARD_UPDATED,
                                             (event: any,dashboard: any)=>{
-                this.populateFeedData();
+                if (!this.showProgress) {
+                    this.populateFeedData();
+                }
             });
             /**
              * If the Job Running KPI starts/finishes a job, update the Feed Health Card and add/remove the running state feeds
@@ -252,7 +255,7 @@ export class FeedHealthTableCardComponent extends BaseFilteredPaginatedTableView
                     var activeTab = this.tabService.getActiveTab(this.pageName);
                     var tab = activeTab.title;
                     if(tab.toLowerCase() == 'running') {
-                        this.loadFeeds(false, false);
+                        this.loadFeeds(false);
                     }
                 }
             });

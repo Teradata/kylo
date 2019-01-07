@@ -42,8 +42,6 @@ import { MatDialog } from '@angular/material';
 
 declare const CodeMirror: any;
 
-// import {moduleName} from "../module-name";
-
 export class WranglerColumn {
 
     dataType: string = null;
