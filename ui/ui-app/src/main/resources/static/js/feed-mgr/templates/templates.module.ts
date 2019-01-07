@@ -61,6 +61,7 @@ import { DndModule } from 'ng2-dnd';
 import { TemplateOrderController } from "./template-order/template-order.component";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatRadioModule } from '@angular/material';
+import { MentionModule } from 'fvi-angular-mentions/mention';
 
 // import '../../vendor/ment.io/styles.css';
 // import '../../vendor/ment.io/templates.js';
@@ -129,6 +130,7 @@ import { MatRadioModule } from '@angular/material';
         CovalentVirtualScrollModule,
         MatSnackBarModule,
         CovalentDialogsModule,
+        MentionModule,
         MatTooltipModule,
         MatRadioModule,
         DndModule.forRoot(),

@@ -3,12 +3,12 @@ import * as $ from "jquery";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 import { UiComponentsService } from '../../../services/UiComponentsService';
 import { FeedService } from '../../../services/FeedService';
-import { Component, Input, Inject, OnInit, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { RestUrlService } from '../../../services/RestUrlService';
+import { Component, Input, OnInit, ViewEncapsulation, ViewChild, TemplateRef } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { RegisterTemplatePropertyService } from '../../../services/RegisterTemplatePropertyService';
 import { TdDataTableService, TdDataTableSortingOrder } from '@covalent/core/data-table';
 import { ObjectUtils } from '../../../../../lib/common/utils/object-utils';
+import { MentionItem } from 'fvi-angular-mentions';
 
 @Component({
     selector: 'thinkbig-register-processor-properties',
@@ -22,6 +22,36 @@ import { ObjectUtils } from '../../../../../lib/common/utils/object-utils';
             thinkbig-register-processor-properties .mat-select-value {
                 min-width: 64px !important;
                 width: auto !important;
+            }
+            mention-list{
+                z-index: 1;
+            }
+            mention-list>ul{
+                box-shadow: 0 5px 15px rgba(0,0,0,.5);
+                border-radius: 6px;
+                -webkit-box-shadow: 0 3px 9px rgba(0,0,0,.5);
+                box-shadow: 0 3px 9px rgba(0,0,0,.5);
+                background-clip: padding-box;
+                list-style: none;
+                height: 300px !important;
+                width: 100%;
+                outline: 0;
+                padding: 0;
+                background-color: #fff;
+            }
+            mention-list>ul>li{
+                line-height: 30px;
+                border-bottom: 1px solid #ddd;
+                box-sizing: border-box;
+                padding: 5px 16px;
+            }
+            mention-list>ul>li.active {
+                color: #fff;
+                background-color: #428bca !important;
+                border-color: #428bca !important;
+            }
+            mention-list>ul>li.active .hint {
+                color: #fff;
             }
         `
     ]
@@ -50,12 +80,17 @@ export class RegisterProcessorPropertiesController implements OnInit {
     allProperties: any[] = [];
     selectedProperties: any;
     topIndex: number;
+    expressionPropertiesMentions : Array<MentionItem>;
+    requiredExpressionPropertiesMentions : Array<MentionItem>;
+    viewInitialized : boolean = false;
 
     @Input() cardTitle: string;
     @Input() stepIndex: string;
     @Input() processorPropertiesFieldName: string;
 
     @Input() formGroup: FormGroup;
+
+    @ViewChild("mentionCustomTemplate") mentionCustomTemplate : TemplateRef<any>;
 
     private createFormControls(property:any) {
         if(property.propertyDescriptor.allowableValues == null && property.selected == true
@@ -64,6 +99,10 @@ export class RegisterProcessorPropertiesController implements OnInit {
         }
     }
 
+    ngAfterViewInit(){
+        this.expressionPropertiesMentions = this.createMentionList(this.expressionProperties);
+        this.viewInitialized = true;
+    }
 
     ngOnInit() {
 
@@ -101,20 +140,29 @@ export class RegisterProcessorPropertiesController implements OnInit {
         })
     }
 
-    constructor(private RestUrlService: RestUrlService,
-                private registerTemplateService: RegisterTemplateServiceFactory,
+    constructor(private registerTemplateService: RegisterTemplateServiceFactory,
                 private registerTemplatePropertyService: RegisterTemplatePropertyService,
                 private feedService: FeedService,
                 private uiComponentsService: UiComponentsService,
                 private _dataTableService: TdDataTableService) {}
 
+    createMentionList(listItems  : any[]) :  Array<MentionItem> {
+        var mentionItems : Array<MentionItem> = [{
+            items : listItems,
+            triggerChar : '$',
+            mentionListTemplate : this.mentionCustomTemplate,
+            labelKey : 'key',
+            mentionSelect : this.getExpressionPropertyTextRaw
+        }];
+        return mentionItems;
+    }
     searchExpressionProperties (term: any) {
          return this.expressionProperties = this.availableExpressionProperties.filter((property: any) => {
             return (property.key.toUpperCase().indexOf(term.toUpperCase()) >= 0);
         });
     };
 
-    getExpressionPropertyTextRaw (item: any) {
+    getExpressionPropertyTextRaw = (item: any) => {
         return '${' + item.key + '}';
     };
 

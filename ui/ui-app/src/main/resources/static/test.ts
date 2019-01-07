@@ -228,7 +228,6 @@ SystemJS.config({
         'kylo-opsmgr':{deps:['angular','kylo-services','kylo-common','kylo-opsmgr-module']},
         'kylo-side-nav-module':{deps:['angular','jquery']},
         'kylo-side-nav':{deps:['angular','kylo-services','jquery','angular-material-icons','kylo-side-nav-module'], exports:'kylo-side-nav', format:"amd"},
-        'ment-io':['angular'],
         "ng-fx":{deps:["gsap"]},
         "ng-text-truncate":["angular"],
         'nvd3':{deps:['d3'],exports:'nv'},

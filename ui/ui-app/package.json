@@ -48,6 +48,7 @@
     "angular-translate": "^2.17.0",
     "build": "^0.1.4",
     "core-js": "^2.5.4",
+    "fvi-angular-mentions": "^1.0.11",
     "material-design-icons": "^3.0.1",
     "moment": "^2.19.3",
     "ng2-codemirror": "^1.1.3",

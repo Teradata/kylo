@@ -539,13 +539,6 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;
 
                 if (property.inputProperty) {
-                    property.mentioId = 'inputProperty' + property.processorName + '_' + i;
-                }
-                else {
-                    property.mentioId = 'processorProperty_' + property.processorName + '_' + i;
-                }
-
-                if (property.inputProperty) {
                     inputProperties.push(property);
                 }
                 else {

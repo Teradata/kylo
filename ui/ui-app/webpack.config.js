@@ -122,7 +122,6 @@ const webpackConfig = (env) => {
                 'angular-material-icons': path.join(staticJsVendorDir, 'angular-material-icons/angular-material-icons'),
                 'dirPagination': path.join(staticJsVendorDir, 'dirPagination/dirPagination'),
                 'ng-text-truncate': path.join(staticJsVendorDir, 'ng-text-truncate/ng-text-truncate'),
-                'ment-io': path.join(staticJsVendorDir, 'ment.io/mentio'),
 
                 'urlParams': path.join(staticDir, 'login/jquery.urlParam.js'),
             }
@@ -404,11 +403,6 @@ const templates = [
         context: './src/main/resources/static',
         from: 'js/feed-mgr/templates/template-stepper/register-template-stepper.html',
         to: 'js/feed-mgr/templates/template-stepper/register-template-stepper.html'
-    },
-    {
-        context: './src/main/resources/static',
-        from: 'js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html',
-        to: 'js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html'
     },
     {
         context: './src/main/resources/static',

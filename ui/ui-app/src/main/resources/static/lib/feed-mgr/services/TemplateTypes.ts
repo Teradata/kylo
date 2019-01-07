@@ -45,7 +45,6 @@ export declare namespace Templates {
         renderWithCodeMirror?:boolean;
         customProperty?:boolean;
         inputProperty:boolean;
-        mentioId?:string;
         sensitive?:boolean;
         encryptedValue?:string;
         displayName?:string;

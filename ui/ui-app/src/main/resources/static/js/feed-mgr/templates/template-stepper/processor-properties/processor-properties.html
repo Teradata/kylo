@@ -17,6 +17,16 @@
   limitations under the License.
   #L%
   -->
+<ng-template #mentionCustomTemplate let-item="item">
+        <div>
+            <span [innerHtml]="item.key"></span>
+            <span style="padding-left:15px;color:#cccccc" [innerHtml]="item.dataType"></span>
+            <span style="padding-left:15px;" [innerHtml]="item.value"></span>
+        </div>
+        <mat-hint>
+            {{item.description}}
+        </mat-hint>
+</ng-template>
 <div layout="row" layout-align="center start" style="margin-top: 16px;">
 
     <mat-card class="not-centered layout-fill" style="max-width:980px;width:980px;overflow-x:inherit; margin-left: 16px;" flex="initial">
@@ -77,46 +87,34 @@
 
                                         <mat-form-field style="margin: 0; width: 100%;" class="push-top-md push-bottom-none">
                                             <mat-label style="font-size: 12px;">{{'FEEDMGR.TEMPLATES.STEPPER.PROCESSOR_PROPS.DVSE' | translate}}</mat-label>
-                                            <input *ngIf="!property.userEditable && property.propertyDescriptor.required"
+                                            <input *ngIf="!property.userEditable && property.propertyDescriptor.required && viewInitialized"
                                                 matInput
                                                 name="propertyInput"
-                                                placeholder="Enter a string or ${expression}" mentio
+                                                placeholder="Enter a string or ${expression}" 
                                                 type="text"
-                                                mentio-id="property.mentioId"
-                                                mentio-typed-text="typedTerm"
+                                                [mentions]="expressionPropertiesMentions"
+                                                (searchTerm)="searchExpressionProperties($event)"
                                                 [(ngModel)]="property.value"
                                                 size="100"
                                                 formControlName="{{property.key}}"
                                                 (change)="changedPropertyInput(property)"
                                                 (keydown)="keydownPropertyInput(property)"
-                                                ng-init="property.changed=false"
                                                 required/>
 
-                                            <input *ngIf="property.userEditable || !property.propertyDescriptor.required"
+                                            <input *ngIf="(property.userEditable || !property.propertyDescriptor.required) && viewInitialized"
                                                 matInput
                                                 name="propertyInput"
-                                                placeholder="Enter a string or ${expression})" mentio
+                                                placeholder="Enter a string or ${expression}" 
                                                 type="text"
-                                                mentio-id="property.mentioId"
-                                                mentio-typed-text="typedTerm"
+                                                [mentions]="expressionPropertiesMentions"
+                                                (searchTerm)="searchExpressionProperties($event)"
                                                 [(ngModel)]="property.value"
                                                 size="100"
                                                 (change)="changedPropertyInput(property)"
                                                 (keydown)="keydownPropertyInput(property)"
-                                                ng-init="property.changed=false"
                                                 [ngModelOptions]="{standalone: true}"/>
 
                                         </mat-form-field>
-
-                                <mentio-menu style="display:none;"
-                                            mentio-for="property.mentioId"
-                                            mentio-trigger-char="'$'"
-                                            mentio-items="expressionProperties"
-                                            mentio-template-url="js/feed-mgr/templates/template-stepper/processor-properties/expression-property-mentions.html"
-                                            mentio-search="searchExpressionProperties(term)"
-                                            mentio-select="getExpressionPropertyTextRaw(item)">
-                                </mentio-menu>
-
                                 <div class="hint" thinkbig-derived-expression [model]="property.value" style="margin-bottom:10px;"></div>
 
                                 <div class="push-none push-left push-right" style="white-space: nowrap;" *ngIf="property.value == null || property.value == ''">
