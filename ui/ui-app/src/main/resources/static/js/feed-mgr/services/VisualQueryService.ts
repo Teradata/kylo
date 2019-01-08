@@ -2,6 +2,7 @@ import {UnderscoreStatic} from "underscore";
 import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 
 import * as _ from "underscore";
+import * as angular from 'angular';
 
 import {SparkDataSet} from "../model/spark-data-set.model";
 import {Injectable} from "@angular/core";
@@ -201,6 +202,43 @@ _.extend(SqlBuilder.prototype, {
             sql += " " + this.getTableSql(expr.rarg) + " " + expr.rarg.aliasName;
 
             if (expr.quals !== null) {
+                /****  enhanced  ****/
+                if (angular.equals(expr.quals1,expr.quals2)){
+                    if (expr.quals1 !== null  && !this.isJoinColumnEmpty(expr.quals1)){
+                        if (!angular.equals(expr.quals,expr.quals1)){
+                            expr.quals = this.getAndQualifier(expr.quals,expr.quals1);
+                        }
+                    }
+
+                } else {
+                    if (angular.equals(expr.quals,expr.quals1)){
+                        if (expr.quals2 !== null && !this.isJoinColumnEmpty(expr.quals2)){
+                            expr.quals = this.getAndQualifier(expr.quals,expr.quals2);
+                        }
+                    }else {
+                        if (angular.equals(expr.quals,expr.quals2)){
+                            if (expr.quals1 !== null && !this.isJoinColumnEmpty(expr.quals1)){
+                                if (!angular.equals(expr.quals,expr.quals1)){
+                                    expr.quals = this.getAndQualifier(expr.quals,expr.quals1);
+                                }
+                            }
+                        }else {
+                            if (expr.quals1 === null || this.isJoinColumnEmpty(expr.quals1)){
+                                if(!this.isJoinColumnEmpty(expr.quals2)){
+                                    expr.quals = this.getAndQualifier(expr.quals,expr.quals2);
+                                }
+                            }else if (expr.quals2 === null || this.isJoinColumnEmpty(expr.quals2)) {
+                                if (!this.isJoinColumnEmpty(expr.quals1)){
+                                    expr.quals = this.getAndQualifier(expr.quals,expr.quals1);
+                                }
+                            }else {
+                                expr.quals = this.getAndQualifier(expr.quals,expr.quals1);
+                                expr.quals = this.getAndQualifier(expr.quals,expr.quals2);
+                            }
+                        }
+                    }
+                }
+
                 sql += " ON " + this.getQualifierSql(expr.quals, false);
             }
 
@@ -208,6 +246,34 @@ _.extend(SqlBuilder.prototype, {
         } else {
             throw new Error("Not a recognized node type: " + expr.type);
         }
+    },
+
+    isJoinColumnEmpty: function(quals :any){
+        let lcolumn = quals.lexpr.fields[1];
+        let rcolumn = quals.rexpr.fields[1];
+
+        if ((lcolumn === null || angular.isUndefined(lcolumn)) ||
+            (rcolumn === null || angular.isUndefined(rcolumn)) ){
+            return true;
+        }
+        return false;
+    },
+
+    /**
+     * Enhanced: Get and qualifiers from leftQualifier and rightQualifier.
+     *
+     * @param leftQualifier
+     * @param rightQualifier
+     */
+    getAndQualifier: function(leftQualifier : any, rightQualifier : any){
+        let lexpr = leftQualifier;
+        let rexpr = rightQualifier;
+        let qualifiers = {
+            type: VisualQueryService.NodeTag.BoolExpr,
+            boolop: VisualQueryService.BoolExprType.AND_EXPR,
+            args: [lexpr, rexpr]
+        };
+        return qualifiers;
     },
 
     /**
@@ -301,6 +367,28 @@ _.extend(SqlBuilder.prototype, {
                 },
                 rexpr: {
                     fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey]
+                }
+            },
+            /****  enhanced  ****/
+            //added one more qualifier
+            quals1:{
+                type: VisualQueryService.NodeTag.A_Expr,
+                name: "=",
+                lexpr: {
+                    fields: [TABLE_PREFIX + src.id, (connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey1 : connection.joinKeys.destKey1]
+                },
+                rexpr: {
+                    fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.destKey1 : connection.joinKeys.sourceKey1]
+                }
+            },
+            quals2:{
+                type: VisualQueryService.NodeTag.A_Expr,
+                name: "=",
+                lexpr: {
+                    fields: [TABLE_PREFIX + src.id, (connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey2 : connection.joinKeys.destKey2]
+                },
+                rexpr: {
+                    fields: [TABLE_PREFIX + dst.id, (connection.source.nodeID === src.id) ? connection.joinKeys.destKey2 : connection.joinKeys.sourceKey2]
                 }
             }
         };

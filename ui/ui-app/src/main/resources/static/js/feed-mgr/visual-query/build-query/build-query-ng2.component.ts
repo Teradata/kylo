@@ -1105,6 +1105,12 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
                         viewConnection.data.name = response.connectionName;
                         viewConnection.data.joinKeys.sourceKey = response.source;
                         viewConnection.data.joinKeys.destKey = response.dest;
+
+                        /****  enhanced  ****/
+                        viewConnection.data.joinKeys.sourceKey1 = response.source1;
+                        viewConnection.data.joinKeys.destKey1 = response.dest1;
+                        viewConnection.data.joinKeys.sourceKey2 = response.source2;
+                        viewConnection.data.joinKeys.destKey2 = response.dest2;
                     }
                     this.validate()
                 }

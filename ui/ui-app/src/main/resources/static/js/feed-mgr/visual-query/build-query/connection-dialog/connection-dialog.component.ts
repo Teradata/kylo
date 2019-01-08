@@ -24,6 +24,12 @@ export interface ConnectionDialogResponse {
     dest: string;
     joinType: string;
     status: ConnectionDialogResponseStatus;
+
+    /****  enhanced  ****/
+    source1: string;
+    dest1: string;
+    source2: string;
+    dest2: string;
 }
 
 /**
@@ -58,6 +64,15 @@ export class ConnectionDialog {
     destKey: string;
     joinType: string;
 
+    /****  enhanced  ****/
+    sourceKey1: string;
+    destKey1: string;
+    sourceControl1: FormControl;
+    destControl1:FormControl;
+    sourceKey2: string;
+    destKey2: string;
+    sourceControl2: FormControl;
+    destControl2:FormControl;
     message = null;
     isNew = false;
 
@@ -97,12 +112,23 @@ export class ConnectionDialog {
                 }
                 this.sourceKey = <string>col;
                 this.destKey = <string> col;
+                /****  enhanced  ****/
+                this.sourceKey1 = undefined;
+                this.destKey1 = undefined;
+                this.sourceKey2 = undefined;
+                this.destKey2 = undefined;
+
                 this.joinType = "INNER JOIN"
             }
         } else {
             this.joinType = this.data.connectionDataModel.joinType;
             this.sourceKey = this.data.connectionDataModel.joinKeys.sourceKey;
             this.destKey = this.data.connectionDataModel.joinKeys.destKey;
+            /****  enhanced  ****/
+            this.sourceKey1 = this.data.connectionDataModel.joinKeys.sourceKey1;
+            this.destKey1 = this.data.connectionDataModel.joinKeys.destKey1;
+            this.sourceKey2 = this.data.connectionDataModel.joinKeys.sourceKey2;
+            this.destKey2 = this.data.connectionDataModel.joinKeys.destKey2;
         }
 
         this.connectionName = new FormControl(this.data.connectionDataModel.name, []);
@@ -110,10 +136,20 @@ export class ConnectionDialog {
         this.destControl = new FormControl(this.destKey, [Validators.required]);
         this.joinTypeControl = new FormControl(this.joinType, [Validators.required]);
 
+        this.sourceControl1 = new FormControl(this.sourceKey1);
+        this.destControl1 = new FormControl(this.destKey1);
+        this.sourceControl2 = new FormControl(this.sourceKey2);
+        this.destControl2 = new FormControl(this.destKey2);
+
         this.form.addControl("connectionName", this.connectionName);
         this.form.addControl("joinType", this.joinTypeControl);
         this.form.addControl("source", this.sourceControl);
         this.form.addControl("dest", this.destControl);
+
+        this.form.addControl("source1", this.sourceControl1);
+        this.form.addControl("dest1", this.destControl1);
+        this.form.addControl("source2", this.sourceControl2);
+        this.form.addControl("dest2", this.destControl2);
 
         this.validate();
     }
@@ -134,7 +170,12 @@ export class ConnectionDialog {
             source: values.source,
             dest: values.dest,
             joinType: values.joinType,
-            status: ConnectionDialogResponseStatus.SAVE
+            status: ConnectionDialogResponseStatus.SAVE,
+
+            source1: values.source1,
+            dest1: values.dest1,
+            source2: values.source2,
+            dest2: values.dest2
         };
         this.dialog.close(response);
     }

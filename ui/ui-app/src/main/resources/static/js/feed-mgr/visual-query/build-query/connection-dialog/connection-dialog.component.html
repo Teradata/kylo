@@ -32,7 +32,48 @@
       </mat-form-field>
     </div>
 
+    <div fxLayout="row">
+      <mat-form-field>
+        <mat-select placeholder="Source"  formControlName="source1" >
+          <mat-option>-- None --</mat-option>
+          <mat-option *ngFor="let attr of data.source.data.nodeAttributes.attributes" [value]="attr.name">
+            {{attr.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-select placeholder="Destination"  formControlName="dest1" >
+          <mat-option>-- None --</mat-option>
+          <mat-option *ngFor="let attr of data.dest.data.nodeAttributes.attributes" [value]="attr.name">
+            {{attr.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div fxLayout="row">
+      <mat-form-field>
+        <mat-select placeholder="Source"  formControlName="source2" >
+          <mat-option>-- None --</mat-option>
+          <mat-option *ngFor="let attr of data.source.data.nodeAttributes.attributes" [value]="attr.name">
+            {{attr.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-select placeholder="Destination"  formControlName="dest2" >
+          <mat-option>-- None --</mat-option>
+          <mat-option *ngFor="let attr of data.dest.data.nodeAttributes.attributes" [value]="attr.name">
+            {{attr.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
   </form>
+
 </div>
 <div mat-dialog-actions class="mat-dialog-actions">
   <button mat-button (click)="cancel()">Cancel</button>
