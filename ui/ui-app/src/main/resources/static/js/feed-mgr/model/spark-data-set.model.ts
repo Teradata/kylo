@@ -5,6 +5,7 @@ import {DataSourceTemplate} from "../catalog/api/models/datasource-template";
 import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
 import {TableColumn} from "../catalog/datasource/preview-schema/model/table-view-model";
 import {Common} from '../../../lib/common/CommonTypes';
+import {Tag} from './schema-field';
 
 /**
  * DataSet used by the Data Wrangler
@@ -21,6 +22,8 @@ export class SparkDataSet {
     public previewPath?: string;
     public previewLoading?: boolean;
     public isUpload:boolean = false;
+    public description: string;
+    public tags: Tag[];
 
     public constructor(init?: Partial<SparkDataSet>) {
         this.initialize();

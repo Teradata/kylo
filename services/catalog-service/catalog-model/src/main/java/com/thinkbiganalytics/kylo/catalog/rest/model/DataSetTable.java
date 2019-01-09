@@ -40,6 +40,7 @@ public class DataSetTable implements JdbcTable {
     private String remarks;
     private String schema;
     private String type;
+    private String dataSetId;
 
     @Nullable
     @Override
@@ -99,5 +100,13 @@ public class DataSetTable implements JdbcTable {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public void setDataSetId(String dataSetId) {
+        this.dataSetId = dataSetId;
+    }
+
+    public String getDataSetId() {
+        return dataSetId;
     }
 }

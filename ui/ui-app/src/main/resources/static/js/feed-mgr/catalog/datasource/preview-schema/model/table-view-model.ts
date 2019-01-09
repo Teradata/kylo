@@ -7,7 +7,8 @@ export interface TableColumn {
     uuid?:string;
     numeric?:boolean;
     sortable?:boolean;
-    width?:ITdDataTableColumnWidth | number
+    width?:ITdDataTableColumnWidth | number,
+    description?: string;
 }
 
 

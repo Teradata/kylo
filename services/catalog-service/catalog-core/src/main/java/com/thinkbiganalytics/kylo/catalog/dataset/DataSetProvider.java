@@ -195,5 +195,4 @@ public class DataSetProvider {
             metadataProvider.find(id).ifPresent(domain -> metadataProvider.deleteById(id));
         });
     }
-
 }

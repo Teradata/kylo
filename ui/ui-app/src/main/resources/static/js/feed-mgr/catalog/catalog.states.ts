@@ -238,10 +238,5 @@ export const catalogStates: Ng2StateDeclaration[] = [
         name: "catalog.datasource.connection.**",
         url: "/tables",
         loadChildren: "./datasource/tables/tables.module#TablesRouterModule"
-    },
-    {
-        name: "catalog.dataset.**",
-        url: "/dataset",
-        loadChildren: "./dataset/dataset.module#DatasetRouterModule"
     }
 ];

@@ -1,7 +1,16 @@
-import {Component, Input} from "@angular/core";
+import {Component, EventEmitter, Input, Output} from "@angular/core";
 import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 import {TableColumn} from "./model/table-view-model";
+import {PromptDialogComponent, PromptDialogData, PromptDialogResult} from '../../../shared/prompt-dialog/prompt-dialog.component';
+import * as angular from 'angular';
+import {MatDialog} from '@angular/material/dialog';
+import {PreviewDataSet} from './model/preview-data-set';
+
+
+export class DescriptionChangeEvent {
+    constructor(public columnName: string, public newDescription: string) {}
+}
 
 @Component({
     selector: 'dataset-simple-table',
@@ -15,8 +24,14 @@ import {TableColumn} from "./model/table-view-model";
           [sortBy]="sortBy"
           [sortOrder]="sortOrder"
           (sortChange)="sort($event)"
-          [style.height.px]="325" class="dataset-simple-table">      
-      </td-data-table>   
+          [style.height.px]="325" class="dataset-simple-table">
+        <ng-template tdDataTableTemplate="description" let-row="row" align="start">
+          <button mat-button
+                  style="min-width: 0; margin-left: -20px; overflow: hidden; text-overflow: ellipsis"
+                  [class.mat-accent]="!row['description']"
+                  (click)="openPrompt(row, 'description')">{{row['description'] || 'Add Description'}}</button>
+        </ng-template>
+      </td-data-table>
     <div  *ngIf="filteredData.length == 0" fxLayout="row" fxLayoutAlign="center center">
       <h3>No results to display.</h3>
     </div>`
@@ -29,8 +44,12 @@ export class DatasetSimpleTableComponent {
     @Input()
     columns:TableColumn[] = [];
 
+    @Output()
+    descriptionChange = new EventEmitter<DescriptionChangeEvent>();
 
-    constructor(  private _dataTableService: TdDataTableService){
+
+    constructor(private _dataTableService: TdDataTableService,
+                private dialog: MatDialog){
 
     }
 
@@ -146,4 +165,23 @@ export class DatasetSimpleTableComponent {
            return widthMap;
 
     }
+
+    openPrompt(row: any, columnName: string): void {
+        const data = new PromptDialogData();
+        data.title = "Add Description?";
+        data.hint = "Add description to '" + row['name'] + "' column";
+        data.value = row[columnName];
+        data.placeholder = "Description";
+        const dialogRef = this.dialog.open(PromptDialogComponent, {
+            minWidth: 600,
+            data: data
+        });
+
+        dialogRef.afterClosed().subscribe((result: PromptDialogResult) => {
+            if (result && result.isValueUpdated) {
+                this.descriptionChange.emit(new DescriptionChangeEvent(row['name'], result.value));
+            }
+        });
+    }
+
 }

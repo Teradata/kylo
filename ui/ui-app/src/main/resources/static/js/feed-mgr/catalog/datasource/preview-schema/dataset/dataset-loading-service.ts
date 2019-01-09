@@ -1,7 +1,6 @@
 import {Injectable} from "@angular/core";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
-import {StateService} from "@uirouter/angular";
 import {TdLoadingService} from '@covalent/core/loading';
 
 @Injectable()

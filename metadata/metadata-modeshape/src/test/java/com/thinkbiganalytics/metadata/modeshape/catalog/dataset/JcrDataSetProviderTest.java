@@ -41,6 +41,7 @@ import com.thinkbiganalytics.metadata.modeshape.catalog.CatalogMetadataConfig;
 import com.thinkbiganalytics.metadata.modeshape.catalog.schema.DefaultSchema;
 
 import org.assertj.core.groups.Tuple;
+import org.junit.Assert;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -55,7 +56,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
@@ -106,8 +110,33 @@ public class JcrDataSetProviderTest extends AbstractTestNGSpringContextTests {
             this.dSrcIds.add(this.dataSourceProvider.create(conn.getId(), "dataset1").getId());
         }, MetadataAccess.SERVICE);
     }
-    
-    
+
+    @Test
+    public void generateHashCode() {
+
+        Collection<String> paths1 = new ArrayList<>(1);
+        paths1.add("`c00103`.`f1`");
+        Map<String, String> options1 = new HashMap<>(5);
+        options1.put("password", "");
+        options1.put("driver", "org.apache.hive.jdbc.HiveDriver");
+        options1.put("dbtable", "`c00103`.`f1`");
+        options1.put("user", "hive");
+        options1.put("url", "jdbc:hive2://localhost:10000/default");
+        long hash1 = JcrDataSetProvider.generateHashCode("hive", paths1, options1);
+
+        Collection<String> paths2 = new ArrayList<>(1);
+        paths2.add("`c00103`.`f2`");
+        Map<String, String> options2 = new HashMap<>(5);
+        options2.put("password", "");
+        options2.put("driver", "org.apache.hive.jdbc.HiveDriver");
+        options2.put("dbtable", "`c00103`.`f2`");
+        options2.put("user", "hive");
+        options2.put("url", "jdbc:hive2://localhost:10000/default");
+        long hash2 = JcrDataSetProvider.generateHashCode("hive", paths2, options2);
+
+        Assert.assertNotEquals(hash1, hash2);
+    }
+
     @Test
     public void testCreate() {
         metadata.commit(() -> {

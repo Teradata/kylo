@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {Dataset} from '../../api/models/dataset';
+import {SparkDataSet} from '../../../../../model/spark-data-set.model';
 
 /**
  * Displays usage across Kylo, e.g. used in Projects, used in Wrangler
@@ -12,5 +12,5 @@ import {Dataset} from '../../api/models/dataset';
 export class DatasetUsageComponent {
 
     @Input()
-    public dataset: Dataset;
+    public dataset: SparkDataSet;
 }

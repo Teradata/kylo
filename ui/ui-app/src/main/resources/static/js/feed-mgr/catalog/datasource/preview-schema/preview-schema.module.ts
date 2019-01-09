@@ -38,17 +38,26 @@ import {DatasetPreviewComponent} from "./preview/dataset-preview.component";
 import {DatasetPreviewContainerComponent} from "./preview/dataset-preview-container.component";
 import {DatasetPreviewDialogComponent} from "./preview-dialog/dataset-preview-dialog.component";
 import {DatasetPreviewService} from "./service/dataset-preview.service";
-import {CovalentLoadingModule} from "@covalent/core/loading";
+import {CovalentLoadingModule, TdLoadingService} from "@covalent/core/loading";
 import {MatToolbarModule} from "@angular/material/toolbar";
 import {CatalogPreviewDatasetComponent} from "./catalog-preview-dataset.component";
-import {CatalogComponent} from "../../catalog.component";
 import {CovalentLayoutModule} from "@covalent/core/layout";
-import {DataSource} from "../../api/models/datasource";
 import {MatCardModule} from "@angular/material/card";
-import {LoadMode} from "../../../model/feed/feed.model";
 import {DatasetPreviewContainerAccordionComponent} from './preview/dataset-preview-container-accordion.component';
 import {PreviewSchemaComponent, SchemaDefinitionComponent, SimpleTableComponent} from './preview-schema.component';
 import {MatExpansionModule} from '@angular/material/expansion';
+import {CatalogService} from '../../api/services/catalog.service';
+import {catchError, finalize} from 'rxjs/operators';
+import {DatasetInfoDescriptionComponent} from './dataset/dataset-info/dataset-info-description/dataset-info-description.component';
+import {DatasetInfoTitleComponent} from './dataset/dataset-info/dataset-info-title/dataset-info-title.component';
+import {DatasetInfoTagsComponent} from './dataset/dataset-info/dataset-info-tags/dataset-info-tags.component';
+import {DatasetInfoComponent} from './dataset/dataset-info/dataset-info.component';
+import {DatasetUsageComponent} from './dataset/dataset-usage/dataset-usage.component';
+import {DatasetColumnProfileComponent} from './dataset/dataset-column-profile/dataset-column-profile.component';
+import {DatasetSampleContentComponent} from './dataset/dataset-sample-content/dataset-sample-content.component';
+import {DatasetLoadingService} from './dataset/dataset-loading-service';
+import {DatasetService} from './dataset/dataset-service';
+import {KyloFeedManagerModule} from '../../../feed-mgr.module';
 
 @NgModule({
     declarations: [
@@ -62,6 +71,13 @@ import {MatExpansionModule} from '@angular/material/expansion';
         CatalogPreviewDatasetComponent,
         PreviewSchemaComponent,
         DatasetPreviewContainerAccordionComponent,
+        DatasetInfoDescriptionComponent,
+        DatasetInfoTitleComponent,
+        DatasetInfoTagsComponent,
+        DatasetInfoComponent,
+        DatasetUsageComponent,
+        DatasetColumnProfileComponent,
+        DatasetSampleContentComponent,
         SimpleTableComponent,
         SchemaDefinitionComponent,
     ],
@@ -87,6 +103,7 @@ import {MatExpansionModule} from '@angular/material/expansion';
         FlexLayoutModule,
         FormsModule,
         KyloCommonModule,
+        KyloFeedManagerModule,
         MatButtonModule,
         MatCheckboxModule,
         MatDatepickerModule,
@@ -120,7 +137,9 @@ import {MatExpansionModule} from '@angular/material/expansion';
         PreviewSchemaService,
         PreviewRawService,
         TransformResponseTableBuilder,
-        DatasetPreviewService
+        DatasetPreviewService,
+        DatasetLoadingService,
+        DatasetService,
     ]
 
 })
@@ -136,10 +155,12 @@ export class PreviewSchemaModule {
             states: [
                 {
                     name: "catalog.datasource.preview",
-                    url: "/preview",
+                    url: "/preview/:datasetId",
                     component:CatalogPreviewDatasetComponent,
-                    params:{autoSelectSingleDataSet:true,
-                            displayInCard:true,
+                    params: {
+                        autoSelectSingleDataSet:true,
+                        displayInCard:true,
+                        datasetId:null,
                         objectsToPreview:null},
                     resolve: [
                         {
@@ -154,7 +175,12 @@ export class PreviewSchemaModule {
                             token:'objectsToPreview',
                             deps:[StateService],
                             resolveFn: resolveParams
-                        }
+                        },
+                        {
+                            token: "dataset",
+                            deps: [CatalogService, StateService, TdLoadingService],
+                            resolveFn: resolveDataset
+                        },
                     ]
 
                 }
@@ -172,4 +198,23 @@ export function resolveTrue() {
 export function resolveParams(state:StateService) {
     let params = state.transition.params();
     return params.objectsToPreview;
+}
+
+export function resolveDataset(catalog: CatalogService, state: StateService, loading: TdLoadingService) {
+    loading.register(CatalogPreviewDatasetComponent.LOADER);
+    let id = state.transition.params().datasetId;
+    if (id) {
+        return catalog.getDataset(id)
+            .pipe(finalize(() => {
+                loading.resolve(CatalogPreviewDatasetComponent.LOADER)
+            }))
+            .pipe(catchError((err) => {
+                console.log('Failed to transition to dataset preview', err);
+                return state.go("catalog")
+            }))
+            .toPromise();
+    } else {
+        //dataset id is optional, i.e. dataset hasn't been saved/annotated yet
+        return undefined;
+    }
 }

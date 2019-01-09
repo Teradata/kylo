@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {Dataset} from '../../api/models/dataset';
+import {SparkDataSet} from '../../../../../model/spark-data-set.model';
 
 /**
  * Displays sample data content of the dataset
@@ -12,5 +12,5 @@ import {Dataset} from '../../api/models/dataset';
 export class DatasetSampleContentComponent {
 
     @Input()
-    public dataset: Dataset;
+    public dataset: SparkDataSet;
 }

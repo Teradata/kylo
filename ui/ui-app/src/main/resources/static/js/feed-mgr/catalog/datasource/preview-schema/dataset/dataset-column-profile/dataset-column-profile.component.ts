@@ -1,5 +1,5 @@
 import {Component, Input} from "@angular/core";
-import {Dataset} from '../../api/models/dataset';
+import {PreviewDataSet} from '../../model/preview-data-set';
 
 /**
  * Displays profile information for dataset columns
@@ -12,5 +12,5 @@ import {Dataset} from '../../api/models/dataset';
 export class DatasetColumnProfileComponent {
 
     @Input()
-    public dataset: Dataset;
+    public dataset: PreviewDataSet;
 }

@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -465,15 +466,37 @@ public class DataSourceController extends AbstractCatalogController {
         if (hasAccess) {
             return metadataService.read(() -> {
                 // List tables
-                final DataSource dataSource = findDataSource(dataSourceId, false);
-                final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
+                com.thinkbiganalytics.metadata.api.catalog.DataSource.ID dsId = dataSourceProvider.resolveId(dataSourceId);
+                Optional<com.thinkbiganalytics.metadata.api.catalog.DataSource> modelDatasource = dataSourceProvider.find(dsId);
 
+                final DataSource dataSource = modelDatasource
+                    .map(modelTransform.dataSourceToRestModel(true, false))
+                    .orElseThrow(() -> {
+                        log.debug("Data source not found: {}", dataSourceId);
+                        return new NotFoundException(getMessage("catalog.datasource.notFound.id", dataSourceId));
+                    });
+
+                final List<DataSetTable> tables = doListTables(catalogName, schemaName, dataSource);
+                assignExistingDataSets(modelDatasource.get(), tables);
                 return Response.ok(log.exit(tables)).build();
             }, MetadataAccess.SERVICE);
         } else {
             log.debug("Access denied accessing datasource : {}", dataSourceId);
             throw new ForbiddenException(getMessage("catalog.datasource.forbidden"));
         }
+    }
+
+    private void assignExistingDataSets(com.thinkbiganalytics.metadata.api.catalog.DataSource modelDatasource, List<DataSetTable> tables) {
+        tables.forEach(t -> {
+            Optional<? extends com.thinkbiganalytics.metadata.api.catalog.DataSet>
+                ds =
+                modelDatasource.getDataSets().stream().filter(filterByName(t.getSchema(), t.getName())).findFirst();
+            t.setDataSetId(ds.isPresent() ? ds.get().getId().toString() : null);
+        });
+    }
+
+    private Predicate<com.thinkbiganalytics.metadata.api.catalog.DataSet> filterByName(String schema, String tableName) {
+        return dataSet -> dataSet.getSystemName().equals(schema + "." + tableName);
     }
 
     private List<DataSetTable> doListTables(@QueryParam("catalog") String catalogName, @QueryParam("schema") String schemaName, DataSource dataSource) {

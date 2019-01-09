@@ -4,6 +4,7 @@ import {TableColumn, TableViewModel} from "./table-view-model";
 import {SparkDataSet} from "../../../../model/spark-data-set.model";
 import * as _ from "underscore";
 import {CloneUtil} from "../../../../../common/utils/clone-util";
+import {Tag} from '../../../../model/schema-field';
 
 
 export enum DatasetCollectionStatus {
@@ -19,6 +20,10 @@ export class PreviewDataSet {
     static EMPTY = new PreviewDataSet();
 
     public id: string;
+
+    public description: string;
+
+    public tags: Tag[];
 
     /**
      * items in the dataset
@@ -131,6 +136,8 @@ export class PreviewDataSet {
         sparkDataSet.schema = this.schema;
         sparkDataSet.preview = this;
         sparkDataSet.previewPath = this.getPreviewItemPath();
+        sparkDataSet.description = this.description;
+        sparkDataSet.tags = this.tags;
         if(this.dataSource && this.dataSource.connector && this.dataSource.connector.pluginId == "file-upload"){
             sparkDataSet.isUpload = true;
         }

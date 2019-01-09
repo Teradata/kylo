@@ -346,6 +346,7 @@ public class JcrDataSetProvider extends BaseJcrProvider<DataSet, DataSet.ID> imp
 
             ds.setTitle(ensuredTitle);
             ds.setDescription(this.description);
+            ds.setTags(this.tags);
             ds.setParamsHash(hash);
             params.setFormat(this.format);
             if(this.options != null) {

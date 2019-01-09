@@ -3,26 +3,21 @@ import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/map';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit, ViewChild} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {SelectionService} from "../../api/services/selection.service";
-import {DatasetCollectionStatus, PreviewDataSet} from "../preview-schema/model/preview-data-set";
-import {PreviewDataSetRequest} from "../preview-schema/model/preview-data-set-request";
-import {FileMetadataTransformResponse} from "../preview-schema/model/file-metadata-transform-response";
+import {PreviewDataSet} from "../preview-schema/model/preview-data-set";
 import {Node} from "../../api/models/node";
 import {DataSource} from "../../api/models/datasource";
-import {PreviewJdbcDataSet} from "../preview-schema/model/preview-jdbc-data-set";
-import {Subject} from "rxjs/Subject";
-import {PreviewHiveDataSet} from "../preview-schema/model/preview-hive-data-set";
-import {DatabaseObject, DatabaseObjectType} from "../tables/database-object";
 import {ISubscription} from "rxjs/Subscription";
 import {TdLoadingService} from "@covalent/core/loading";
 import {DatasetPreviewService, DataSourceChangedEvent, PreviewDataSetResultEvent} from "../preview-schema/service/dataset-preview.service";
 import {DatasetPreviewContainerComponent} from "../preview-schema/preview/dataset-preview-container.component";
-import {PreviewDatasetStepComponent} from "../../../catalog-dataset-preview/preview-stepper/preview-dataset-step.component";
 import {StateService} from "@uirouter/angular";
 import {BrowserObject} from "../../api/models/browser-object";
 import {KyloRouterService} from "../../../../services/kylo-router.service";
+import {SparkDataSet} from '../../../model/spark-data-set.model';
+import {TableColumn} from './model/table-view-model';
 
 
 @Component({
@@ -38,6 +33,9 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
     @Input()
     formGroup:FormGroup;
+
+    @Input()
+    dataset: SparkDataSet;
 
     @Input()
     datasource:DataSource;
@@ -88,7 +86,6 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
                 protected  kyloRouterService:KyloRouterService
     ) {
         this.singleSelection = this.selectionService.isSingleSelection();
-
     }
 
     backToDatasource(){
@@ -113,12 +110,32 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
 
     onPreviewSelected(ds:PreviewDataSet){
         this.selectedDataSet = ds;
-        if(ds && ds != null) {
+        if (ds) {
             this.datasetName = ds.displayKey
-        }
-        else {
+            if (this.dataset === undefined) {
+                //dataset is undefined when it hasn't been saved or annotated yet
+                this.dataset = this.selectedDataSet.toSparkDataSet();
+            } else {
+                this.selectedDataSet.id = this.dataset.id;
+                this.mergeSchemas(this.selectedDataSet, this.dataset);
+            }
+        } else {
             this.datasetName = "Preview Datasets";
         }
+    }
+
+    mergeSchemas(target: PreviewDataSet, source: SparkDataSet) {
+        target.schema.forEach(column => {
+            source.schema.find((sourceColumn: TableColumn) => {
+                if (column.name === sourceColumn.name) {
+                    column.description = sourceColumn.description;
+                    return true;
+                } else {
+                    return false;
+                }
+
+            });
+        });
     }
 
     onInitialPreviewValid(){
@@ -139,7 +156,7 @@ export class CatalogPreviewDatasetComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-       this.initProperties();
+        this.initProperties();
         //preview
         this.previewSelection();
     }

@@ -29,6 +29,14 @@ export class RemoteFile extends BrowserObject {
     getPath(): string {
         return this.path;
     }
+
+    isDataSet(): boolean {
+        return super.isDataSet();
+    }
+
+    getDataSetId(): string {
+        return super.getDataSetId();
+    }
 }
 
 export class RemoteFileDescriptor {

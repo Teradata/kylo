@@ -30,14 +30,16 @@ export class DatabaseObject extends BrowserObject {
     catalog: string;
     schema: string;
     qualifiedIdentifier: string;
+    dataSetId: string;
 
-    constructor(name: string, type: DatabaseObjectType, catalog: string, schema: string, qualifiedIdentifier: string) {
+    constructor(name: string, type: DatabaseObjectType, catalog: string, schema: string, qualifiedIdentifier: string, dataSetId: string) {
         super();
         this.name = name;
         this.type = type;
         this.catalog = catalog;
         this.schema = schema;
         this.qualifiedIdentifier = qualifiedIdentifier;
+        this.dataSetId = dataSetId;
     }
 
     canBeParent(): boolean {
@@ -66,6 +68,14 @@ export class DatabaseObject extends BrowserObject {
         else {
             return "fa-columns"
         }
+    }
+
+    isDataSet(): boolean {
+        return this.dataSetId !== undefined;
+    }
+
+    getDataSetId(): string {
+        return this.dataSetId;
     }
 
 }

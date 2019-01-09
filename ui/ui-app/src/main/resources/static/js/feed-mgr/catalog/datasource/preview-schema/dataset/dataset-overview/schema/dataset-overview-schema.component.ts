@@ -1,17 +1,17 @@
 import {Component, Input} from "@angular/core";
-import {Dataset} from '../../../api/models/dataset';
 import {DatasetSaveResponse} from '../../dataset-info/dataset-save-response';
-import {ItemSaveResponse} from '../../../../shared/info-item/item-save-response';
+import {ItemSaveResponse} from '../../../../../../shared/info-item/item-save-response';
 import {DatasetLoadingService} from '../../dataset-loading-service';
 import * as angular from 'angular';
 import {Observable} from 'rxjs/Observable';
 import {DatasetService} from '../../dataset-service';
-import {TableColumn} from '../../../datasource/preview-schema/model/table-view-model';
+import {TableColumn} from '../../../../../datasource/preview-schema/model/table-view-model';
 import {MatDialog} from '@angular/material/dialog';
-import {PromptDialogComponent, PromptDialogData, PromptDialogResult} from '../../../../shared/prompt-dialog/prompt-dialog.component';
+import {PromptDialogComponent, PromptDialogData, PromptDialogResult} from '../../../../../../shared/prompt-dialog/prompt-dialog.component';
+import {SparkDataSet} from '../../../../../../model/spark-data-set.model';
 
 /**
- * Displays profile information for dataset columns
+ * Displays dataset overview
  */
 @Component({
     selector: "dataset-overview-schema",
@@ -20,7 +20,7 @@ import {PromptDialogComponent, PromptDialogData, PromptDialogResult} from '../..
 export class DatasetOverviewSchemaComponent {
 
     @Input()
-    public dataset: Dataset;
+    public dataset: SparkDataSet;
     public schemaColumns: TableColumn[];
 
     constructor(private dialog: MatDialog,
@@ -56,7 +56,7 @@ export class DatasetOverviewSchemaComponent {
         });
     }
 
-    saveDataset(dataset: Dataset, datasetBeforeSave: Dataset): Observable<ItemSaveResponse> {
+    saveDataset(dataset: SparkDataSet, datasetBeforeSave: SparkDataSet): Observable<ItemSaveResponse> {
         this.datasetLoadingService.registerLoading();
         let observable = this.datasetService.saveDataset(dataset);
         observable.subscribe(

@@ -107,7 +107,11 @@
         <span *ngIf="isSelectChildDisabled(row.name)">{{value}}</span>
       </ng-template>
 
-
+      <ng-template tdDataTableTemplate="isDataSet" let-value="value" let-column="column" let-row="row">
+        <span *ngIf="row.isDataSet()" class="cell-icon">
+          <mat-icon color="accent">star</mat-icon>
+        </span>
+      </ng-template>
 
     </td-data-table>
 

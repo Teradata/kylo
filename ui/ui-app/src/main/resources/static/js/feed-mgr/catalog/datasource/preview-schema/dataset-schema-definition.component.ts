@@ -1,10 +1,14 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, EventEmitter, Input, OnInit, Output} from "@angular/core";
 import {TableColumn} from "./model/table-view-model";
+import {DescriptionChangeEvent} from './dataset-simple-table.component';
 
 @Component({
     selector:'dataset-schema-definition',
     template:`
-        <dataset-simple-table [calcColumnWidth]="false" [class.small]="smallView" [rows]="columns" [columns]="schemaColumns"></dataset-simple-table>    
+        <dataset-simple-table [calcColumnWidth]="false" [class.small]="smallView" 
+                              [rows]="columns" 
+                              [columns]="schemaColumns" 
+                              (descriptionChange)="onDescriptionChange($event)"></dataset-simple-table>    
     `
 
 })
@@ -16,7 +20,11 @@ export class DatasetSchemaDefinitionComponent  implements OnInit {
     @Input()
     smallView:boolean = true;
 
-    schemaColumns:TableColumn[]
+    schemaColumns:TableColumn[];
+
+    @Output()
+    descriptionChange = new EventEmitter<DescriptionChangeEvent>();
+
 
     constructor() {
 
@@ -37,4 +45,7 @@ export class DatasetSchemaDefinitionComponent  implements OnInit {
         this.toDataTable();
     }
 
+    onDescriptionChange(event: DescriptionChangeEvent) {
+        this.descriptionChange.emit(event)
+    }
 }

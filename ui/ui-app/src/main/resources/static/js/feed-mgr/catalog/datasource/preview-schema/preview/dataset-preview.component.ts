@@ -1,3 +1,4 @@
+import * as _ from "underscore";
 import {Component, Input, OnInit} from "@angular/core";
 import {DatasetPreviewDialogComponent, DatasetPreviewDialogData} from "../preview-dialog/dataset-preview-dialog.component";
 import {FormGroup} from "@angular/forms";
@@ -8,6 +9,14 @@ import {PreviewDataSet} from "../model/preview-data-set";
 import {TdLoadingService} from "@covalent/core/loading";
 import {DatasetPreviewService} from "../service/dataset-preview.service";
 import {CatalogService} from '../../../api/services/catalog.service';
+import {DatasetService} from '../dataset/dataset-service';
+import {SparkDataSet} from '../../../../model/spark-data-set.model';
+import {Observable} from 'rxjs/Observable';
+import {ItemSaveResponse} from '../../../../shared/info-item/item-save-response';
+import {DatasetSaveResponse} from '../dataset/dataset-info/dataset-save-response';
+import {StateService} from '@uirouter/core';
+import {DescriptionChangeEvent} from '../dataset-simple-table.component';
+import {TableColumn} from '../model/table-view-model';
 
 
 @Component({
@@ -33,7 +42,9 @@ export class DatasetPreviewComponent implements OnInit{
     constructor(private _dialogService: TdDialogService,
                 private _loadingService:TdLoadingService,
                 private _datasetPreviewService:DatasetPreviewService,
-                private _catalogService: CatalogService) {
+                private _catalogService: CatalogService,
+                private _datasetService: DatasetService,
+                private _stateService: StateService) {
 
     }
     ngOnInit(){
@@ -118,6 +129,42 @@ export class DatasetPreviewComponent implements OnInit{
         }
     }
 
+    onDescriptionChange(event: DescriptionChangeEvent) {
+        const tableColumn = _.find(this.dataset.schema, function(tc: TableColumn) {
+            return tc.name === event.columnName;
+        });
+        if (tableColumn) {
+            tableColumn.description = event.newDescription;
+            this.saveDataset(this.dataset.toSparkDataSet());
+        }
+    }
 
+    saveDataset(dataset: SparkDataSet): Observable<ItemSaveResponse> {
+        const isExistingDataset = dataset.id !== undefined;
+        let observable = this._datasetService.saveDataset(dataset);
+        observable.subscribe(
+            (response: DatasetSaveResponse) => {
+                if (response.success) {
+                    this.dataset.id = response.dataset.id;
+                    // this.onSaveSuccess(response);
+                    // this.editing = false;
+                    // this.itemInfoService.onSaved(response);
+                    if (!isExistingDataset) {
+                        this._stateService.go("catalog.datasource.preview",
+                            {
+                                datasetId: this.dataset.id,
+                                datasource: this.dataset.dataSource,
+                                displayInCard:true,
+                                location: "replace"
+                            });
+                    }
+                } else {
+                    // this.onSaveFail(response);
+                }
+            },
+            // error => this.onSaveFail(error)
+        );
+        return observable;
+    }
 
 }

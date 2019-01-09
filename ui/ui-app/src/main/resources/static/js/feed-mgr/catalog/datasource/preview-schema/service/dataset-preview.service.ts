@@ -180,6 +180,7 @@ export class DatasetPreviewService {
             dataSet.displayKey = key;
             dataSet.key = key;
             dataSet.allowsRawView = false;
+            dataSet.id = dbObject.dataSetId;
             return dataSet;
         }
         else {

@@ -5,7 +5,7 @@
     </h4>
   </ng-container>
   <div fxFlex></div>
-  <div fxLayout="row" style="margin-top: -15px" *ngIf="false">
+  <div fxLayout="row" style="margin-top: -15px" *ngIf="true">
     <button mat-button mat-raised-button
             color="accent" class="text-upper" style="margin-right: 5px"
             [disabled]="dataset.id !== undefined"
@@ -48,7 +48,10 @@
     </ng-template>
   </mat-tab>
   <mat-tab label="Schema">
-    <dataset-schema-definition [smallView]="false" [(columns)]="dataset.schema" *ngIf="dataset.schema"></dataset-schema-definition>
+    <dataset-schema-definition [smallView]="false"
+                               [(columns)]="dataset.schema"
+                               (descriptionChange)="onDescriptionChange($event)"
+                               *ngIf="dataset.schema"></dataset-schema-definition>
 
     <div *ngIf="!dataset.schema">
       Unable to review schema

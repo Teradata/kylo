@@ -1,28 +1,35 @@
-import {Input} from "@angular/core";
+import {Input, OnInit} from "@angular/core";
 import {FormGroup} from "@angular/forms";
 import {Observable} from "rxjs/Observable";
-import {Dataset} from '../../api/models/dataset';
-import {InfoItemService} from '../../../shared/info-item/item-info.service';
-import {ItemSaveResponse} from '../../../shared/info-item/item-save-response';
-import {DatasetService} from './../dataset-service';
-import {DatasetLoadingService} from './../dataset-loading-service';
+import {InfoItemService} from '../../../../../shared/info-item/item-info.service';
+import {ItemSaveResponse} from '../../../../../shared/info-item/item-save-response';
+import {DatasetService} from '../dataset-service';
+import {DatasetLoadingService} from '../dataset-loading-service';
 import {DatasetSaveResponse} from './dataset-save-response';
+import {StateService} from "@uirouter/angular";
+import {SparkDataSet} from '../../../../../model/spark-data-set.model';
 
 
-export abstract class AbstractDatasetInfoItemComponent {
+export abstract class AbstractDatasetInfoItemComponent implements OnInit {
 
     @Input()
     public editing: boolean;
 
     @Input()
-    public dataset: Dataset;
+    public dataset: SparkDataSet;
 
     valid:boolean = true;
 
     formGroup: FormGroup;
 
-    protected constructor(protected itemInfoService: InfoItemService, private datasetService: DatasetService, private datasetLoadingService: DatasetLoadingService) {
+    protected constructor(protected itemInfoService: InfoItemService,
+                          private datasetService: DatasetService,
+                          private datasetLoadingService: DatasetLoadingService,
+                          private stateService: StateService) {
         this.initForm();
+    }
+
+    ngOnInit(): void {
     }
 
     initForm() {
@@ -55,7 +62,8 @@ export abstract class AbstractDatasetInfoItemComponent {
         this.datasetLoadingService.resolveLoading()
     }
 
-    saveDataset(dataset: Dataset): Observable<ItemSaveResponse> {
+    saveDataset(dataset: SparkDataSet): Observable<ItemSaveResponse> {
+        const isExistingDataset = dataset.id !== undefined;
         let observable = this.datasetService.saveDataset(dataset);
         observable.subscribe(
             (response: DatasetSaveResponse) => {
@@ -64,6 +72,14 @@ export abstract class AbstractDatasetInfoItemComponent {
                     this.onSaveSuccess(response);
                     this.editing = false;
                     this.itemInfoService.onSaved(response);
+                    if (!isExistingDataset) {
+                        this.stateService.go("catalog.datasource.preview",
+                            {
+                                datasetId: this.dataset.id,
+                                datasource: this.dataset.dataSource,
+                                displayInCard:true,
+                                location: "replace"});
+                    }
                 } else {
                     this.onSaveFail(response);
                 }
@@ -72,4 +88,5 @@ export abstract class AbstractDatasetInfoItemComponent {
         );
         return observable;
     }
+
 }

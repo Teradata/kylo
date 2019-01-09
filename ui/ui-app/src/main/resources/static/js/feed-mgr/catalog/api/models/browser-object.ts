@@ -27,4 +27,15 @@ export class BrowserObject {
         return undefined;
     }
 
+    /**
+     * Whether or not this object represents a data set
+     */
+    isDataSet(): boolean {
+        return false;
+    }
+
+    getDataSetId(): string {
+        return undefined;
+    }
+
 }

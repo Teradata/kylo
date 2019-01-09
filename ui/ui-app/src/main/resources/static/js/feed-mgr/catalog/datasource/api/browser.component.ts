@@ -422,11 +422,14 @@ export class BrowserComponent implements OnInit, OnDestroy {
      * @param value
      */
     preview(row:BrowserObject,column:BrowserColumn,value:any) {
-
         this.selectionService.clearSelected(this.datasource.id);
         this.selectionStrategy.toggleChild(this.node, row.name, true);
         this.initSelection();
-        this.state.go("catalog.datasource.preview",{datasource:this.datasource,displayInCard:true});//, {location: "replace"});
+        if (row.isDataSet()) {
+            this.state.go("catalog.datasource.preview",{datasetId: row.getDataSetId(), datasource:this.datasource, displayInCard:true});//, {location: "replace"});
+        } else {
+            this.state.go("catalog.datasource.preview",{datasource:this.datasource,displayInCard:true});//, {location: "replace"});
+        }
     }
 
     private filter(): void {

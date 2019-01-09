@@ -3,9 +3,10 @@ import {Component, OnInit} from "@angular/core";
 import {AbstractDatasetInfoItemComponent} from '../abstract-dataset-info-item.component';
 import {DatasetService} from '../../dataset-service';
 import {DatasetLoadingService} from '../../dataset-loading-service';
-import {InfoItemService} from '../../../../shared/info-item/item-info.service';
-import {ItemSaveResponse} from '../../../../shared/info-item/item-save-response';
-import {Tag} from '../../../../model/schema-field';
+import {InfoItemService} from '../../../../../../shared/info-item/item-info.service';
+import {ItemSaveResponse} from '../../../../../../shared/info-item/item-save-response';
+import {Tag} from '../../../../../../model/schema-field';
+import {StateService} from '@uirouter/core';
 
 
 @Component({
@@ -33,8 +34,11 @@ export class DatasetInfoTagsComponent  extends AbstractDatasetInfoItemComponent 
      */
     tagNamesString: string;
 
-    constructor(itemInfoService: InfoItemService, datasetService: DatasetService, datasetLoadingService: DatasetLoadingService) {
-        super(itemInfoService, datasetService, datasetLoadingService);
+    constructor(itemInfoService: InfoItemService,
+                datasetService: DatasetService,
+                datasetLoadingService: DatasetLoadingService,
+                stateService: StateService) {
+        super(itemInfoService, datasetService, datasetLoadingService, stateService);
     }
 
     initForm(){

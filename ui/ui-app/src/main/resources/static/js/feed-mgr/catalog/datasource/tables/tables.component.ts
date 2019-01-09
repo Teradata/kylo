@@ -35,7 +35,13 @@ export class TablesComponent extends BrowserComponent {
     }
 
     getColumns(): BrowserColumn[] {
-        return DatabaseObjectDescriptor.COLUMNS;
+        return [
+            {name: "selection", label: " ", sortable: false, width: 40, filter: false, icon: false},
+            {name: DatabaseObjectDescriptor.TYPE_COLUMN, label: "Type", sortable: false, filter: false, width: 100, icon: true, tooltip: "true"},
+            {name: DatabaseObjectDescriptor.NAME_COLUMN, label: "Name", sortable: true, filter: true},
+            // {name: "isDataSet", label: "Datasets", sortable: true},
+        ];
+
     }
 
     getSortByColumnName(): string {
@@ -51,7 +57,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {
-        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema, obj.qualifiedIdentifier);
+        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema, obj.qualifiedIdentifier, obj.dataSetId);
     }
 
     createRootNode(): Node {
@@ -148,7 +154,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     private createTempPlaceholder(name: string, type: DatabaseObjectType) {
-        return new DatabaseObject(name, type, undefined, undefined, undefined);
+        return new DatabaseObject(name, type, undefined, undefined, undefined, undefined);
     }
 
 }

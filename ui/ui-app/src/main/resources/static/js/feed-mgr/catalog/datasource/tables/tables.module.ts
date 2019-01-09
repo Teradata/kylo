@@ -63,6 +63,9 @@ import {MatIconModule} from "@angular/material/icon";
 })
 export class TablesModule {
 }
+
+
+
 @NgModule({
     imports: [
         TablesModule,

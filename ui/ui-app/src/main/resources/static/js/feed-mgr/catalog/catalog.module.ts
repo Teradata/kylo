@@ -32,14 +32,12 @@ import {catalogStates} from "./catalog.states";
 import {ConnectorComponent} from './connector/connector.component';
 import {ConnectorsComponent} from './connectors/connectors.component';
 import {DatasourceComponent} from "./datasource/datasource.component";
-import {TablesRouterModule} from "./datasource/tables/tables.module";
 import {DataSourcesComponent} from "./datasources/datasources.component";
 import {VisibleOnMouseOverDirective} from './datasources/visible-on-mouse-over.directive';
 import {CreateFeedComponent} from './datasource/create-feed/create-feed.component';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {AdminConnectorsComponent} from "./connectors/admin-connectors.component";
 import {AdminConnectorComponent} from "./connector/admin-connector.component";
-import {DatasetModule} from './dataset/dataset.module';
 
 @NgModule({
     declarations: [
@@ -75,7 +73,6 @@ import {DatasetModule} from './dataset/dataset.module';
         FlexLayoutModule,
         KyloCommonModule,
         KyloFeedManagerModule,
-        DatasetModule,
         MatCardModule,
         FormsModule,
         MatInputModule,
@@ -102,7 +99,6 @@ export class CatalogModule {
 @NgModule({
     imports: [
         CatalogModule,
-        TablesRouterModule,
         UIRouterModule.forChild({states: catalogStates})
     ]
 })

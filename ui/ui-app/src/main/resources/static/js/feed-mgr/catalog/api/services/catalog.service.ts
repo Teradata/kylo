@@ -1,4 +1,4 @@
-import {HttpBackend, HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {CloneUtil} from "../../../../common/utils/clone-util";
@@ -9,7 +9,6 @@ import {DataSource} from "../models/datasource";
 import {SearchResult} from "../models/search-result";
 import {SparkDataSet} from "../../../model/spark-data-set.model";
 import {DatasetTable} from "../models/dataset-table";
-import {Dataset} from '../models/dataset';
 import {map} from "rxjs/operators";
 import {HttpBackendClient} from "../../../../services/http-backend-client";
 
@@ -101,15 +100,15 @@ export class CatalogService {
         return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
     }
 
-    getDataset(id: string): Observable<Dataset> {
-        return this.http.get<Dataset>("/proxy/v1/catalog/dataset/" + id);
+    getDataset(id: string): Observable<SparkDataSet> {
+        return this.http.get<SparkDataSet>("/proxy/v1/catalog/dataset/" + id);
     }
 
-    createDataset(dataset: Dataset):  Observable<Dataset> {
+    createDataset(dataset: SparkDataSet):  Observable<SparkDataSet> {
         if (typeof dataset.id === "string") {
-            return this.http.put<Dataset>("/proxy/v1/catalog/dataset/" + encodeURIComponent(dataset.id), dataset);
+            return this.http.put<SparkDataSet>("/proxy/v1/catalog/dataset/" + encodeURIComponent(dataset.id), dataset);
         } else {
-            return this.http.post<Dataset>("/proxy/v1/catalog/dataset/", dataset);
+            return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", dataset);
         }
     }
 
@@ -127,6 +126,11 @@ export class CatalogService {
     createDataSetWithTitle(dataSet: SparkDataSet): Observable<SparkDataSet> {
         const body = CloneUtil.deepCopy(dataSet);
         return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+    }
+
+    updateDataSetWithTitle(dataSet: SparkDataSet, dataSetId: string): Observable<SparkDataSet> {
+        const body = CloneUtil.deepCopy(dataSet);
+        return this.http.put<SparkDataSet>("/proxy/v1/catalog/dataset/" + encodeURIComponent(dataSetId), body);
     }
 
     /**
