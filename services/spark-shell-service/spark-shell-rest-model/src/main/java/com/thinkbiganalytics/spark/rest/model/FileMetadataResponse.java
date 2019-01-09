@@ -147,7 +147,7 @@ public class FileMetadataResponse {
         public Integer getHeaderCount() {
             String headerCount = getProperties().get("headerCount");
             if (headerCount != null) {
-                return new Integer(headerCount);
+                return Integer.valueOf(headerCount);
             } else {
                 return 0;
             }

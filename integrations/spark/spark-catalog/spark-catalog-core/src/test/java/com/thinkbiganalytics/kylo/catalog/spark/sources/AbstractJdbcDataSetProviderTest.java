@@ -186,7 +186,7 @@ public class AbstractJdbcDataSetProviderTest {
         final JdbcHighWaterMark highWaterMark = provider.createHighWaterMark("mockWaterMark", client);
 
         Assert.assertEquals("mockWaterMark", highWaterMark.getName());
-        Assert.assertEquals(new Long(1525014303000L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(1525014303000L), highWaterMark.getValue());
         Mockito.reset(client);
 
         // Test adding a value
@@ -282,11 +282,11 @@ public class AbstractJdbcDataSetProviderTest {
 
         // Test non-null overlap
         options.setOption("overlap", "60");
-        Assert.assertEquals(new Long(60000), provider.getOverlap(options));
+        Assert.assertEquals(Long.valueOf(60000), provider.getOverlap(options));
 
         // Test negative overlap
         options.setOption("overlap", "-5");
-        Assert.assertEquals(new Long(5000), provider.getOverlap(options));
+        Assert.assertEquals(Long.valueOf(5000), provider.getOverlap(options));
     }
 
     /**

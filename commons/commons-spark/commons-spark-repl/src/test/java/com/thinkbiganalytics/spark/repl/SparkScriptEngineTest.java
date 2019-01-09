@@ -107,7 +107,7 @@ public class SparkScriptEngineTest {
      */
     @Test
     public void test() throws Exception {
-        Assert.assertEquals(3, engine.eval("new Integer(1 + 2)"));
+        Assert.assertEquals(3, engine.eval("Integer.valueOf(1 + 2)"));
     }
 
     /**

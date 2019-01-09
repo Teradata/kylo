@@ -47,19 +47,19 @@ public class JdbcHighWaterMarkTest {
 
         // Test first non-null value
         highWaterMark.accumulate(2L);
-        Assert.assertEquals(new Long(2L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(2L), highWaterMark.getValue());
 
         // Test lower value
         highWaterMark.accumulate(1L);
-        Assert.assertEquals(new Long(2L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(2L), highWaterMark.getValue());
 
         // Test null value
         highWaterMark.accumulate(null);
-        Assert.assertEquals(new Long(2L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(2L), highWaterMark.getValue());
 
         // Test higher value
         highWaterMark.accumulate(3L);
-        Assert.assertEquals(new Long(3L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(3L), highWaterMark.getValue());
     }
 
     /**

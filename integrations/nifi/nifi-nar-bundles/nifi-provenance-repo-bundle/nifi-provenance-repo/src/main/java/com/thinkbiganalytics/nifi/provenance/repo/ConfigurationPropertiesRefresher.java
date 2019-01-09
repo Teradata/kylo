@@ -52,12 +52,12 @@ public class ConfigurationPropertiesRefresher {
             if (changes != null && !changes.isEmpty()) {
                 ConfigurationProperties.PropertyChange runInterval = changes.get(ConfigurationProperties.RUN_INTERVAL_KEY);
                 if (runInterval != null) {
-                    FeedStatisticsManager.getInstance().resetStatisticsInterval(new Long(runInterval.getNewValue()));
+                    FeedStatisticsManager.getInstance().resetStatisticsInterval(Long.valueOf(runInterval.getNewValue()));
                     log.info("Reset {} ", runInterval);
                 }
                 ConfigurationProperties.PropertyChange maxEvents = changes.get(ConfigurationProperties.MAX_FEED_EVENTS_KEY);
                 if (maxEvents != null) {
-                    FeedStatisticsManager.getInstance().resetMaxEvents(new Integer(maxEvents.getNewValue()));
+                    FeedStatisticsManager.getInstance().resetMaxEvents(Integer.valueOf(maxEvents.getNewValue()));
                     log.info("Reset {} ", maxEvents);
                 }
                 ConfigurationProperties.PropertyChange backupLocation = changes.get(ConfigurationProperties.BACKUP_LOCATION_KEY);

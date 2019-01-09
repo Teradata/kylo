@@ -38,7 +38,7 @@ public class BasicIssue {
         try {
             this.self = new URI(getIssue.getSelf());
             this.key = getIssue.getKey();
-            this.id = new Long(getIssue.getId());
+            this.id = Long.valueOf(getIssue.getId());
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }

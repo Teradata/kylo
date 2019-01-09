@@ -36,10 +36,10 @@ public class JdbcHighWaterMarkAccumulableParamTest {
         final JdbcHighWaterMark highWaterMark = new JdbcHighWaterMark();
         final JdbcHighWaterMarkAccumulableParam param = new JdbcHighWaterMarkAccumulableParam();
         param.addAccumulator(highWaterMark, 1L);
-        Assert.assertEquals(new Long(1L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(1L), highWaterMark.getValue());
 
         param.addAccumulator(highWaterMark, 2L);
-        Assert.assertEquals(new Long(2L), highWaterMark.getValue());
+        Assert.assertEquals(Long.valueOf(2L), highWaterMark.getValue());
     }
 
     /**
@@ -54,7 +54,7 @@ public class JdbcHighWaterMarkAccumulableParamTest {
         right.accumulate(2L);
 
         final JdbcHighWaterMark result = new JdbcHighWaterMarkAccumulableParam().addInPlace(left, right);
-        Assert.assertEquals(new Long(2L), result.getValue());
+        Assert.assertEquals(Long.valueOf(2L), result.getValue());
         Assert.assertEquals(left, result);
     }
 

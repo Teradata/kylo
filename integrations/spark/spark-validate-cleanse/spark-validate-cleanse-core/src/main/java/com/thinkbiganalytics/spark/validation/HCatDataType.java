@@ -249,7 +249,7 @@ public class HCatDataType implements Cloneable, Serializable {
             if (StringUtils.isEmpty(val) || convertibleType == String.class) {
                 return (unchecked || isstring ? (T) val : null);
             } else if (convertibleType == Integer.class) {
-                return (T) new Integer(val);
+                return (T) Integer.valueOf(val);
             } else if (convertibleType == Double.class) {
                 return (T) new Double(val);
             } else if (convertibleType == Float.class) {

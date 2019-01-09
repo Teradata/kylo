@@ -777,9 +777,9 @@ public class RegisteredTemplateService {
                     if (!"NEW".equals(id) && (exclude == null || (exclude != null && !exclude.contains(id)))) {
                         FeedManagerTemplate template = templateProvider.findById(templateProvider.resolveId(id));
                         if (template != null) {
-                            if (template.getOrder() == null || !template.getOrder().equals(new Long(i))) {
+                            if (template.getOrder() == null || !template.getOrder().equals(Long.valueOf(i))) {
                                 //save the new order
-                                template.setOrder(new Long(i));
+                                template.setOrder(Long.valueOf(i));
                                 templateProvider.update(template);
                             }
                         }

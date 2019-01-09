@@ -73,7 +73,7 @@ public class ClouderaClient {
         if (StringUtils.isBlank(portString)) {
             portString = "7180";
         }
-        Integer port = new Integer(portString);
+        Integer port = Integer.valueOf(portString);
         String username = clientConfig.getUsername();
         String password = clientConfig.getPassword();
 

@@ -199,7 +199,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
             .extracting("state", "description", "content")
             .contains(Assertions.tuple(State.UNHANDLED, null, null), Assertions.tuple(State.IN_PROGRESS, TRUNK_DESCR, null));
 
-        alert = resp.handle("Change handled", new Integer(42));
+        alert = resp.handle("Change handled", Integer.valueOf(42));
 
         Assertions.assertThat(alert.getEvents())
             .hasSize(3)

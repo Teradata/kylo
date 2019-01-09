@@ -64,7 +64,7 @@ public class JobStatusTransform {
                 JobStatusCount first = jobStatusCounts.get(0);
                 JobStatusCount min = new JobStatusCountResult(first);
                 min.setDate(firstDate);
-                min.setCount(new Long(0));
+                min.setCount(Long.valueOf(0));
                 jobStatusCounts.add(min);
             }
         }
