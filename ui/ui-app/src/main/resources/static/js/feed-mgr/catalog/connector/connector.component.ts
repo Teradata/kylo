@@ -329,6 +329,8 @@ export class ConnectorComponent {
      * Creates a new datasource or updates an existing one
      */
     saveDatasource() {
+        let errormessage = undefined;
+
         const ds = this.getDataSourceFromUi();
         if (ds === undefined) {
             return;
@@ -336,27 +338,43 @@ export class ConnectorComponent {
 
         this.isLoading = true;
         this.loadingService.register(ConnectorComponent.topOfPageLoader);
-        this.catalogService.createDataSource(ds).pipe(
-            concatMap(dataSource => {
-                if (this.allowAdmin && typeof ds.roleMemberships !== "undefined") {
-                    this.entityAccessControlService.updateRoleMembershipsForSave(ds.roleMemberships);
-                    return fromPromise(this.entityAccessControlService.saveRoleMemberships("datasource", dataSource.id, ds.roleMemberships))
-                        .pipe(map(() => dataSource));
-                } else {
-                    return of(dataSource);
+        this.catalogService.testDataSource(ds)
+            .pipe(finalize(() => {
+                if (typeof errormessage === "undefined"){
+                    this.catalogService.createDataSource(ds).pipe(
+                        concatMap(dataSource => {
+                            if (this.allowAdmin && typeof ds.roleMemberships !== "undefined") {
+                                this.entityAccessControlService.updateRoleMembershipsForSave(ds.roleMemberships);
+                                return fromPromise(this.entityAccessControlService.saveRoleMemberships("datasource", dataSource.id, ds.roleMemberships))
+                                    .pipe(map(() => dataSource));
+                            } else {
+                                return of(dataSource);
+                            }
+                        }),
+                        finalize(() => {
+                            this.isLoading = false;
+                            this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
+                        })
+                    ).subscribe(
+                        source => this.state.go("catalog.datasources", {datasourceId: source.id}),
+                        err => {
+                            console.error(err);
+                            this.showSnackBar('Failed to save. ', err.message);
+                        }
+                    );
+                }else {
+                    this.isLoading = false;
+                    this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
                 }
-            }),
-            finalize(() => {
-                this.isLoading = false;
-                this.loadingService.resolve(ConnectorComponent.topOfPageLoader);
-            })
-        ).subscribe(
-            source => this.state.go("catalog.datasources", {datasourceId: source.id}),
-            err => {
-                console.error(err);
-                this.showSnackBar('Failed to save. ', err.message);
-            }
-        );
+            }))
+            .pipe(catchError((err) => {
+                errormessage = err.error.developerMessage ? err.error.developerMessage : err.error.message;
+                this.showSnackBar('Failed to save. ',errormessage);
+
+                return [];
+            }))
+            .subscribe(() => {
+            });
     }
 
     getDataSourceFromUi(): DataSource | undefined {
@@ -469,7 +487,7 @@ export class ConnectorComponent {
                 return [];
             }))
             .subscribe(() => {
-
+                console.debug("test");
             });
     }
 
