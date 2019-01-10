@@ -163,7 +163,114 @@
         "database-driver-locations": "${jars}",
         "Database User": "${user}",
         "Password": "${password}"
+      },
+      "identityProperties": ["Database Connection URL","Database User"]
+    },
+    "nifiProperties": [
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.GetTableData", "com.thinkbiganalytics.nifi.v2.ingest.GetTableData"],
+        "properties": {
+          "Source Database Connection": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
+      },
+      {
+        "processorTypes": ["com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop"],
+        "properties": {
+          "Source Connection Service": "{{ dataSource.nifiControllerServiceId }}",
+          "Source Table": "{{ options.dbname }}"
+        }
       }
+    ]
+  },
+  {
+    "title": "JDBC - Sqoop",
+    "pluginId": "jdbc-sqoop",
+    "format": "jdbc",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "options": [
+      {
+        "key": "url",
+        "label": "Connection URL",
+        "hint":"A database connection URL used to connect to a database. May contain database system name, host, port, database name and some parameters. For example 'jdbc:mysql://localhost:3306/kylo' ",
+        "validators": [
+          {
+            "type": "url",
+            "params": {
+              "protocol": "jdbc:"
+            }
+          }
+        ]
+      },
+      {
+        "key": "driver",
+        "label": "Driver Class Name",
+        "hint":"Database driver class name.  For example 'org.mariadb.jdbc.Driver'.  This is required for Kylo to make the catalog connection. It will not be used when Sqoop is invoked."
+      },
+      {
+        "key": "jars",
+        "label": "Driver Location(s)",
+        "hint":"Comma-separated list of paths containing the driver JAR and dependencies. Path must be accessible to Kylo, Nifi, and Spark. For example: 'file:///var/shared/mariadb-java-client-1.1.7.jar,s3a:///mybucket/db.jar'.  This is required for Kylo to make the catalog connection. It will not be used when Sqoop is invoked.",
+        "required": false,
+        "validators": [
+          {
+            "type": "jars"
+          }
+        ]
+      },
+      {
+        "key": "user",
+        "label": "User",
+        "hint":"Database user name"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password",
+        "sensitive": true,
+        "required": false,
+        "hint":"The password for the database user either blank, if using password file, encrypted base64 or clear text, depending upon the 'password mode' setting "
+      },
+      {
+        "key": "passwordMode",
+        "label": "Password Mode",
+        "type":"select",
+        "selections": [{"label": "Encrypted on HDFS","value": "ENCRYPTED_ON_HDFS_FILE"},
+          {"label": "Clear Text", "value": "CLEAR_TEXT_ENTRY"},
+          {"label": "Encrypted text entry","value": "ENCRYPTED_TEXT_ENTRY"}
+          ]
+        ,"hint":"The type of password and how its provided"
+      },
+      {
+        "key": "sourcePasswordFile",
+        "label": "Source Password File",
+        "hint":"HDFS location containing the encrypted password",
+        "required": false
+      },
+      {
+        "key": "sourcePasswordPassphrase",
+        "label": "Source Password Passphrase",
+        "sensitive": true,
+        "hint":"decryption key",
+        "required": false
+      }
+    ],
+    "nifiControllerService": {
+      "type": "com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService",
+      "properties": {
+        "Source Connection String": "${url}",
+        "Source User Name": "${user}",
+        "Password Mode": "${passwordMode}",
+        "Source Password File": "${sourcePasswordFile}",
+        "Source Password Passphrase": "${sourcePasswordPassphrase}",
+        "Source Password (Encrypted Base64/Clear Text)": "${password}"
+      },
+      "identityProperties": ["Source Connection String", "Source User Name"]
     },
     "nifiProperties": [
       {
@@ -263,7 +370,8 @@
       "properties": {
         "Access Key": "${spark.hadoop.fs.s3a.access.key}",
         "Secret Key": "${spark.hadoop.fs.s3a.secret.key}"
-      }
+      },
+      "identityProperties": ["Access Key"]
     },
     "nifiProperties": [
       {

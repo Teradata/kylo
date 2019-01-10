@@ -48,7 +48,7 @@ export class DefineFeedPermissionsComponent extends AbstractFeedStepComponent {
     checkEntityAccess() {
         let entityAccessControlCheck:Observable<boolean> = of(this.accessControlService.checkEntityAccessControlled());
         entityAccessControlCheck.subscribe((result: any) => {
-                this.displayEditActions = this.accessControlService.isEntityAccessControlled() && this.feed.accessControl.allowAdmin;
+                this.displayEditActions = this.accessControlService.isEntityAccessControlled() && this.feed.accessControl.allowChangePermissions;
             }, (err: any) => {
                 console.log("Error checking if entity access control is enabled");
             });

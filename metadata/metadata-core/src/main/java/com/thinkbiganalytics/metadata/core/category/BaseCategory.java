@@ -24,8 +24,8 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 import org.joda.time.DateTime;
 
@@ -171,6 +171,14 @@ public class BaseCategory implements Category {
     public AllowedActions getAllowedActions() {
         // TODO Auto-generated method stub
         return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Category:" + getId();
     }
 
     @Override

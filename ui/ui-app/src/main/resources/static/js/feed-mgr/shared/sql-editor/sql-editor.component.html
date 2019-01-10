@@ -21,7 +21,14 @@
 <form [formGroup]="form">
 
   <div id="hqlEditorContainer">
-    <span translate>views.hql-editor.EQ</span>
+    <div fxFlex fxLayout="column">
+      <div fxFlex class="pad-bottom">
+        <span translate>views.hql-editor.EQ</span>
+      </div>
+      <td-message *ngIf="queryExecutionFailure" label="Query Execution Failed" sublabel="Try updating query and running again" color="warn" icon="warning">
+        <button td-message-actions mat-button (click)="overrideQueryFailureCheck()">OK</button>
+      </td-message>
+    </div>
     <codemirror #codeMirrorView (change)="onSqlChange($event)" class="sql-editor" [ngModelOptions]="{standalone: true}" [config]="codeMirrorOptions" [(ngModel)]="sql" style="height:{{height}}px"></codemirror>
   </div>
 

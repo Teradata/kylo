@@ -32,9 +32,9 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.UserDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.security.AccessControlled;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -73,7 +73,7 @@ import javax.ws.rs.core.Response.Status;
 //=====================
 public class DefaultSecurityService implements SecurityService {
     
-    private static final Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> EMPTY_SUPPLIER = () -> Optional.empty();
+    private static final Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> EMPTY_SUPPLIER = () -> Optional.empty();
 
     @Inject
     CategoryProvider categoryProvider;
@@ -384,15 +384,15 @@ public class DefaultSecurityService implements SecurityService {
         return () -> accessFeed(id).map(Feed::getAllowedActions);
     }
 
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyFeedRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyFeedRoleMemberships(String id) {
         return () -> accessFeed(id).map(Feed::getRoleMemberships);
     }
     
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyInheritedFeedRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyInheritedFeedRoleMemberships(String id) {
         return () -> accessFeed(id).map(Feed::getInheritedRoleMemberships);
     }
 
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyFeedRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyFeedRoleMembership(String id, String roleName) {
         return () -> accessFeed(id).flatMap(f -> f.getRoleMembership(roleName));
     }
 
@@ -400,19 +400,19 @@ public class DefaultSecurityService implements SecurityService {
         return () -> accessCategory(id).map(Category::getAllowedActions);
     }
 
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyCategoryRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyCategoryRoleMemberships(String id) {
         return () -> accessCategory(id).map(Category::getRoleMemberships);
     }
 
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyCategoryRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyCategoryRoleMembership(String id, String roleName) {
         return () -> accessCategory(id).flatMap(c -> c.getRoleMembership(roleName));
     }
     
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyCategoryFeedRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyCategoryFeedRoleMemberships(String id) {
         return () -> accessCategory(id).map(Category::getFeedRoleMemberships);
     }
     
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyCategoryFeedRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyCategoryFeedRoleMembership(String id, String roleName) {
         return () -> accessCategory(id).flatMap(c -> c.getFeedRoleMembership(roleName));
     }
 
@@ -420,11 +420,11 @@ public class DefaultSecurityService implements SecurityService {
         return () -> accessTemplate(id).map(FeedManagerTemplate::getAllowedActions);
     }
 
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyTemplateRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyTemplateRoleMemberships(String id) {
         return () -> accessTemplate(id).map(FeedManagerTemplate::getRoleMemberships);
     }
 
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyTemplateRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyTemplateRoleMembership(String id, String roleName) {
         return () -> accessTemplate(id).flatMap(t -> t.getRoleMembership(roleName));
     }
 
@@ -440,27 +440,27 @@ public class DefaultSecurityService implements SecurityService {
         return () -> accessDataSource(id).map(AccessControlled::getAllowedActions);
     }
 
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyDatasourceRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyDatasourceRoleMemberships(String id) {
         return () -> accessDatasource(id).map(AccessControlled::getRoleMemberships);
     }
     
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyConnectorRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyConnectorRoleMemberships(String id) {
         return () -> accessConnector(id).map(AccessControlled::getRoleMemberships);
     }
     
-    private Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> supplyDataSourceRoleMemberships(String id) {
+    private Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> supplyDataSourceRoleMemberships(String id) {
         return () -> accessDataSource(id).map(AccessControlled::getRoleMemberships);
     }
 
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyDatasourceRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyDatasourceRoleMembership(String id, String roleName) {
         return () -> accessDatasource(id).flatMap(t -> t.getRoleMembership(roleName));
     }
     
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyConnectorRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyConnectorRoleMembership(String id, String roleName) {
         return () -> accessConnector(id).flatMap(t -> t.getRoleMembership(roleName));
     }
     
-    private Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> supplyDataSourceRoleMembership(String id, String roleName) {
+    private Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> supplyDataSourceRoleMembership(String id, String roleName) {
         return () -> accessDataSource(id).flatMap(t -> t.getRoleMembership(roleName));
     }
 
@@ -505,12 +505,12 @@ public class DefaultSecurityService implements SecurityService {
         });
     }
     
-    private Optional<RoleMemberships> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> assignedSupplier) {
+    private Optional<RoleMemberships> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> assignedSupplier) {
         return getRoleMemberships(EMPTY_SUPPLIER, assignedSupplier);
     }
 
-    private Optional<RoleMemberships> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> inheritedSupplier,
-                                                         Supplier<Optional<Set<com.thinkbiganalytics.metadata.api.security.RoleMembership>>> assignedSupplier) {
+    private Optional<RoleMemberships> getRoleMemberships(Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> inheritedSupplier,
+                                                         Supplier<Optional<Set<com.thinkbiganalytics.security.role.RoleMembership>>> assignedSupplier) {
         return this.metadata.read(() -> {
             Optional<Map<String, RoleMembership>> inheritedMap = inheritedSupplier.get()
                             .map(members -> members.stream()
@@ -528,7 +528,7 @@ public class DefaultSecurityService implements SecurityService {
         });
     }
 
-    private Optional<RoleMembership> changeRoleMemberships(RoleMembershipChange change, Supplier<Optional<com.thinkbiganalytics.metadata.api.security.RoleMembership>> domainSupplier) {
+    private Optional<RoleMembership> changeRoleMemberships(RoleMembershipChange change, Supplier<Optional<com.thinkbiganalytics.security.role.RoleMembership>> domainSupplier) {
         return this.metadata.commit(() -> {
             return domainSupplier.get().map(domain -> {
                 switch (change.getChange()) {

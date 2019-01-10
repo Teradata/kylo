@@ -359,9 +359,26 @@
       <excludes>
         <exclude>**/node_modules/**</exclude>
         <exclude>**/target/**</exclude>
+        <exclude>templates/**/*.json</exclude>
+        <exclude>feeds/**/*.json</exclude>
       </excludes>
     </fileSet>
-
+    <fileSet>
+      <outputDirectory>setup/data/repository/templates</outputDirectory>
+      <directory>${project.parent.parent.basedir}/samples/templates/nifi-1.0</directory>
+      <fileMode>755</fileMode>
+      <excludes>
+        <exclude>**/*.json</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>setup/data/repository/templates</outputDirectory>
+      <directory>${project.parent.parent.basedir}/samples/templates/nifi-1.5</directory>
+      <fileMode>755</fileMode>
+      <excludes>
+        <exclude>**/*.json</exclude>
+      </excludes>
+    </fileSet>
     <fileSet>
       <directory>${project.parent.parent.basedir}/metadata/metadata-modeshape/src/main/resources</directory>
       <outputDirectory>setup/config/kylo-cluster</outputDirectory>

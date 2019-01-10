@@ -172,11 +172,14 @@ public class RepositoryMonitor {
                     }, MetadataAccess.SERVICE);
                     String digest = DigestUtils.md5DigestAsHex(zipFile.getFile());
                     updateAvailable = !StringUtils.equals(checksum, digest);
+                    metadata.setUpdateAvailable(updateAvailable);
                     templateUpdateInfoCache.put(templateName, updateAvailable);
                 }
             }else {
                 //if registered template was updated
                 metadata = mapper.readValue(json, TemplateMetadata.class);
+                templateUpdateInfoCache.put(tmplt.getTemplateName(), metadata.isUpdateAvailable());
+
                 if (metadata.getLastModified() >= tmplt.getUpdateDate().getTime()) {
                     return;
                 }
@@ -201,9 +204,7 @@ public class RepositoryMonitor {
     private void generateMissingMetadata(Path repositoryPath, Map<String, RegisteredTemplate> registeredTemplateMap) throws Exception {
         Files.find(repositoryPath, 1, (path, attrs) -> attrs.isRegularFile() && path.toString().endsWith(".zip"))
                 .forEach(templateZip -> {
-                    if (Files.notExists(getMetadataFileName(templateZip))) {
-                        createMetadata(templateZip, registeredTemplateMap);
-                    }
+                    createMetadata(templateZip, registeredTemplateMap);
                 });
     }
 

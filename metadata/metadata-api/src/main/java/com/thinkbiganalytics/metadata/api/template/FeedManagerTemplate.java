@@ -28,7 +28,8 @@ import com.thinkbiganalytics.metadata.api.Iconable;
 import com.thinkbiganalytics.metadata.api.SystemEntity;
 import com.thinkbiganalytics.metadata.api.Taggable;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.security.AccessControlled;
+
 import org.joda.time.DateTime;
 
 /**

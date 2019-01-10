@@ -61,8 +61,8 @@ constructor(@Inject("AccessControlService") private accessControlService:AccessC
                     subject.next( new FeedAccessControl({
                         accessMessage:accessMessage,
                     datasourceAccess:datasourceAccess,
-                    allowEdit : entityEditAccess && allowEditAccess && datasourceAccess,
-                    allowChangePermissions : entityAccessControlled && entityPermissionAccess && allowEditAccess,
+                    allowEdit : entityEditAccess && (allowEditAccess || allowAdminAccess) && datasourceAccess,
+                    allowChangePermissions : entityAccessControlled && entityPermissionAccess && (allowEditAccess || allowAdminAccess),
                     allowAdmin : allowAdminAccess,
                     allowSlaAccess : slaAccess,
                     allowExport : entityExportAccess && allowExport,

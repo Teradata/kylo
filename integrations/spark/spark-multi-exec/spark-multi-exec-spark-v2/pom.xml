@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-multi-exec</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-spark-multi-exec-spark-v2</artifactId>
@@ -72,16 +72,6 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-
     </plugins>
   </build>
 

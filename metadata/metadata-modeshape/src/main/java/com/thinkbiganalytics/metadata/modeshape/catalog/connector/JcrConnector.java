@@ -26,7 +26,6 @@ package com.thinkbiganalytics.metadata.modeshape.catalog.connector;
 import com.thinkbiganalytics.metadata.api.catalog.Connector;
 import com.thinkbiganalytics.metadata.api.catalog.DataSetSparkParameters;
 import com.thinkbiganalytics.metadata.api.catalog.DataSource;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.catalog.DataSetSparkParamsSupplierMixin;
 import com.thinkbiganalytics.metadata.modeshape.catalog.datasource.JcrDataSource;
@@ -40,6 +39,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledM
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.RoleMembership;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -105,6 +105,14 @@ public class JcrConnector extends JcrEntity<JcrConnector.ConnectorId> implements
     @Override
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrConnectorAllowedActions.class;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Connector:" + getId();
     }
 
     /* (non-Javadoc)

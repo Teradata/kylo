@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-kerberos</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <properties>
@@ -16,7 +16,6 @@
   </properties>
 
   <dependencies>
-
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
@@ -88,39 +87,17 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
-
-
   </dependencies>
 
   <build>
     <plugins>
-      <!--plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.thinkbiganalytics.kerberos.KerberosTicketGeneratorGenerator</mainClass>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
+        <version>${maven.compiler.plugin.version}</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>${spark.java.version}</source>
+          <target>${spark.java.version}</target>
         </configuration>
       </plugin>
     </plugins>

@@ -7,15 +7,13 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-commons-spark</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-commons-scala-api</artifactId>
-  <version>0.10.0</version>
+  <version>0.10.1-SNAPSHOT</version>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 

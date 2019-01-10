@@ -1,6 +1,3 @@
-import {UnderscoreStatic} from "underscore";
-import {PreviewDataSet} from "../catalog/datasource/preview-schema/model/preview-data-set";
-
 import * as _ from "underscore";
 import * as angular from 'angular';
 
@@ -10,6 +7,26 @@ import {StringUtils} from "../../common/utils/StringUtils";
 
 //const moduleName: string = require("../module-name");
 
+
+
+export class SqlBuilderUtil {
+
+    static     getJoinType(joinType:string): JoinType {
+        let join:JoinType = null;
+        if (joinType === "INNER JOIN") {
+            join = VisualQueryService.JoinType.JOIN_INNER;
+        } else if (joinType === "LEFT JOIN") {
+            join = VisualQueryService.JoinType.JOIN_LEFT;
+        } else if (joinType === "RIGHT JOIN") {
+            join = VisualQueryService.JoinType.JOIN_RIGHT;
+        } else if (joinType === "FULL JOIN") {
+            join = VisualQueryService.JoinType.FULL_JOIN;
+        } else {
+            throw new Error("Not a supported join type: " + joinType);
+        }
+        return join;
+    }
+}
 /**
  * Prefix for table aliases.
  * @type {string}
@@ -44,6 +61,7 @@ export function SqlBuilder(model: VisualQueryModel, dialect: SqlDialect) {
      */
     this.selectedColumnsAndTables_ = null;
 }
+
 
 _.extend(SqlBuilder.prototype, {
     /**
@@ -307,7 +325,9 @@ _.extend(SqlBuilder.prototype, {
             self.addTableJoins(graph[nodeID], graph, null, joinClauses);
         });
     },
-
+    getJoinType(joinType:string): JoinType {
+   return SqlBuilderUtil.getJoinType(joinType);
+    },
     /**
      * Gets the join tree for the specified join.
      *
@@ -341,18 +361,8 @@ _.extend(SqlBuilder.prototype, {
         // Create JOIN clause
         graph[dst.id].seen = true;
 
-        var joinType;
-        if (connection.joinType === "INNER JOIN") {
-            joinType = VisualQueryService.JoinType.JOIN_INNER;
-        } else if (connection.joinType === "LEFT JOIN") {
-            joinType = VisualQueryService.JoinType.JOIN_LEFT;
-        } else if (connection.joinType === "RIGHT JOIN") {
-            joinType = VisualQueryService.JoinType.JOIN_RIGHT;
-        } else if (connection.joinType === "FULL JOIN") {
-            joinType = VisualQueryService.JoinType.FULL_JOIN;
-        } else {
-            throw new Error("Not a supported join type: " + connection.joinType);
-        }
+        var joinType = this.getJoinType(connection.joinType);
+
 
         var tree: any = {
             type: VisualQueryService.NodeTag.JoinExpr,

@@ -55,6 +55,13 @@ public interface AllowedActions {
      * @param more additional actions to check
      * @return true if user has the permission(s), false if not
      */
+    boolean hasPermission(Set<Action> actions);
+    
+    /**
+     * validate a user has a given permission(s)
+     * @param actions the actions to check
+     * @return true if user has the permission(s), false if not
+     */
     boolean hasPermission(Action action, Action... more);
 
     /**

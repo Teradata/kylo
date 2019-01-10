@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-integrations</artifactId>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -21,4 +21,19 @@
     <module>provenance-rest</module>
   </modules>
 
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven.compiler.plugin.version}</version>
+          <configuration>
+            <source>${spark.java.version}</source>
+            <target>${spark.java.version}</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

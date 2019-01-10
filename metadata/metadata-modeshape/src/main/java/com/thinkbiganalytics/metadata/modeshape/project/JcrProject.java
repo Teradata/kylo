@@ -98,6 +98,14 @@ public class JcrProject extends JcrEntity<Project.ID> implements Project, Audita
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrProjectAllowedActions.class;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.AccessControlled#getLogId()
+     */
+    @Override
+    public String getAuditId() {
+        return "Project:" + getId();
+    }
 
     public static class ProjectId extends JcrEntity.EntityId implements Project.ID {
 

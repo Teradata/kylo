@@ -63,11 +63,11 @@
                 <mat-icon  size="20" color="accent">file_download</mat-icon>
                 <span class="md-body-2">Download</span>
               </button>
-              <!--<button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">-->
-                <!--<mat-icon  size="20" color="accent">done</mat-icon>-->
-                <!--<span class="md-body-2">Import</span>-->
-              <!--</button>-->
-              <button mat-button color="primary" (click)="importTemplate(element)">
+              <button mat-button disabled *ngIf="element.installed && !element.updateAvailable" color="primary">
+                <mat-icon  size="20" color="accent">done</mat-icon>
+                <span class="md-body-2">Import</span>
+              </button>
+              <button mat-button color="primary" *ngIf="!element.installed || (element.installed && element.updateAvailable)" (click)="importTemplate(element)">
                 <mat-icon size="20" color="accent">import_export</mat-icon>
                 <span class="md-body-2">Import</span>
               </button>

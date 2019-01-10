@@ -7,11 +7,9 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-file-metadata</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
     <scala.version>2.11.0</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
@@ -82,8 +80,8 @@
     <plugins>
 
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
         <configuration>
           <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
         </configuration>

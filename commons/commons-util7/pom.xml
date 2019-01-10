@@ -8,10 +8,9 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-commons</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <java.version>1.7</java.version>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 
@@ -54,10 +53,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
+        <version>${maven.compiler.plugin.version}</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <source>${spark.java.version}</source>
+          <target>${spark.java.version}</target>
         </configuration>
       </plugin>
     </plugins>

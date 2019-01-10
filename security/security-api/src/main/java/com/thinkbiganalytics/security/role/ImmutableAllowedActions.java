@@ -95,6 +95,12 @@ public class ImmutableAllowedActions implements AllowedActions {
     }
 
     @Override
+    public boolean hasPermission(Set<Action> actions) {
+        return  this.availableActions.stream()
+            .anyMatch(a -> actions.stream().anyMatch(b -> a.implies(b)));
+    }
+    
+    @Override
     public boolean hasPermission(Action action, Action... more) {
         return  this.availableActions.stream()
             .anyMatch(a -> Stream.concat(Stream.of(action), Arrays.stream(more)).anyMatch(b -> a.implies(b)));

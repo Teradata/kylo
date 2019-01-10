@@ -5,16 +5,17 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-security</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
   <dependencies>
-  <dependency>
-    <groupId>com.thinkbiganalytics.kylo</groupId>
-    <artifactId>kylo-commons-security</artifactId>
-    <version>${project.version}</version>
-  </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-security</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
+
 </project>

@@ -298,6 +298,9 @@ public class DefaultTemplateExporter implements TemplateExporter {
 
     private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, List<String> reusableTemplateXmls, Set<ReusableTemplateConnectionInfo> outputPortMetadata,
                        Set<RemoteProcessGroupInputPort> reusableTemplateRemoteInputPorts) {
+        if( nifiTemplateXml == null ) {
+            throw new NifiConnectionException("Attempt to export using invalid template");
+        }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
 

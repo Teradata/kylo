@@ -231,7 +231,7 @@ public class ProvenanceEventFeedUtil {
     }
 
     public String getFeedName(String feedProcessorId) {
-        return getFlowCache().getProcessorIdToFeedNameMap().get(feedProcessorId);
+        return feedProcessorId != null ? getFlowCache().getProcessorIdToFeedNameMap().get(feedProcessorId) : null;
     }
 
     public String getFeedProcessGroupId(String feedProcessorId) {

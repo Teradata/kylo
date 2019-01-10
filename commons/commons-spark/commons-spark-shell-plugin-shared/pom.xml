@@ -8,14 +8,12 @@
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <description>A collection of classes that can be shared between spark shell plugins.</description>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 
@@ -61,8 +59,8 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
         <configuration>
           <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
         </configuration>

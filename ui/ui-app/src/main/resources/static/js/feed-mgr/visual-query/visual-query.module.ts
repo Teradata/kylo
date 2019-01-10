@@ -70,6 +70,7 @@ import {visualQueryStates} from "./visual-query-states";
 import {VisualQueryStepperComponent} from "./visual-query-stepper.component";
 import "./visual-query.component.scss";
 import {WranglerModule} from "./wrangler/core/wrangler.module";
+import {JoinPreviewStepperStep} from "./transform-data/dataset-join-dialog/join-preview-stepper-step";
 
 
 @NgModule({
@@ -95,7 +96,8 @@ import {WranglerModule} from "./wrangler/core/wrangler.module";
         QuickCleanDialog,
         QuickColumnsDialog,
         SampleDialog,
-        SchemaLayoutDialog
+        SchemaLayoutDialog,
+        JoinPreviewStepperStep
     ],
     entryComponents: [
         AnalyzeColumnDialog,

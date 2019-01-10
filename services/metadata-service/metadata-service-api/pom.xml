@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-metadata-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-metadata-service-api</artifactId>
@@ -16,8 +16,21 @@
   <description>Interface classes for the Metadata service.</description>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+          <source>${spark.java.version}</source>
+          <target>${spark.java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

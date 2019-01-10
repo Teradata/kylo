@@ -8,14 +8,12 @@
   <parent>
     <artifactId>kylo-commons-spark</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <description>A collection of useful helper functions for Livy.</description>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <scala.binary.version>2.11</scala.binary.version>
     <scala.version>2.11.0</scala.version>
     <spark.version>2.0.0</spark.version>
@@ -75,8 +73,8 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
         <configuration>
           <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
         </configuration>

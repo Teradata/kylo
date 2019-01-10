@@ -20,7 +20,9 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -35,6 +37,14 @@ public class ConnectorPluginNiFiControllerService {
      */
     private Map<String, String> properties;
 
+    private List<String> identityProperties;
+
+
+    /**
+     * Map of controller service property key to propertydescriptors
+     */
+    private Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> propertyDescriptors;
+
     /**
      * Type of controller service
      */
@@ -45,7 +55,20 @@ public class ConnectorPluginNiFiControllerService {
 
     public ConnectorPluginNiFiControllerService(@Nonnull final ConnectorPluginNiFiControllerService other) {
         properties = (other.properties != null) ? new HashMap<>(other.properties) : null;
+        propertyDescriptors = copyDescriptorMap(other.propertyDescriptors);
         type = other.type;
+        identityProperties = other.identityProperties != null ? new ArrayList(other.identityProperties) : null;
+    }
+
+    private Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor>  copyDescriptorMap(Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> map){
+        if(map != null){
+            Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> copy = new HashMap<>();
+            for(Map.Entry<String,ConnectorPluginNiFiControllerServicePropertyDescriptor> entry: map.entrySet()){
+                copy.put(entry.getKey(),new ConnectorPluginNiFiControllerServicePropertyDescriptor(entry.getValue()));
+            }
+            return copy;
+        }
+        return null;
     }
 
     public Map<String, String> getProperties() {
@@ -62,5 +85,21 @@ public class ConnectorPluginNiFiControllerService {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> getPropertyDescriptors() {
+        return propertyDescriptors;
+    }
+
+    public void setPropertyDescriptors(Map<String, ConnectorPluginNiFiControllerServicePropertyDescriptor> propertyDescriptors) {
+        this.propertyDescriptors = propertyDescriptors;
+    }
+
+    public List<String> getIdentityProperties() {
+        return identityProperties;
+    }
+
+    public void setIdentityProperties(List<String> identityProperties) {
+        this.identityProperties = identityProperties;
     }
 }

@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-hadoop-authorization</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>

@@ -15,12 +15,12 @@
     <mat-list fxFlex="1 1 auto">
       <ng-template ngFor let-item let-i="index" [ngForOf]="functionHistory">
         <mat-list-item>
-          <ng-md-icon *ngIf="item && item.icon && !item.icon.startsWith('mdi')" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
+          <ng-md-icon *ngIf="item && item.icon && !item.icon.startsWith('mdi')" fxFlex="none" icon="{{item.icon}}" class="function-icon"></ng-md-icon>
           <i *ngIf="item && item.icon && item.icon.startsWith('mdi')" [class]="item.icon + ' function-icon material-icons'"></i>
-          <p [matTooltip]="item.name" fxFlex="1 1 auto">{{item.name}}</p>
-          <ng-md-icon (click)="toggleItem(i)" class="grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
-          <ng-md-icon (click)="removeItem(i)" class="accent-color" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>
-          <ng-md-icon (click)="toggleItem(i)" class="accent-color" *ngIf="!item.inactive" icon="visibility" class="function-action"></ng-md-icon>
+          <p [matTooltip]="item.name" fxFlex="auto">{{item.name}}</p>
+          <ng-md-icon (click)="toggleItem(i)" fxFlex="none" class="grey" *ngIf="item.inactive" icon="visibility" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="removeItem(i)" fxFlex="none" class="accent-color" *ngIf="item.inactive" icon="remove_circle" class="function-action"></ng-md-icon>
+          <ng-md-icon (click)="toggleItem(i)" fxFlex="none" class="accent-color" *ngIf="!item.inactive" icon="visibility" class="function-action"></ng-md-icon>
         </mat-list-item>
         <mat-divider></mat-divider>
       </ng-template>
@@ -36,6 +36,7 @@
           <button mat-menu-item (click)="showQuickClean()">Clean</button>
           <button mat-menu-item (click)="showSchemaLayout()">Schema</button>
           <button mat-menu-item (click)="showQuickColumnAnalysis()">Profile</button>
+          <button mat-menu-item (click)="inlineJoin()">Join</button>
         </mat-menu>
         <button mat-icon-button fxHide.gt-md="true" aria-label="Open formula menu" [matMenuTriggerFor]="actionMenu">
           <ng-md-icon icon="history" class="tc-black"></ng-md-icon>
@@ -54,6 +55,9 @@
         </button>
         <button matTooltip="Show columns profile" mat-raised-button mat-icon-button (click)="showQuickColumnAnalysis()" fxShow.gt-md="true" fxHide="true" class="text-upper">
           <ng-md-icon icon="assessment" class="toolbar-icon"></ng-md-icon>
+        </button>
+        <button matTooltip="Join with other data sets" mat-raised-button mat-icon-button (click)="inlineJoin()" fxShow.gt-md="true" fxHide="true" class="text-upper">
+          <ng-md-icon icon="link" class="toolbar-icon"></ng-md-icon>
         </button>
         <span fxFlex="1 1 auto"></span>
         <mat-menu #formulaMenu="matMenu" class="md-kylo-theme">
@@ -101,12 +105,16 @@
       <mat-progress-bar class="wrangler-determinate-theme" color="accent" mode="determinate" [value]="queryProgress" *ngIf="executingQuery && queryProgress > 0"
                         style="top: 0;height:2px"></mat-progress-bar>
       <mat-progress-bar mode="indeterminate" class="wrangler-indeterminate-theme" color="accent" *ngIf="executingQuery && queryProgress == 0" style="top: -2px;height:2px"></mat-progress-bar>
-      <visual-query-table [actual-cols]="actualCols" [actual-rows]="actualRows" [table-columns]="tableColumns" [table-domain-types]="domainTypes" [table-rows]="tableRows"
-                          [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState" offset-height="0"
-                          browser-height browser-height-scroll-y="false" [browser-height-offset]="(heightOffset || 0) + 128"
-                          style="width: 100%; height: 500px;" fxFlex="1 1 auto">
-      </visual-query-table>
+        <visual-query-table [loadingInProgress]="!hiveDataLoaded" [actual-cols]="actualCols" [actual-rows]="actualRows" [table-columns]="tableColumns" [table-domain-types]="domainTypes" [table-rows]="tableRows"
+                            [table-options]="tableOptions" [table-validation]="tableValidation" [table-state]="tableState" offset-height="0"
+                            browser-height browser-height-scroll-y="false" [browser-height-offset]="(heightOffset || 0) + 128"
+                            style="width: 100%; height: 500px;" fxFlex="1 1 auto">
+        </visual-query-table>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+
+<dataset-join-step #joinDataSetStep>
+</dataset-join-step>
 

@@ -78,6 +78,16 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
         }
     }
 
+
+    uintToString(uintArray) {
+        /*        var encodedString = String.fromCharCode.apply(null, uintArray),
+                    decodedString = decodeURIComponent(encodedString);
+                return decodedString;
+        */
+        return String.fromCharCode.apply(null, new Uint8Array(uintArray));
+    }
+
+
     /**
      * Handle error responses and redirect to login page if necessary.
      */
@@ -122,7 +132,15 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
         } else if (data['handledException'] == undefined || (data['handledException'] != undefined && data['handledException'] == false)) {
             let message = "An error occurred ";
             let detailedMessage = data['message'] ? data['message'] : (Array.isArray(data['errorMessages']) ? data['errorMessages'][0] : null);
-            let rejectionMessage = data['message'];
+
+            var rejectionMessage = data['message'];
+            if (rejection.error && rejection.error.constructor == ArrayBuffer ) {
+                var str = this.uintToString(rejection.error);
+                var json = JSON.parse(str);
+                console.log(json);
+                message += json.message;
+            }
+
             if (rejectionMessage == undefined || rejectionMessage == '') {
                 rejectionMessage = 'OtherError';
             } else if (rejectionMessage.startsWith("AnalysisException:")) {

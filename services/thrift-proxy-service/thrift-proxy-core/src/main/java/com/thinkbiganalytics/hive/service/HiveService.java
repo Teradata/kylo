@@ -256,12 +256,22 @@ public class HiveService {
 
 
     public boolean isTableAccessibleByImpersonatedUser(String table) {
+       return isTableAccessibleByImpersonatedUser(table,true);
+    }
+
+    private boolean isTableAccessibleByImpersonatedUser(String table, boolean refreshCache) {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
         String schemaName = table.substring(0, table.indexOf("."));
         try {
             UserHiveAccessCache cache = this.perUserAccessCache.get(currentUser);
             List<String> tables = cache.getTables(schemaName);
-            return tables != null && tables.contains(table);
+            boolean hasAccess = tables != null && tables.contains(table);
+            if(!hasAccess && refreshCache && cache.getSchemas().contains(schemaName)){
+                //attempt to refresh it
+                refreshHiveAccessCacheForImpersonatedUser();
+                hasAccess = isTableAccessibleByImpersonatedUser(table,false);
+            }
+            return hasAccess;
         } catch (ExecutionException e) {
             throw new RuntimeException(String.format("Failed to determine if Hive table %s is accessible by user %s", table, currentUser));
         }
@@ -269,7 +279,14 @@ public class HiveService {
 
     public void refreshHiveAccessCacheForImpersonatedUser() {
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-        this.perUserAccessCache.refresh(currentUser);
+        this.perUserAccessCache.invalidate(currentUser);
     }
 
+    public QueryResult getTablePartitions(String tableName) {
+        if (!isTableAccessibleByImpersonatedUser(tableName)) {
+            throw new RuntimeException(String.format("Table '%s' not found", tableName));
+        }
+
+        return new QueryRunner(jdbcTemplate).query("show partitions " + HiveUtils.quoteIdentifier(tableName));
+    }
 }

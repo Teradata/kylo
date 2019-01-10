@@ -7,14 +7,12 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-interpreter</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-spark-interpreter-spark-v1</artifactId>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
     <spark.avro.version>2.0.1</spark.avro.version>
   </properties>
@@ -95,8 +93,8 @@
     <plugins>
       <!-- Compiles Scala code -->
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
         <configuration>
           <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
           <scalaVersion>${scala.version}</scalaVersion>

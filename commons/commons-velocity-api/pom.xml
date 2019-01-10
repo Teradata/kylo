@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-commons</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
@@ -16,8 +16,6 @@
 
 
   <dependencies>
-
-
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
@@ -33,7 +31,6 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
 
-
     <!-- velocity -->
     <dependency>
       <groupId>org.apache.velocity</groupId>
@@ -45,7 +42,6 @@
       <artifactId>velocity-tools</artifactId>
       <version>2.0</version>
     </dependency>
-
 
     <dependency>
       <groupId>com.google.guava</groupId>

@@ -7,14 +7,12 @@ import {OpsManagerFeedService} from "../../../../../../ops-mgr/services/ops-mana
 import {BroadcastService} from "../../../../../../services/broadcast-service";
 import {FeedStats} from "../../../../../model/feed/feed-stats.model";
 import {FeedSummary} from "../../../../../model/feed/feed-summary.model";
-import {Feed, FeedAccessControl} from "../../../../../model/feed/feed.model";
+import {Feed} from "../../../../../model/feed/feed.model";
 import {DefineFeedService} from "../../../services/define-feed.service";
 import {FeedUploadFileDialogComponent, FeedUploadFileDialogComponentData} from "../feed-upload-file-dialog/feed-upload-file-dialog.component";
 import {RestUrlService} from "../../../../../services/RestUrlService";
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs/Observable";
-import {RequestOptions, ResponseContentType} from "@angular/http";
-import {NotificationService} from "../../../../../../services/notification.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {FeedOperationsSummary} from "../../../../../model/feed/feed-operations-summary.model";
 
@@ -47,12 +45,12 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     refreshTime: number = 10000;
 
-    constructor(private http:HttpClient,private opsManagerFeedService: OpsManagerFeedService,
+    constructor(private http: HttpClient, private opsManagerFeedService: OpsManagerFeedService,
                 @Inject("BroadcastService") private broadcastService: BroadcastService,
                 private _dialogService: TdDialogService,
                 private defineFeedService: DefineFeedService,
                 @Inject("RestUrlService") restUrlService: RestUrlService,
-                private snackBar:MatSnackBar) {
+                private snackBar: MatSnackBar) {
         this.broadcastService.subscribe(null, 'ABANDONED_ALL_JOBS', this.getFeedHealth.bind(this));
         this.restUrlService = restUrlService;
     }
@@ -67,7 +65,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
     exportFeedUrl: string;
 
-    exportInProgress:boolean= false;
+    exportInProgress: boolean = false;
 
     restUrlService: RestUrlService;
 
@@ -108,43 +106,51 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
         }
     }
 
-    exportFeed() {
-        //todo start progress
-        this.exportInProgress = true;
-            this.snackBar.open("Feed export is processing. Notification will appear when complete.", null, {
-                duration: 3000,
-            });
-        this.http.get(this.exportFeedUrl,  {responseType:"arraybuffer"})
-            .catch(errorResponse => {
-                this.exportInProgress = false;
-                return Observable.throw(errorResponse)
-            } )
-            .map((response) => {
-                return response;
-            }).subscribe(data => this.getZipFile(data)),
-            error => this._dialogService.openAlert({title:"Export Feed Error", message:"There was an error exporting the feed"})
-
-
+    uintToString(uintArray) {
+        return String.fromCharCode.apply(null, new Uint8Array(uintArray));
     }
 
-    getZipFile(data: any){
+
+    exportFeed() {
+        var snackBarRef = this.snackBar.open("Feed export is processing. Notification will appear when complete.", null, {
+            duration: 3000,
+        });
+
+        this.exportInProgress = true;
+        this.http.get(this.exportFeedUrl, {observe: "response", responseType: "arraybuffer"})
+            .catch((errorResponse) => {
+                this.exportInProgress = false;
+                snackBarRef.dismiss();
+                return Observable.throw(errorResponse)
+            })
+            .map((response) => {
+                return response;
+            })
+            .subscribe(
+                data => {
+                    this.getZipFile(data);
+                    this.exportInProgress = false;
+                    this.snackBar.open("Feed export complete", null, {
+                        duration: 3000,
+                    });
+                }
+            )
+    }
+
+
+    getZipFile(data: any) {
         var a: any = document.createElement("a");
         document.body.appendChild(a);
 
         a.style = "display: none";
-        var blob = new Blob([data], { type: 'application/zip' });
+        var blob = new Blob([data], {type: 'application/zip'});
 
-        var url= window.URL.createObjectURL(blob);
+        var url = window.URL.createObjectURL(blob);
 
         a.href = url;
-        a.download = this.feed.systemFeedName+".feed.zip";
+        a.download = this.feed.systemFeedName + ".feed.zip";
         a.click();
         window.URL.revokeObjectURL(url);
-            this.exportInProgress = false;
-            this.snackBar.open("Feed export complete", null, {
-                duration: 3000,
-            });
-
     }
 
     initMenu() {
@@ -198,7 +204,7 @@ export class FeedOperationsHealthInfoComponent implements OnInit, OnDestroy {
 
                 let error = (msg?: string) => {
                     let message = msg ? msg : "The feed could not be started.";
-                    let alertTitle = msg? "Started the feed" : "Error starting the feed";
+                    let alertTitle = msg ? "Started the feed" : "Error starting the feed";
 
                     this._dialogService.openAlert({
                         title: alertTitle,

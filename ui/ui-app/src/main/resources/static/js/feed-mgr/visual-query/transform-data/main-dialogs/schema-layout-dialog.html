@@ -29,7 +29,7 @@
 
         <div class="kylo-mat-list-item-content pad-left pad-right" fxLayout="row" fxLayoutAlign="start center">
 
-          <mat-icon matListAvatar class="kylo-mat-list-avatar" color="accent" [(fontIcon)]="row.typeIcon" fontSet="mdi"></mat-icon>
+          <mat-icon matListAvatar class="kylo-mat-list-avatar" color="accent" [fontIcon]="row.typeIcon" fontSet="mdi"></mat-icon>
 
           <div class="kylo-mat-list-text">
             <mat-form-field mat-line style="width:170px" *ngIf="!row.deleted">
@@ -50,7 +50,7 @@
             <mat-icon class="mat-24 kylo-mat-list-color">restore_from_trash</mat-icon>
           </button>
 
-          <mat-icon dndHandle class="mat-24 kylo-mat-list-color kylo-mat-list-handle">drag_handle</mat-icon>
+          <mat-icon class="mat-24 kylo-mat-list-color kylo-mat-list-handle cursor-move">drag_handle</mat-icon>
 
         </div>
         <mat-divider class="kylo-mat-divider" [inset]="false"></mat-divider>

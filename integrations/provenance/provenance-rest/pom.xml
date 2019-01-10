@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-provenance</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -18,33 +18,14 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-provenance-api</artifactId>
-      <version>0.10.0</version>
+      <version>0.10.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-client</artifactId>
-      <version>0.10.0</version>
+      <version>0.10.1-SNAPSHOT</version>
     </dependency>
-
-
-
-
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-
-    </plugins>
-
-  </build>
 
 </project>

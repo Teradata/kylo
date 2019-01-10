@@ -267,13 +267,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
+        // Do not require a transaction if we already know entity access control is not enabled.
         if (accessController.isEntityAccessControlled()) {
             return metadataAccess.read(() -> {
                 Feed.ID domainId = feedProvider.resolveId(id);
                 Feed domainFeed = feedProvider.findById(domainId);
 
                 if (domainFeed != null) {
-                    domainFeed.getAllowedActions().checkPermission(action, more);
+                    accessController.checkPermission(domainFeed, action, more);
                     return true;
                 } else {
                     return false;
@@ -559,9 +560,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             Feed feed = feedProvider.getFeed(domainFeedId);
 
             if (feed != null) {
-                if (accessController.isEntityAccessControlled()) {
-                    feed.getAllowedActions().checkPermission(FeedAccessControl.ACCESS_DETAILS);
-                }
+                accessController.checkPermission(feed, FeedAccessControl.ACCESS_DETAILS);
                 //add in access control items
                 ActionGroup allowed = securityTransform.toActionGroup(null).apply(feed.getAllowedActions());
                 return Optional.of(new AbstractMap.SimpleEntry(domainFeedId, allowed));
@@ -579,9 +578,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             Feed feed = feedProvider.getFeed(domainFeedId);
 
             if (feed != null) {
-                if (accessController.isEntityAccessControlled()) {
-                    feed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
-                }
+                accessController.checkPermission(feed, FeedAccessControl.EDIT_DETAILS);
                 //add in access control items
                 ActionGroup allowed = securityTransform.toActionGroup(null).apply(feed.getAllowedActions());
                 return Optional.of(new AbstractMap.SimpleEntry(domainFeedId, allowed));
@@ -785,17 +782,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             if (feedMetadata.isNew()) {
                 Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
 
-                if (accessController.isEntityAccessControlled()) {
-                    //ensure the user has rights to create feeds under the category
-                    domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
-                }
-            } else if (accessController.isEntityAccessControlled()) {
+                //ensure the user has rights to create feeds under the category
+                accessController.checkPermission(domainCategory, CategoryAccessControl.CREATE_FEED);
+            } else {
                 // Check user has access to edit the feed
                 Feed.ID domainId = feedProvider.resolveId(feedMetadata.getId());
                 Feed domainFeed = feedProvider.findById(domainId);
 
                 if (domainFeed != null) {
-                    domainFeed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+                    accessController.checkPermission(domainFeed, FeedAccessControl.EDIT_DETAILS);
                 } else {
                     throw new NotFoundException("Feed not found for id " + feedMetadata.getId());
                 }
@@ -876,41 +871,36 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private NifiFeed createAndSaveFeed(final FeedMetadata feedMetadata) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         NifiFeed feed = null;
-        if (StringUtils.isBlank(feedMetadata.getId())) {
-            feedMetadata.setIsNew(true);
+        
+        feedMetadata.setIsNew(StringUtils.isBlank(feedMetadata.getId()));
 
-            //If the feed is New we need to ensure the user has CREATE_FEED entity permission
-            if (accessController.isEntityAccessControlled()) {
-                metadataAccess.read(() -> {
-                    //ensure the user has rights to create feeds under the category
-                    Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
-                    if (domainCategory == null) {
-                        //throw exception
-                        throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
-                    }
-                    domainCategory.getAllowedActions().checkPermission(CategoryAccessControl.CREATE_FEED);
+        metadataAccess.read(() -> {
+            if (feedMetadata.isNew()) {
+                //ensure the user has rights to create feeds under the category by checking if it is visible (has read access)
+                Category domainCategory = categoryProvider.findById(categoryProvider.resolveId(feedMetadata.getCategory().getId()));
+                if (domainCategory == null) {
+                    //throw exception
+                    throw new MetadataRepositoryException("Unable to find the category " + feedMetadata.getCategory().getSystemName());
+                }
+                accessController.checkPermission(domainCategory, CategoryAccessControl.CREATE_FEED);
 
-                    //ensure the user has rights to create feeds using the template
-                    FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
-                    if (domainTemplate == null) {
-                        throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
-                    }
-                    //  domainTemplate.getAllowedActions().checkPermission(TemplateAccessControl.CREATE_FEED);
-                });
-            }
-
-        } else if (accessController.isEntityAccessControlled()) {
-            metadataAccess.read(() -> {
+                //ensure the user has rights to create feeds using the template by checking if it is visible.
+                FeedManagerTemplate domainTemplate = templateProvider.findById(templateProvider.resolveId(feedMetadata.getTemplateId()));
+                if (domainTemplate == null) {
+                    throw new MetadataRepositoryException("Unable to find the template " + feedMetadata.getTemplateId());
+                }
+                //  accessController.checkPermission(domainTemplate, TemplateAccessControl.CREATE_FEED);
+            } else {
                 //perform explict entity access check here as we dont want to modify the NiFi flow unless user has access to edit the feed
                 Feed.ID domainId = feedProvider.resolveId(feedMetadata.getId());
                 Feed domainFeed = feedProvider.findById(domainId);
                 if (domainFeed != null) {
-                    domainFeed.getAllowedActions().checkPermission(FeedAccessControl.EDIT_DETAILS);
+                    accessController.checkPermission(domainFeed, FeedAccessControl.EDIT_DETAILS);
                 } else {
                     throw new NotFoundException("Feed not found for id " + feedMetadata.getId());
                 }
-            });
-        }
+            }
+        });
 
         FeedMetadata feedToSave = feedMetadata;
         //create a Draft if the feed already exists

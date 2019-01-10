@@ -157,6 +157,9 @@ md-list md-datepicker .md-button.md-icon-button {
 .pointer {
   cursor: pointer;
 }
+.cursor-move {
+  cursor: move;
+}
 
 /* Primary content area */
 

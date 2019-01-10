@@ -7,11 +7,9 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 
@@ -24,4 +22,5 @@
     <module>spark-file-metadata-spark-v2</module>
     <module>spark-file-metadata-core</module>
   </modules>
+
 </project>

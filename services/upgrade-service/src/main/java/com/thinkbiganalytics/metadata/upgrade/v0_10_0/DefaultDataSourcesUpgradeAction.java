@@ -84,6 +84,11 @@ public class DefaultDataSourcesUpgradeAction implements UpgradeAction {
     }
 
     @Override
+    public boolean isTargetFreshInstall(KyloVersion finalVersion) {
+        return true;
+    }
+
+    @Override
     public void upgradeTo(final KyloVersion targetVersion) {
         log.info("Creating default catalog data sources: {}", targetVersion);
         

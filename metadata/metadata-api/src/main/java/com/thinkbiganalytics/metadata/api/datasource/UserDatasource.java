@@ -4,7 +4,7 @@ package com.thinkbiganalytics.metadata.api.datasource;
  * #%L
  * kylo-metadata-api
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package com.thinkbiganalytics.metadata.api.datasource;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.security.AccessControlled;
 
 import java.util.Optional;
 

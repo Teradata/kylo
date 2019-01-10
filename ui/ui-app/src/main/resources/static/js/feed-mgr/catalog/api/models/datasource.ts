@@ -19,4 +19,13 @@ export class DataSource {
     title: string;
 
     template: DataSourceTemplate;
+
+    /**
+     * controller service to use
+     */
+    nifiControllerServiceId ?:string;
+}
+
+export class CreateDataSource extends DataSource {
+    detectSimilarNiFiControllerServices:boolean;
 }

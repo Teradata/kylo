@@ -192,8 +192,8 @@ export class RestUrlConstants {
         return RestUrlConstants.GET_FEEDS_URL + "/" + feedId + "/profile-stats";
     }
 
-    static FEED_PROFILE_SUMMARY_URL(feedId:string) {
-        return RestUrlConstants.GET_FEEDS_URL + "/" + feedId + "/profile-summary";
+    static FEED_PROFILE_SUMMARY_URL(feedId:string, pageNumber: number, pageSize: number) {
+        return RestUrlConstants.GET_FEEDS_URL + "/" + feedId + "/profile-summary?page=" + pageNumber + "&pageSize=" + pageSize;
     }
 
     static FEED_PROFILE_VALID_RESULTS_URL(feedId:string, processingDttm:string) {

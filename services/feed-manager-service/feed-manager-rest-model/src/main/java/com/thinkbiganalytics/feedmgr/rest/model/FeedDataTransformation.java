@@ -73,6 +73,12 @@ public class FeedDataTransformation {
      */
     private List<Map<String, Object>> states;
 
+
+    /**
+     * map of the datasetId to join dataframeId for datasets joined inline during the wrangle script
+     */
+    public Map<String,String> inlineJoinDataSets;
+
     /**
      * Gets the model for the flowchart.
      *
@@ -151,6 +157,14 @@ public class FeedDataTransformation {
      */
     public void setStates(List<Map<String, Object>> states) {
         this.states = states;
+    }
+
+    public Map<String, String> getInlineJoinDataSets() {
+        return inlineJoinDataSets;
+    }
+
+    public void setInlineJoinDataSets(Map<String, String> inlineJoinDataSets) {
+        this.inlineJoinDataSets = inlineJoinDataSets;
     }
 
     @JsonIgnore

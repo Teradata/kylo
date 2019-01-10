@@ -1,15 +1,10 @@
 package com.thinkbiganalytics.metadata.api.project;
 
-import com.thinkbiganalytics.metadata.api.Auditable;
-import com.thinkbiganalytics.metadata.api.Iconable;
-import com.thinkbiganalytics.metadata.api.SystemEntity;
-import com.thinkbiganalytics.metadata.api.Taggable;
-
 /*-
  * #%L
  * kylo-metadata-api
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +20,11 @@ import com.thinkbiganalytics.metadata.api.Taggable;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.metadata.api.Auditable;
+import com.thinkbiganalytics.metadata.api.Iconable;
+import com.thinkbiganalytics.metadata.api.SystemEntity;
+import com.thinkbiganalytics.metadata.api.Taggable;
+import com.thinkbiganalytics.security.AccessControlled;
 
 import java.io.Serializable;
 

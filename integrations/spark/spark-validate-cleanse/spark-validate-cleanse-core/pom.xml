@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-spark-validate-cleanse</artifactId>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-spark-validate-cleanse-core</artifactId>

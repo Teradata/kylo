@@ -165,6 +165,7 @@ public class IntegrationTestBase {
     protected static final String FILTER_BY_SLA_ID = "slaId%3D%3D";
 
     protected static final String APP_NIFI = "nifi";
+    protected static final String APP_KYLO_SERVICES = "kylo-services";
     protected static final String APP_HADOOP = "hadoop";
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
@@ -594,11 +595,11 @@ public class IntegrationTestBase {
     }
 
     protected String getProcessingDttm(String feedId) {
-        return getJsonPathOfProfileSummary(feedId, "processing_dttm[0]");
+        return getJsonPathOfProfileSummary(feedId, "content[0].processing_dttm");
     }
 
     protected int getProfileSummary(String feedId, String profileType) {
-        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
+        return Integer.parseInt(getJsonPathOfProfileSummary(feedId, "content.find {entry ->entry.metrictype == '" + profileType + "'}.metricvalue"));
     }
 
     protected String getJsonPathOfProfileSummary(String feedId, String path) {

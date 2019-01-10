@@ -14,9 +14,11 @@ export class ColumnAnalysisController implements OnInit {
     @Input() field: string;
     showValid = false;
     emptyCount = null;
+    isInteger = false;
 
     ngOnInit(): void {
         this.show();
+        this.isInteger = (["byte", "integer", "long", "short"].indexOf(this.profile.columnDataTypePlain) > -1);
     }
 
     show(): void {

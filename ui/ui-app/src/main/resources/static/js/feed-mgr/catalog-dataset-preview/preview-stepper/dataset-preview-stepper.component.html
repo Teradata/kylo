@@ -67,8 +67,12 @@
                 <button mat-button (click)="onCancel()">Cancel</button>
                 <span fxFlex></span>
                 <button mat-button matStepperPrevious>Back</button>
-                <div fxLayout="column">
+                <div fxLayout="column" *ngIf="additionalSteps.length ==0">
                   <button mat-button (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
+                  <!-- <span *ngIf="previewForm.invalid" class="warn">A selection is required</span> -->
+                </div>
+                <div fxLayout="column" *ngIf="additionalSteps.length > 0">
+                  <button mat-button matStepperNext [disabled]="previewForm.invalid">Next</button>
                   <!-- <span *ngIf="previewForm.invalid" class="warn">A selection is required</span> -->
                 </div>
               </div>
@@ -81,12 +85,47 @@
                     <button mat-button (click)="onCancel()">Cancel</button>
                     <span fxFlex></span>
                     <button mat-button matStepperPrevious>Back</button>
-                    <div fxLayout="column">
-                      <button mat-raised-button button color="accent" (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
-                      <!-- <span *ngIf="previewForm.invalid" class="warn">A selection is required</span> -->
+                    <div fxLayout="column" *ngIf="additionalSteps.length == 0">
+                      <button mat-raised-button  color="accent" (click)="onSave()" [disabled]="previewForm.invalid">{{saveLabel}}</button>
+                    </div>
+                    <div fxLayout="column" *ngIf="additionalSteps.length > 0">
+                      <button mat-raised-button matStepperNext color="accent" [disabled]="previewForm.invalid">Next</button>
                     </div>
                   </div>
 
             </mat-step>
+            <ng-container *ngFor="let step of additionalSteps; let index = index; let last = last">
+              <mat-step [stepControl]="step.stepControl">
+                <ng-template matStepLabel>{{step.name}}</ng-template>
+
+                <!-- Action buttons-->
+                <div fxLayout="row" fxFlex  *ngIf="displayTopActionButtons">
+                  <button mat-button (click)="onCancel()">Cancel</button>
+                  <span fxFlex></span>
+                  <button mat-button matStepperPrevious>Back</button>
+                  <div fxLayout="column" *ngIf="last">
+                    <button mat-button (click)="onSave()" [disabled]="step.stepControl.invalid">{{saveLabel}}</button>
+                  </div>
+                  <div fxLayout="column" *ngIf="last">
+                    <button mat-button matStepperNext [disabled]="step.stepControl.invalid">Next</button>
+                  </div>
+                </div>
+
+                <ng-container
+                    *ngTemplateOutlet="step.templateRef;context:step"></ng-container>
+
+                <div fxLayout="row" fxFlex *ngIf="displayBottomActionButtons" style="margin-top:35px">
+                  <button mat-button (click)="onCancel()">Cancel</button>
+                  <span fxFlex></span>
+                  <button mat-button matStepperPrevious>Back</button>
+                  <div fxLayout="column" *ngIf="last">
+                    <button mat-raised-button  color="accent" (click)="onSave()" [disabled]="step.stepControl.invalid">{{saveLabel}}</button>
+                  </div>
+                  <div fxLayout="column" *ngIf="!last">
+                    <button mat-raised-button matStepperNext color="accent" [disabled]="step.stepControl.invalid">Next</button>
+                  </div>
+                </div>
+              </mat-step>
+            </ng-container>
           </mat-horizontal-stepper>
 

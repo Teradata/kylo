@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewEncapsulation} from "@angular/core";
+import {AfterViewInit, Component, EventEmitter, Inject, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild, ViewContainerRef, ViewEncapsulation} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {CodemirrorComponent} from "ng2-codemirror";
 import {Subject} from "rxjs/Subject";
@@ -8,7 +8,7 @@ import StepperService from '../../../common/stepper/StepperService';
 import {CloneUtil} from "../../../common/utils/clone-util";
 import {BroadcastService} from '../../../services/broadcast-service';
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
-import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {DefaultFeedDataTransformation, FeedDataTransformation} from "../../model/feed-data-transformation";
 import {Feed} from "../../model/feed/feed.model";
 import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
@@ -36,10 +36,21 @@ import {QuickCleanDialog, QuickCleanDialogData} from "./main-dialogs/quick-clean
 import {SampleDialog, SampleDialogData} from "./main-dialogs/sample-dialog";
 import {TableFieldPolicy} from "../../model/TableFieldPolicy";
 import {StringUtils} from "../../../common/utils/StringUtils";
+import {DatasetPreviewStepperDialogComponent, DatasetPreviewStepperDialogData} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper-dialog.component";
+import {MatDialogConfig} from "@angular/material";
+import {DatasetPreviewStepperSavedEvent} from "../../catalog-dataset-preview/preview-stepper/dataset-preview-stepper.component";
+import {JoinData, JoinPreviewStepperStep} from "./dataset-join-dialog/join-preview-stepper-step";
+import {JoinPreviewStepData} from "./dataset-join-dialog/join-preview-step-data";
+import {ColumnRef, ResTarget, SqlBuilderUtil, VisualQueryService} from "../../services/VisualQueryService";
+import {DATASET_PROVIDER, SparkQueryParser} from "../services/spark/spark-query-parser";
+import {CatalogService} from "../../catalog/api/services/catalog.service";
+import {SparkDataSet} from "../../model/spark-data-set.model";
+import {SparkConstants} from "../services/spark/spark-constants";
+import {JoinDataset} from "../wrangler/model/join-dataset.model";
+import {ObjectUtils} from "../../../../lib/common/utils/object-utils";
+import {InlineJoinScriptBuilder} from "./dataset-join-dialog/inline-join-script-builder";
 
 declare const CodeMirror: any;
-
-// import {moduleName} from "../module-name";
 
 export class WranglerColumn {
 
@@ -49,8 +60,12 @@ export class WranglerColumn {
     domainTypeId: string = null;
     filters: any[] = null;
     headerTooltip: string = null;
-    longestValue: string = null;
+    longestValue: any = null;
     name: string = null;
+
+    public constructor(init?: Partial<WranglerColumn>) {
+        Object.assign(this, init);
+    }
 }
 
 /**
@@ -112,6 +127,12 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
      */
     @Output()
     next = new EventEmitter<void>();
+
+    /**
+     * Event emitted to indicate query failure
+     */
+    @Output()
+    queryFailure = new EventEmitter<void>();
 
     //Flag to determine if we can move on to the next step
     isValid: boolean = false;
@@ -271,6 +292,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     @ViewChild(VisualQueryTable)
     visualQueryTable: VisualQueryTable;
 
+    @ViewChild("joinDataSetStep")
+    joinDatasetPreviewStepComponent:JoinPreviewStepperStep;
+
     /**
      * Constructs a {@code TransformDataComponent}.
      */
@@ -278,7 +302,11 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 @Inject("RestUrlService") private RestUrlService: any, @Inject("SideNavService") private SideNavService: any, @Inject("uiGridConstants") private uiGridConstants: any,
                 @Inject("FeedService") private feedService: FeedService, @Inject("BroadcastService") private broadcastService: BroadcastService,
                 @Inject("StepperService") private stepperService: StepperService, @Inject("WindowUnloadService") private WindowUnloadService: WindowUnloadService,
-                private wranglerDataService: WranglerDataService) {
+                @Inject("VisualQueryService") private visualQueryService: VisualQueryService,
+                private wranglerDataService: WranglerDataService,
+                private catalogService:CatalogService,
+                private viewContainerRef: ViewContainerRef
+                ) {
         //Hide the left side nav bar
         this.SideNavService.hideSideNav();
     }
@@ -293,6 +321,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             this.WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         }
+        //convert the model to a default model
+        this.model = ObjectUtils.getAs(this.model,DefaultFeedDataTransformation)
 
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
@@ -374,7 +404,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
 
             // Initial load will trigger query from the table model.
             if (this.isLoaded) {
-                this.query();
+                this.query().catch((result) => {
+                    console.debug("Error executing query!");
+                });
             }
             this.isLoaded = true;
         };
@@ -457,6 +489,55 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                 // ignore cancel
             });
         }
+    }
+
+    /**
+     * Join the dataframe to another dataset
+     */
+    inlineJoin(){
+        let data = new DatasetPreviewStepperDialogData(false,"Add");
+        data.additionalSteps = [];
+        let step =  this.joinDatasetPreviewStepComponent;
+        //update the data
+        step.data.cols = this.engine.getColumns();
+        data.additionalSteps.push(step);
+        step.setAdditionalStepIndex(data.additionalSteps.length-1);
+        let dialogConfig:MatDialogConfig = DatasetPreviewStepperDialogComponent.DIALOG_CONFIG()
+        dialogConfig.data = data;
+        dialogConfig.viewContainerRef = this.viewContainerRef;
+        this.$mdDialog.open(DatasetPreviewStepperDialogComponent,dialogConfig)
+            .afterClosed()
+            .filter(value => typeof value !== "undefined").subscribe( (response:DatasetPreviewStepperSavedEvent) => {
+            let joinData = response.data as JoinData;
+               //convert to spark dataset
+            let dataset = joinData.joinDataSet.toSparkDataSet();
+               //ensure the dataset is registered
+            this.catalogService.ensureDataSetId(dataset).subscribe((ds:SparkDataSet) => {
+                //join
+                joinData.ds = ds;
+                let joinScriptBuilder = new InlineJoinScriptBuilder(this.visualQueryService,this.model,this.engine.getColumns(),joinData);
+                let joinDataSet:JoinDataset = joinScriptBuilder.build();
+
+                // the formula is empty since its crafted from the "joinData" that is passed to the context
+                let formula = "";
+                //if successful register and add it to the list
+                if(this.model.datasets == undefined){
+                    this.model.datasets = [];
+                }
+                this.model.datasets.push(ds);
+
+
+                this.pushFormula(formula, {formula: formula, icon: 'link', name: 'Join '+joinData.joinDataSet.displayKey+" on "+joinDataSet.dfField+ "= "+joinDataSet.joinField, joinDataSet:joinDataSet}, true, true)
+                    .then( () => {
+
+                    }, () => {
+                        //remove it
+                        delete this.model.inlineJoinDataSets[joinDataSet.datasetId];
+                    })
+
+            })
+
+        });
     }
 
     /**
@@ -708,16 +789,19 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
             deferred.complete();
         };
         const errorCallback = (message: string) => {
+            console.debug("Query error!");
+            this.queryFailure.emit();
             this.setExecutingQuery(false);
             this.resetAllProgress();
-            this.showError(this.cleanError(message));
 
             // Reset state
             if (this.engine.canUndo()) {
                 this.onUndo();
             }
             this.removeExecution(promise);
+            this.hiveDataLoaded = false;
             deferred.error(message);
+            this.back.emit();
         };
         const notifyCallback = (progress: number) => {
             //self.setQueryProgress(progress * 100);
@@ -767,7 +851,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
                 });
 
-                columns.push({
+                columns.push(new WranglerColumn({
                     dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
@@ -776,7 +860,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     headerTooltip: col.hiveColumnLabel,
                     longestValue: (typeof longestValue !== "undefined" && longestValue !== null) ? longestValue.metricValue : null,
                     name: this.engine.getColumnName(col)
-                });
+                }));
             });
         }
 
@@ -1124,7 +1208,7 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
     setFormula(formula: any) {
         this.currentFormula = formula;
         this.codemirrorEditor.setValue(formula);
-        this.codemirrorEditor.focus();
+        setTimeout(() => this.codemirrorEditor.focus(), 200);  // wait for menu to close
         this.selectNextTabStop();
     };
 
@@ -1177,7 +1261,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         let rows = this.engine.getRows();
 
         if (columns === null || rows === null) {
-            this.query();
+            this.query().catch((result) => {
+                console.debug("Error executing query!");
+            });
         } else {
             this.updateGrid();
         }
@@ -1193,7 +1279,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         });
 
         this.pushFormulaToEngine(`select(${fieldNames.join(',')})`, {});
-        this.query();
+        this.query().catch((result) => {
+            console.debug("Error executing query!");
+        });
     }
 
     //noinspection JSUnusedGlobalSymbols
@@ -1240,7 +1328,9 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
         this.query().catch(reason => {
             // reverse impact
             self.engine.restoreLastKnownState();
-            this.query();
+            this.query().catch((result) => {
+                console.debug("Error executing query!");
+            });
             this.functionHistory = this.engine.getHistory();
         });
     }
@@ -1312,6 +1402,8 @@ export class TransformDataComponent implements AfterViewInit, ColumnController, 
                     feedModel.table.syncTableFieldPolicyNames()
                     this.engine.save();
                     resolve(true);
+                }).catch((result) => {
+                    console.debug("Error executing query!");
                 });
             }
         });

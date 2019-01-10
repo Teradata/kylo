@@ -34,8 +34,6 @@ import java.util.stream.Collectors;
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
-import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.WrappedNodeMixin;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
@@ -43,8 +41,10 @@ import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMem
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.AccessControlled;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.role.RoleMembership;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 /**

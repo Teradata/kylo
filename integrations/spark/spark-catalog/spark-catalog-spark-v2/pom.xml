@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-catalog</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-spark-catalog-spark-v2</artifactId>
@@ -20,8 +20,6 @@
     <scala.binary.version>2.11</scala.binary.version>
     <spark.version>2.0.0</spark.version>
     <spark.binary.version>2.0</spark.binary.version>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
 

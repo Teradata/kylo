@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-integrations</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-spark</artifactId>
@@ -14,8 +14,6 @@
   <name>Kylo Spark Parent</name>
 
   <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
     <spark1.xml.version>0.3.5</spark1.xml.version>
     <spark2.xml.version>0.4.1</spark2.xml.version>
     <spark1.csv.version>1.5.0</spark1.csv.version>
@@ -40,8 +38,17 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+          <source>${spark.java.version}</source>
+          <target>${spark.java.version}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.4.1</version>
+        <version>${plugin.enforcer.version}</version>
         <dependencies>
           <dependency>
             <groupId>org.codehaus.mojo</groupId>
@@ -59,7 +66,7 @@
             <configuration>
               <rules>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>1.7</maxJdkVersion>
+                  <maxJdkVersion>${spark.java.version}</maxJdkVersion>
                   <excludes>
                     <exclude>org.jetbrains:annotations</exclude>
                     <exclude>jdk.tools:jdk.tools</exclude>

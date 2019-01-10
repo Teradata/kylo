@@ -81,6 +81,10 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     visitedTransform = false;
 
+    /**
+     * Indicates if query execution has failed
+     */
+    queryExecutionFailure = false;
 
     /**
      * Constructs a {@code VisualQueryComponent}.
@@ -153,5 +157,20 @@ export class VisualQueryStepperComponent implements OnInit, OnDestroy {
      */
     doSave() {
         this.save.emit();
+    }
+
+    /**
+     * Indicate query failure
+     */
+    queryFailed() {
+        this.queryExecutionFailure = true;
+    }
+
+    /**
+     * Indicate SQL has changed
+     */
+    sqlChanged() {
+        //reset flag to allow new query's execution
+        this.queryExecutionFailure = false;
     }
 }

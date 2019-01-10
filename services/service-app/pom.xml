@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.0</version>
+    <version>0.10.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -269,7 +269,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
-      <version>0.10.0</version>
+      <version>0.10.1-SNAPSHOT</version>
     </dependency>
 
     <!-- NiFi REST clients -->
@@ -548,85 +548,154 @@
 
   <build>
 
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-    <plugins>
+  <resources>
+    <resource>
+      <directory>src/main/resources</directory>
+      <filtering>true</filtering>
+    </resource>
+  </resources>
+  <plugins>
+    <!-- Expose git details; specifically the commit ID -->
+    <plugin>
+      <groupId>pl.project13.maven</groupId>
+      <artifactId>git-commit-id-plugin</artifactId>
+      <version>2.2.5</version>
+      <executions>
+        <execution>
+          <id>get-the-git-infos</id>
+          <goals>
+            <goal>revision</goal>
+          </goals>
+          <!-- *NOTE*: The default phase of revision is initialize, but in 
+            case you want to change it, you can do so by adding the phase here -->
+          <phase>initialize</phase>
+        </execution>
+        <execution>
+          <id>validate-the-git-infos</id>
+          <phase>package</phase>
+        </execution>
+      </executions>
 
-      <!-- create single distribution file -->
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptors>
-            <descriptor>src/main/assembly/descriptor.xml</descriptor>
-          </descriptors>
-          <tarLongFileMode>posix</tarLongFileMode>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-distribution</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+      <configuration>
+        <generateGitPropertiesFile>false</generateGitPropertiesFile>
+        <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+        <dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
+        <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+        <format>properties</format>
+        <injectAllReactorProjects>false</injectAllReactorProjects>
+        <failOnNoGitDirectory>false</failOnNoGitDirectory>
+        <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+        <skip>false</skip>
 
-      <plugin>
-        <!-- Liquibase plugin for quick testing of database upgrades with following command
-             mvn package liquibase:updateSQL -->
+        <!-- Can be used to exclude certain properties from being emitted 
+          into the resulting file. May be useful when you want to hide {@code git.remote.origin.url} 
+          (maybe because it contains your repo password?), or the email of the committer 
+          etc. Each value may be globbing, that is, you can write {@code git.commit.user.*} 
+          to exclude both, the {@code name}, as well as {@code email} properties from 
+          being emitted into the resulting files. Please note that the strings here 
+          are Java regexes ({@code .*} is globbing, not plain {@code *}). -->
+        <excludeProperties>
+          <!-- <excludeProperty>git.user.*</excludeProperty> -->
+        </excludeProperties>
 
-        <groupId>org.liquibase</groupId>
-        <artifactId>liquibase-maven-plugin</artifactId>
-        <version>${liquibase.version}</version>
-        <configuration>
-          <changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
-          <!--<driver>org.mariadb.jdbc.Driver</driver>-->
-          <!--<url>jdbc:mysql://localhost:3306/kylo</url>-->
-          <!--<username>root</username>-->
-          <!--<password>hadoop</password>-->
-          <verbose>false</verbose>
-          <logging>info</logging>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.0.0</version>
-          </dependency>
-          <!--<dependency>-->
-          <!--<groupId>com.microsoft.sqlserver</groupId>-->
-          <!--<artifactId>mssql-jdbc</artifactId>-->
-          <!--<version>6.2.1.jre7</version>-->
-          <!--</dependency>-->
-          <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>${liquibase.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.18.2-GA</version>
-          </dependency>
-          <dependency>
-            <groupId>org.liquibase.ext</groupId>
-            <artifactId>liquibase-hibernate4</artifactId>
-            <version>${liquibase-hibernate4.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>1.4.2.RELEASE</version>
-          </dependency>
-        </dependencies>
-      </plugin>
+        <!-- Can be used to include only certain properties into the resulting 
+          file. Will be overruled by the exclude properties. Each value may be globbing, 
+          that is, you can write {@code git.commit.user.*} to include both, the {@code 
+          name}, as well as {@code email} properties into the resulting files. Please 
+          note that the strings here are Java regexes ({@code .*} is globbing, not 
+          plain {@code *}). -->
+        <includeOnlyProperties>
+          <!-- <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty> -->
+        </includeOnlyProperties>
 
-    </plugins>
+        <useNativeGit>false</useNativeGit>
+        <abbrevLength>7</abbrevLength>
+        <gitDescribe>
+          <skip>true</skip>
+          <always>false</always>
+          <abbrev>7</abbrev>
+          <dirty>-dirty</dirty>
+          <match>v*</match>
+          <tags>true</tags>
+          <forceLongFormat>false</forceLongFormat>
+        </gitDescribe>
+        <evaluateOnCommit>HEAD</evaluateOnCommit>
+        <useBranchNameFromBuildEnvironment>false</useBranchNameFromBuildEnvironment>
+      </configuration>
+
+    </plugin>
+
+    <!-- create single distribution file -->
+    <plugin>
+      <artifactId>maven-assembly-plugin</artifactId>
+      <configuration>
+        <descriptors>
+          <descriptor>src/main/assembly/descriptor.xml</descriptor>
+        </descriptors>
+        <tarLongFileMode>posix</tarLongFileMode>
+      </configuration>
+      <executions>
+        <execution>
+          <id>make-distribution</id>
+          <phase>package</phase>
+          <goals>
+            <goal>single</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+
+    <plugin>
+      <!-- Liquibase plugin for quick testing of database upgrades with following 
+        command mvn package liquibase:updateSQL -->
+
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-maven-plugin</artifactId>
+      <version>${liquibase.version}</version>
+      <configuration>
+        <changeLogFile>src/main/resources/com/thinkbiganalytics/db/master.xml</changeLogFile>
+        <!--<driver>org.mariadb.jdbc.Driver</driver> -->
+        <!--<url>jdbc:mysql://localhost:3306/kylo</url> -->
+        <!--<username>root</username> -->
+        <!--<password>hadoop</password> -->
+        <verbose>false</verbose>
+        <logging>info</logging>
+      </configuration>
+      <dependencies>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <version>42.0.0</version>
+        </dependency>
+        <!--<dependency> -->
+        <!--<groupId>com.microsoft.sqlserver</groupId> -->
+        <!--<artifactId>mssql-jdbc</artifactId> -->
+        <!--<version>6.2.1.jre7</version> -->
+        <!--</dependency> -->
+        <dependency>
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-core</artifactId>
+          <version>${liquibase.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.javassist</groupId>
+          <artifactId>javassist</artifactId>
+          <version>3.18.2-GA</version>
+        </dependency>
+        <dependency>
+          <groupId>org.liquibase.ext</groupId>
+          <artifactId>liquibase-hibernate4</artifactId>
+          <version>${liquibase-hibernate4.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-data-jpa</artifactId>
+          <version>1.4.2.RELEASE</version>
+        </dependency>
+      </dependencies>
+    </plugin>
+
+  </plugins>
   </build>
 
 </project>
