@@ -46,6 +46,8 @@ public class SqoopBuilder {
     private final static String SPACE_STRING = " ";
     private final static String START_SPACE_QUOTE = " \"";
     private final static String END_QUOTE_SPACE = "\" ";
+    private final static String START_SPACE_SINGLE_QUOTE = " '";
+    private final static String END_SINGLE_QUOTE_SPACE = "' ";
     private final static String QUOTE = "\"";
     private final static String EQUAL_STRING = "=";
     private final static String STAR_STRING = "*";
@@ -679,9 +681,9 @@ public class SqoopBuilder {
             }
 
             commandStringBuffer.append(sourcePasswordClearTextLabel)                            //--password
-                .append(START_SPACE_QUOTE)
+                .append(START_SPACE_SINGLE_QUOTE)
                 .append(sourceEnteredPassword)                                                  //"user provided"
-                .append(END_QUOTE_SPACE);
+                .append(END_SINGLE_QUOTE_SPACE);
         }
 
         if ((sourceConnectionManager != null) && (!sourceConnectionManager.isEmpty())) {
