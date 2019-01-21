@@ -82,7 +82,7 @@ export class DefineFeedStepFeedDetailsComponent extends AbstractFeedStepComponen
 
     }
 
-    onFormInitialized(){
+    ngAfterViewInit() {
         this.subscribeToFormChanges(this.form);
     }
 
