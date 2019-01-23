@@ -127,6 +127,7 @@ export class RegisterTemplatePropertyService {
     init() {
         this.getCodeMirrorTypes();
         this.fetchConfigurationProperties();
+        this.fetchMetadataProperties();
     }
 
     /**
