@@ -187,7 +187,6 @@ public class ElasticSearchRestService implements Search {
 
     @Override
     public SearchResult search(String query, int size, int start) {
-        buildRestClient();
         String queryForExecution = rewriteQuery(query);
         ElasticSearchRestSearchResponse restSearchResponse = executeRestSearch(queryForExecution, size, start);
         if (restSearchResponse != null) {
