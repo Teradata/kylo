@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 
 /**
@@ -172,13 +173,17 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
                 } catch (final NotFoundException e) {
                     throw new NifiComponentNotFoundException(inputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
                 } catch (Exception e) {
-                    if (retryAttempt < 3) {
+                    if (retryAttempt < 5) {
                         retryAttempt++;
-                        log.info("An exception occurred attempting to update input port {}.  Retrying update {}/3", inputPort.getId(), retryAttempt);
+                        log.info("An exception occurred attempting to update input port {}.  Retrying update {}/5", inputPort.getId(), retryAttempt);
                         delay(500L);
                         return updateInputPortEntity(processGroupId, inputPort, retryAttempt);
+                    } else if (e instanceof ClientErrorException) {
+                        final String msg = ((ClientErrorException) e).getResponse().readEntity(String.class);
+                        log.info("An exception occurred attempting to update input port {}. Max retries of 5 reached. Response: {}", inputPort.getId(), msg, e);
+                        throw e;
                     } else {
-                        log.info("An exception occurred attempting to update input port {}. Max retries of 3 reached.", inputPort.getId(), e);
+                        log.info("An exception occurred attempting to update input port {}. Max retries of 5 reached.", inputPort.getId(), e);
                         throw e;
                     }
                 }
