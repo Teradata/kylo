@@ -25,6 +25,7 @@ import com.thinkbiganalytics.policy.validation.TimestampValidator;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -260,6 +261,13 @@ public class HCatDataType implements Cloneable, Serializable {
                 return (T) new BigDecimal(val);
             } else if (convertibleType == Boolean.class) {
                 return (T) new Boolean(val);
+            } else if (convertibleType == Timestamp.class) {
+                Timestamp ts = Timestamp.valueOf(val);
+                return (T)ts;
+            } else if (convertibleType == Date.class) {
+                DateTime datetime = DateValidator.instance().parseDate(val);
+                Date date = new Date(datetime.getMillis());
+                return (T)date;
             } else {
                 throw new RuntimeException("Unexpected conversion [" + convertibleType + "] for value [" + val + "]");
             }
@@ -285,15 +293,12 @@ public class HCatDataType implements Cloneable, Serializable {
      * @return true if the string value will be ok, false if explicit conversion is needed.
      */
     public boolean isStringValueValidForHiveType(String strVal) {
-        if (isstring) {
+
+        if (isstring )) {
             return true;
         }
         if (strVal != null && !isnumeric) {
-            if (convertibleType == Timestamp.class) {
-                return new TimestampValidator(true).validate(strVal);
-            } else if (convertibleType == Date.class) {
-                return DateValidator.instance().validate(strVal);
-            } else if (convertibleType == byte[].class) {
+                if (convertibleType == byte[].class) {
                 return true;
             }
         }
