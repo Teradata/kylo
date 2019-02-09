@@ -445,7 +445,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         } else if (Number.class.equals(type)) {
             return NumberUtils.createNumber(value);
         } else if (Integer.class.equals(type) || Integer.TYPE.equals(type)) {
-            return new Integer(value);
+            return Integer.valueOf(value);
         } else if (Long.class.equals(type) || Long.TYPE.equals(type)) {
             return Long.valueOf(value);
         } else if (Double.class.equals(type) || Double.TYPE.equals(type)) {

@@ -148,7 +148,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     @Override
     public FeedOperation getOperation(ID id) {
         OpId opId = (OpId) id;
-        BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(new Long(opId.toString()),false);
+        BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.valueOf(opId.toString()),false);
         if (jobExecution != null) {
             return createOperation(jobExecution);
         } else {

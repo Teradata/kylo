@@ -257,7 +257,7 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
 
         //Transform it to FeedSummary objects
         FeedStatus feedStatus = FeedModelTransform.feedStatus(feedSummaryHealth);
-        Long total = new Long(list.size());
+        Long total = Long.valueOf(list.size());
         searchResult.setData(feedStatus.getFeedSummary());
         searchResult.setRecordsTotal(total);
         searchResult.setRecordsFiltered(total);

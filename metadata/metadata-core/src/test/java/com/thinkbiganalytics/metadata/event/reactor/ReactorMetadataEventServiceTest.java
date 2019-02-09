@@ -97,7 +97,7 @@ public class ReactorMetadataEventServiceTest {
         }
 
         service.addListener(new TestEventListener());
-        service.notify(new TestEvent(new Integer(1)));
+        service.notify(new TestEvent(Integer.valueOf(1)));
 
         Number result = future.get();
 

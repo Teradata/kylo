@@ -43,7 +43,7 @@ class ClouderaRootResourceManager {
     static ClouderaRootResource getRootResource(ApiRootResource apiRootResource) {
 
         String version = apiRootResource.getCurrentVersion();
-        Integer numericVersion = new Integer(StringUtils.substringAfter(version, "v"));
+        Integer numericVersion = Integer.valueOf(StringUtils.substringAfter(version, "v"));
         RootResourceV1 rootResource = null;
         Integer maxVersion = 10;
         if (numericVersion > maxVersion) {

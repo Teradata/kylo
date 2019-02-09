@@ -56,7 +56,7 @@ public class TriggerFeedTest {
             Map<String, Object> executionContext = new HashMap<>();
             executionContext.put("param1", "test");
             executionContext.put("export.kylo.param2", "test2");
-            deltaResults.addFeedExecutionContext(feedName, new Long(1), DateTime.now(), DateTime.now(), executionContext);
+            deltaResults.addFeedExecutionContext(feedName, Long.valueOf(1), DateTime.now(), DateTime.now(), executionContext);
 
         });
 

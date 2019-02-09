@@ -112,13 +112,13 @@ public class ConfigurationProperties {
 
     private void setValues() {
         this.backupLocation = properties.getProperty("kylo.provenance.cache.location", DEFAULT_BACKUP_LOCATION);
-        this.maxFeedEvents = new Integer(properties.getProperty("kylo.provenance.max.starting.events", DEFAULT_MAX_EVENTS + ""));
-        this.runInterval = new Long(properties.getProperty("kylo.provenance.run.interval.millis", DEFAULT_RUN_INTERVAL_MILLIS + ""));
+        this.maxFeedEvents = Integer.valueOf(properties.getProperty("kylo.provenance.max.starting.events", DEFAULT_MAX_EVENTS + ""));
+        this.runInterval = Long.valueOf(properties.getProperty("kylo.provenance.run.interval.millis", DEFAULT_RUN_INTERVAL_MILLIS + ""));
 
-        this.throttleStartingFeedFlowsThreshold = new Integer(properties.getProperty("kylo.provenance.event.count.throttle.threshold", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD + ""));
-        this.throttleStartingFeedFlowsTimePeriodMillis = new Integer(properties.getProperty("kylo.provenance.event.throttle.threshold.time.millis", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS + ""));
+        this.throttleStartingFeedFlowsThreshold = Integer.valueOf(properties.getProperty("kylo.provenance.event.count.throttle.threshold", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD + ""));
+        this.throttleStartingFeedFlowsTimePeriodMillis = Integer.valueOf(properties.getProperty("kylo.provenance.event.throttle.threshold.time.millis", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS + ""));
         orphanChildFlowFileProcessorsString = properties.getProperty("kylo.provenance.orphan.child.flowfile.processors", DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS);
-        this.remoteInputPortExpireTimeSeconds = new Integer(properties.getProperty("kylo.provenance.remote.event.expire.time.seconds",DEFAULT_REMOTE_INPUT_PORT_EXPIRE_TIME_SECONDS+""));
+        this.remoteInputPortExpireTimeSeconds = Integer.valueOf(properties.getProperty("kylo.provenance.remote.event.expire.time.seconds",DEFAULT_REMOTE_INPUT_PORT_EXPIRE_TIME_SECONDS+""));
         //only update this on the initial run.  Any changes will be detected and updated with the ConfigurationPropertiesRefresher
         if(lastModified == null) {
             FeedEventStatistics.getInstance().updateEventTypeProcessorTypeSkipChildren(orphanChildFlowFileProcessorsString);

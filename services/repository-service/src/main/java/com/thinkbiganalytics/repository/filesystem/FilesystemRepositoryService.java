@@ -328,7 +328,7 @@ public class FilesystemRepositoryService implements RepositoryService {
             .limit(filter.getLimit() > 0 ? filter.getLimit() : Integer.MAX_VALUE)
             .collect(Collectors.toList());
 
-        Long total = new Long(templates.size());
+        Long total = Long.valueOf(templates.size());
         searchResult.setData(data);
         searchResult.setRecordsTotal(total);
         searchResult.setRecordsFiltered(total);

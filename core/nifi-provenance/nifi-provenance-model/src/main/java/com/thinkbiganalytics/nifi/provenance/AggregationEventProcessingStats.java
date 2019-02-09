@@ -33,7 +33,7 @@ public class AggregationEventProcessingStats {
 
 
     public static Long addStreamingEvents(int num) {
-        return streamingEventsSentToJms.addAndGet(new Long(num));
+        return streamingEventsSentToJms.addAndGet(Long.valueOf(num));
     }
 
     public static Long getStreamingEventsSent() {
@@ -41,7 +41,7 @@ public class AggregationEventProcessingStats {
     }
 
     public static Long addBatchEvents(int num) {
-        return batchEventsSentToJms.addAndGet(new Long(num));
+        return batchEventsSentToJms.addAndGet(Long.valueOf(num));
     }
 
     public static Long getBatchEventsSent() {
