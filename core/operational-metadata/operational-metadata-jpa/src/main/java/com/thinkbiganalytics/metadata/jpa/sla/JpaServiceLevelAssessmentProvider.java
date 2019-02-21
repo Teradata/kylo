@@ -133,7 +133,7 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         }
 
         List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessments(jpaId);
-        if (latestAssessments != null) {
+        if (latestAssessments != null && !latestAssessments.isEmpty()) {
             JpaServiceLevelAssessment jpaServiceLevelAssessment = (JpaServiceLevelAssessment) latestAssessments.get(0);
             ensureServiceLevelAgreementOnAssessment(jpaServiceLevelAssessment);
             return jpaServiceLevelAssessment;
