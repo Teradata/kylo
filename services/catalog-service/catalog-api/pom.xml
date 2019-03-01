@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-catalog-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.10.1</version>
+    <version>0.10.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-catalog-api</artifactId>

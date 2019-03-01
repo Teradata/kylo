@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-plugins</artifactId>
     <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
-    <version>0.10.1</version>
+    <version>0.10.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>kylo-spark-shell-server</artifactId>
