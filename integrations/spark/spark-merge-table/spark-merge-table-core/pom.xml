@@ -7,7 +7,7 @@
   <parent>
     <artifactId>kylo-spark-merge-table</artifactId>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <version>0.10.0.1-SNAPSHOT</version>
+    <version>0.10.1</version>
   </parent>
 
   <artifactId>kylo-spark-merge-table-core</artifactId>
