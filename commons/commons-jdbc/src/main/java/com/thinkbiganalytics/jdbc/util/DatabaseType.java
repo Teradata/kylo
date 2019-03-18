@@ -54,6 +54,7 @@ public enum DatabaseType {
     SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
     SPARKSQL("Spark SQL", "jdbc:hive2:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SYBASE("Sybase", "jdbc:sybase", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
+    DENODO("Denodo", "jdbc:vdb", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     TERADATA("Teradata", "jdbc:teradata", "select 1", "SELECT {0} FROM {1}.{2} SAMPLE {3}");
 
     private static final Map<String, DatabaseType> databaseProductNameMap;
