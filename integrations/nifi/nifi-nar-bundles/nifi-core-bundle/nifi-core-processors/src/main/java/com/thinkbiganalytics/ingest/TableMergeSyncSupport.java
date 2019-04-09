@@ -133,7 +133,7 @@ public class TableMergeSyncSupport implements Serializable {
 
         // 1. Create a temporary "sync" table for storing our latest snapshot
         String syncTableLocation = deriveSyncTableLocation(targetTable, refTableLocation);
-        String syncTable = createSyncTable(targetSchema, targetTable, syncTableLocation);
+        String syncTable = createTable(targetSchema, targetTable, syncTableLocation);
 
         // 2. Populate the temporary "sync" table
         final String[] selectFields = getSelectFields(sourceSchema, sourceTable, targetSchema, syncTable, partitionSpec);
@@ -145,16 +145,24 @@ public class TableMergeSyncSupport implements Serializable {
         // 3. Drop the sync table. Since it is a managed table it will drop the old data
         dropTable(targetSchema, targetTable);
 
-        // 4. Make the table external
-        String markExternal = "ALTER TABLE " + targetSchema + "." + syncTable + " SET TBLPROPERTIES('EXTERNAL'='TRUE')";
-        doExecuteSQL(markExternal);
+        try {
+            // 4. Make the table external
+            String markExternal = "ALTER TABLE " + targetSchema + "." + syncTable + " SET TBLPROPERTIES('EXTERNAL'='TRUE')";
+            doExecuteSQL(markExternal);
 
-        // 5. Rename the sync table
-        renameTable(targetSchema, syncTable, targetTable);
+            // 5. Rename the sync table
+            renameTable(targetSchema, syncTable, targetTable);
 
-        // 6. Unmark the table external
-        String unmarkExternal = "ALTER TABLE " + targetSchema + "." + targetTable + " SET TBLPROPERTIES('EXTERNAL'='FALSE')";
-        doExecuteSQL(unmarkExternal);
+            // 6. Unmark the table external
+            String unmarkExternal = "ALTER TABLE " + targetSchema + "." + targetTable + " SET TBLPROPERTIES('EXTERNAL'='FALSE')";
+            doExecuteSQL(unmarkExternal);
+        } catch (Exception e) {
+            //re-create sync table or the next round sync table can't be created
+            createTable(targetSchema, syncTable, refTableLocation);
+
+            Throwable cause = e.getCause();
+            throw new RuntimeException("Failed to doSync on table " + syncTable + " and " + targetTable, cause);
+        }
     }
 
     /**
@@ -297,7 +305,7 @@ public class TableMergeSyncSupport implements Serializable {
      * @param syncTableLocation the HDFS location for the reference table
      * @return the new table name
      */
-    private String createSyncTable(@Nonnull final String schema, @Nonnull final String table, @Nonnull final String syncTableLocation) throws SQLException {
+    private String createTable(@Nonnull final String schema, @Nonnull final String table, @Nonnull final String syncTableLocation) throws SQLException {
         final String syncTable = table + "_" + System.currentTimeMillis();
         final String createSQL = "create table " + HiveUtils.quoteIdentifier(schema, syncTable) +
                                  " like " + HiveUtils.quoteIdentifier(schema, table) +
