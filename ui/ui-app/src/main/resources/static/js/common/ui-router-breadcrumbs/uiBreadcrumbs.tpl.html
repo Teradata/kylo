@@ -1,11 +1,9 @@
 <div ng-if="$ctrl.lastBreadcrumbs.length == 2" layout-align="center" style="white-space: nowrap">
-  <span class="pad-left pad-right">|</span>
   <md-button class="icon-btn" ng-click="$ctrl.navigate( $ctrl.lastBreadcrumbs[0])">
     <ng-md-icon md-icon icon="keyboard_arrow_left"></ng-md-icon>
   </md-button>
   <span ng-if="$ctrl.lastBreadcrumbs[1].displayName != ''">  {{ $ctrl.lastBreadcrumbs[1].displayName | translate}}</span>
 </div>
 <div ng-if="$ctrl.lastBreadcrumbs.length == 1 && $ctrl.lastBreadcrumbs[0].displayName != ''" style="white-space: nowrap" >
-  <span class="pad-left pad-right">|</span>
   <span>{{ $ctrl.lastBreadcrumbs[0].displayName | translate}}</span>
 </div>

@@ -53,7 +53,7 @@ export abstract class AbstractSchemaTransformService {
 
             let fetchProgress = (id: string) => {
 
-                this.http.get("/proxy/v1/spark/shell/transform/" + id).subscribe((data: any) => {
+                this.http.get("/kylo/proxy/v1/spark/shell/transform/" + id).subscribe((data: any) => {
                     checkProgress(data);
                 })
             }

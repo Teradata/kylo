@@ -253,6 +253,7 @@ const webpackConfig = (env) => {
             new HtmlWebpackPlugin({
                 filename: "index.html",
                 template: path.resolve("./src/main/resources/static/index.html"),
+				baseUrl: '/kylo/',
                 chunks: ['common', 'entryPolyfills', 'global', 'app'],
                 chunksSortMode: 'manual',
                 inject: 'body'

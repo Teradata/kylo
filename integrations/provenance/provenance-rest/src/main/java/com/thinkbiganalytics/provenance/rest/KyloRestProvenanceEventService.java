@@ -49,7 +49,7 @@ public class KyloRestProvenanceEventService implements ProvenanceEventService {
 
     private JerseyRestClient restClient;
 
-    private static String PROVENANCE_REST_PATH = "/proxy/v1/provenance";
+    private static String PROVENANCE_REST_PATH = "/kylo/proxy/v1/provenance";
 
 
 

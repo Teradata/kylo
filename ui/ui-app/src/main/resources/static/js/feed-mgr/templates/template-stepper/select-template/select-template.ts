@@ -240,7 +240,7 @@ export class RegisterSelectTemplateController {
     publishTemplate = (overwriteParam: boolean) => {
         if (this.model.id) {
 
-            this.$http.get("/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).then((response: any) => {
+            this.$http.get("/kylo/proxy/v1/repository/templates/publish/" + this.model.id + "?overwrite=" + overwriteParam).then((response: any) => {
                 this.$mdToast.show(
                     this.$mdToast.simple()
                         .textContent('Successfully published template to repository.')

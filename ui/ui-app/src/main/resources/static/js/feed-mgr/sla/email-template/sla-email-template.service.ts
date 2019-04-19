@@ -25,7 +25,7 @@ export class SlaEmailTemplateService {
         return injectables;
     }
     getExistingTemplates() : Observable<SlaEmailTemplate[]>{
-        var observable = this.http.get<SlaEmailTemplate[]>("/proxy/v1/feedmgr/sla/email-template");
+        var observable = this.http.get<SlaEmailTemplate[]>("/kylo/proxy/v1/feedmgr/sla/email-template");
         observable.subscribe((response: SlaEmailTemplate[]) => {
                 this.templates = response;
                 this.templateMap = {};
@@ -37,7 +37,7 @@ export class SlaEmailTemplateService {
     };
 
     getRelatedSlas(id:string) {
-        return this.http.get("/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
+        return this.http.get("/kylo/proxy/v1/feedmgr/sla/email-template-sla-references", { params: { "templateId": id } });
     }
 
     getTemplate(id: string) {
@@ -46,7 +46,7 @@ export class SlaEmailTemplateService {
 
     getAvailableActionItems() {
         if (_.isUndefined(this.availableActions) || this.availableActions.length == 0) {
-            return this.http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions");
+            return this.http.get("/kylo/proxy/v1/feedmgr/sla/available-sla-template-actions");
         }
         else {
          return  Observable.of(this.availableActions);
@@ -60,7 +60,7 @@ export class SlaEmailTemplateService {
             templateString = ''
         }
         var testTemplate = { subject: subject, body: templateString };
-        return this.http.post( "/proxy/v1/feedmgr/sla/test-email-template",testTemplate);
+        return this.http.post( "/kylo/proxy/v1/feedmgr/sla/test-email-template",testTemplate);
     }
 
     sendTestEmail(address: string, subject: string, templateString: string):Observable<any>{
@@ -71,13 +71,13 @@ export class SlaEmailTemplateService {
             templateString = ''
         }
         var testTemplate = { emailAddress: address, subject: subject, body: templateString };
-        return this.http.post("/proxy/v1/feedmgr/sla/send-test-email-template",testTemplate);
+        return this.http.post("/kylo/proxy/v1/feedmgr/sla/send-test-email-template",testTemplate);
     }
     save(template: any):Observable<any> {
         if(_.isUndefined(template )){
            return Observable.throw("Unable to save empty template");
         }
-        return this.http.post("/proxy/v1/feedmgr/sla/email-template", template);
+        return this.http.post("/kylo/proxy/v1/feedmgr/sla/email-template", template);
     }
     private accessDeniedDialog() {
        this._dialogService.openAlert({title:"Access Denied",message:"You do not have access to edit templates."});

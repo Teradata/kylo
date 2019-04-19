@@ -34,11 +34,11 @@ export default class CommonRestUrlService{
 
    constructor(){
         this.ROOT = "";
-        this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
-        this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
+        this.SECURITY_BASE_URL = this.ROOT + "/kylo/proxy/v1/security";
+        this.SEARCH_URL = this.ROOT + "/kylo/proxy/v1/feedmgr/search";
         this.SECURITY_GROUPS_URL = this.SECURITY_BASE_URL + "/groups";
         this.SECURITY_USERS_URL = this.SECURITY_BASE_URL + "/users";
-        this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/configuration/properties";
+        this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/kylo/proxy/v1/configuration/properties";
 
         /**
          * get all roles
@@ -55,7 +55,7 @@ export default class CommonRestUrlService{
             return this.SECURITY_BASE_URL + "/roles/"+entityType;
         }
         this.ENTITY_ACCESS_CONTROLLED_CHECK = this.SECURITY_BASE_URL+"/actions/entity-access-controlled";
-        this.ANGULAR_EXTENSION_MODULES_URL = "/api/v1/ui/extension-modules"
+        this.ANGULAR_EXTENSION_MODULES_URL = "/kylo/api/v1/ui/extension-modules"
    }
 }
 

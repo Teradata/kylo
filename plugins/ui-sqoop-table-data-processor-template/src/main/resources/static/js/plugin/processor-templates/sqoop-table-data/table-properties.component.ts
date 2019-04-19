@@ -282,7 +282,7 @@ export class TablePropertiesComponent implements OnChanges, OnInit {
     }
 
     fetchCatalogJbdcSources(){
-        let url = "/proxy/v1/catalog/datasource/plugin-id?pluginIds=jdbc";
+        let url = "/kylo/proxy/v1/catalog/datasource/plugin-id?pluginIds=jdbc";
         this.http.get(url).subscribe((responses:any[]) => {
             this.catalogNiFiControllerServiceIds = responses.map((source:any) => source.nifiControllerServiceId);
             this.updateDbConnectionPropertyOptions();

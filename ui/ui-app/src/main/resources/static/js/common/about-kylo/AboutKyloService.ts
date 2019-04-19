@@ -8,7 +8,7 @@ constructor(private $scope: IScope,
             private $http: angular.IHttpService){
             $http({
                     method: "GET",
-                    url: "/proxy/v1/about/version"
+                    url: "/kylo/proxy/v1/about/version"
                 }).then(function callSuccess(response: any){
                     $scope.version = response.data;
                 },function callFailure(response: any){

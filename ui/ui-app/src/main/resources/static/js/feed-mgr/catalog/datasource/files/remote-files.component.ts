@@ -49,7 +49,7 @@ export class RemoteFilesComponent extends BrowserComponent {
     }
 
     getUrl(): string {
-        return "/proxy/v1/catalog/datasource/" + this.datasource.id + "/files";
+        return "/kylo/proxy/v1/catalog/datasource/" + this.datasource.id + "/files";
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {

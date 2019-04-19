@@ -11,9 +11,9 @@ export default class OpsManagerRestUrlService{
     SLA_BASE_URL = this.FEED_MGR_BASE + "/sla";
     FEEDS_BASE = OperationsRestUrlConstants.FEEDS_BASE
     JOBS_BASE = OperationsRestUrlConstants.JOBS_BASE
-    SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
-    DASHBOARD_URL = this.ROOT + '/proxy/v1/dashboard';
-    DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/proxy/v1/dashboard/pageable-feeds';
+    SECURITY_BASE_URL = this.ROOT + "/kylo/proxy/v1/security";
+    DASHBOARD_URL = this.ROOT + '/kylo/proxy/v1/dashboard';
+    DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/kylo/proxy/v1/dashboard/pageable-feeds';
 
     FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
     FEED_NAMES_URL = this.FEEDS_BASE + "/names";
@@ -42,7 +42,7 @@ export default class OpsManagerRestUrlService{
 
     RUNNING_JOB_COUNTS_URL = OperationsRestUrlConstants.RUNNING_JOB_COUNTS_URL;
 
-       // this.DATA_CONFIDENCE_URL = "/proxy/v1/data-confidence/summary";
+       // this.DATA_CONFIDENCE_URL = "/kylo/proxy/v1/data-confidence/summary";
 
      RESTART_JOB_URL = OperationsRestUrlConstants.RESTART_JOB_URL;
 
@@ -61,7 +61,7 @@ export default class OpsManagerRestUrlService{
 
 //Service monitoring
 
-     SERVICES_URL = "/proxy/v1/service-monitor/";
+     SERVICES_URL = "/kylo/proxy/v1/service-monitor/";
 
         //Provenance Event Stats
      STATS_BASE = OperationsRestUrlConstants.STATS_BASE
@@ -82,24 +82,24 @@ export default class OpsManagerRestUrlService{
          * @returns {string} the URL of the endpoint
          */
      ALERT_DETAILS_URL =  (alertId: any) =>{
-            return "/proxy/v1/alerts/" + alertId;
+            return "/kylo/proxy/v1/alerts/" + alertId;
         };
 
-     ALERTS_URL = "/proxy/v1/alerts";
+     ALERTS_URL = "/kylo/proxy/v1/alerts";
 
-     ALERTS_SUMMARY_UNHANDLED = "/proxy/v1/dashboard/alerts";
+     ALERTS_SUMMARY_UNHANDLED = "/kylo/proxy/v1/dashboard/alerts";
 
-     ALERT_TYPES = "/proxy/v1/alerts/alert-types";
+     ALERT_TYPES = "/kylo/proxy/v1/alerts/alert-types";
 
      FEED_ALERTS_URL = (feedName: any)=> {
-            return "/proxy/v1/dashboard/alerts/feed-name/"+feedName;
+            return "/kylo/proxy/v1/dashboard/alerts/feed-name/"+feedName;
         }
 
      //assessments
-     LIST_SLA_ASSESSMENTS_URL = "/proxy/v1/sla/assessments/"
+     LIST_SLA_ASSESSMENTS_URL = "/kylo/proxy/v1/sla/assessments/"
 
      GET_SLA_ASSESSMENT_URL = (assessmentId: any)=>{
-            return "/proxy/v1/sla/assessments/"+assessmentId;
+            return "/kylo/proxy/v1/sla/assessments/"+assessmentId;
         };
 
      GET_SLA_BY_ID_URL =  (slaId: any)=> {

@@ -39,10 +39,10 @@ export class FieldPolicyOptionsService {
 
     constructor(private http: HttpClient) {
 
-        this.metadata.set(FieldPolicyOptionsService.SPARK_PARSERS,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/proxy/v1/schema-discovery/spark-file-parsers",title:'Supported Parsers'})
-        this.metadata.set(FieldPolicyOptionsService.SCHEMA_PARSER,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/proxy/v1/schema-discovery/file-parsers",title:'Supported Parsers'})
-        this.metadata.set(FieldPolicyOptionsService.VALIDATION,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/proxy/v1/field-policies/validation",title:'Validation Policies'})
-        this.metadata.set(FieldPolicyOptionsService.STANDARDIZATION,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/proxy/v1/field-policies/standardization",title:'Standardization Policies'})
+        this.metadata.set(FieldPolicyOptionsService.SPARK_PARSERS,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/kylo/proxy/v1/schema-discovery/spark-file-parsers",title:'Supported Parsers'})
+        this.metadata.set(FieldPolicyOptionsService.SCHEMA_PARSER,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/kylo/proxy/v1/schema-discovery/file-parsers",title:'Supported Parsers'})
+        this.metadata.set(FieldPolicyOptionsService.VALIDATION,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/kylo/proxy/v1/field-policies/validation",title:'Validation Policies'})
+        this.metadata.set(FieldPolicyOptionsService.STANDARDIZATION,{name:FieldPolicyOptionsService.SPARK_PARSERS,url:"/kylo/proxy/v1/field-policies/standardization",title:'Standardization Policies'})
 
 
     }

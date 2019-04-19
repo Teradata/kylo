@@ -96,7 +96,7 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
 
         if (rejection.status === 401) {
             this.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
-            window.location.href = "/login.html";
+            // window.location.href = "/kylo/login.html";
         } else if (rejection.status <= 0) {
             //Usually -1 means aborted request
             //for now remove this logic as it is cause errors to appear which are not errors.
@@ -161,7 +161,7 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
         if (response.headers.has("Location") && response.headers.get("Location").endsWith("login.html")) {
             redirectLocation = null;
         } else if (!response.url.endsWith(".html") && typeof response.body === "string" && response.body.indexOf("<!-- login.html -->") >= 0) {
-            redirectLocation = "/login.html";
+            redirectLocation = null;// redirectLocation = "/login.html";
         }
 
         if (redirectLocation !== null) {

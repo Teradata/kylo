@@ -165,7 +165,7 @@ public class SparkShellConfiguration {
 
             // Set registration url
             if (address != null) {
-                properties.setRegistrationUrl(protocol + "://" + address + ":8400/proxy/v1/spark/shell/register");
+                properties.setRegistrationUrl(protocol + "://" + address + ":8400/kylo/proxy/v1/spark/shell/register");
             }
         }
         UsernameCaseStrategyUtil.UsernameCaseStrategy usernameCaseStrategy = usernameCaseStrategyUtil.getHiveUsernameCaseStrategy();

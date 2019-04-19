@@ -123,7 +123,7 @@ Examples:
 
 ```properties
 nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://localhost:10000/default
-nifi.service.kylo_metadata_service.rest_client_url=http://localhost:8400/proxy/v1/metadata
+nifi.service.kylo_metadata_service.rest_client_url=http://localhost:8400/kylo/proxy/v1/metadata
 ```
 
 *NOTE:* Kylo will only do this replacement when the controller service is initially created by Kylo upon Feed or Reusable Template creation.  If the service already exists in NiFi then it will not do this replacement. 

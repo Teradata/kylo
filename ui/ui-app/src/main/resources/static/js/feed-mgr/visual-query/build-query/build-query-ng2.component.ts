@@ -1266,7 +1266,7 @@ export class BuildQueryComponent implements OnDestroy, OnChanges, OnInit {
     }
 
     autoCompleteEnabledCheck(){
-        this.http.get("/api/v1/ui/wrangler/table-auto-complete-enabled",  {responseType: 'text'}).subscribe((enabled:string|boolean) => {
+        this.http.get("/kylo/api/v1/ui/wrangler/table-auto-complete-enabled",  {responseType: 'text'}).subscribe((enabled:string|boolean) => {
             this.showDatasources = enabled == true || enabled == "true";
         })
     }

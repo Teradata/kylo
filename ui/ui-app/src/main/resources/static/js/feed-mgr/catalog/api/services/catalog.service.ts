@@ -24,49 +24,49 @@ export class CatalogService {
      * Gets the list of available connector plugins.
      */
     getConnectorPlugins(): Observable<ConnectorPlugin[]> {
-        return this.http.get<ConnectorPlugin[]>("/proxy/v1/catalog/connector/plugin");
+        return this.http.get<ConnectorPlugin[]>("/kylo/proxy/v1/catalog/connector/plugin");
     }
 
     /**
      * Gets connector plugin by id
      */
     getConnectorPlugin(pluginId: string): Observable<ConnectorPlugin> {
-        return this.http.get<ConnectorPlugin>("/proxy/v1/catalog/connector/plugin/" + pluginId);
+        return this.http.get<ConnectorPlugin>("/kylo/proxy/v1/catalog/connector/plugin/" + pluginId);
     }
 
     /**
      * Gets connector plugin by connector id
      */
     getPluginOfConnector(connectorId: string): Observable<ConnectorPlugin> {
-        return this.http.get<ConnectorPlugin>("/proxy/v1/catalog/connector/" + connectorId + "/plugin");
+        return this.http.get<ConnectorPlugin>("/kylo/proxy/v1/catalog/connector/" + connectorId + "/plugin");
     }
 
     /**
      * Gets connector plugin associated with the connector of the data source with the specified ID.
      */
     getDataSourceConnectorPlugin(dataSourceId: string): Observable<ConnectorPlugin> {
-        return this.http.get<ConnectorPlugin>("/proxy/v1/catalog/datasource/" + dataSourceId + "/plugin");
+        return this.http.get<ConnectorPlugin>("/kylo/proxy/v1/catalog/datasource/" + dataSourceId + "/plugin");
     }
 
     /**
      * Gets the list of available connectors, e.g. s3, hdfs, hive, jdbc, kafka etc.
      */
     getConnectors(): Observable<Connector[]> {
-        return this.http.get<Connector[]>("/proxy/v1/catalog/connector");
+        return this.http.get<Connector[]>("/kylo/proxy/v1/catalog/connector");
     }
 
     /**
      * Gets connector by id
      */
     getConnector(connectorId: string): Observable<Connector> {
-        return this.http.get<Connector>("/proxy/v1/catalog/connector/" + connectorId);
+        return this.http.get<Connector>("/kylo/proxy/v1/catalog/connector/" + connectorId);
     }
 
     /**
      * Gets the list of data sources, i.e. instances of configured connectors, e.g. specific s3/hdfs location, kafka on certain port
      */
     getDataSources(): Observable<DataSource[]> {
-        return this.http.get<SearchResult<DataSource>>("/proxy/v1/catalog/datasource")
+        return this.http.get<SearchResult<DataSource>>("/kylo/proxy/v1/catalog/datasource")
             .map(data => data.data);
     }
 
@@ -78,40 +78,40 @@ export class CatalogService {
     getDataSourcesForPluginIds(pluginIds:string[]): Observable<DataSource[]> {
         let params = new HttpParams();
         params = params.append('pluginIds', pluginIds.join(','));
-        return this.http.get<DataSource[]>("/proxy/v1/catalog/datasource/plugin-id",{params:params});
+        return this.http.get<DataSource[]>("/kylo/proxy/v1/catalog/datasource/plugin-id",{params:params});
     }
 
 
 
     getDataSource(datasourceId: string): Observable<DataSource> {
-        return this.http.get<DataSource>("/proxy/v1/catalog/datasource/" + datasourceId);
+        return this.http.get<DataSource>("/kylo/proxy/v1/catalog/datasource/" + datasourceId);
     }
 
     createDataSource(datasource: DataSource): Observable<DataSource> {
         if (typeof datasource.id === "string") {
-            return this.http2.put<DataSource>("/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
+            return this.http2.put<DataSource>("/kylo/proxy/v1/catalog/datasource/" + encodeURIComponent(datasource.id), datasource);
         } else {
-            return this.http2.post<DataSource>("/proxy/v1/catalog/datasource/", datasource);
+            return this.http2.post<DataSource>("/kylo/proxy/v1/catalog/datasource/", datasource);
         }
     }
 
     deleteDataSource(datasource: DataSource): Observable<any> {
-        return this.http.delete<DataSource>("/proxy/v1/catalog/datasource/" + datasource.id);
+        return this.http.delete<DataSource>("/kylo/proxy/v1/catalog/datasource/" + datasource.id);
     }
 
     testDataSource(datasource: DataSource): Observable<any> {
-        return this.http.post<DataSource>("/proxy/v1/catalog/datasource/test", datasource);
+        return this.http.post<DataSource>("/kylo/proxy/v1/catalog/datasource/test", datasource);
     }
     createDataSet(dataSet: SparkDataSet): Observable<SparkDataSet> {
         // Ensure data sets are uploaded with no title. Titles must be unique if set.
         const body = CloneUtil.deepCopy(dataSet);
         body.title = null;
-        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+        return this.http.post<SparkDataSet>("/kylo/proxy/v1/catalog/dataset/", body);
     }
 
     createDataSetWithTitle(dataSet: SparkDataSet): Observable<SparkDataSet> {
         const body = CloneUtil.deepCopy(dataSet);
-        return this.http.post<SparkDataSet>("/proxy/v1/catalog/dataset/", body);
+        return this.http.post<SparkDataSet>("/kylo/proxy/v1/catalog/dataset/", body);
     }
 
     /**
@@ -153,7 +153,7 @@ export class CatalogService {
         const self = this;
         let params = new HttpParams();
         params = params.append('schema', schema);
-        return <Observable<DatasetTable>> this.http.post("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table+"/dataset",null,{params:params});
+        return <Observable<DatasetTable>> this.http.post("/kylo/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/"+table+"/dataset",null,{params:params});
     }
 
 
@@ -166,7 +166,7 @@ export class CatalogService {
         let params = new HttpParams();
         params = params.append('filter', "%" + filter + "%");
 
-        return this.http.get("/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/filter", {params:params})
+        return this.http.get("/kylo/proxy/v1/catalog/datasource/" + dataSourceId + "/tables/filter", {params:params})
             .map( (tables:any[]) =>  {
                 let list = tables.map(table => {
                     let schema = table.schema;

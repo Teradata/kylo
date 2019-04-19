@@ -38,7 +38,7 @@ export class controller implements ng.IComponentController {
      */
     schedulerDetails: any = {};
 
-    API_URL_BASE: string = '/proxy/v1/scheduler';
+    API_URL_BASE: string = '/kylo/proxy/v1/scheduler';
 
     /**
      * Flag to indicate we are fetching the scheduler metadata/details

@@ -188,7 +188,7 @@ export class PreviewSchemaService  extends AbstractSchemaTransformService{
 
 
             //Call spark shell to transform the data
-            this._transform(previewRequest,"/proxy/v1/spark/shell/preview").subscribe((data: PreviewTransformResponse) => {
+            this._transform(previewRequest,"/kylo/proxy/v1/spark/shell/preview").subscribe((data: PreviewTransformResponse) => {
 
                 //if its a file based preview and the resulting schema parser doesnt match the requested one, reset it
                 if(previewRequest.filePreview && data.schemaParser && ((<PreviewFileDataSet>previewDataSet).schemaParser == undefined || (<PreviewFileDataSet>previewDataSet).schemaParser.name != data.schemaParser.name )){

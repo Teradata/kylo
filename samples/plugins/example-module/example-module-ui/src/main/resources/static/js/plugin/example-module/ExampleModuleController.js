@@ -74,7 +74,7 @@ define(['angular', 'plugin/example-module/module-name'], function (angular, modu
         fetchFood();
 
         function fetchFood(){
-            $http.get("/proxy/v1/example/module/food").then(function(response){
+            $http.get("/kylo/proxy/v1/example/module/food").then(function(response){
                 if(response.data){
                     self.foods = response.data;
                 }

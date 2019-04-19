@@ -90,7 +90,7 @@ export class PreviewRawService  extends AbstractSchemaTransformService{
             doProfile:false,
             doValidate:false
         }
-        return this._transform(request,"/proxy/v1/spark/shell/transform/");
+        return this._transform(request,"/kylo/proxy/v1/spark/shell/transform/");
     }
 
 
