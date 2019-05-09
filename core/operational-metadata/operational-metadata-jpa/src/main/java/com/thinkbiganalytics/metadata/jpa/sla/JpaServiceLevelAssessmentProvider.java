@@ -27,28 +27,32 @@ import com.google.common.collect.ImmutableMap;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.JPQLQuery;
 import com.thinkbiganalytics.metadata.jpa.feed.FeedAclIndexQueryAugmentor;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
-import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
 import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.security.AccessController;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Collections;
 
 import javax.inject.Inject;
 
@@ -226,17 +230,113 @@ public class JpaServiceLevelAssessmentProvider extends QueryDslPagingSupport<Jpa
         }
         predicate.and(feed.isNull().or(feed.isNotNull().and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))));
 
-        return findAllWithFetch(serviceLevelAssessment,
-                                predicate,
-                                true,
-                                pageable,
-                                QueryDslFetchJoin.innerJoin(serviceLevelAssessment.serviceLevelAgreementDescription, serviceLevelAgreementDescription),
-                                QueryDslFetchJoin.leftJoin(serviceLevelAgreementDescription.feeds, feed),
-                                QueryDslFetchJoin.leftJoin(serviceLevelAssessment.obligationAssessments, obligationAssessment),
-                                QueryDslFetchJoin.leftJoin(obligationAssessment.metricAssessments, metricAssessment));
-
-
+        return findAllByPredicate(predicate, pageable, obligationAssessment, serviceLevelAssessment, serviceLevelAgreementDescription, feed, metricAssessment);
     }
 
+    private Page<? extends ServiceLevelAssessment> findAllByPredicate(Predicate predicate,
+                                                                      Pageable pageable,
+                                                                      QJpaObligationAssessment obligationAssessment,
+                                                                      QJpaServiceLevelAssessment serviceLevelAssessment,
+                                                                      QJpaServiceLevelAgreementDescription serviceLevelAgreementDescription,
+                                                                      QJpaOpsManagerFeed feed,
+                                                                      QJpaMetricAssessment metricAssessment) {
+        if (pageable == null) {
+            pageable = new QPageRequest(0, Integer.MAX_VALUE);
+        }
+
+        /*
+        To implement efficient pagination, we first query the IDs of the ServiceLevelAssessments for the page selected,
+        then run a second query to actually fetch the data.
+
+        This is necessary, as the query used to fetch the data joins ServiceLevelAssessments with its collection
+        fields to prevent multiple round-trips to the database for populating the collection fields of each entity.
+        As a result however, the number of records returned from the database does not correlate with the actual
+        entities materialized by Hibernate / QueryDSL out of the result set, hence database-side result set range
+        limits can not be used for pagination.
+
+        While Hibernate / QueryDSL can overcome this limitation by transparently selecting the desired
+        range on-the-fly, in memory, this approach requires fetching a large number of rows over the network and
+        hence is terribly slow.
+         */
+        JPQLQuery<JpaServiceLevelAssessment.SlaAssessmentId> idQueryForCount =
+                buildIdRangeQuery(serviceLevelAssessment, obligationAssessment, metricAssessment, serviceLevelAgreementDescription, feed, predicate);
+
+        final long totalCount = idQueryForCount.fetchCount();
+
+        if (totalCount == 0) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        JPQLQuery<JpaServiceLevelAssessment.SlaAssessmentId> idQueryForIdList =
+                buildIdRangeQuery(serviceLevelAssessment, obligationAssessment, metricAssessment, serviceLevelAgreementDescription, feed, predicate);
+
+        getQuerydsl().applyPagination(pageable, idQueryForIdList);
+
+        List<JpaServiceLevelAssessment.SlaAssessmentId> idListForPageRange =
+                totalCount > pageable.getOffset() ? idQueryForIdList.fetch() : Collections.emptyList();
+
+        if (idListForPageRange == null || idListForPageRange.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, totalCount);
+        }
+
+        Predicate idsInPageRangePredicate = QJpaServiceLevelAssessment.jpaServiceLevelAssessment.id.in(idListForPageRange);
+
+        JPQLQuery<JpaServiceLevelAssessment> dataQuery =
+                buildDataFetchQuery(serviceLevelAssessment, obligationAssessment, metricAssessment,
+                        serviceLevelAgreementDescription, feed, idsInPageRangePredicate, pageable.getSort());
+
+        List<JpaServiceLevelAssessment> retrievedData = dataQuery.fetch();
+
+        return new PageImpl<>(retrievedData, pageable, totalCount);
+    }
+
+
+    private JPQLQuery<JpaServiceLevelAssessment.SlaAssessmentId> buildIdRangeQuery(
+            QJpaServiceLevelAssessment serviceLevelAssessment,
+            QJpaObligationAssessment obligationAssessment,
+            QJpaMetricAssessment metricAssessment,
+            QJpaServiceLevelAgreementDescription serviceLevelAgreementDescription,
+            QJpaOpsManagerFeed feed,
+            Predicate predicate) {
+
+        JPQLQuery<JpaServiceLevelAssessment.SlaAssessmentId> idQuery = from(serviceLevelAssessment).distinct().select(serviceLevelAssessment.id);
+
+        idQuery.innerJoin(serviceLevelAssessment.serviceLevelAgreementDescription, serviceLevelAgreementDescription);
+
+        idQuery.leftJoin(serviceLevelAgreementDescription.feeds, feed);
+        idQuery.leftJoin(serviceLevelAssessment.obligationAssessments, obligationAssessment);
+
+        ((JPQLQuery)idQuery).leftJoin(obligationAssessment.metricAssessments, metricAssessment);
+
+        idQuery.where(predicate);
+
+        return idQuery;
+    }
+
+    private JPQLQuery<JpaServiceLevelAssessment> buildDataFetchQuery(
+            QJpaServiceLevelAssessment serviceLevelAssessment,
+            QJpaObligationAssessment obligationAssessment,
+            QJpaMetricAssessment metricAssessment,
+            QJpaServiceLevelAgreementDescription serviceLevelAgreementDescription,
+            QJpaOpsManagerFeed feed,
+            Predicate predicate, Sort sort) {
+
+        JPQLQuery<JpaServiceLevelAssessment> dataQuery = from(serviceLevelAssessment).distinct().select(serviceLevelAssessment);
+
+        dataQuery.innerJoin(serviceLevelAssessment.serviceLevelAgreementDescription, serviceLevelAgreementDescription).fetchJoin();
+
+        dataQuery.leftJoin(serviceLevelAgreementDescription.feeds, feed).fetchJoin();
+        dataQuery.leftJoin(serviceLevelAssessment.obligationAssessments, obligationAssessment).fetchJoin();
+
+        ((JPQLQuery)dataQuery).leftJoin(obligationAssessment.metricAssessments, metricAssessment).fetchJoin();
+
+        dataQuery.where(predicate);
+
+        if (sort != null) {
+            getQuerydsl().applySorting(sort, dataQuery);
+        }
+
+        return dataQuery;
+    }
 
 }
