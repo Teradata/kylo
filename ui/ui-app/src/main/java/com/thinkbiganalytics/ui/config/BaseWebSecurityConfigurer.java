@@ -47,7 +47,7 @@ public abstract class BaseWebSecurityConfigurer extends WebSecurityConfigurerAda
     
     public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
     public static final String UI_LOGOUT_URL = "/logout";
-    public static final String UI_LOGOUT_REDIRECT_URL = "/login.html?logout";
+    public static final String UI_LOGOUT_REDIRECT_URL = "/kylo/login.html?logout";
 //    public static final String UI_LOGOUT_REDIRECT_URL = "/index.html";
     
     @Inject

@@ -37,13 +37,13 @@ public class WebMvcConfig {
             @Override
             public void addViewControllers(ViewControllerRegistry registry) {
                 // forward requests to /admin and /user to their index.html
-                registry.addRedirectViewController("/", "/index.html");
+                registry.addRedirectViewController("/", "/kylo/index.html");
                 registry.addViewController("/kylo").setViewName(
-                    "forward:/index.html");
+                    "forward:/kylo/index.html");
                 registry.addViewController("/ops-mgr").setViewName(
-                    "forward:/index.html");
+                    "forward:/kylo/index.html");
                 registry.addViewController("/feed-mgr").setViewName(
-                    "forward:/index.html");
+                    "forward:/kylo/index.html");
             }
         };
     }

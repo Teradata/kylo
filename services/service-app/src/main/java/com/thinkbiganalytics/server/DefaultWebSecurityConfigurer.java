@@ -94,6 +94,7 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
         http
                 .authenticationProvider(this.authenticationProvider)
                 .csrf().disable()
+                .headers().frameOptions().disable().and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
                 .authorizeRequests()

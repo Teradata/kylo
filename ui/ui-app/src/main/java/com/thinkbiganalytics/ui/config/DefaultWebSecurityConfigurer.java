@@ -104,6 +104,7 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
 
         http
             .csrf().disable()
+            .headers().frameOptions().disable().and()
             .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .enableSessionUrlRewriting(true)
@@ -116,9 +117,9 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
             .formLogin()
                 .usernameParameter("username")
                 .passwordParameter("password")
-                .loginPage("/login.html")
+                .loginPage("/kylo/login.html")
                 .loginProcessingUrl("/login")
-                .failureUrl("/login.html?error=true").permitAll()
+                .failureUrl("/kylo/login.html?error=true").permitAll()
                 .successHandler(kyloTargetUrlLoginSuccessHandler)
                 .and()
             .rememberMe()

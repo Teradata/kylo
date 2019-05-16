@@ -90,7 +90,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         .name("rest-client-url")
         .displayName("REST Client URL")
         .description("The base URL to the metadata server when the REST API client implementation is chosen.")
-        .defaultValue("http://localhost:8400/kylo/proxy/v1/metadata")
+        .defaultValue("http://localhost:8400/proxy/v1/metadata")
         .addValidator(StandardValidators.URL_VALIDATOR)
         .required(false)
         .build();

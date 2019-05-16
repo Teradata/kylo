@@ -132,7 +132,7 @@ public class DefaultKyloJaasAuthenticationProvider extends DefaultJaasAuthentica
                 try {
                     getLoginContext(auth)
                         .ifPresent(loginContext -> { 
-                            JaasAuthenticationToken jaasToken = (JaasAuthenticationToken) auth;
+                            Authentication jaasToken = (Authentication) auth;
                             
                             try {
                                 loginContext.logout();
@@ -174,7 +174,7 @@ public class DefaultKyloJaasAuthenticationProvider extends DefaultJaasAuthentica
         super.publishFailureEvent(token, ase);
     }
     
-    private Function<LogFields, Object> deriveSuccessTokenValues(JaasAuthenticationToken token) {
+    private Function<LogFields, Object> deriveSuccessTokenValues(Authentication token) {
         return (field) -> {
             switch (field) {
                 case RESULT:
@@ -196,7 +196,7 @@ public class DefaultKyloJaasAuthenticationProvider extends DefaultJaasAuthentica
         };
     }
 
-    private Function<LogFields, Object> deriveFailedTokenValues(Exception exception, UsernamePasswordAuthenticationToken token) {
+    private Function<LogFields, Object> deriveFailedTokenValues(Exception exception, Authentication token) {
         return (field) -> {
             switch (field) {
                 case RESULT:
