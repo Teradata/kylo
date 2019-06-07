@@ -24,7 +24,6 @@
    <changeSet author="sr186054" id="kylo_0.8.1-nifi-flow-cache-mediumtext" dbms="mysql">
      <modifyDataType columnName="UPDATE_VALUE"
                      newDataType="MEDIUMTEXT"
-                     schemaName="kylo"
                      tableName="NIFI_FLOW_CACHE_UPDATE_ITEM"/>
   </changeSet>
 
