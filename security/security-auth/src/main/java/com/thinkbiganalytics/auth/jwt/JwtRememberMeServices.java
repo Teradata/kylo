@@ -1,9 +1,55 @@
 package com.thinkbiganalytics.auth.jwt;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
+import java.security.Key;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.security.auth.Subject;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.joda.time.DateTimeUtils;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.MalformedClaimException;
+import org.jose4j.jwt.NumericDate;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.HmacKey;
+import org.jose4j.lang.JoseException;
+import org.keycloak.KeycloakSecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /*-
@@ -32,62 +78,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.thinkbiganalytics.auth.config.JwtProperties;
 import com.thinkbiganalytics.security.BasePrincipal;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.joda.time.DateTimeUtils;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.jwt.JwtClaims;
-import org.jose4j.jwt.MalformedClaimException;
-import org.jose4j.jwt.NumericDate;
-import org.jose4j.jwt.consumer.InvalidJwtException;
-import org.jose4j.jwt.consumer.JwtConsumer;
-import org.jose4j.jwt.consumer.JwtConsumerBuilder;
-import org.jose4j.keys.HmacKey;
-import org.jose4j.lang.JoseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
-import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.security.AccessController;
-import java.security.Key;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.security.auth.Subject;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
 /**
  * Identifies previously remembered users by a JSON Web Token.
  *
  * <p>The token contains the user's names and groups. It is stored as a cookie in the user's browser to authenticate the user in subsequent requests.</p>
  */
-public class JwtRememberMeServices extends AbstractRememberMeServices {
+public class JwtRememberMeServices extends CustomAbstractRememberMeService {
 
     private static final Logger log = LoggerFactory.getLogger(JwtRememberMeServices.class);
     
@@ -226,7 +222,6 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
     protected String extractRememberMeCookie(HttpServletRequest request) {
         // If a remember-me cookie is found also add it as a private credential of the current subject (if any.)
         Cookie[] cookies = request.getCookies();
-        
         if (cookies != null) {
             Arrays.stream(request.getCookies())
                 .filter(cookie -> cookie.getName().equals(getCookieName()))
@@ -282,7 +277,7 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
         final Collection<? extends GrantedAuthority> authorities = tokens.length > 1 ? generateAuthorities(tokens[1]) : Collections.emptySet();
         return new User(tokens[0], "", authorities);
     }
-
+    
     /**
      * Gets the JWT expiration time in seconds. This is usually the same as the max age for the cookie.
      *
@@ -419,9 +414,16 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
         private Principal createPrincipal(Class<? extends Principal> type, String name){
             try {
                 return ConstructorUtils.invokeConstructor(type, name);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                log.error("Could not instanciate principal type: ", type.getName(), e);
-                throw new IllegalStateException("Could not instanciate principal type: " + type.getName(), e);
+            } catch (NoSuchMethodException ne) {//better solution than this should be implemented, so that Kylo is able to accommodate any kind of security-context. 
+                try {
+                	return ConstructorUtils.invokeConstructor(type, name, new KeycloakSecurityContext());
+                }catch(Exception e) {
+                	 log.error("Could not instanciate principal type: ", type.getName(), e);
+                     throw new IllegalStateException("Could not instanciate principal type: " + type.getName(), e); 
+                }
+            }catch(IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            	 log.error("Could not instanciate principal type: ", type.getName(), e);
+                 throw new IllegalStateException("Could not instanciate principal type: " + type.getName(), e);
             }
         }
     }

@@ -3,6 +3,24 @@
  */
 package com.thinkbiganalytics.auth.jaas.http;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*-
  * #%L
  * kylo-security-auth
@@ -27,99 +45,96 @@ import org.springframework.security.authentication.jaas.JaasAuthenticationCallba
 import org.springframework.security.core.Authentication;
 import org.springframework.web.filter.GenericFilterBean;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Enumeration;
-
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
- * This filter captures the request for the current thread and exports a CallbackHandler that can provide
- * headers and cookies to LoginModules, using supported Callbacks, extracted from that request.
+ * This filter captures the request for the current thread and exports a
+ * CallbackHandler that can provide headers and cookies to LoginModules, using
+ * supported Callbacks, extracted from that request.
  */
 public class JaasHttpCallbackHandlerFilter extends GenericFilterBean {
 
-    public static final JaasAuthenticationCallbackHandler CALLBACK_HANDLER = new HttpAuthenticationCallbackHandler();
-    
-    private static final ThreadLocal<HttpCallbackContext> contextHolder = new ThreadLocal<>();
+	public static final JaasAuthenticationCallbackHandler CALLBACK_HANDLER = new HttpAuthenticationCallbackHandler();
 
-    /* (non-Javadoc)
-     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
-     */
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try {
-            capture(request, response);
-            chain.doFilter(request, response);
-            return;
-        } finally {
-            release();
-        }
+	private static final ThreadLocal<HttpCallbackContext> contextHolder = new ThreadLocal<>();
 
-    }
-    
-    protected void capture(ServletRequest request, ServletResponse response) {
-        HttpServletRequest httpReq = (HttpServletRequest) request;
-        HttpServletResponse httpResp = (HttpServletResponse) response;
-        contextHolder.set(new HttpCallbackContext(httpReq, httpResp));
-    }
-    
-    protected void release() {
-        contextHolder.remove();
-    }
-    
-    protected static class HttpAuthenticationCallbackHandler implements JaasAuthenticationCallbackHandler {
-        @Override
-        public void handle(Callback callback, Authentication auth) throws IOException, UnsupportedCallbackException {
-            HttpCallbackContext context = contextHolder.get();
-            if (context == null) {
-                return;
-            } else if (callback instanceof HttpHeaderCallback) {
-                HttpHeaderCallback headerCallback = (HttpHeaderCallback) callback;
-                handleHeader(context, headerCallback);
-            } else if (callback instanceof HttpCookieCallback) {
-                HttpCookieCallback cookieCallback = (HttpCookieCallback) callback;
-                handleCookie(context, cookieCallback);
-            }
-        }
+	private static final Logger log = LoggerFactory.getLogger(JaasHttpCallbackHandlerFilter.class);
 
-        protected void handleCookie(HttpCallbackContext context, HttpCookieCallback callback) {
-            Cookie[] cookies = context.request.getCookies();
-            
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    String name = cookie.getName();
-                    boolean match = callback.isIgnoreCase() ? name.equalsIgnoreCase(callback.getName()) : name.equals(callback.getName());
-                    
-                    if (match) {
-                        callback.setCookie(cookie);
-                        break;
-                    }
-                }
-            }
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest,
+	 * javax.servlet.ServletResponse, javax.servlet.FilterChain)
+	 */
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+		try {
+			capture(request, response);
+			chain.doFilter(request, response);
+			return;
+		} finally {
+			release();
+		}
 
-        protected void handleHeader(HttpCallbackContext context, HttpHeaderCallback callback) {
-            Enumeration<String> hdrEnum = context.request.getHeaders(callback.getName());
-            callback.setValues(Collections.list(hdrEnum));
-        }
-    }
+	}
 
-    protected static class HttpCallbackContext {
-        private HttpServletRequest request;
-//        private HttpServletResponse response;
-        
-        public HttpCallbackContext(HttpServletRequest req, HttpServletResponse resp) {
-            this.request = req;
-//            this.response = resp;
-        }
-    }
+	protected void capture(ServletRequest request, ServletResponse response) {
+		HttpServletRequest httpReq = (HttpServletRequest) request;
+		HttpServletResponse httpResp = (HttpServletResponse) response;
+		contextHolder.set(new HttpCallbackContext(httpReq, httpResp));
+	}
+
+	protected void release() {
+		contextHolder.remove();
+	}
+
+	protected static class HttpAuthenticationCallbackHandler implements JaasAuthenticationCallbackHandler {
+		@Override
+		public void handle(Callback callback, Authentication auth) throws IOException, UnsupportedCallbackException {
+			HttpCallbackContext context = contextHolder.get();
+			if (context == null) {
+				return;
+			} else if (callback instanceof HttpHeaderCallback) {
+				HttpHeaderCallback headerCallback = (HttpHeaderCallback) callback;
+				handleHeader(context, headerCallback);
+			} else if (callback instanceof HttpCookieCallback) {
+				HttpCookieCallback cookieCallback = (HttpCookieCallback) callback;
+				handleCookie(context, cookieCallback);
+			} else if (callback instanceof NameCallback) {
+				String username = context.request.getHeader("x-preferred-username");
+				((NameCallback) callback).setName(username);
+			}
+		}
+
+		protected void handleCookie(HttpCallbackContext context, HttpCookieCallback callback) {
+			Cookie[] cookies = context.request.getCookies();
+
+			if (cookies != null) {
+				for (Cookie cookie : cookies) {
+					String name = cookie.getName();
+					boolean match = callback.isIgnoreCase() ? name.equalsIgnoreCase(callback.getName())
+							: name.equals(callback.getName());
+
+					if (match) {
+						callback.setCookie(cookie);
+						break;
+					}
+				}
+			}
+		}
+
+		protected void handleHeader(HttpCallbackContext context, HttpHeaderCallback callback) {
+			Enumeration<String> hdrEnum = context.request.getHeaders(callback.getName());
+			callback.setValues(Collections.list(hdrEnum));
+		}
+	}
+
+	protected static class HttpCallbackContext {
+		private HttpServletRequest request;
+		// private HttpServletResponse response;
+
+		public HttpCallbackContext(HttpServletRequest req, HttpServletResponse resp) {
+			this.request = req;
+			// this.response = resp;
+		}
+	}
 }

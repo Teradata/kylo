@@ -116,7 +116,6 @@ public class KerberosWebSecurityConfigurer extends BaseWebSecurityConfigurer {
             .authorizeRequests()
                 .antMatchers("/login", "/login/**", "/login**").permitAll()
                 .antMatchers("/**").authenticated()
-//                .anyRequest().authenticated()
                 .and()
             .formLogin()
                 .usernameParameter("username")

@@ -67,7 +67,7 @@ export default class KyloOptions implements ng.IComponentController {
      * Redirects the user to the logout page.
      */
     logout () {
-        this.$window.location.href = "/logout";
+        this.$window.location.href = "/kylo/logout";
     }
 
     static readonly $inject = ["$http", "$mdDialog", "$window", "AboutKyloService"];

@@ -27,12 +27,15 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+
+import com.thinkbiganalytics.ui.config.ZuulRequestHeaderFilter;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -43,6 +46,7 @@ import java.util.concurrent.Executors;
 @EnableConfigurationProperties
 @ComponentScan("com.thinkbiganalytics")
 @EnableZuulProxy
+@EnableDiscoveryClient
 public class KyloUiApplication implements SchedulingConfigurer {
 
 
@@ -58,5 +62,9 @@ public class KyloUiApplication implements SchedulingConfigurer {
     @Override
     public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
         scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
+    }
+    @Bean()
+    public ZuulRequestHeaderFilter addRequestHeaderFilter() {
+    	return new ZuulRequestHeaderFilter();
     }
 }

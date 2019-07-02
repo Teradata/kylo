@@ -73,9 +73,7 @@ public class JaasAuthConfig {
     public static final int DEFAULT_GRANTER_ORDER = Integer.MAX_VALUE - 100;
 
     private static final JaasAuthenticationCallbackHandler[] CALLBACK_HANDLERS 
-        = new JaasAuthenticationCallbackHandler[] { new JaasAuthenticationNameCallbackHandler(), 
-                                                    new JaasAuthenticationPasswordCallbackHandler(),
-                                                    JaasHttpCallbackHandlerFilter.CALLBACK_HANDLER
+        = new JaasAuthenticationCallbackHandler[] { JaasHttpCallbackHandlerFilter.CALLBACK_HANDLER
                                                   };
 
     @Bean(name = UI_AUTH_PROVIDER)

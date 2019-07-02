@@ -32,6 +32,7 @@ import org.apache.spark.launcher.SparkAppHandle;
 import org.apache.spark.launcher.SparkLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +95,7 @@ public class SparkShellProcessBuilder {
         }
         if (clientProperties.getJars() != null) {
             builder.addJars(clientProperties.getJars());
+            log.info("Extra Jars added " + clientProperties.getJars());
         }
         if (clientProperties.getJavaHome() != null) {
             builder.javaHome(clientProperties.getJavaHome());
@@ -202,9 +204,13 @@ public class SparkShellProcessBuilder {
      */
     public SparkShellProcessBuilder() {
         // Generate client id and secret
-        clientId = UUID.randomUUID().toString();
-        clientSecret = UUID.randomUUID().toString();
-
+    	if(SecurityContextHolder.getContext().getAuthentication() != null) {
+    		clientId = SecurityContextHolder.getContext().getAuthentication().getName();
+            clientSecret = "";
+    	}else {
+    		clientId = UUID.randomUUID().toString();
+            clientSecret = UUID.randomUUID().toString();
+    	}
         // Create Spark Launcher
         final Map<String, String> env = ImmutableMap.<String, String>builder()
             .put(CLIENT_ID, clientId)
@@ -461,9 +467,12 @@ public class SparkShellProcessBuilder {
      */
     @Nonnull
     public SparkLauncherSparkShellProcess build() throws IOException {
-        launcher.addAppArgs("--idle-timeout", Long.toString(idleTimeout), "--port-max", Integer.toString(portMax), "--port-min", Integer.toString(portMin), "--server-url", getRegistrationUrl());
-        launcher.setAppResource(getAppResource());
-
+        log.debug("--idle-timeout " + Long.toString(idleTimeout) + " --port-max " + Integer.toString(portMax) + " --port-min "+ Integer.toString(portMin) + " --server-url " + getRegistrationUrl());
+    	launcher.addAppArgs("--idle-timeout", Long.toString(idleTimeout), "--port-max", Integer.toString(portMax), "--port-min", Integer.toString(portMin), "--server-url", getRegistrationUrl());
+        log.debug(getAppResource());
+    	launcher.setAppResource(getAppResource());
+    	
+    	log.info(registrationKeystorePath);
         if (registrationKeystorePath != null) {
             if (Objects.equals(master, "yarn") && Objects.equals(deployMode, "cluster")) {
                 launcher.addAppArgs("--server-keystore-path", new File(registrationKeystorePath).getName());
@@ -475,12 +484,21 @@ public class SparkShellProcessBuilder {
                 launcher.addAppArgs("--server-keystore-password", registrationKeystorePassword);
             }
         }
+        log.debug( "spark home: " + sparkHome );
         if (sparkHome == null) {
             launcher.setSparkHome(getSparkHome());
+        }else {
+        	launcher.setSparkHome(sparkHome);
         }
-
+        log.debug("launcher starting application on " + launcher.CHILD_CONNECTION_TIMEOUT +":"+launcher.CHILD_PROCESS_LOGGER_NAME+":"+launcher.DRIVER_EXTRA_CLASSPATH+":"+launcher.DRIVER_EXTRA_JAVA_OPTIONS+":"+launcher.DRIVER_MEMORY+":"+launcher.EXECUTOR_CORES+":"+ launcher.EXECUTOR_EXTRA_CLASSPATH +":"+ launcher.EXECUTOR_MEMORY+":"+ launcher.SPARK_MASTER +":");
         final SparkAppHandle sparkAppHandle = launcher.startApplication();
-        return new SparkLauncherSparkShellProcess(sparkAppHandle, clientId, clientSecret, clientTimeout, TimeUnit.SECONDS);
+        if(SecurityContextHolder.getContext().getAuthentication() != null) {
+        	log.debug(sparkAppHandle +":"+ SecurityContextHolder.getContext().getAuthentication().getName() +":"+ clientSecret +":"+ 300+":" + TimeUnit.SECONDS);
+            return new SparkLauncherSparkShellProcess(sparkAppHandle, SecurityContextHolder.getContext().getAuthentication().getName(), clientSecret, 300, TimeUnit.SECONDS);
+        }else {
+        	log.debug(sparkAppHandle +":"+ clientId +":"+ clientSecret +":"+ 300+":" + TimeUnit.SECONDS);
+            return new SparkLauncherSparkShellProcess(sparkAppHandle, clientId, clientSecret, 300, TimeUnit.SECONDS);
+        }
     }
 
     /**

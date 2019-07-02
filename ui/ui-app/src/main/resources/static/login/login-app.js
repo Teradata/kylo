@@ -300,7 +300,7 @@ define([
         var self = this;
         this.targetUrl = "/#"+$location.hash();
         var url = $location.url();
-        if("/login.html?logout" == url) {
+        if("/login.html?logout" == url ||"/kylo/login.html?logout" == url ) {
             LoginService.resetCookieValue();
         }
 

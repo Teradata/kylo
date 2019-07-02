@@ -1,5 +1,27 @@
 package com.thinkbiganalytics.ui.config;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
+
 /*-
  * #%L
  * thinkbig-ui-app
@@ -24,29 +46,8 @@ import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
 import com.thinkbiganalytics.auth.config.SessionDestroyEventLogoutHandler;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.jaasapi.JaasApiIntegrationFilter;
-
-import javax.inject.Inject;
-import javax.inject.Named;
+import com.thinkbiganalytics.auth.jaas.http.JaasHttpCallbackHandlerFilter;
+import com.thinkbiganalytics.auth.jwt.CustomBasicAuthenticationFilter;
 
 /**
  * Form Based Auth with Spring Security. Plugin a different AuthService by adding a new
@@ -101,7 +102,6 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
         // @formatter:off
 
         http.removeConfigurer(LogoutConfigurer.class);
-
         http
             .csrf().disable()
             .headers().frameOptions().disable().and()
@@ -112,31 +112,18 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
             .authorizeRequests()
                 .antMatchers("/login", "/login/**", "/login**").permitAll()
                 .antMatchers("/**").authenticated()
-//                .anyRequest().authenticated()
-                .and()
-            .formLogin()
-                .usernameParameter("username")
-                .passwordParameter("password")
-                .loginPage("/kylo/login.html")
-                .loginProcessingUrl("/login")
-                .failureUrl("/kylo/login.html?error=true").permitAll()
-                .successHandler(kyloTargetUrlLoginSuccessHandler)
                 .and()
             .rememberMe()
                 .rememberMeServices(rememberMeServices)
                 .and()
-            .httpBasic()
-                .and()
-            .addFilterBefore(jaasFilter(), BasicAuthenticationFilter.class)
-            .addFilterAfter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), JaasApiIntegrationFilter.class)
-            .addFilterAfter(logoutFilter(), BasicAuthenticationFilter.class);
-
-        // @formatter:on
+            .addFilterAfter(new CustomBasicAuthenticationFilter(auth -> auth), CorsFilter.class)
+            .addFilterBefore(new JaasHttpCallbackHandlerFilter(), CustomBasicAuthenticationFilter.class)
+            .addFilterAfter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), JaasHttpCallbackHandlerFilter.class)
+            .addFilterAfter(logoutFilter(), CustomBasicAuthenticationFilter.class);
     }
-
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(uiAuthenticationProvider);
+        auth
+	        .authenticationProvider(uiAuthenticationProvider);
     }
-
 }

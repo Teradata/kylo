@@ -21,8 +21,8 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <base href="/"/>
-  <title>{{"view.login.KL" | translate}}</title>
+  <base href="/kylo/"/>
+  <title>Mi-Stream</title>
   <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css">
   <link rel="stylesheet" href="assets/login.css">
   <style>
@@ -45,9 +45,9 @@
   </md-toolbar>
 
   <div layout-align="center center" flex layout="column" layout-fill>
-    <form name="form" action="/login" role="form" method="post">
+    <form name="form" action="/kylo/login" role="form" method="post">
       <md-card ng-controller="LoginController as vm" md-padding style="width:600px;max-width:600px;z-index: 999999;" flex="nogrow" md-whiteframe="4">
-        <md-card-title style="background-color:rgb(97, 109, 115)">
+        <md-card-title style="background-color:rgb(256, 256, 256)">
           <img src="assets/images/kylo-logo-rev.png" style="width: 100px;align-self: center" class="md-card-image">
         </md-card-title>
         <md-card-content>
@@ -67,7 +67,7 @@
             </md-input-container>
 
           </div>
-          <input type="hidden" name="targetUrl" value="{{vm.targetUrl}}">
+          <input type="hidden" name="targetUrl" value="/kylo">
         </md-card-content>
         <md-divider></md-divider>
         <md-card-actions>

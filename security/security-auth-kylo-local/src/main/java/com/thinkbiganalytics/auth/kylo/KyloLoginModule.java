@@ -1,5 +1,19 @@
 package com.thinkbiganalytics.auth.kylo;
 
+import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.AccountLockedException;
+import javax.security.auth.login.AccountNotFoundException;
+import javax.security.auth.login.CredentialException;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 /*-
  * #%L
  * UserProvider Authentication
@@ -21,25 +35,10 @@ package com.thinkbiganalytics.auth.kylo;
  */
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.auth.jaas.http.HttpHeaderCallback;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.Nonnull;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.login.AccountLockedException;
-import javax.security.auth.login.AccountNotFoundException;
-import javax.security.auth.login.CredentialException;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
 
 /**
  * A login module that authenticates users using the Kylo user store.  By default
@@ -103,30 +102,34 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
     @Override
     protected boolean doLogin() throws Exception {
         // Get username and password
-        final NameCallback nameCallback = new NameCallback("Username: ");
-        final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
-
-        if (requirePassword) {
-            handle(nameCallback, passwordCallback);
-        } else {
-            handle(nameCallback);
-        }
-
+		
+		  final HttpHeaderCallback nameCallback = new HttpHeaderCallback("x-preferred-username"); 
+		  final HttpHeaderCallback passwordCallback = new HttpHeaderCallback("x-affectli-key");
+		  
+		  if (requirePassword){
+			  handle(nameCallback, passwordCallback); 
+		  } 
+		  else {
+			  handle(nameCallback); 
+		  }
         // Authenticate user
         metadata.read(() -> {
-            Optional<User> user = userProvider.findUserBySystemName(nameCallback.getName());
+			Optional<User> user = userProvider.findUserBySystemName(nameCallback.getValues().get(0));
 
             if (user.isPresent()) {
                 if (!user.get().isEnabled()) {
-                    throw new AccountLockedException("The account \"" + nameCallback.getName() + "\" is currently disabled");
-                } else if (requirePassword && ! passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
+					throw new AccountLockedException(
+							"The account \"" + nameCallback.getValues().get(0) + "\" is currently disabled");
+				} else if (requirePassword && !passwordEncoder
+						.matches(new String(passwordCallback.getValues().get(0)), user.get().getPassword())) {
                     throw new CredentialException("The username and/or password combination do not match");
                 }
 
                 addPrincipal(user.get().getPrincipal());
                 addAllPrincipals(user.get().getAllGroupPrincipals());
             } else {
-                throw new AccountNotFoundException("No account exists with name name \"" + nameCallback.getName() + "\"");
+				throw new AccountNotFoundException(
+						"No account exists with name name \"" + nameCallback.getValues().get(0) + "\"");
             }
         }, MetadataAccess.SERVICE);
 

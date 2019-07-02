@@ -1,5 +1,20 @@
 package com.thinkbiganalytics.ui.config;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+
 /*-
  * #%L
  * thinkbig-ui-app
@@ -23,22 +38,6 @@ package com.thinkbiganalytics.ui.config;
 import com.thinkbiganalytics.auth.config.MultiHandlerLogoutFilter;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
-
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.jaasapi.JaasApiIntegrationFilter;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * Abstract base HTTP authentication configurer for Spring Security.
@@ -74,10 +73,4 @@ public abstract class BaseWebSecurityConfigurer extends WebSecurityConfigurerAda
                                             logoutSuccessHandlers.orElse(Collections.emptyList()));
     }
     
-    @Bean
-    public JaasApiIntegrationFilter jaasFilter() {
-        JaasApiIntegrationFilter filter = new JaasApiIntegrationFilter();
-        filter.setCreateEmptySubject(true);
-        return filter;
-    }
 }
