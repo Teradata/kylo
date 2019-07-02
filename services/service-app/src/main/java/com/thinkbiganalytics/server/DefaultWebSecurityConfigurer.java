@@ -1,5 +1,26 @@
 package com.thinkbiganalytics.server;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
+
 /*-
  * #%L
  * thinkbig-service-app
@@ -23,27 +44,7 @@ package com.thinkbiganalytics.server;
 import com.thinkbiganalytics.auth.config.SessionDestroyEventLogoutHandler;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jaas.http.JaasHttpCallbackHandlerFilter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-
-import javax.inject.Inject;
-import javax.inject.Named;
+import com.thinkbiganalytics.auth.jwt.CustomBasicAuthenticationFilter;
 
 
 /**
@@ -98,16 +99,15 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and()
                 .authorizeRequests()
-                    .antMatchers("/**").authenticated()
+                    .antMatchers("/**").permitAll()
                     .and()
                 .rememberMe()
                     .rememberMeServices(rememberMeServices)
                     .and()
-                .httpBasic()
-                    .and()
-                .addFilterBefore(new JaasHttpCallbackHandlerFilter(), BasicAuthenticationFilter.class)
-                .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
-                .addFilterAfter(logoutFilter(), BasicAuthenticationFilter.class);
+                .addFilterAfter(new CustomBasicAuthenticationFilter(auth -> auth), CorsFilter.class)
+                .addFilterBefore(new JaasHttpCallbackHandlerFilter(), CustomBasicAuthenticationFilter.class)
+                .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), CustomBasicAuthenticationFilter.class)
+                .addFilterAfter(logoutFilter(), CustomBasicAuthenticationFilter.class);
 
         // @formatter:on
     }
