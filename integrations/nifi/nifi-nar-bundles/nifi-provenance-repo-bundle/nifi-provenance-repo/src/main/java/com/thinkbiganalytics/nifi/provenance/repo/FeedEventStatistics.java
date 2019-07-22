@@ -847,8 +847,6 @@ public class FeedEventStatistics implements Serializable {
 
             if (canClear) {
                 clearEventAndTrackingData(eventId, eventFlowFileId);
-                eventDuration.remove(eventId);
-                eventStartTime.remove(eventId);
             }
             else {
                 //we need to reprocess this
@@ -859,6 +857,8 @@ public class FeedEventStatistics implements Serializable {
 
 
         }
+        eventDuration.remove(eventId);
+        eventStartTime.remove(eventId);
     }
 
     private void clearEventAndTrackingData(Long eventId, String eventFlowFileId) {
