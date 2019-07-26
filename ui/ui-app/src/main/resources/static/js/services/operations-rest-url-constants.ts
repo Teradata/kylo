@@ -1,21 +1,21 @@
 
 export class OperationsRestUrlConstants{
 
-    static FEEDS_BASE = "/kylo/proxy/v1/feeds";
+    static FEEDS_BASE = "/proxy/v1/feeds";
 
-    static  JOBS_BASE = "/kylo/proxy/v1/jobs";
+    static  JOBS_BASE = "/proxy/v1/jobs";
 
-    static FEED_MGR_BASE = "/kylo/proxy/v1/feedmgr";
+    static FEED_MGR_BASE = "/proxy/v1/feedmgr";
 
     static FEED_MGR_FEED_BASE_URL = OperationsRestUrlConstants.FEED_MGR_BASE + "/feeds";
 
     //Provenance Event Stats
-   static STATS_BASE = "/kylo/proxy/v1/provenance-stats";
+   static STATS_BASE = "/proxy/v1/provenance-stats";
 
-   static STATS_BASE_V2 = "/kylo/proxy/v2/provenance-stats";
+   static STATS_BASE_V2 = "/proxy/v2/provenance-stats";
 
     static SPECIFIC_FEED_HEALTH_URL =  (feedName: string)=>{
-        return '/kylo/proxy/v1/dashboard/feeds/feed-name/' + feedName;
+        return '/proxy/v1/dashboard/feeds/feed-name/' + feedName;
     }
     static  FEED_DAILY_STATUS_COUNT_URL =  (feedName: string)=> {
         return OperationsRestUrlConstants.FEEDS_BASE + "/" + feedName + "/daily-status-count";
@@ -34,7 +34,7 @@ export class OperationsRestUrlConstants{
     static FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = OperationsRestUrlConstants.FEED_MGR_FEED_BASE_URL + "/feed-system-name-to-display-name";
 
     static FEED_ALERTS_URL = (feedName: any)=> {
-        return "/kylo/proxy/v1/dashboard/alerts/feed-name/"+feedName;
+        return "/proxy/v1/dashboard/alerts/feed-name/"+feedName;
     }
 
 
@@ -59,7 +59,7 @@ export class OperationsRestUrlConstants{
     static JOBS_QUERY_URL = OperationsRestUrlConstants.JOBS_BASE;
     static JOBS_CHARTS_QUERY_URL = OperationsRestUrlConstants.JOBS_BASE + '/list';
     static JOB_NAMES_URL = OperationsRestUrlConstants.JOBS_BASE + '/names';
-    static RUNNING_JOB_COUNTS_URL = '/kylo/proxy/v1/dashboard/running-jobs';
+    static RUNNING_JOB_COUNTS_URL = '/proxy/v1/dashboard/running-jobs';
 
     static RESTART_JOB_URL =  (executionId: any)=>{
         return OperationsRestUrlConstants.JOBS_BASE + "/" + executionId + "/restart";

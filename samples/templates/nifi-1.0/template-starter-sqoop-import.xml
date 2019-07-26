@@ -218,7 +218,7 @@
         </entry>
         <entry>
           <key>rest-client-url</key>
-          <value>http://localhost:8400/kylo/proxy/v1/metadata</value>
+          <value>http://localhost:8400/proxy/v1/metadata</value>
         </entry>
         <entry>
           <key>client-username</key>

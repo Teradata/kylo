@@ -22,44 +22,44 @@
 export class RestUrlConstants {
 
     static ROOT = "";
-    static ADMIN_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/admin";
-    static ADMIN_V2_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v2/feedmgr/admin";
-    static SECURITY_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/security";
-    static TEMPLATES_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/templates";
-    static FEEDS_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/feeds";
-    static SLA_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/sla";
-    static CATALOG_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/catalog";
-    static CONTROLLER_SERVICES_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/controller-services";
-    static SCHEMA_DISCOVERY_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/schema-discovery";
+    static ADMIN_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/admin";
+    static ADMIN_V2_BASE_URL = RestUrlConstants.ROOT + "/proxy/v2/feedmgr/admin";
+    static SECURITY_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/security";
+    static TEMPLATES_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/templates";
+    static FEEDS_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/feeds";
+    static SLA_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/sla";
+    static CATALOG_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/catalog";
+    static CONTROLLER_SERVICES_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/controller-services";
+    static SCHEMA_DISCOVERY_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/schema-discovery";
     static GET_TEMPLATES_URL = RestUrlConstants.TEMPLATES_BASE_URL;
     static GET_UNREGISTERED_TEMPLATES_URL = RestUrlConstants.TEMPLATES_BASE_URL + "/unregistered";
-    static HADOOP_AUTHORIZATATION_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/hadoop-authorization";
-    static UI_BASE_URL = RestUrlConstants.ROOT + "/kylo/api/v1/ui";
-    static DOMAIN_TYPES_BASE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/domain-types";
+    static HADOOP_AUTHORIZATATION_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
+    static UI_BASE_URL = RestUrlConstants.ROOT + "/api/v1/ui";
+    static DOMAIN_TYPES_BASE_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/domain-types";
 
     static UPLOAD_SAMPLE_TABLE_FILE = RestUrlConstants.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
     static UPLOAD_SPARK_SAMPLE_FILE = RestUrlConstants.SCHEMA_DISCOVERY_BASE_URL + "/spark/sample-file";
     static LIST_FILE_PARSERS = RestUrlConstants.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
     static LIST_SPARK_FILE_PARSERS = RestUrlConstants.SCHEMA_DISCOVERY_BASE_URL + "/spark-file-parsers";
 
-    static VALIDATE_CRON_EXPRESSION_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/cron-expression/validate";
+    static VALIDATE_CRON_EXPRESSION_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/cron-expression/validate";
 
-    static PREVIEW_CRON_EXPRESSION_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/cron-expression/preview";
+    static PREVIEW_CRON_EXPRESSION_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/cron-expression/preview";
 
-    static GET_SYSTEM_NAME = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/system-name";
+    static GET_SYSTEM_NAME = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/system-name";
 
-    static ICONS_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/icons";
-    static ICON_COLORS_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/icon-colors";
+    static ICONS_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/icons";
+    static ICON_COLORS_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/icon-colors";
 
-    static CODE_MIRROR_TYPES_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/codemirror-types";
+    static CODE_MIRROR_TYPES_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/codemirror-types";
 
-    static CATEGORIES_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/categories";
+    static CATEGORIES_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/categories";
 
-    static SEARCH_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/search";
+    static SEARCH_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/search";
 
-    static HIVE_SERVICE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/hive";
+    static HIVE_SERVICE_URL = RestUrlConstants.ROOT + "/proxy/v1/hive";
 
-    static SPARK_SHELL_SERVICE_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/spark/shell";
+    static SPARK_SHELL_SERVICE_URL = RestUrlConstants.ROOT + "/proxy/v1/spark/shell";
 
     ///TEMPLATE REGISTRATION
 
@@ -111,15 +111,15 @@ export class RestUrlConstants {
 
     static REMOTE_PROCESS_GROUP_AWARE = RestUrlConstants.TEMPLATES_BASE_URL+"/remote-process-group/status";
 
-    static ALL_REUSABLE_FEED_INPUT_PORTS = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/reusable-input-ports";
+    static ALL_REUSABLE_FEED_INPUT_PORTS = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
 
 
-    static ROOT_INPUT_PORTS = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/root-input-ports";
+    static ROOT_INPUT_PORTS = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/root-input-ports";
 
-    static CONFIGURATION_PROPERTIES_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/configuration/properties";
-    static METADATA_PROPERTY_NAMES_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/metadata-properties";
+    static CONFIGURATION_PROPERTIES_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";
+    static METADATA_PROPERTY_NAMES_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/metadata-properties";
 
-    static GET_DATASOURCE_TYPES = RestUrlConstants.ROOT + "/kylo/proxy/v1/metadata/datasource/types";
+    static GET_DATASOURCE_TYPES = RestUrlConstants.ROOT + "/proxy/v1/metadata/datasource/types";
 
     //FEED URLS
 
@@ -252,8 +252,8 @@ export class RestUrlConstants {
 
     //Field Policy Urls
 
-    static AVAILABLE_STANDARDIZATION_POLICIES = RestUrlConstants.ROOT + "/kylo/proxy/v1/field-policies/standardization";
-    static AVAILABLE_VALIDATION_POLICIES = RestUrlConstants.ROOT + "/kylo/proxy/v1/field-policies/validation";
+    static AVAILABLE_STANDARDIZATION_POLICIES = RestUrlConstants.ROOT + "/proxy/v1/field-policies/standardization";
+    static AVAILABLE_VALIDATION_POLICIES = RestUrlConstants.ROOT + "/proxy/v1/field-policies/validation";
 
     static ADMIN_IMPORT_TEMPLATE_URL = RestUrlConstants.ADMIN_V2_BASE_URL + "/import-template";
 
@@ -277,11 +277,11 @@ export class RestUrlConstants {
     static SECURITY_USERS_URL = RestUrlConstants.SECURITY_BASE_URL + "/users";
 
     static FEED_LINEAGE_URL(feedId:string) {
-        return RestUrlConstants.ROOT + "/kylo/proxy/v1/metadata/feed/" + feedId + "/lineage";
+        return RestUrlConstants.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
     };
 
     // Feed history data reindexing endpoint
-    static FEED_HISTORY_CONFIGURED = RestUrlConstants.ROOT + "/kylo/proxy/v1/metadata/feed/data-history-reindex-configured";
+    static FEED_HISTORY_CONFIGURED = RestUrlConstants.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
 
 
     /**
@@ -291,7 +291,7 @@ export class RestUrlConstants {
      * @returns {string} the URL for listing controller services
      */
     static LIST_SERVICES_URL(processGroupId:string) {
-        return RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
+        return RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
     };
 
     /**
@@ -299,42 +299,42 @@ export class RestUrlConstants {
      *
      * @type {string}
      */
-    static PARTITION_FUNCTIONS_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/util/partition-functions";
+    static PARTITION_FUNCTIONS_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
 
     /**
      * The endpoint for retrieving the NiFi status.
      * @type {string}
      */
-    static NIFI_STATUS = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/status";
+    static NIFI_STATUS = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/status";
 
     /**
      * the endpoint for determining if NiFi is up or not
      * @type {string}
      */
-    static IS_NIFI_RUNNING_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/running";
+    static IS_NIFI_RUNNING_URL = RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/running";
 
     /**
      * The endpoint for retrieving data sources.
      * @type {string}
      */
-    static GET_DATASOURCES_URL = RestUrlConstants.ROOT + "/kylo/proxy/v1/metadata/datasource";
+    static GET_DATASOURCES_URL = RestUrlConstants.ROOT + "/proxy/v1/metadata/datasource";
 
     /**
      * The endpoint for querying a data source.
      */
     static QUERY_DATASOURCE_URL(id:string) {
-        return RestUrlConstants.ROOT + "/kylo/proxy/v1/metadata/datasource/" + id + "/query";
+        return RestUrlConstants.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
     };
 
     /**
      * The endpoint for querying a data source.
      */
     static PREVIEW_DATASOURCE_URL(id:string, schema:string, table:string, limit:number) {
-        return RestUrlConstants.ROOT + "/kylo/proxy/v1/metadata/datasource/" + id + "/preview/" + schema + "/" + table + "?limit=" + limit;
+        return RestUrlConstants.ROOT + "/proxy/v1/metadata/datasource/" + id + "/preview/" + schema + "/" + table + "?limit=" + limit;
     };
 
     static GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(id:string) {
-        return RestUrlConstants.ROOT + "/kylo/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
+        return RestUrlConstants.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
     }
 
     /**
@@ -407,21 +407,21 @@ export class RestUrlConstants {
      * return a list of the categorySystemName.feedSystemName
      * @type {string}
      */
-    static OPS_MANAGER_FEED_NAMES = "/kylo/proxy/v1/feeds/names";
+    static OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
 
     /**
      * Formats a date as a string.
      */
-    static FORMAT_DATE = "/kylo/proxy/v1/feedmgr/util/format-date";
+    static FORMAT_DATE = "/proxy/v1/feedmgr/util/format-date";
 
     /**
      * Parses a string as a date.
      */
-    static PARSE_DATE = "/kylo/proxy/v1/feedmgr/util/parse-date";
+    static PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
 
-    static SCHEMA_DISCOVERY_PARSE_DATA_SET = "/kylo/proxy/v1/schema-discovery/hive/dataset"
+    static SCHEMA_DISCOVERY_PARSE_DATA_SET = "/proxy/v1/schema-discovery/hive/dataset"
 
-    static SCHEMA_DISCOVERY_TABLE_SETTINGS_DATA_SET = "/kylo/proxy/v1/schema-discovery/table-settings/dataset"
+    static SCHEMA_DISCOVERY_TABLE_SETTINGS_DATA_SET = "/proxy/v1/schema-discovery/table-settings/dataset"
 
 
 

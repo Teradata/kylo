@@ -624,7 +624,7 @@ public class IntegrationTestBase {
     }
 
     protected DefaultExecutedJob getJobWithSteps(long executionId) {
-        //http://localhost:8400/kylo/proxy/v1/jobs
+        //http://localhost:8400/proxy/v1/jobs
         Response response = given(JobsRestController.BASE)
                 .when()
                 .get(String.format("/%s?includeSteps=true", executionId));

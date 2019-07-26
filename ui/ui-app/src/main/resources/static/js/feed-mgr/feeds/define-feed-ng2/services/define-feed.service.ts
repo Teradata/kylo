@@ -280,34 +280,34 @@ export class DefineFeedService {
 
 
     loadLatestFeed(feedId:string, alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
-         let url = "/kylo/proxy/v1/feedmgr/feeds/"+feedId+"/versions/latest";
+         let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/latest";
        return  this._loadFeedVersion(feedId, url,LoadMode.LATEST, true, true, force)
     }
 
     loadDeployedFeed(feedId:string, alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
-        let url = "/kylo/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed";
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed";
        return  this._loadFeedVersion(feedId, url,LoadMode.DEPLOYED, true, true, force)
     }
 
     loadDraftFeed(feedId:string,alertOnError:boolean = true, force:boolean = false):Observable<Feed>{
-        let url = "/kylo/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
         return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, true, true, force)
     }
 
     getDraftFeed(feedId:string):Observable<Feed>{
 
-        let url = "/kylo/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft";
         return  this._loadFeedVersion(feedId, url,LoadMode.DRAFT, false, true, true)
     }
 
     deployedVersionExists(feedId:string):Observable<string> {
-        let url = "/kylo/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed/exists";
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/deployed/exists";
         return <Observable<string>>this.http.get(url,{responseType:'text'});
     }
 
     draftVersionExists(feedId:string):Observable<string> {
         const headers = new HttpHeaders({'Content-Type':'text/plain; charset=utf-8'});
-        let url = "/kylo/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft/exists";
+        let url = "/proxy/v1/feedmgr/feeds/"+feedId+"/versions/draft/exists";
         return <Observable<string>>this.http.get(url,{headers:headers,responseType:'text'});
     }
 
@@ -402,7 +402,7 @@ export class DefineFeedService {
 
     private _deleteFeed():Observable<any> {
         if(this.feed && this.feed.id) {
-            return this.http.delete("/kylo/proxy/v1/feedmgr/feeds" + "/" + this.feed.id);
+            return this.http.delete("/proxy/v1/feedmgr/feeds" + "/" + this.feed.id);
         }
         else {
             return Observable.empty();
@@ -627,10 +627,10 @@ export class DefineFeedService {
         body.uiState[Feed.UI_STATE_STEPS_KEY] = JSON.stringify(steps);
         delete body.steps;
 
-        let url = "/kylo/proxy/v1/feedmgr/feeds/draft/entity";
+        let url = "/proxy/v1/feedmgr/feeds/draft/entity";
 
         if(!feed.isNew()){
-            url = "/kylo/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft/entity";
+            url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft/entity";
         }
 
         let observable : Observable<Feed> = <Observable<Feed>> this.http.post(url,body,{ headers: {
@@ -711,7 +711,7 @@ export class DefineFeedService {
     deployFeed(feed:Feed) :Observable<DeployEntityVersionResponse|any> {
         feed.validate(false)
         if(feed.isDraft() && feed.isValid && feed.isComplete()){
-            let url = "/kylo/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+            let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
             let params :HttpParams = new HttpParams();
             params =params.append("action","VERSION,DEPLOY")
 
@@ -763,7 +763,7 @@ export class DefineFeedService {
                 filter((accept: boolean) => accept),
                 tap(() => this._loadingService.register("processingFeed")),
                 concatMap(() => {
-                    let url = "/kylo/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
+                    let url = "/proxy/v1/feedmgr/feeds/"+feed.id+"/versions/draft";
                     let params: HttpParams = new HttpParams();
                     params = params.append("action","REMOVE");
                     let headers: HttpHeaders = new HttpHeaders();

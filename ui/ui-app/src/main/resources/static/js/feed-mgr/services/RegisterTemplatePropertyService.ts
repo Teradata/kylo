@@ -38,13 +38,13 @@ import {Common} from '../../../lib/common/CommonTypes';
 
 export class RegisterTemplatePropertyService {
 
-   CONFIGURATION_PROPERTIES_URL :string =  "/kylo/proxy/v1/feedmgr/nifi/configuration/properties";
+   CONFIGURATION_PROPERTIES_URL :string =  "/proxy/v1/feedmgr/nifi/configuration/properties";
 
-    METADATA_PROPERTY_NAMES_URL :string = "/kylo/proxy/v1/feedmgr/metadata-properties";
+    METADATA_PROPERTY_NAMES_URL :string = "/proxy/v1/feedmgr/metadata-properties";
 
-    CODE_MIRROR_TYPES_URL :string = "/kylo/proxy/v1/feedmgr/util/codemirror-types";
+    CODE_MIRROR_TYPES_URL :string = "/proxy/v1/feedmgr/util/codemirror-types";
 
-    GET_REGISTERED_TEMPLATES_URL :string = "/kylo/proxy/v1/feedmgr/templates/registered"
+    GET_REGISTERED_TEMPLATES_URL :string = "/proxy/v1/feedmgr/templates/registered"
 
 
     static $inject = ["$http",

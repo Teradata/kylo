@@ -608,7 +608,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
             }
             if (!loaded) {
                 log.error(
-                    "Unable to build the NiFi Flow Cache!  You will need to manually rebuild the cache using the following url:  http://KYLO_HOST:PORT/kylo/proxy/v1/metadata/nifi-provenance/nifi-flow-cache/reset-cache ",
+                    "Unable to build the NiFi Flow Cache!  You will need to manually rebuild the cache using the following url:  http://KYLO_HOST:PORT/proxy/v1/metadata/nifi-provenance/nifi-flow-cache/reset-cache ",
                     lastError);
             }
             rebuildWithRetryInProgress.set(false);

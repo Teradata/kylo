@@ -29,12 +29,12 @@ export class FileManagerService {
     }
 
     private static getUploadsUrl(id: string, fileName?: string) {
-        const url = `/kylo/proxy/v1/catalog/dataset/${encodeURIComponent(id)}/uploads`;
+        const url = `/proxy/v1/catalog/dataset/${encodeURIComponent(id)}/uploads`;
         return fileName ? `${url}/${encodeURIComponent(fileName)}` : url;
     }
 
     createDataSet(dataSourceId: string, title: string): Observable<SparkDataSet> {
-        return this.http.post(`/kylo/proxy/v1/catalog/datasource/${encodeURIComponent(dataSourceId)}/dataset`, {title: title}).pipe(
+        return this.http.post(`/proxy/v1/catalog/datasource/${encodeURIComponent(dataSourceId)}/dataset`, {title: title}).pipe(
             map(dataSet => new SparkDataSet(dataSet))
         );
     }

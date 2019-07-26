@@ -23,7 +23,7 @@ import {moduleName} from './module-name';
 export default class ConfigurationService {
 MODULE_URLS: any;
 constructor(){
-       this.MODULE_URLS= "/kylo/proxy/v1/configuration/module-urls";
+       this.MODULE_URLS= "/proxy/v1/configuration/module-urls";
     }
 }
 

@@ -47,7 +47,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     getUrl(): string {
-        return "/kylo/proxy/v1/catalog/datasource/" + this.datasource.id + "/tables";
+        return "/proxy/v1/catalog/datasource/" + this.datasource.id + "/tables";
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {

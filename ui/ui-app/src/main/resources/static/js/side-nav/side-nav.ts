@@ -320,10 +320,10 @@ export default class SideNav implements ng.IComponentController {
         let links: any[] = [];
         links.push({sref: "dashboard",type:'link', icon: "dashboard", text: this.$filter('translate')('views.main.dashboard'), defaultActive: false, permission: AccessConstants.UI_STATES.DASHBOARD.permissions});
         links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: this.$filter('translate')('views.main.services'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_HEALTH.permissions});
-        links.push({sref: "jobs",type:'link', icon: "settings", text: this.$filter('translate')('views.main.jobs'), defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
-        links.push({sref: "alerts", icon: "notifications", text: this.$filter('translate')('views.main.alerts'), defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
-        links.push({sref: "service-level-assessments",type:'link', icon: "work", text: this.$filter('translate')('views.main.sla-assessments'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
-        links.push({sref: "scheduler",type:'link', icon: "today", text: this.$filter('translate')('views.main.sla-schedule'), defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
+        // links.push({sref: "jobs",type:'link', icon: "settings", text: this.$filter('translate')('views.main.jobs'), defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
+        // links.push({sref: "alerts", icon: "notifications", text: this.$filter('translate')('views.main.alerts'), defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
+        // links.push({sref: "service-level-assessments",type:'link', icon: "work", text: this.$filter('translate')('views.main.sla-assessments'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
+        // links.push({sref: "scheduler",type:'link', icon: "today", text: this.$filter('translate')('views.main.sla-schedule'), defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
         links.push({sref: "charts",type:'link', icon: "insert_chart", text: this.$filter('translate')('views.main.charts'), defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
         this.addExtensionLinks(this.MENU_KEY.OPS_MGR, links);
         var menu = ({type:'toggle', 

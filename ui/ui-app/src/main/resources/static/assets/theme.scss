@@ -66,7 +66,7 @@ $warn:    mat-palette($mat-deep-orange, 800, 100, 900);
 Teal theme
 */
 $primary: mat-palette($td-slate, 700, 100, 900);
-$accent:  mat-palette($td-teal, 800, 100, 900);
+$accent:  mat-palette($td-blue, 800, 100, 900);
 $warn:    mat-palette($mat-deep-orange, 800, 100, 900);
 
 $theme: mat-light-theme($primary, $accent, $warn);

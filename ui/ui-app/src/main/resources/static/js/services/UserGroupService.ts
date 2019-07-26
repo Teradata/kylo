@@ -44,7 +44,7 @@ constructor (private $http: any,
                 };
 
                 if(this.currentUser == null){
-                    this.$http.get("/kylo/proxy/v1/about/me").then((response: any)=>{
+                    this.$http.get("/proxy/v1/about/me").then((response: any)=>{
                             this.currentUser = response.data;
                             deferred.resolve(this.currentUser);
                     },(response: any)=> {

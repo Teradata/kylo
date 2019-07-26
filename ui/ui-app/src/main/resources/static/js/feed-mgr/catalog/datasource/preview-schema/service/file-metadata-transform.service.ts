@@ -127,7 +127,7 @@ export class FileMetadataTransformService  {
 
                 let fileMetadataProgress = (id: string) => {
 
-                    this.http.get("/kylo/proxy/v1/spark/shell/file-metadata/" + id).subscribe((data: any) => {
+                    this.http.get("/proxy/v1/spark/shell/file-metadata/" + id).subscribe((data: any) => {
                         checkProgress(data);
                     }, error1 => {
                         formatError(error1)
@@ -135,7 +135,7 @@ export class FileMetadataTransformService  {
                 }
 
 
-                this.http.post("/kylo/proxy/v1/spark/shell/file-metadata", request)
+                this.http.post("/proxy/v1/spark/shell/file-metadata", request)
                     .subscribe((data: any) => {
 
                         checkProgress(data);

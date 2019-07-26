@@ -21,7 +21,7 @@ export default class KyloOptions implements ng.IComponentController {
 
         // Get user name
         this.username = "User";
-        this.$http.get("/kylo/proxy/v1/about/me").then((response: any) => {
+        this.$http.get("/proxy/v1/about/me").then((response: any) => {
             this.username = response.data.systemName;
         });
 
@@ -39,7 +39,7 @@ export default class KyloOptions implements ng.IComponentController {
         const THIS_DOCS_URL_PREFIX = "https://kylo.readthedocs.io/en/v";
         const LATEST_DOCS_URL_PREFIX = "https://kylo.readthedocs.io/en/latest";
         const TRAILING_SLASH = "/";
-        const URL = "/kylo/proxy/v1/about/version";
+        const URL = "/proxy/v1/about/version";
 
         if (thisVersion) {
             this.$http({

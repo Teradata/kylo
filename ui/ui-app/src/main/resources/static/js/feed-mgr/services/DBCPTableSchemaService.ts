@@ -15,11 +15,11 @@ export class DBCPTableSchemaService {
         this.ROOT = RestUrlService.ROOT;
 
         this.LIST_TABLES_URL = function (serviceId:any) {
-            return this.ROOT + "/kylo/proxy/v1/feedmgr/nifi/controller-services/" + serviceId + "/tables";
+            return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + serviceId + "/tables";
         };
 
         this.DESCRIBE_TABLE_URL = function (serviceId:any, tableName:any) {
-            return this.ROOT + "/kylo/proxy/v1/feedmgr/nifi/controller-services/" + serviceId + "/tables/" + tableName;
+            return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + serviceId + "/tables/" + tableName;
         };
     }
 }

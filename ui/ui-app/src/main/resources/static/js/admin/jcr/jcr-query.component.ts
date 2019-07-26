@@ -110,7 +110,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
         }
 
         var indexCopy = _.extend({},this.index);
-        var promise = this.http.post('/kylo/proxy/v1/metadata/debug/jcr-index/register',
+        var promise = this.http.post('/proxy/v1/metadata/debug/jcr-index/register',
             ObjectUtils.toJson(indexCopy),{headers : this.headers}).toPromise().then(successFn, errorFn)
     }
 
@@ -127,7 +127,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
 
             }
 
-            var promise = this.http.post("/kylo/proxy/v1/metadata/debug/jcr-index/" + indexName + "/unregister",
+            var promise = this.http.post("/proxy/v1/metadata/debug/jcr-index/" + indexName + "/unregister",
                 {},{headers: this.headers}).toPromise().then(successFn, errorFn);
         }
     }
@@ -162,7 +162,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
             this.snackBar.open(this.translate.instant("ADMIN.jcrquery.reindex.error"),this.translate.instant("views.common.ok"),{duration : 3000});
         }
 
-        var promise = this.http.post("/kylo/proxy/v1/metadata/debug/jcr-index/reindex",{},{headers : this.headers})
+        var promise = this.http.post("/proxy/v1/metadata/debug/jcr-index/reindex",{},{headers : this.headers})
             .toPromise().then(successFn, errorFn);
     }
 
@@ -188,7 +188,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
                 this.errorMessage = this.translate.instant('ADMIN.jcrquery.error.query.perform');
             }
         };
-        var promise = this.http.get('/kylo/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}}).toPromise();
+        var promise = this.http.get('/proxy/v1/metadata/debug/jcr-sql',{params:{query:sql}}).toPromise();
         promise.then(successFn, errorFn);
         return promise;
     }
@@ -203,7 +203,7 @@ export class JcrQueryComponent extends BaseFilteredPaginatedTableView implements
             this.indexes = [];
             this.indexesErrorMessage = this.translate.instant('ADMIN.jcrquery.index.get.error') +err
         };
-        var promise = this.http.get('/kylo/proxy/v1/metadata/debug/jcr-index').toPromise();
+        var promise = this.http.get('/proxy/v1/metadata/debug/jcr-index').toPromise();
         promise.then(successFn, errorFn);
         return promise;
     }

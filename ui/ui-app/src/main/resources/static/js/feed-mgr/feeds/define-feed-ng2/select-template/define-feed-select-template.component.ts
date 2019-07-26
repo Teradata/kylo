@@ -304,7 +304,7 @@ export class DefineFeedSelectTemplateComponent implements OnInit {
             var errorFn = (err:any) => {
 
             };
-            var promise = this.http.get("/kylo/proxy/v1/feedmgr/templates/registered");
+            var promise = this.http.get("/proxy/v1/feedmgr/templates/registered");
             promise.subscribe(successFn,errorFn);
             return promise;
         }

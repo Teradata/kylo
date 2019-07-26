@@ -30,7 +30,7 @@ export class TemplateService {
     }
 
     getTemplatesInRepository(repository: TemplateRepository): Observable<any> {
-        return this.http.get("/kylo/proxy/v1/repository/"+repository.type+"/"+repository.name+"/templates")
+        return this.http.get("/proxy/v1/repository/"+repository.type+"/"+repository.name+"/templates")
             .map((response) => {
                 return response;
             }).pipe(catchError((error) => Observable.throw(error.error)));
@@ -38,14 +38,14 @@ export class TemplateService {
 
     getTemplatePage(start: any,limit: any, sort: any): Observable<any> {
         var params = {start: start, limit: limit, sort: sort};
-        return this.http.get("/kylo/proxy/v1/repository/template-page")
+        return this.http.get("/proxy/v1/repository/template-page")
             .map((response) => {
                 return response;
             }).pipe(catchError((error) => Observable.throw(error.error)));
     }
 
     getRepositories(): Observable<TemplateRepository[]> {
-        return this.http.get("/kylo/proxy/v1/repository")
+        return this.http.get("/proxy/v1/repository")
             .map((response) => {
                 return response;
             }).pipe(catchError((error) => Observable.throw(error.error)));
@@ -53,7 +53,7 @@ export class TemplateService {
 
     downloadTemplate(template: TemplateMetadata): Observable<Object> {
         return this.http
-            .get("/kylo/proxy/v1/repository/"+ template.repository.type+ "/" +template.repository.name+
+            .get("/proxy/v1/repository/"+ template.repository.type+ "/" +template.repository.name+
                 "/"+ template.fileName +"/templates/download/"
                 , {responseType: "blob"});
     }
@@ -72,7 +72,7 @@ export class TemplateService {
     };
 
     publishTemplate(request: any) {
-        return this.http.post("/kylo/proxy/v1/repository/templates/publish/",
+        return this.http.post("/proxy/v1/repository/templates/publish/",
             JSON.stringify(request),
             {headers: {'Content-Type': 'application/json'}});
     }

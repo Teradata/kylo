@@ -35,12 +35,12 @@ export class ClusterComponent implements OnInit, OnDestroy {
         const errorFn= ()=> {
             this.snackBar.open(this.translate.instant('ADMIN.cluster.dialog.error.message'),this.translate.instant("views.common.ok"),{duration : 3000});
         };
-        this.http.post("/kylo/proxy/v1/admin/cluster/simple",this.simpleMessage)
+        this.http.post("/proxy/v1/admin/cluster/simple",this.simpleMessage)
             .toPromise().then(successFn, errorFn);
     }
 
     messageChecker() {
-        this.http.get("/kylo/proxy/v1/admin/cluster/simple").toPromise().then((response: any)=>{
+        this.http.get("/proxy/v1/admin/cluster/simple").toPromise().then((response: any)=>{
             if(response){
                 this.latestSimpleMessage = response;
                 if(response.type != "NULL" && _.indexOf(this.receivedMessageIds,response.id) < 0){
@@ -52,7 +52,7 @@ export class ClusterComponent implements OnInit, OnDestroy {
     }
 
     getMembers(){
-        this.http.get("/kylo/proxy/v1/admin/cluster/members").toPromise().then((response: any)=>{
+        this.http.get("/proxy/v1/admin/cluster/members").toPromise().then((response: any)=>{
             if(response){
                 this.members = response;
             }
@@ -61,7 +61,7 @@ export class ClusterComponent implements OnInit, OnDestroy {
 
 
     setIsClustered() {// function isClustered() {
-        this.http.get("/kylo/proxy/v1/admin/cluster/is-clustered").toPromise().then((response: any)=>{
+        this.http.get("/proxy/v1/admin/cluster/is-clustered").toPromise().then((response: any)=>{
             if (response && response.status == 'success'){
                 this.isClustered = true;
             }

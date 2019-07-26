@@ -463,7 +463,7 @@ public class SearchFeedMetadataEsIT extends SearchEsIntegrationTestBase implemen
             .given()
             .auth()
             .basic("dladmin", "thinkbig")
-            .get(kyloConfig.getProtocol() + kyloConfig.getHost() + ":" + kyloConfig.getPort() + "/kylo/proxy/v1/metadata/debug/jcr?id=" + feedId);
+            .get(kyloConfig.getProtocol() + kyloConfig.getHost() + ":" + kyloConfig.getPort() + "/proxy/v1/metadata/debug/jcr?id=" + feedId);
         Assert.assertNotNull(response);
         String responseAsString = response.getBody().asString();
 
