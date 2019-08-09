@@ -96,21 +96,6 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -126,12 +111,24 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
@@ -316,7 +313,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
         Optional<Feed.ID> idOption = checkAccessVersions(feedId);
-        
+
         return idOption.map(domainFeedId -> {
             return metadataAccess.read(() -> {
                 return feedProvider.findVersions(domainFeedId, includeContent)
@@ -329,11 +326,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         Optional<Feed.ID> idOption = checkAccessVersions(feedId);
-        
+
         return idOption.flatMap(domainFeedId -> {
             return metadataAccess.read(() -> {
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
-                
+
                 return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
                                 .map(version -> feedModelTransform.domainToFeedVersion(version));
             }, MetadataAccess.SERVICE);
@@ -343,17 +340,17 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
         Optional<Feed.ID> idOption = checkAccessVersions(feedId);
-        
+
         return idOption.map(domainFeedId -> {
             return metadataAccess.read(() -> {
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
                 com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
-                
+
                 Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
                                 .map(version -> feedModelTransform.domainToFeedVersion(version));
                 Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
                                 .map(version -> feedModelTransform.domainToFeedVersion(version));
-                
+
                 return fromVer.map(from -> {
                     return toVer.map(to -> {
                         return feedModelTransform.generateDifference(from, to);
@@ -366,10 +363,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private Optional<Feed.ID> checkAccessVersions(String feedId) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-            
+
             Feed.ID domainFeedId = feedProvider.resolveId(feedId);
             Feed feed = feedProvider.getFeed(domainFeedId);
-    
+
             if (feed != null) {
                 if (accessController.isEntityAccessControlled()) {
                     feed.getAllowedActions().checkPermission(FeedAccessControl.ACCESS_DETAILS);
@@ -442,10 +439,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
                 List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
                 if (domainFeeds != null && !domainFeeds.isEmpty()) {
-                    List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                    for (FeedMetadata feed : feeds) {
-                        summaryList.add(new FeedSummary(feed));
-                    }
+                    summaryList = feedModelTransform.domainToFeedSummary(domainFeeds);
                 }
             }
             return summaryList;
