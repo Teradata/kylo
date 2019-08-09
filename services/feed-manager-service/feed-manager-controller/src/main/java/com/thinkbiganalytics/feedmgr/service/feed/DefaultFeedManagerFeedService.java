@@ -101,11 +101,8 @@ import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
-import com.thinkbiganalytics.security.role.ImmutableAllowableAction;
-import com.thinkbiganalytics.security.role.ImmutableAllowedActions;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.collections.ListUtils;
@@ -653,10 +650,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 List<? extends Feed> domainFeeds = feedProvider.findByCategoryId(categoryDomainId);
 
                 if (domainFeeds != null && !domainFeeds.isEmpty()) {
-                    List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                    for (FeedMetadata feed : feeds) {
-                        summaryList.add(new FeedSummary(feed));
-                    }
+                    summaryList = feedModelTransform.domainToFeedSummary(domainFeeds);
                 }
             }
             return summaryList;
@@ -919,11 +913,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             //create a new version if this is not a new feed
             feedToSave = saveDraftFeed(feedToSave);
         }
-        
-        
-        
-        
-        
+
+
+
+
+
 
         //replace expressions with values
         if (feedToSave.getTable() != null) {
