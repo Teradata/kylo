@@ -30,11 +30,11 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
         headers[X_REQUESTED_WITH] = XML_HTTP_REQUEST;
         
         var baseUrl = "";
-
-        if((req.url.indexOf(".html") === -1) && (req.url.indexOf(".svg") === -1)){
-            baseUrl = req.url.startsWith("/") ? "/kylo" : "/kylo/";
+        if(!req.url.startsWith("kylo") && !req.url.startsWith("/kylo")){
+            if((req.url.indexOf(".html") === -1) && (req.url.indexOf(".svg") === -1)){
+                baseUrl = req.url.startsWith("/") ? "/kylo" : "/kylo/";
+            }
         }
-        
 
         return next.handle(req.clone({ url:baseUrl + req.url,setHeaders: headers})).pipe(
             map(response => {
@@ -62,10 +62,11 @@ export class AngularHttpInterceptor implements angular.IHttpInterceptor, HttpInt
         }
         request.headers[X_REQUESTED_WITH] = XML_HTTP_REQUEST;
         var baseUrl = "";
-        if((request.url.indexOf(".html") === -1) && (request.url.indexOf(".svg") === -1) && (request.url.indexOf("md-table-pagination") === -1) && (request.url.indexOf("md-table-progress") === -1)){
-            baseUrl = request.url.startsWith("/") ? "/kylo" : "/kylo/";
+        if(!request.url.startsWith("kylo") && !request.url.startsWith("/kylo")){
+            if((request.url.indexOf(".html") === -1) && (request.url.indexOf(".svg") === -1) && (request.url.indexOf("md-table-pagination") === -1) && (request.url.indexOf("md-table-progress") === -1)){
+                baseUrl = request.url.startsWith("/") ? "/kylo" : "/kylo/";
+            }
         }
-        
         request.url = baseUrl + request.url;
         return request;
     }
