@@ -67,7 +67,7 @@ public class ElasticSearchRestService implements Search {
     private static final String POST_METHOD = "POST";
     private static final String PUT_METHOD = "PUT";
     private static final String DELETE_METHOD = "DELETE";
-    private static final String SEARCH_ENDPOINT = "_search";
+    private static final String SEARCH_ENDPOINT = "/_search";
     private static final String VERSION_TWO = "2";
     private static final String QUERY = "query";
 
