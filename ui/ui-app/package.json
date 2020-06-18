@@ -44,7 +44,7 @@
     "@uirouter/angularjs": "^1.0.15",
     "@uirouter/core": "^5.0.17",
     "@uirouter/rx": "^0.4.5",
-    "angular": "1.6.7",
+    "angular": "1.8.0",
     "angular-translate": "^2.17.0",
     "build": "^0.1.4",
     "core-js": "^2.5.4",
