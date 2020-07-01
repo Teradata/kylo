@@ -157,7 +157,7 @@
     <nifi.version>1.0.0</nifi.version>
     <nifi.version.override>1.2.0</nifi.version.override>
     <powermock.version>1.6.3</powermock.version>
-    <quartz.version>2.2.1</quartz.version>
+    <quartz.version>2.3.2</quartz.version>
     <slf4j.version>1.7.12</slf4j.version>
     <scala.version>2.10.7</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
