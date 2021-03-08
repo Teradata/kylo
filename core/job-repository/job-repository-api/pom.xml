@@ -20,18 +20,56 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-api</artifactId>
       <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-sla-api</artifactId>
-      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+       </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-nifi-provenance-constants</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-hadoop-authorization-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>io.swagger</groupId>
+          <artifactId>swagger-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>sslext</groupId>
+          <artifactId>sslext</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-sla-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-ui-annotation-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-sla-rest-model</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-commons-velocity-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- needed just for the DatabaseType Enum .... think about changing this so the jdbc dep is not needed -->
@@ -40,6 +78,20 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-jdbc</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.inject</groupId>
+          <artifactId>javax.inject</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jdbc</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
