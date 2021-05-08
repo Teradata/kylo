@@ -16,7 +16,7 @@
     "@angular/material": ">=5",
     "@angular/platform-browser": ">=5",
     "@kylo/feed": "file:../../../ui/ui-app/target/classes/static/lib",
-    "ng-packagr": "^2.4.5",
+    "ng-packagr": "^10.1.1",
     "rxjs": "^5.5.8",
     "typescript": "~2.5",
     "zone.js": "^0.8.25"
