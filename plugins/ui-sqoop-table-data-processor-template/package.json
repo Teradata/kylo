@@ -19,7 +19,7 @@
     "@covalent/core": "^1.0.0",
     "@kylo/feed": "file:../../ui/ui-app/target/classes/static/lib",
     "@ngx-translate/core": "^9.1.1",
-    "ng-packagr": "^2.4.5",
+    "ng-packagr": "^10.1.1",
     "rxjs": "^5.5.8",
     "typescript": "~2.5",
     "zone.js": "^0.8.25"
