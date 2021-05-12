@@ -167,7 +167,7 @@
     <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
     <spring.boot.version>1.5.13.RELEASE</spring.boot.version>
     <spring.jpa.version>1.11.12.RELEASE</spring.jpa.version>
-    <spring.security.version>4.2.6.RELEASE</spring.security.version>
+    <spring.security.version>5.2.10.RELEASE</spring.security.version>
     <!--  <spring.security.version>4.1.1.RELEASE</spring.security.version> -->
     <spring.ldap.version>2.1.0.RELEASE</spring.ldap.version>
     <spring.vault.version>1.1.1.RELEASE</spring.vault.version>
