@@ -181,7 +181,7 @@
     <findbugs.version>3.0.1</findbugs.version>
     <pig.version>0.15.0</pig.version>
     <gson.version>2.2.4</gson.version>
-    <h2.version>1.4.187</h2.version>
+    <h2.version>2.1.210</h2.version>
     <aws.java.sdk.version>1.7.4</aws.java.sdk.version>
     <amazon.sqs.java.messaging.lib.version>1.0.0</amazon.sqs.java.messaging.lib.version>
 

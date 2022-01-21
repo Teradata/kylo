@@ -9,7 +9,7 @@
     <artifactId>kylo-metadata-modeshape</artifactId>
 
     <properties>
-        <jdbc.h2.version>1.2.124</jdbc.h2.version>
+        <jdbc.h2.version>2.1.210</jdbc.h2.version>
         <plugin.license.parentRelative>../../</plugin.license.parentRelative>
     </properties>
 
