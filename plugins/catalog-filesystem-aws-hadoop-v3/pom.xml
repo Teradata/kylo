@@ -15,7 +15,7 @@
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
     <aws.java.sdk.version>1.11.271</aws.java.sdk.version>  <!-- should match version from hadoop-project pom -->
-    <hadoop.version>3.1.0</hadoop.version>
+    <hadoop.version>3.1.4</hadoop.version>
   </properties>
 
   <dependencies>
