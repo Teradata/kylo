@@ -15,7 +15,7 @@
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
     <azure.version>2.0.0</azure.version>
-    <hadoop.version>2.7.6</hadoop.version>
+    <hadoop.version>2.10.1</hadoop.version>
   </properties>
 
   <dependencies>
