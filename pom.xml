@@ -135,7 +135,7 @@
     <lombok.version>1.16.10</lombok.version>
     <lucene.version.elasticsearch.version.two>5.5.0</lucene.version.elasticsearch.version.two>
     <guava.version>19.0</guava.version>
-    <hadoop.version>2.6.2</hadoop.version>
+    <hadoop.version>2.10.1</hadoop.version>
     <hamcrest.version>1.3</hamcrest.version>
     <hive.version>1.1.0</hive.version>
     <hiverunner.version>3.0.0</hiverunner.version>
