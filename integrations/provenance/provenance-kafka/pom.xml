@@ -12,7 +12,7 @@
   </parent>
   <properties>
     <scala.version>2.11.0</scala.version>
-    <kafka.version>0.10.2.0</kafka.version>
+    <kafka.version>0.10.2.2</kafka.version>
     <scala.binary.version>2.11</scala.binary.version>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
