@@ -258,13 +258,13 @@
 
   <scm>
     <connection>
-      scm:git:https://github.com/Teradata/kylo.git
+      scm:git:https://github.com/kanghanil/kylo.git
     </connection>
     <developerConnection>
-      scm:git:https://github.com/Teradata/kylo.git
+      scm:git:https://github.com/kanghanil/kylo.git
     </developerConnection>
     <tag>HEAD</tag>
-    <url>https://github.com/Teradata/kylo</url>
+    <url>https://github.com/kanghanil/kylo.git</url>
   </scm>
 
   <dependencyManagement>
