@@ -139,7 +139,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>4.2.7.RELEASE</version>
+            <version>5.2.20.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
