@@ -230,11 +230,11 @@
       <artifactId>kylo-catalog-filesystem-aws-hadoop-v3</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
+  <!--   <dependency>
       <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-catalog-filesystem-azure</artifactId>
       <version>${project.version}</version>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-client</artifactId>

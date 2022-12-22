@@ -226,7 +226,7 @@
       <id>central</id>
       <name>Maven Repository Switchboard</name>
       <layout>default</layout>
-      <url>http://repo1.maven.org/maven2</url>
+      <url>https://repo1.maven.org/maven2</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
@@ -234,7 +234,7 @@
     <repository>
       <id>spring-milestones</id>
       <name>Spring Milestones</name>
-      <url>https://repo.spring.io/libs-milestone</url>
+      <url>https://nexus.xebialabs.com/nexus/content/groups/public</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
@@ -258,13 +258,13 @@
 
   <scm>
     <connection>
-      scm:git:https://github.com/Teradata/kylo.git
+      scm:git:https://github.com/kanghanil/kylo.git
     </connection>
     <developerConnection>
-      scm:git:https://github.com/Teradata/kylo.git
+      scm:git:https://github.com/kanghanil/kylo.git
     </developerConnection>
     <tag>HEAD</tag>
-    <url>https://github.com/Teradata/kylo</url>
+    <url>https://github.com/kanghanil/kylo.git</url>
   </scm>
 
   <dependencyManagement>

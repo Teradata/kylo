@@ -16,7 +16,7 @@
     "test": "karma start karma.conf.js",
     "test:watch": "tsc -p src/main/resources/static/tsconfig.app.json && concurrently \"tsc -p src/main/resources/static/tsconfig.spec.json -w\" \"karma start karma.conf.js\""
   },
-  "repository": "https://github.com/teradata/kylo.git",
+  "repository": "https://github.com/kanghanil/kylo.git",
   "license": "Apache-2.0",
   "author": "Think Big Analytics",
   "dependencies": {
